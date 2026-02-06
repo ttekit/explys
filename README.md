@@ -1,52 +1,97 @@
-# eng_curses
+# 🎓 EngCurses 🐒🚑
+**EngCurses** — это фронтенд-приложение для изучения английского языка через видеокурсы. Проект ориентирован на минимализм и фокус на обучении: центральное место занимает видеоплеер, а вспомогательные функции (профиль, настройки, авторизация) логично распределены по краям экрана.
 
-A frontend web application for learning English through video-based courses.  
-The project focuses on a simple, intuitive main page layout with a central video player and user-related flows (profile, settings, authentication).
-
-<img width="1439" height="569" alt="main page concept" src="https://github.com/user-attachments/assets/2177b534-614c-4de6-b08e-6acb864a3cf0" />
+<img width="1439" height="569" alt="концепция главной страницы" src="https://github.com/user-attachments/assets/2177b534-614c-4de6-b08e-6acb864a3cf0" />
 
 ---
 
-## 🎯 Concept
+## 🎯 Концепция
+Основная идея — сделать обучение сфокусированным и избавленным от лишних отвлекающих факторов.
 
-The main idea is to keep learning **video-centric** and distraction-free.
-
-**Main page structure:**
-- **Center** — video player (core learning experience)
-- **Left side** — user profile & settings
-- **Right side** — login / registration
-- **Top** — main navigation entry point
-
-This layout allows quick access to user data while keeping the lesson content in focus.
+**Структура главной страницы:**
+* **Центр:** Видеоплеер (основной процесс обучения).
+* **Слева:** Профиль пользователя и настройки.
+* **Справа:** Потоки авторизации и регистрации.
+* **Сверху:** Навигационная панель.
 
 ---
 
-## 🧩 Features
+## 🛠 Стек технологий и инструменты
 
-- 🎥 Video player for English lessons  
-- 👤 User profile page  
-- ⚙️ User settings  
-- 🔐 Authentication (login / register)  
-- 🧭 Client-side routing  
-- 📱 Responsive UI  
-
----
-
-## 🛠 Tech Stack
-
-- **React**
-- **React Router**
-- **Tailwind CSS**
+| Инструмент | Назначение | Описание |
+| :--- | :--- | :--- |
+| **React** | UI Библиотека | Создание интерфейса на основе компонентов. |
+| **Tailwind CSS** | Стилизация | Utility-first подход для быстрой и адаптивной верстки. |
+| **React Router** | Роутинг | Навигация между страницами без перезагрузки. |
+| **Vite** | Сборщик | Инструмент для сверхбыстрой разработки и сборки. |
+| **pnpm** | Пакетный менеджер | Эффективная и быстрая альтернатива npm/yarn. |
 
 ---
 
-## 📁 Project Structure (example)
+## 🚀 Быстрый старт
+
+### 1. Установка pnpm
+Мы используем **pnpm** для ускорения установки зависимостей и экономии места на диске. Если он еще не установлен, выполните:
+
+```bash
+npm install -g pnpm
+```
+### 2. Установка зависимостей и Tailwind CSS
+
+Клонируйте репозиторий и установите все необходимые пакеты, включая инструменты для стилизации:
+```bash
+# Клонирование репозитория
+git clone [https://github.com/ваш-логин/eng_curses.git](https://github.com/ваш-логин/eng_curses.git)
+cd eng_curses
+
+# Установка базовых зависимостей
+pnpm install
+
+# Установка Tailwind CSS, PostCSS и Autoprefixer
+pnpm add -D tailwindcss postcss autoprefixer
+
+# Инициализация конфигурационных файлов Tailwind
+pnpx tailwindcss init -p
+```
+### 3. Настройка конфигурации
+Настройка путей (tailwind.config.js)
+Добавьте пути ко всем вашим компонентам в файл конфигурации:
+```js
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+Подключение директив (src/index.css)
+Добавьте эти строки в ваш основной CSS файл:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+### Запуск проЭкта
+```bash
+pnpm dev
+```
+Приложение будет доступно по адресу: http://localhost:5173
+📁 Структура проекта
+```Plaintext
 src/
-├── components/ # Reusable UI components
-├── pages/ # Pages (Main, Profile, Auth, etc.)
-├── router/ # Routing configuration
-├── assets/ # Images, icons, media
-├── App.jsx
-└── main.jsx
-
----
+├── components/      # Общие компоненты (Кнопки, Инпуты, Плеер)
+├── pages/           # Страницы (Main, Profile, Auth)
+├── router/          # Конфигурация React Router
+├── assets/          # Медиафайлы, иконки, изображения
+├── index.css        # Глобальные стили (Tailwind)
+├── App.jsx          # Корневой компонент
+└── main.jsx         # Точка входа
+```
+### 🧩 Текущий статус и планы
+Помолимся
