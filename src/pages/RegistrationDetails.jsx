@@ -1,10 +1,15 @@
 import InputText from "../components/InputText";
 import Button from "../components/Button";
 import LabelRegister from "../components/LabelRegister";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import SelectRegister from "../components/SelectRegister";
+import { useContext } from "react";
+import { RegistrationContext } from "./RegistrationContext";
 
 export default function RegistrationDetails() {
+  const { formData, updateFormData } = useContext(RegistrationContext);
+  const navigate = useNavigate();
+
   const engLevels = [
     { value: "choose", text: "Choose level" },
     { value: "starter", text: "Starter" },
@@ -47,26 +52,36 @@ export default function RegistrationDetails() {
     { value: "other", text: "Other" },
   ];
 
+  const handleChange = (e) => {
+    updateFormData({ [e.target.name]: e.target.value });
+  };
+
+  const handleNext = (e) => {
+    e.preventDefault();
+    navigate("/registrationPreferences");
+  };
+
   return (
     <>
-      <form className="flex flex-col items-center justify-center">
+      <form className="flex flex-col items-center justify-center" onSubmit={handleNext}>
         <h3 className="font-bold">Registration</h3>
         <div className="mb-1.5 flex flex-col items-center justify-center">
           <LabelRegister>English level:</LabelRegister>
-          <SelectRegister options={engLevels} />
+          <SelectRegister name="englishLevel" value={formData.englishLevel} onChange={handleChange} options={engLevels} />
+
           <LabelRegister>Hobbies:</LabelRegister>
-          <InputText type="text" placeholder="Select" />
+          <InputText name="hobbies" value={formData.hobbies} onChange={handleChange} type="text" placeholder="Select" />
+
           <LabelRegister>Education:</LabelRegister>
-          <SelectRegister options={educationLevels} />
+          <SelectRegister name="education" value={formData.education} onChange={handleChange} options={educationLevels} />
+
           <LabelRegister>Work field:</LabelRegister>
-          <SelectRegister options={workFields} />
+          <SelectRegister name="workField" value={formData.workField} onChange={handleChange} options={workFields} />
         </div>
         <div>
-          <Link to="/registrationPreferences">
-            <Button>Next</Button>
-          </Link>
+          <Button type="submit">Next</Button>
           <Link to="/registrationMain">
-            <Button>Back</Button>
+            <Button type="button">Back</Button>
           </Link>
         </div>
       </form>
