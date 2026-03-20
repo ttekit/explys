@@ -1,0 +1,38 @@
+{
+  "private": "true",
+  "type": "commonjs",
+  "dependencies": {
+    "@nestjs/common": "^11.1.14",
+    "@nestjs/config": "^4.0.3",
+    "@nestjs/core": "^11.1.14",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/mapped-types": "*",
+    "@nestjs/platform-express": "^11.1.14",
+    "@nestjs/swagger": "^11.2.6",
+    "@nestjs/testing": "^11.1.14",
+    "@prisma/adapter-pg": "^7.4.1",
+    "@prisma/client": "^7.4.1",
+    "@types/multer": "^2.0.0",
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "csv-parse": "^6.1.0",
+    "csv-parser": "^3.2.0",
+    "decimal.js": "^10.6.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "multer": "^2.0.2",
+    "pg": "^8.18.0",
+    "prisma": "^7.4.1",
+    "rxjs": "^7.8.2",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
+    "@types/jest": "^30.0.0",
+    "@types/pg": "^8.16.0"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  }
+}

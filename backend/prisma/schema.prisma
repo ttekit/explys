@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String   @unique
+  password       String
+  createdAt      DateTime @default(now())
+  englishLevel   String?
+  hobbies        String[]
+  education      String?
+  workField      String?
+  favoriteGenres Genre[]  @relation("FavoriteGenres")
+  hatedGenres    Genre[]  @relation("HatedGenres")
+
+  @@map("users")
+}
+
+model Genre {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  favoritedBy User[] @relation("FavoriteGenres")
+  hatedBy     User[] @relation("HatedGenres")
+
+  @@map("genres")
+}
