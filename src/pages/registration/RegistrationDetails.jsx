@@ -1,8 +1,8 @@
-import InputText from "../components/InputText";
-import Button from "../components/Button";
-import LabelRegister from "../components/LabelRegister";
+import InputText from "../../components/InputText";
+import Button from "../../components/Button";
+import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
-import SelectRegister from "../components/SelectRegister";
+import SelectRegister from "../../components/SelectRegister";
 import { useContext } from "react";
 import { RegistrationContext } from "./RegistrationContext";
 
@@ -63,28 +63,60 @@ export default function RegistrationDetails() {
 
   return (
     <>
-      <form className="flex flex-col items-center justify-center" onSubmit={handleNext}>
-        <h3 className="font-bold">Registration</h3>
-        <div className="mb-1.5 flex flex-col items-center justify-center">
-          <LabelRegister>English level:</LabelRegister>
-          <SelectRegister name="englishLevel" value={formData.englishLevel} onChange={handleChange} options={engLevels} />
+      <div className="min-h-screen flex items-center justify-center">
+        <form
+          className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
+          onSubmit={handleNext}
+        >
+          <div className="justify-start my-2">
+            <p className="font-bold text-2xl m-0">Create an account</p>
+            <div className="flex">
+              <p className="font-semibold m-0 pr-1">Account Credentials</p>
+              <p>- Page 2</p>
+            </div>
+          </div>
+          <div className="mb-1.5 flex flex-col">
+            <LabelRegister isRequired={true}>English level:</LabelRegister>
+            <SelectRegister
+              name="englishLevel"
+              value={formData.englishLevel}
+              onChange={handleChange}
+              options={engLevels}
+            />
 
-          <LabelRegister>Hobbies:</LabelRegister>
-          <InputText name="hobbies" value={formData.hobbies} onChange={handleChange} type="text" placeholder="Select" />
+            <LabelRegister isRequired={false}>Hobbies:</LabelRegister>
+            <InputText
+              name="hobbies"
+              value={formData.hobbies}
+              onChange={handleChange}
+              type="text"
+              placeholder="Select"
+            />
 
-          <LabelRegister>Education:</LabelRegister>
-          <SelectRegister name="education" value={formData.education} onChange={handleChange} options={educationLevels} />
+            <LabelRegister isRequired={false}>Education:</LabelRegister>
+            <SelectRegister
+              name="education"
+              value={formData.education}
+              onChange={handleChange}
+              options={educationLevels}
+            />
 
-          <LabelRegister>Work field:</LabelRegister>
-          <SelectRegister name="workField" value={formData.workField} onChange={handleChange} options={workFields} />
-        </div>
-        <div>
-          <Button type="submit">Next</Button>
-          <Link to="/registrationMain">
-            <Button type="button">Back</Button>
-          </Link>
-        </div>
-      </form>
+            <LabelRegister isRequired={false}>Work field:</LabelRegister>
+            <SelectRegister
+              name="workField"
+              value={formData.workField}
+              onChange={handleChange}
+              options={workFields}
+            />
+          </div>
+          <div>
+            <Button type="submit">Next</Button>
+            <Link to="/registrationMain">
+              <Button type="button">Back</Button>
+            </Link>
+          </div>
+        </form>
+      </div>
     </>
   );
 }
