@@ -1,4 +1,15 @@
-export default function SelectRegister({ options, ...props }) {
+import { SelectHTMLAttributes } from "react";
+
+interface Option {
+  value: string;
+  text: string;
+}
+
+interface SelectRegisterProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  options: Option[];
+}
+
+export default function SelectRegister({ options, ...props }: SelectRegisterProps) {
   return (
     <>
       <select
@@ -14,3 +25,4 @@ export default function SelectRegister({ options, ...props }) {
     </>
   );
 }
+

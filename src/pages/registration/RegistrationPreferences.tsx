@@ -2,18 +2,22 @@ import InputText from "../../components/InputText";
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
-import { useContext } from "react";
+import { useContext, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
 
 export default function RegistrationPreferences() {
-  const { formData, updateFormData } = useContext(RegistrationContext);
+  const context = useContext(RegistrationContext);
+  if (!context) throw new Error("RegistrationContext is not available");
+  
+  const { formData, updateFormData } = context;
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    updateFormData({ [e.target.name]: e.target.value });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    updateFormData({ [name]: value } as Record<string, string>);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -83,3 +87,4 @@ export default function RegistrationPreferences() {
     </>
   );
 }
+

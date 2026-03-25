@@ -3,14 +3,22 @@ import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
 import SelectRegister from "../../components/SelectRegister";
-import { useContext } from "react";
+import { useContext, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
 
+interface SelectOption {
+  value: string;
+  text: string;
+}
+
 export default function RegistrationDetails() {
-  const { formData, updateFormData } = useContext(RegistrationContext);
+  const context = useContext(RegistrationContext);
+  if (!context) throw new Error("RegistrationContext is not available");
+  
+  const { formData, updateFormData } = context;
   const navigate = useNavigate();
 
-  const engLevels = [
+  const engLevels: SelectOption[] = [
     { value: "choose", text: "Choose level" },
     { value: "starter", text: "Starter" },
     { value: "beginner", text: "Beginner" },
@@ -21,7 +29,7 @@ export default function RegistrationDetails() {
     { value: "proficiency", text: "Proficiency" },
   ];
 
-  const educationLevels = [
+  const educationLevels: SelectOption[] = [
     { value: "choose", text: "Choose education level" },
     { value: "school", text: "Secondary School" },
     { value: "high-school", text: "High School Diploma" },
@@ -32,7 +40,7 @@ export default function RegistrationDetails() {
     { value: "other", text: "Other" },
   ];
 
-  const workFields = [
+  const workFields: SelectOption[] = [
     { value: "choose", text: "Choose field of work" },
     { value: "it", text: "IT / Software Development" },
     { value: "education", text: "Education / Teaching" },
@@ -52,11 +60,12 @@ export default function RegistrationDetails() {
     { value: "other", text: "Other" },
   ];
 
-  const handleChange = (e) => {
-    updateFormData({ [e.target.name]: e.target.value });
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    updateFormData({ [name]: value } as Record<string, string>);
   };
 
-  const handleNext = (e) => {
+  const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     navigate("/registrationPreferences");
   };
@@ -101,7 +110,7 @@ export default function RegistrationDetails() {
               options={educationLevels}
             />
 
-            <LabelRegister isRequired={false}>Work field:</LabelRegister>
+            <LabelRegister isRequired={false}>Field of work:</LabelRegister>
             <SelectRegister
               name="workField"
               value={formData.workField}
@@ -120,3 +129,4 @@ export default function RegistrationDetails() {
     </>
   );
 }
+
