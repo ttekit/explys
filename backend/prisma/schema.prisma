@@ -31,3 +31,36 @@ model Genre {
 
   @@map("genres")
 }
+
+model Topic {
+  id         Int      @id @default(autoincrement())
+  name       String
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  complexity Float
+  language   String
+
+  tags Tag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("topics")
+}
+
+model Category {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  topics Topic[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  topics Topic[]
+
+  @@map("tags")
+}
