@@ -1,4 +1,6 @@
-export default function InputText({ ...props }) {
+import { InputHTMLAttributes } from "react";
+
+export default function InputText({ ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <>
       <input
@@ -8,3 +10,4 @@ export default function InputText({ ...props }) {
     </>
   );
 }
+

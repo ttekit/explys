@@ -1,4 +1,11 @@
-export default function LabelRegister({ children, isRequired }) {
+import { ReactNode } from "react";
+
+interface LabelRegisterProps {
+  children: ReactNode;
+  isRequired: boolean;
+}
+
+export default function LabelRegister({ children, isRequired }: LabelRegisterProps) {
   return (
     <>
       <div>
@@ -12,3 +19,4 @@ export default function LabelRegister({ children, isRequired }) {
     </>
   );
 }
+

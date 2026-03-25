@@ -3,11 +3,14 @@ import Button from "../../components/Button";
 import ValidateError from "../../components/ValidateError";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
-import { useContext, useState } from "react";
+import { useContext, useState, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
 
 export default function RegistrationMain() {
-  const { formData, updateFormData } = useContext(RegistrationContext);
+  const context = useContext(RegistrationContext);
+  if (!context) throw new Error("RegistrationContext is not available");
+  
+  const { formData, updateFormData } = context;
   const [emptyError, setEmptyError] = useState(false);
   const navigate = useNavigate();
 
@@ -18,11 +21,12 @@ export default function RegistrationMain() {
     formData.confirmPassword,
   ].some((value) => value.trim() === "");
 
-  const handleChange = (e) => {
-    updateFormData({ [e.target.name]: e.target.value });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    updateFormData({ [name]: value } as Record<string, string>);
   };
 
-  const handleNext = (e) => {
+  const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!isEmpty) {
       setEmptyError(false);
@@ -95,3 +99,4 @@ export default function RegistrationMain() {
     </>
   );
 }
+

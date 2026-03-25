@@ -1,4 +1,10 @@
-export default function ValidateError({ children, isVisible, ...props }) {
+import { ReactNode, HTMLAttributes } from "react";
+
+interface ValidateErrorProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode;
+}
+
+export default function ValidateError({ children }: ValidateErrorProps) {
   return (
     <>
       <div
@@ -10,3 +16,4 @@ export default function ValidateError({ children, isVisible, ...props }) {
     </>
   );
 }
+

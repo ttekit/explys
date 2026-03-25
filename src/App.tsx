@@ -1,6 +1,10 @@
 import { Routes, Route } from "react-router";
 
-import { RegistrationProvider } from "./pages/RegistrationContext";
+import { RegistrationProvider } from "./pages/registration/RegistrationContext";
+import MainPage from "./pages/MainPage";
+import RegistrationMain from "./pages/registration/RegistrationMain";
+import RegistrationDetails from "./pages/registration/RegistrationDetails";
+import RegistrationPreferences from "./pages/registration/RegistrationPreferences";
 
 
 function App() {
@@ -19,3 +23,4 @@ function App() {
 }
 
 export default App;
+
