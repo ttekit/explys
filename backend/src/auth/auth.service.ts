@@ -28,13 +28,16 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         name: dto.name,
-
         englishLevel: dto.englishLevel,
-        hobbies: dto.hobbies,
+        hobbies: dto.hobbies || [],
         education: dto.education,
         workField: dto.workField,
-        favoriteGenres: dto.favoriteGenres,
-        hatedGenres: dto.hatedGenres,
+        favoriteGenres: dto.favoriteGenres && dto.favoriteGenres.length > 0 ? {
+          connect: dto.favoriteGenres.map(id => ({ id }))
+        } : undefined,
+        hatedGenres: dto.hatedGenres && dto.hatedGenres.length > 0 ? {
+          connect: dto.hatedGenres.map(id => ({ id }))
+        } : undefined,
       }
     });
 

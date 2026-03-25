@@ -1,4 +1,4 @@
-import { IsString, IsEmail, MinLength, IsOptional } from 'class-validator';
+import { IsString, IsEmail, MinLength, IsOptional, IsArray, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
@@ -15,16 +15,16 @@ export class RegisterDto {
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
   password: string;
 
-
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   englishLevel?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: [String], example: ['Reading', 'Gaming'] })
   @IsOptional()
-  @IsString()
-  hobbies?: string;
+  @IsArray()
+  @IsString({ each: true })
+  hobbies?: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -36,13 +36,15 @@ export class RegisterDto {
   @IsString()
   workField?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: [Number], example: [1, 2] })
   @IsOptional()
-  @IsString()
-  favoriteGenres?: string;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  favoriteGenres?: number[];
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: [Number], example: [3, 4] })
   @IsOptional()
-  @IsString()
-  hatedGenres?: string;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  hatedGenres?: number[];
 }

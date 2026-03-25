@@ -30,9 +30,17 @@
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
     "@types/jest": "^30.0.0",
-    "@types/pg": "^8.16.0"
+    "@types/pg": "^8.16.0",
+    "jest": "^29.7.0",
+    "ts-node": "^10.9.2"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "npx ts-node prisma/seed.ts"
+  },
+  "scripts": {
+    "start": "nest start",
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "test": "jest"
   }
 }

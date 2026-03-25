@@ -29,7 +29,6 @@ export class UsersService {
             throw new ConflictException('User with this email already exists');
         }
 
-
         const hashedPassword = await bcrypt.hash(password, 10);
 
         return this.prisma.user.create({
@@ -38,11 +37,15 @@ export class UsersService {
                 password: hashedPassword,
                 name,
                 englishLevel,
-                hobbies,
+                hobbies: hobbies || [],
                 education,
                 workField,
-                favoriteGenres,
-                hatedGenres,
+                favoriteGenres: favoriteGenres && favoriteGenres.length > 0 ? {
+                    connect: favoriteGenres.map(id => ({ id }))
+                } : undefined,
+                hatedGenres: hatedGenres && hatedGenres.length > 0 ? {
+                    connect: hatedGenres.map(id => ({ id }))
+                } : undefined,
             },
             select: this.userSelect,
         });
@@ -70,7 +73,7 @@ export class UsersService {
     async update(id: number, updateUserDto: UpdateUserDto) {
         await this.findOne(id);
 
-        const dataToUpdate = { ...updateUserDto };
+        const { favoriteGenres, hatedGenres, ...dataToUpdate } = updateUserDto;
 
         if (dataToUpdate.password) {
             dataToUpdate.password = await bcrypt.hash(dataToUpdate.password, 10);
@@ -78,7 +81,15 @@ export class UsersService {
 
         return this.prisma.user.update({
             where: { id },
-            data: dataToUpdate,
+            data: {
+                ...dataToUpdate,
+                favoriteGenres: favoriteGenres ? {
+                    set: favoriteGenres.map(genreId => ({ id: genreId }))
+                } : undefined,
+                hatedGenres: hatedGenres ? {
+                    set: hatedGenres.map(genreId => ({ id: genreId }))
+                } : undefined,
+            },
             select: this.userSelect,
         });
     }
