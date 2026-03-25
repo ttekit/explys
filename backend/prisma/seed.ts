@@ -155,7 +155,6 @@ async function main() {
       createdTags.push(tag);
       console.log(`✅ Created tag: ${tagName}`);
     } catch (error) {
-      console.log(`error ${error}`);
       console.log(`⚠️  Tag "${tagName}" might already exist, skipping...`);
     }
   }
@@ -189,6 +188,36 @@ async function main() {
   }
 
   console.log(`🎉 Successfully seeded ${createdCategories.length} categories!`);
+
+  console.log('🎭 Creating sample genres...');
+
+  const genres = [
+    { name: 'Action' },
+    { name: 'Adventure' },
+    { name: 'Comedy' },
+    { name: 'Drama' },
+    { name: 'Horror' },
+    { name: 'Romance' },
+    { name: 'Sci-Fi' },
+    { name: 'Thriller' },
+    { name: 'Fantasy' },
+    { name: 'Mystery' },
+  ];
+
+  const createdGenres: { id: number; name: string }[] = [];
+  for (const genreData of genres) {
+    try {
+      const genre = await prisma.genre.create({
+        data: genreData,
+      });
+      createdGenres.push(genre);
+      console.log(`✅ Created genre: ${genreData.name}`);
+    } catch (error) {
+      console.log(`⚠️  Genre "${genreData.name}" might already exist, skipping...`);
+    }
+  }
+
+  console.log(`🎉 Successfully seeded ${createdGenres.length} genres!`);
 
   console.log('📚 Creating sample topic...');
 
