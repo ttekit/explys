@@ -35,6 +35,7 @@ export class ContentsService {
     async getAllContent(){
         return await this.prisma.content.findMany();
     }
+    
     async getContentById(id: number){
         return await this.prisma.content.findUnique({
             where:{ id }

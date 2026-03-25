@@ -1,0 +1,60 @@
+model Content {
+  id Int @id @default(autoincrement())
+
+  friendlyLink String @map("friendly_link")
+  name         String
+  description  String
+
+  category ContentMedia[]
+
+  createAt DateTime @default(now()) @map("create_at")
+  updateAt DateTime @updatedAt @map("update_at")
+
+  @@map("contents")
+}
+
+model ContentMedia {
+  id Int @id @default(autoincrement())
+
+  categoryId Int     @map("category_id")
+  category   Content @relation(fields: [categoryId], references: [id])
+
+  createAt DateTime @default(now()) @map("create_at")
+  updateAt DateTime @updatedAt @map("update_at")
+
+  @@map("content_media")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String   @unique
+  password       String
+  createdAt      DateTime @default(now())
+  englishLevel   String?
+  hobbies        String[]
+  education      String?
+  workField      String?
+  favoriteGenres Genre[]  @relation("FavoriteGenres")
+  hatedGenres    Genre[]  @relation("HatedGenres")
+
+  @@map("users")
+}
+
+model Genre {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  favoritedBy User[] @relation("FavoriteGenres")
+  hatedBy     User[] @relation("HatedGenres")
+
+  @@map("genres")
+}
