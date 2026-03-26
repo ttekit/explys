@@ -7,20 +7,32 @@ import { PrismaService } from "src/prisma.service";
 export class ContentStatsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createContentStatsDto: CreateContentStatsDto) {
-    const { topicIds, ...rest } = createContentStatsDto;
-    return this.prisma.contentStats.create({
-      data: {
-        ...rest,
-        topics: {
-          connect: topicIds?.map((id) => ({ id })),
-        },
-      },
-      include: {
-        topics: true,
-      },
-    });
-  }
+    async create(createContentStatsDto: CreateContentStatsDto) {
+        const { topicIds, ...rest } = createContentStatsDto;
+
+        if (topicIds && topicIds.length > 0) {
+            const existingTopics = await this.prisma.topic.findMany({
+                where: { id: { in: topicIds } },
+                select: { id: true },
+            });
+
+            if (existingTopics.length !== topicIds.length) {
+                const foundIds = existingTopics.map(t => t.id);
+                const missingIds = topicIds.filter(id => !foundIds.includes(id));
+                throw new NotFoundException(`Topics with IDs [${missingIds}] not found`);
+            }
+        }
+
+        return this.prisma.contentStats.create({
+            data: {
+                ...rest,
+                topics: {
+                    connect: topicIds?.map((id) => ({ id })),
+                },
+            },
+            include: { topics: true },
+        });
+    }
 
   async findAll() {
     return this.prisma.contentStats.findMany({
