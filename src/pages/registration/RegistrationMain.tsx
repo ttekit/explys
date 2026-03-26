@@ -9,7 +9,7 @@ import { RegistrationContext } from "./RegistrationContext";
 export default function RegistrationMain() {
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
-  
+
   const { formData, updateFormData } = context;
   const [emptyError, setEmptyError] = useState(false);
   const navigate = useNavigate();
@@ -35,6 +35,21 @@ export default function RegistrationMain() {
       setEmptyError(true);
       console.log("error");
     }
+  };
+
+  const handleBack = () => {
+    updateFormData({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      englishLevel: "choose",
+      hobbies: "",
+      education: "choose",
+      workField: "choose",
+      favoriteGenres: "",
+      hatedGenres: "",
+    });
   };
 
   return (
@@ -91,7 +106,9 @@ export default function RegistrationMain() {
           <div>
             <Button type="submit">Next</Button>
             <Link to="/">
-              <Button type="button">Back</Button>
+              <Button type="button" onClick={handleBack}>
+                Back
+              </Button>
             </Link>
           </div>
         </form>
@@ -99,4 +116,3 @@ export default function RegistrationMain() {
     </>
   );
 }
-

@@ -1,9 +1,10 @@
 import InputText from "../../components/InputText";
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
+import ValidateError from "../../components/ValidateError";
 import { Link, useNavigate } from "react-router";
 import SelectRegister from "../../components/SelectRegister";
-import { useContext, ChangeEvent, FormEvent } from "react";
+import { useState, useContext, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
 
 interface SelectOption {
@@ -14,8 +15,9 @@ interface SelectOption {
 export default function RegistrationDetails() {
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
-  
+
   const { formData, updateFormData } = context;
+  const [emptyError, setEmptyError] = useState(false);
   const navigate = useNavigate();
 
   const engLevels: SelectOption[] = [
@@ -60,14 +62,22 @@ export default function RegistrationDetails() {
     { value: "other", text: "Other" },
   ];
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     updateFormData({ [name]: value } as Record<string, string>);
   };
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    navigate("/registrationPreferences");
+    if (formData.englishLevel == "choose") {
+      setEmptyError(true);
+      console.log("error");
+    } else {
+      setEmptyError(false);
+      navigate("/registrationPreferences");
+    }
   };
 
   return (
@@ -117,6 +127,9 @@ export default function RegistrationDetails() {
               onChange={handleChange}
               options={workFields}
             />
+            {emptyError && (
+              <ValidateError>Please fill in all required fields.</ValidateError>
+            )}
           </div>
           <div>
             <Button type="submit">Next</Button>
@@ -129,4 +142,3 @@ export default function RegistrationDetails() {
     </>
   );
 }
-
