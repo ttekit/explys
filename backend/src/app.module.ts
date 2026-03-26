@@ -4,7 +4,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from "./users/users.module";
-import { ContentsModule } from './contents/contents.module';
+import { TagsModule } from './tags/tags.module';
+import { CategoriesModule } from './categories/categories.module';
+import { TopicsModule } from './topics/topics.module';
 
 @Module({
     imports: [
@@ -14,6 +16,9 @@ import { ContentsModule } from './contents/contents.module';
         AuthModule,
         UsersModule,
         ContentsModule,
+        TagsModule,
+        CategoriesModule,
+        TopicsModule,
     ],
     controllers: [AppController],
     providers: [AppService],
