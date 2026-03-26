@@ -42,6 +42,7 @@ model Topic {
   language   String
 
   tags Tag[]
+  contentStats ContentStats[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,26 +1,55 @@
 model Content {
-    id Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-    friendlyLink String @map("friendly_link")
-    name         String
-    description  String
+  friendlyLink String @map("friendly_link")
+  name         String
+  description  String
 
-    category ContentMedia[]
+  category ContentMedia[]
 
-    createAt  DateTime @default(now()) @map("create_at")
-    updateAt DateTime @updatedAt @map("update_at")
+  createAt DateTime @default(now()) @map("create_at")
+  updateAt DateTime @updatedAt @map("update_at")
 
-    @@map("contents")
+  @@map("contents")
 }
 
 model ContentMedia {
-    id Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-    categoryId Int     @map("category_id")
-    category   Content @relation(fields: [categoryId], references: [id])
+  categoryId Int     @map("category_id")
+  category   Content @relation(fields: [categoryId], references: [id])
 
-    createAt  DateTime @default(now()) @map("create_at")
-    updateAt DateTime @updatedAt @map("update_at")
+  createAt DateTime @default(now()) @map("create_at")
+  updateAt DateTime @updatedAt @map("update_at")
 
-    @@map("content_media")
+  stats        ContentStats?
+  ContentVideo ContentVideo[]
+
+  @@map("content_medias")
+}
+
+model ContentStats {
+  id             Int          @id @default(autoincrement())
+  contentMediaId Int          @unique @map("content_media_id")
+  contentMedia   ContentMedia @relation(fields: [contentMediaId], references: [id])
+
+  usersWatched   Int          @default(0) @map("users_watched")
+  rating         Float        @default(0)
+
+  topics         Topic[]
+
+  @@map("content_stats")
+}
+
+model ContentVideo {
+  id Int @id @default(autoincrement())
+
+  contentId Int          @map("content_id")
+  content   ContentMedia @relation(fields: [contentId], references: [id])
+
+  videoLink        String  @map("video_link")
+  videoName        String  @map("video_name")
+  videoDescription String? @map("video_description")
+
+  @@map("content_videos")
 }
