@@ -13,12 +13,16 @@ export class UsersService {
         name: true,
         email: true,
         createdAt: true,
-        englishLevel: true,
-        hobbies: true,
-        education: true,
-        workField: true,
-        favoriteGenres: true,
-        hatedGenres: true,
+        additionalUserData: {
+            select: {
+                englishLevel: true,
+                hobbies: true,
+                education: true,
+                workField: true,
+                favoriteGenres: true,
+                hatedGenres: true,
+            }
+        }
     };
 
     async create(createUserDto: CreateUserDto) {
@@ -36,16 +40,20 @@ export class UsersService {
                 email,
                 password: hashedPassword,
                 name,
-                englishLevel,
-                hobbies: hobbies || [],
-                education,
-                workField,
-                favoriteGenres: favoriteGenres && favoriteGenres.length > 0 ? {
-                    connect: favoriteGenres.map(id => ({ id }))
-                } : undefined,
-                hatedGenres: hatedGenres && hatedGenres.length > 0 ? {
-                    connect: hatedGenres.map(id => ({ id }))
-                } : undefined,
+                additionalUserData: {
+                    create: {
+                        englishLevel,
+                        hobbies: hobbies || [],
+                        education,
+                        workField,
+                        favoriteGenres: favoriteGenres && favoriteGenres.length > 0 ? {
+                            connect: favoriteGenres.map(id => ({ id }))
+                        } : undefined,
+                        hatedGenres: hatedGenres && hatedGenres.length > 0 ? {
+                            connect: hatedGenres.map(id => ({ id }))
+                        } : undefined,
+                    }
+                }
             },
             select: this.userSelect,
         });
@@ -73,22 +81,48 @@ export class UsersService {
     async update(id: number, updateUserDto: UpdateUserDto) {
         await this.findOne(id);
 
-        const { favoriteGenres, hatedGenres, ...dataToUpdate } = updateUserDto;
+        const { favoriteGenres, hatedGenres, englishLevel, hobbies, education, workField, ...dataToUpdate } = updateUserDto as any;
 
         if (dataToUpdate.password) {
             dataToUpdate.password = await bcrypt.hash(dataToUpdate.password, 10);
         }
 
+        const hasAdditionalDataUpdate = englishLevel !== undefined || hobbies !== undefined || education !== undefined || workField !== undefined || favoriteGenres !== undefined || hatedGenres !== undefined;
+
         return this.prisma.user.update({
             where: { id },
             data: {
                 ...dataToUpdate,
-                favoriteGenres: favoriteGenres ? {
-                    set: favoriteGenres.map(genreId => ({ id: genreId }))
-                } : undefined,
-                hatedGenres: hatedGenres ? {
-                    set: hatedGenres.map(genreId => ({ id: genreId }))
-                } : undefined,
+                ...(hasAdditionalDataUpdate && {
+                    additionalUserData: {
+                        upsert: {
+                            create: {
+                                englishLevel,
+                                hobbies: hobbies || [],
+                                education,
+                                workField,
+                                favoriteGenres: favoriteGenres ? {
+                                    connect: favoriteGenres.map((genreId: number) => ({ id: genreId }))
+                                } : undefined,
+                                hatedGenres: hatedGenres ? {
+                                    connect: hatedGenres.map((genreId: number) => ({ id: genreId }))
+                                } : undefined,
+                            },
+                            update: {
+                                englishLevel,
+                                hobbies,
+                                education,
+                                workField,
+                                favoriteGenres: favoriteGenres ? {
+                                    set: favoriteGenres.map((genreId: number) => ({ id: genreId }))
+                                } : undefined,
+                                hatedGenres: hatedGenres ? {
+                                    set: hatedGenres.map((genreId: number) => ({ id: genreId }))
+                                } : undefined,
+                            }
+                        }
+                    }
+                })
             },
             select: this.userSelect,
         });

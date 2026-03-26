@@ -8,44 +8,62 @@ datasource db {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  name           String
-  email          String   @unique
-  password       String
-  createdAt      DateTime @default(now())
-  englishLevel   String?
-  hobbies        String[]
-  education      String?
-  workField      String?
-  favoriteGenres Genre[]  @relation("FavoriteGenres")
-  hatedGenres    Genre[]  @relation("HatedGenres")
+  id                 Int                 @id @default(autoincrement())
+  name               String
+  email              String              @unique
+  password           String
+  lastLogin          DateTime?
+  createdAt          DateTime            @default(now())
+  settings           UserSettings?
+
+  statistic          UserStatistic?
+  languageData       UserLanguageData[]
+  additionalUserData AdditionalUserData?
+  friends            UserFriend[]        @relation("UserFriends")
+  friendOf           UserFriend[]        @relation("UserFriendsReverse")
 
   @@map("users")
 }
 
+model AdditionalUserData {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id])
+  job            String?
+  education      String?
+  englishLevel   String?
+  workField      String?
+  hobbies        String[]
+  interests      String[]
+  selectedTopics Topic[]  @relation("SelectedTopics")
+  favoriteGenres Genre[]  @relation("FavoriteGenres")
+  hatedGenres    Genre[]  @relation("HatedGenres")
+
+  @@map("additional_user_data")
+}
+
 model Genre {
-  id          Int    @id @default(autoincrement())
-  name        String @unique
-  favoritedBy User[] @relation("FavoriteGenres")
-  hatedBy     User[] @relation("HatedGenres")
+  id          Int                  @id @default(autoincrement())
+  name        String               @unique
+  favoritedBy AdditionalUserData[] @relation("FavoriteGenres")
+  hatedBy     AdditionalUserData[] @relation("HatedGenres")
 
   @@map("genres")
 }
 
 model Topic {
-  id         Int      @id @default(autoincrement())
-  name       String
-  categoryId Int
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  complexity Float
-  language   String
-
-  tags Tag[]
+  id           Int                  @id @default(autoincrement())
+  name         String
+  categoryId   Int
+  category     Category             @relation(fields: [categoryId], references: [id])
+  complexity   Float
+  language     String
+  tags         Tag[]
   contentStats ContentStats[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  selectedBy   AdditionalUserData[] @relation("SelectedTopics")
+  languageData UserLanguageData[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 
   @@map("topics")
 }
@@ -64,4 +82,49 @@ model Tag {
   topics Topic[]
 
   @@map("tags")
+}
+
+model UserSettings {
+  id                Int     @id @default(autoincrement())
+  userId            Int     @unique
+  user              User    @relation(fields: [userId], references: [id])
+  currentResolution String?
+  playbackSpeed     Float?
+  studyingLanguage  String?
+
+  @@map("settings")
+}
+
+model UserStatistic {
+  id                  Int       @id @default(autoincrement())
+  userId              Int       @unique
+  user                User      @relation(fields: [userId], references: [id])
+  studyingProgress    Float?
+  lastLesson          DateTime?
+  isCurrentlyLearning Boolean   @default(false)
+  learnedAmount       Int       @default(0)
+
+  @@map("statistics")
+}
+
+model UserLanguageData {
+  id      Int   @id @default(autoincrement())
+  userId  Int
+  user    User  @relation(fields: [userId], references: [id])
+  topicId Int
+  topic   Topic @relation(fields: [topicId], references: [id])
+  score   Float
+
+  @@map("user_language_data")
+}
+
+model UserFriend {
+  id                    Int      @id @default(autoincrement())
+  userId                Int
+  user                  User     @relation("UserFriends", fields: [userId], references: [id])
+  friendId              Int
+  friend                User     @relation("UserFriendsReverse", fields: [friendId], references: [id])
+  friendshipCreatedDate DateTime @default(now())
+
+  @@map("user_friends")
 }

@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { create } from 'node:domain';
 
 @Injectable()
 export class AuthService {
@@ -28,16 +29,22 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         name: dto.name,
-        englishLevel: dto.englishLevel,
-        hobbies: dto.hobbies || [],
-        education: dto.education,
-        workField: dto.workField,
-        favoriteGenres: dto.favoriteGenres && dto.favoriteGenres.length > 0 ? {
-          connect: dto.favoriteGenres.map(id => ({ id }))
-        } : undefined,
-        hatedGenres: dto.hatedGenres && dto.hatedGenres.length > 0 ? {
-          connect: dto.hatedGenres.map(id => ({ id }))
-        } : undefined,
+        additionalUserData: {
+          create: {
+            englishLevel: dto.englishLevel,
+            education: dto.education,
+            hobbies: dto.hobbies || [],
+            workField: dto.workField,
+
+            favoriteGenres: dto.favoriteGenres && dto.favoriteGenres.length > 0 ? {
+              connect: dto.favoriteGenres.map(id => ({ id }))
+            } : undefined,
+            hatedGenres: dto.hatedGenres && dto.hatedGenres.length > 0 ? {
+              connect: dto.hatedGenres.map(id => ({ id }))
+            } : undefined,
+          },
+        },
+
       }
     });
 
