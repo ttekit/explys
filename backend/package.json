@@ -42,6 +42,7 @@
     "start": "nest start",
     "dev": "nest start --watch",
     "build": "nest build",
-    "test": "jest"
+    "test": "jest",
+    "postbuild": "xcopy /E /I /Y src\\generated dist\\generated"
   }
 }
