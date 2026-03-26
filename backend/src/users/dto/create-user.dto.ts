@@ -1,48 +1,40 @@
-import { IsString, IsEmail, MinLength, IsOptional, IsArray, IsNumber } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, IsNotEmpty, MinLength, IsOptional, IsArray, IsNumber } from 'class-validator';
 
 export class CreateUserDto {
-    @ApiProperty({ description: 'The first name of the user', example: 'John' })
-    @IsString()
-    name: string;
-
-    @ApiProperty({ description: 'The email address of the user', example: 'john.doe@example.com' })
     @IsEmail()
     email: string;
 
-    @ApiProperty({ description: 'The user\'s password (minimum 6 characters)', example: 'securepassword123' })
     @IsString()
-    @MinLength(6, { message: 'Password must be at least 6 characters long' })
+    @IsNotEmpty()
+    @MinLength(6)
     password: string;
 
-    @ApiProperty({ required: false })
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
     @IsOptional()
     @IsString()
     englishLevel?: string;
 
-    @ApiProperty({ required: false, type: [String], example: ['Reading', 'Gaming'] })
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
     hobbies?: string[];
 
-    @ApiProperty({ required: false })
     @IsOptional()
     @IsString()
     education?: string;
 
-    @ApiProperty({ required: false })
     @IsOptional()
     @IsString()
     workField?: string;
 
-    @ApiProperty({ required: false, type: [Number], example: [1, 2] })
     @IsOptional()
     @IsArray()
     @IsNumber({}, { each: true })
     favoriteGenres?: number[];
 
-    @ApiProperty({ required: false, type: [Number], example: [3, 4] })
     @IsOptional()
     @IsArray()
     @IsNumber({}, { each: true })
