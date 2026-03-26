@@ -8,7 +8,7 @@ import { RegistrationContext } from "./RegistrationContext";
 export default function RegistrationPreferences() {
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
-  
+
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
 
@@ -20,6 +20,28 @@ export default function RegistrationPreferences() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const { confirmPassword, favoriteGenres, hatedGenres, hobbies, englishLevel, education, workField, ...restData } = formData;
+
+    const formattedGenres = (str: string) => {
+      if (!str || str.trim() === "") return undefined;
+      return str.split(",").map((s) => Number(s.trim())).filter((n) => !isNaN(n));
+    };
+
+    const formattedHobbies = (str: string) => {
+      if (!str || str.trim() === "") return undefined;
+      return str.split(",").map((s) => s.trim()).filter((s) => s !== "");
+    };
+
+    const dataToSend = {
+      ...restData,
+      englishLevel: englishLevel === "choose" ? undefined : englishLevel,
+      education: education === "choose" ? undefined : education,
+      workField: workField === "choose" ? undefined : workField,
+      hobbies: formattedHobbies(hobbies),
+      favoriteGenres: formattedGenres(favoriteGenres),
+      hatedGenres: formattedGenres(hatedGenres),
+    };
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
@@ -28,7 +50,7 @@ export default function RegistrationPreferences() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(dataToSend),
         },
       );
 
@@ -87,4 +109,3 @@ export default function RegistrationPreferences() {
     </>
   );
 }
-
