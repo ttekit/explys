@@ -86,6 +86,7 @@ export default function RegistrationDetails() {
         <form
           className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
           onSubmit={handleNext}
+          tabIndex={0}
         >
           <div className="justify-start my-2">
             <p className="font-bold text-2xl m-0">Create an account</p>

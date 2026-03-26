@@ -20,16 +20,31 @@ export default function RegistrationPreferences() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const { confirmPassword, favoriteGenres, hatedGenres, hobbies, englishLevel, education, workField, ...restData } = formData;
+    const {
+      confirmPassword,
+      favoriteGenres,
+      hatedGenres,
+      hobbies,
+      englishLevel,
+      education,
+      workField,
+      ...restData
+    } = formData;
 
     const formattedGenres = (str: string) => {
       if (!str || str.trim() === "") return undefined;
-      return str.split(",").map((s) => Number(s.trim())).filter((n) => !isNaN(n));
+      return str
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !isNaN(n));
     };
 
     const formattedHobbies = (str: string) => {
       if (!str || str.trim() === "") return undefined;
-      return str.split(",").map((s) => s.trim()).filter((s) => s !== "");
+      return str
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s !== "");
     };
 
     const dataToSend = {
@@ -72,6 +87,7 @@ export default function RegistrationPreferences() {
         <form
           className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
           onSubmit={handleSubmit}
+          tabIndex={0}
         >
           <div className="justify-start my-2">
             <p className="font-bold text-2xl m-0">Create an account</p>
