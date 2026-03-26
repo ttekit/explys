@@ -97,7 +97,6 @@ export class UsersService {
     async remove(id: number) {
         await this.findOne(id);
 
-
         return this.prisma.user.delete({
             where: { id },
             select: this.userSelect,

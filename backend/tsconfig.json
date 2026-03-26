@@ -11,10 +11,8 @@
     "target": "es2024",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
-    "paths": {
-      "../src/generated/prisma": ["./src/generated/prisma/index.d.ts"],
-    },
+    "baseUrl": "./","paths": {
+    "@generated/*": ["src/generated/*"] },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -26,5 +24,5 @@
     // "noEmit": true,
     // "allowImportingTsExtensions": true
   },
-  "include": ["src/*/", "prisma/seed.ts"],
+  "include": ["src/**/*", "prisma/seed.ts"],
 }
