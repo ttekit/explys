@@ -5,6 +5,7 @@ import "./index.css";
 import RegistrationMain from "./pages/registration/RegistrationMain";
 import RegistrationDetails from "./pages/registration/RegistrationDetails";
 import RegistrationPreferences from "./pages/registration/RegistrationPreferences";
+import LoginForm from "./pages/login/LoginForm";
 import MainPage from "./pages/MainPage";
 import { RegistrationProvider } from "./pages/registration/RegistrationContext";
 
@@ -13,6 +14,7 @@ const router = createBrowserRouter([
   { path: "/registrationMain", element: <RegistrationMain /> },
   { path: "/registrationDetails", element: <RegistrationDetails /> },
   { path: "/registrationPreferences", element: <RegistrationPreferences /> },
+  { path: "/loginForm", element: <LoginForm /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
@@ -22,4 +24,3 @@ createRoot(document.getElementById("root")!).render(
     </RegistrationProvider>
   </StrictMode>,
 );
-
