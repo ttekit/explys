@@ -1,4 +1,4 @@
-import { IsString, IsEmail, MinLength, IsOptional, IsArray, IsNumber } from 'class-validator';
+import { IsString, IsEmail, MinLength, IsOptional, IsArray, IsNumber, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
@@ -47,4 +47,25 @@ export class RegisterDto {
   @IsArray()
   @IsNumber({}, { each: true })
   hatedGenres?: number[];
+
+  @ApiProperty({ required: false, example: 'uk' })
+  @IsOptional()
+  @IsString()
+  nativeLanguage?: string;
+
+  @ApiProperty({ required: false, type: [String], example: ['en', 'pl'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  knownLanguages?: string[];
+
+  @ApiProperty({
+    required: false,
+    type: [Object],
+    example: [{ language: 'en', level: 'B2' }, { language: 'de', level: 'A2' }],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  knownLanguageLevels?: Array<{ language: string; level: string }>;
 }

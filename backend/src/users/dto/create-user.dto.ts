@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsNotEmpty, MinLength, IsOptional, IsArray, IsNumber } from 'class-validator';
+import { IsEmail, IsString, IsNotEmpty, MinLength, IsOptional, IsArray, IsNumber, IsObject } from 'class-validator';
 
 export class CreateUserDto {
     @IsEmail()
@@ -39,4 +39,18 @@ export class CreateUserDto {
     @IsArray()
     @IsNumber({}, { each: true })
     hatedGenres?: number[];
+
+    @IsOptional()
+    @IsString()
+    nativeLanguage?: string;
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    knownLanguages?: string[];
+
+    @IsOptional()
+    @IsArray()
+    @IsObject({ each: true })
+    knownLanguageLevels?: Array<{ language: string; level: string }>;
 }

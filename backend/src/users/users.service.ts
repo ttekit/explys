@@ -3,12 +3,16 @@ import { PrismaService } from 'src/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { AlcorythmService } from '../alcorythm/alcorythm.service';
 
 @Injectable()
 export class UsersService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly alcorythmService: AlcorythmService,
+    ) { }
 
-    private userSelect = {
+    private readonly userSelect = {
         id: true,
         name: true,
         email: true,
@@ -16,47 +20,104 @@ export class UsersService {
         additionalUserData: {
             select: {
                 englishLevel: true,
+                nativeLanguage: true,
+                knownLanguages: true,
+                knownLanguageLevels: true,
                 hobbies: true,
                 education: true,
                 workField: true,
                 favoriteGenres: true,
                 hatedGenres: true,
-            }
-        }
+            },
+        },
     };
 
     async create(createUserDto: CreateUserDto) {
-        const { email, password, name, englishLevel, hobbies, education, workField, favoriteGenres, hatedGenres } = createUserDto;
+        const prisma = this.prisma as any;
+        const {
+            email,
+            password,
+            name,
+            englishLevel,
+            hobbies,
+            education,
+            workField,
+            favoriteGenres,
+            hatedGenres,
+            nativeLanguage,
+            knownLanguages,
+            knownLanguageLevels,
+        } = createUserDto;
+        const additionalDataPayload: any = {
+            englishLevel,
+            nativeLanguage,
+            knownLanguages: knownLanguages || [],
+            knownLanguageLevels,
+            hobbies: hobbies || [],
+            education,
+            workField,
+            favoriteGenres: favoriteGenres && favoriteGenres.length > 0 ? {
+                connect: favoriteGenres.map(id => ({ id }))
+            } : undefined,
+            hatedGenres: hatedGenres && hatedGenres.length > 0 ? {
+                connect: hatedGenres.map(id => ({ id }))
+            } : undefined,
+        };
 
-        const userExist = await this.prisma.user.findUnique({ where: { email } });
+        const userExist = await prisma.user.findUnique({ where: { email } });
         if (userExist) {
             throw new ConflictException('User with this email already exists');
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        return this.prisma.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-                name,
-                additionalUserData: {
-                    create: {
-                        englishLevel,
-                        hobbies: hobbies || [],
-                        education,
-                        workField,
-                        favoriteGenres: favoriteGenres && favoriteGenres.length > 0 ? {
-                            connect: favoriteGenres.map(id => ({ id }))
-                        } : undefined,
-                        hatedGenres: hatedGenres && hatedGenres.length > 0 ? {
-                            connect: hatedGenres.map(id => ({ id }))
-                        } : undefined,
-                    }
-                }
-            },
-            select: this.userSelect,
-        });
+        let created: any;
+        try {
+            created = await prisma.user.create({
+                data: {
+                    email,
+                    password: hashedPassword,
+                    name,
+                    additionalUserData: {
+                        create: additionalDataPayload,
+                    },
+                },
+                select: this.userSelect,
+            });
+        } catch (error: any) {
+            const message = String(error?.message ?? '');
+            if (message.includes('Unknown argument `knownLanguages`')) {
+                delete additionalDataPayload.knownLanguages;
+            }
+            if (message.includes('Unknown argument `knownLanguageLevels`')) {
+                delete additionalDataPayload.knownLanguageLevels;
+            }
+            if (message.includes('Unknown argument `knownLanguages`') || message.includes('Unknown argument `knownLanguageLevels`')) {
+                created = await prisma.user.create({
+                    data: {
+                        email,
+                        password: hashedPassword,
+                        name,
+                        additionalUserData: { create: additionalDataPayload },
+                    },
+                    select: this.userSelect,
+                });
+                await this.alcorythmService.analyzeUserLevel(created.id);
+                return created;
+            }
+
+            if (error?.code !== 'P2021') {
+                throw error;
+            }
+
+            created = await prisma.user.create({
+                data: { email, password: hashedPassword, name },
+                select: this.userSelect,
+            });
+        }
+
+        await this.alcorythmService.analyzeUserLevel(created.id);
+        return created;
     }
 
     async findAll() {
@@ -79,53 +140,101 @@ export class UsersService {
     }
 
     async update(id: number, updateUserDto: UpdateUserDto) {
+        const prisma = this.prisma as any;
         await this.findOne(id);
 
-        const { favoriteGenres, hatedGenres, englishLevel, hobbies, education, workField, ...dataToUpdate } = updateUserDto as any;
+        const {
+            favoriteGenres,
+            hatedGenres,
+            englishLevel,
+            hobbies,
+            education,
+            workField,
+            nativeLanguage,
+            knownLanguages,
+            knownLanguageLevels,
+            ...dataToUpdate
+        } = updateUserDto as any;
 
         if (dataToUpdate.password) {
             dataToUpdate.password = await bcrypt.hash(dataToUpdate.password, 10);
         }
 
-        const hasAdditionalDataUpdate = englishLevel !== undefined || hobbies !== undefined || education !== undefined || workField !== undefined || favoriteGenres !== undefined || hatedGenres !== undefined;
+        const hasProfileUpdate =
+            englishLevel !== undefined ||
+            hobbies !== undefined ||
+            education !== undefined ||
+            workField !== undefined ||
+            nativeLanguage !== undefined ||
+            knownLanguages !== undefined ||
+            knownLanguageLevels !== undefined ||
+            favoriteGenres !== undefined ||
+            hatedGenres !== undefined;
 
-        return this.prisma.user.update({
-            where: { id },
-            data: {
-                ...dataToUpdate,
-                ...(hasAdditionalDataUpdate && {
-                    additionalUserData: {
-                        upsert: {
-                            create: {
-                                englishLevel,
-                                hobbies: hobbies || [],
-                                education,
-                                workField,
-                                favoriteGenres: favoriteGenres ? {
-                                    connect: favoriteGenres.map((genreId: number) => ({ id: genreId }))
-                                } : undefined,
-                                hatedGenres: hatedGenres ? {
-                                    connect: hatedGenres.map((genreId: number) => ({ id: genreId }))
-                                } : undefined,
+        let updatedUser: any;
+        try {
+            updatedUser = await prisma.user.update({
+                where: { id },
+                data: {
+                    ...dataToUpdate,
+                    ...(hasProfileUpdate ? {
+                        additionalUserData: {
+                            upsert: {
+                                create: {
+                                    englishLevel,
+                                    nativeLanguage,
+                                    knownLanguages: knownLanguages || [],
+                                    knownLanguageLevels,
+                                    hobbies: hobbies || [],
+                                    education,
+                                    workField,
+                                    favoriteGenres: favoriteGenres ? {
+                                        connect: favoriteGenres.map((genreId: number) => ({ id: genreId }))
+                                    } : undefined,
+                                    hatedGenres: hatedGenres ? {
+                                        connect: hatedGenres.map((genreId: number) => ({ id: genreId }))
+                                    } : undefined,
+                                },
+                                update: {
+                                    englishLevel,
+                                    nativeLanguage,
+                                    knownLanguages,
+                                    knownLanguageLevels,
+                                    hobbies,
+                                    education,
+                                    workField,
+                                    favoriteGenres: favoriteGenres ? {
+                                        set: favoriteGenres.map((genreId: number) => ({ id: genreId }))
+                                    } : undefined,
+                                    hatedGenres: hatedGenres ? {
+                                        set: hatedGenres.map((genreId: number) => ({ id: genreId }))
+                                    } : undefined,
+                                },
                             },
-                            update: {
-                                englishLevel,
-                                hobbies,
-                                education,
-                                workField,
-                                favoriteGenres: favoriteGenres ? {
-                                    set: favoriteGenres.map((genreId: number) => ({ id: genreId }))
-                                } : undefined,
-                                hatedGenres: hatedGenres ? {
-                                    set: hatedGenres.map((genreId: number) => ({ id: genreId }))
-                                } : undefined,
-                            }
-                        }
-                    }
-                })
-            },
-            select: this.userSelect,
-        });
+                        },
+                    } : {}),
+                },
+                select: this.userSelect,
+            });
+        } catch (error: any) {
+            if (error?.code !== 'P2021') {
+                throw error;
+            }
+
+            updatedUser = await prisma.user.update({
+                where: { id },
+                data: {
+                    ...dataToUpdate,
+                },
+                select: this.userSelect,
+            });
+        }
+
+        if (hasProfileUpdate) {
+            await this.alcorythmService.analyzeUserLevel(id);
+        }
+
+        return updatedUser;
     }
 
     async remove(id: number) {

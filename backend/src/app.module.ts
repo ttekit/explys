@@ -11,6 +11,7 @@ import { ContentsModule } from "./contents/contents.module";
 import { ContentVideoModule } from "./content/content-video/content-video.module";
 import { ContentStatsModule } from "./content/content-stats/content-stats.module";
 import { ContentMediaModule } from "./content/content-media/content-media.module";
+import { AlcorythmModule } from "./alcorythm/alcorythm.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ContentMediaModule } from "./content/content-media/content-media.module
     ContentVideoModule,
     ContentStatsModule,
     ContentMediaModule,
+    AlcorythmModule,
     TagsModule,
     CategoriesModule,
     TopicsModule,
