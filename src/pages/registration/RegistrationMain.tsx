@@ -11,29 +11,79 @@ export default function RegistrationMain() {
   if (!context) throw new Error("RegistrationContext is not available");
 
   const { formData, updateFormData } = context;
-  const [emptyError, setEmptyError] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const isEmpty = [
-    formData.name,
-    formData.email,
-    formData.password,
-    formData.confirmPassword,
-  ].some((value) => value.trim() === "");
+  const isValidPasswordRegex: RegExp =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const validateField = (
+    value: string,
+    type: "password" | "email" | "other",
+  ) => {
+    if (type === "password") {
+      if (value.length < 8) {
+        setErrorText("Password must be at least 8 characters.");
+        return false;
+      }
+      if (!/[A-Z]/.test(value)) {
+        setErrorText("Password must contain at least one uppercase letter.");
+        return false;
+      }
+      if (!/[a-z]/.test(value)) {
+        setErrorText("Password must contain at least one lowercase letter.");
+        return false;
+      }
+      if (!/\d/.test(value)) {
+        setErrorText("Password must contain at least one number.");
+        return false;
+      }
+      if (!/[@$!%*?&]/.test(value)) {
+        setErrorText("Password must contain at least one special character.");
+        return false;
+      }
+    }
+
+    if (type === "email") {
+      if (!/^\S+@\S+\.\S+$/.test(value)) {
+        setErrorText("Invalid email format.");
+        return false;
+      }
+    }
+
+    if (type === "other") {
+      if (value.trim() === "") {
+        setErrorText("Please fill in all required fields.");
+        return false;
+      }
+    }
+
+    setErrorText(null);
+    return true;
+  };
+
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    type: "password" | "email" | "other",
+  ) => {
+    validateField(e.target.value, type);
     const { name, value } = e.target;
     updateFormData({ [name]: value } as Record<string, string>);
   };
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isEmpty) {
-      setEmptyError(false);
-      navigate("/registrationDetails");
+    if (
+      !formData.name ||
+      !formData.email ||
+      !/^\S+@\S+\.\S+$/.test(formData.email) ||
+      !formData.password ||
+      !isValidPasswordRegex.test(formData.password)
+    ) {
+      setErrorText("Please fill in all required fields correctly.");
     } else {
-      setEmptyError(true);
-      console.log("error");
+      setErrorText(null);
+      navigate("/registrationDetails");
     }
   };
 
@@ -72,7 +122,7 @@ export default function RegistrationMain() {
             <InputText
               name="name"
               value={formData.name}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "other")}
               type="text"
               placeholder="Username"
             />
@@ -80,7 +130,7 @@ export default function RegistrationMain() {
             <InputText
               name="email"
               value={formData.email}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "email")}
               type="email"
               placeholder="Email"
             />
@@ -88,7 +138,7 @@ export default function RegistrationMain() {
             <InputText
               name="password"
               value={formData.password}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "password")}
               type="password"
               placeholder="Create password"
             />
@@ -96,13 +146,11 @@ export default function RegistrationMain() {
             <InputText
               name="confirmPassword"
               value={formData.confirmPassword}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "password")}
               type="password"
               placeholder="Confirm password"
             />
-            {emptyError && (
-              <ValidateError>Please fill in all required fields.</ValidateError>
-            )}
+            {errorText && <ValidateError>{errorText}</ValidateError>}
           </div>
           <div>
             <Button type="submit">Next</Button>
