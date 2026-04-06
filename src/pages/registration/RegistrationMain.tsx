@@ -12,6 +12,9 @@ export default function RegistrationMain() {
 
   const { formData, updateFormData } = context;
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const navigate = useNavigate();
 
   const isValidPasswordRegex: RegExp =
@@ -135,21 +138,37 @@ export default function RegistrationMain() {
               placeholder="Email"
             />
             <LabelRegister isRequired={true}>Password</LabelRegister>
-            <InputText
-              name="password"
-              value={formData.password}
-              onChange={(e) => handleChange(e, "password")}
-              type="password"
-              placeholder="Create password"
-            />
+            <div className="flex">
+              <InputText
+                name="password"
+                value={formData.password}
+                onChange={(e) => handleChange(e, "password")}
+                type={showPassword ? "text" : "password"}
+                placeholder="Create password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
             <LabelRegister isRequired={true}>Confirm password</LabelRegister>
-            <InputText
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={(e) => handleChange(e, "password")}
-              type="password"
-              placeholder="Confirm password"
-            />
+            <div className="flex">
+              <InputText
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={(e) => handleChange(e, "password")}
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </button>
+            </div>
             {errorText && <ValidateError>{errorText}</ValidateError>}
           </div>
           <div>
