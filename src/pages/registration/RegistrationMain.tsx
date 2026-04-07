@@ -5,6 +5,7 @@ import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
 import { useContext, useState, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegistrationMain() {
   const context = useContext(RegistrationContext);
@@ -150,7 +151,11 @@ export default function RegistrationMain() {
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? (
+                  <EyeOff className="opacity-60 w-6 h-6 pl-1" />
+                ) : (
+                  <Eye className="opacity-60 w-6 h-6 pl-1" />
+                )}
               </button>
             </div>
             <LabelRegister isRequired={true}>Confirm password</LabelRegister>
@@ -166,7 +171,11 @@ export default function RegistrationMain() {
                 type="button"
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
               >
-                {showConfirmPassword ? "Hide" : "Show"}
+                {showConfirmPassword ? (
+                  <EyeOff className="opacity-60 w-6 h-6 pl-1" />
+                ) : (
+                  <Eye className="opacity-60 w-6 h-6 pl-1" />
+                )}
               </button>
             </div>
             {errorText && <ValidateError>{errorText}</ValidateError>}
@@ -177,6 +186,14 @@ export default function RegistrationMain() {
               <Button type="button" onClick={handleBack}>
                 Back
               </Button>
+            </Link>
+          </div>
+          <div className="flex flex-col items-center justify-center pt-2">
+            <p className="opacity-70">Already have an account?</p>
+            <Link to="/loginForm">
+              <p className="text-(--purple-default) font-semibold hover:text-(--purple-hover) transition duration-500 ease-in-out">
+                Sign in
+              </p>
             </Link>
           </div>
         </form>
