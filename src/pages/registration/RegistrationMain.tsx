@@ -5,35 +5,89 @@ import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
 import { useContext, useState, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegistrationMain() {
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
 
   const { formData, updateFormData } = context;
-  const [emptyError, setEmptyError] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const navigate = useNavigate();
 
-  const isEmpty = [
-    formData.name,
-    formData.email,
-    formData.password,
-    formData.confirmPassword,
-  ].some((value) => value.trim() === "");
+  const isValidPasswordRegex: RegExp =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const validateField = (
+    value: string,
+    type: "password" | "email" | "other",
+  ) => {
+    if (type === "password") {
+      if (value.length < 8) {
+        setErrorText("Password must be at least 8 characters.");
+        return false;
+      }
+      if (!/[A-Z]/.test(value)) {
+        setErrorText("Password must contain at least one uppercase letter.");
+        return false;
+      }
+      if (!/[a-z]/.test(value)) {
+        setErrorText("Password must contain at least one lowercase letter.");
+        return false;
+      }
+      if (!/\d/.test(value)) {
+        setErrorText("Password must contain at least one number.");
+        return false;
+      }
+      if (!/[@$!%*?&]/.test(value)) {
+        setErrorText("Password must contain at least one special character.");
+        return false;
+      }
+    }
+
+    if (type === "email") {
+      if (!/^\S+@\S+\.\S+$/.test(value)) {
+        setErrorText("Invalid email format.");
+        return false;
+      }
+    }
+
+    if (type === "other") {
+      if (value.trim() === "") {
+        setErrorText("Please fill in all required fields.");
+        return false;
+      }
+    }
+
+    setErrorText(null);
+    return true;
+  };
+
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    type: "password" | "email" | "other",
+  ) => {
+    validateField(e.target.value, type);
     const { name, value } = e.target;
     updateFormData({ [name]: value } as Record<string, string>);
   };
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isEmpty) {
-      setEmptyError(false);
-      navigate("/registrationDetails");
+    if (
+      !formData.name ||
+      !formData.email ||
+      !/^\S+@\S+\.\S+$/.test(formData.email) ||
+      !formData.password ||
+      !isValidPasswordRegex.test(formData.password)
+    ) {
+      setErrorText("Please fill in all required fields correctly.");
     } else {
-      setEmptyError(true);
-      console.log("error");
+      setErrorText(null);
+      navigate("/registrationDetails");
     }
   };
 
@@ -72,7 +126,7 @@ export default function RegistrationMain() {
             <InputText
               name="name"
               value={formData.name}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "other")}
               type="text"
               placeholder="Username"
             />
@@ -80,29 +134,51 @@ export default function RegistrationMain() {
             <InputText
               name="email"
               value={formData.email}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e, "email")}
               type="email"
               placeholder="Email"
             />
             <LabelRegister isRequired={true}>Password</LabelRegister>
-            <InputText
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              type="password"
-              placeholder="Create password"
-            />
+            <div className="flex">
+              <InputText
+                name="password"
+                value={formData.password}
+                onChange={(e) => handleChange(e, "password")}
+                type={showPassword ? "text" : "password"}
+                placeholder="Create password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? (
+                  <EyeOff className="opacity-60 w-6 h-6 pl-1" />
+                ) : (
+                  <Eye className="opacity-60 w-6 h-6 pl-1" />
+                )}
+              </button>
+            </div>
             <LabelRegister isRequired={true}>Confirm password</LabelRegister>
-            <InputText
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              type="password"
-              placeholder="Confirm password"
-            />
-            {emptyError && (
-              <ValidateError>Please fill in all required fields.</ValidateError>
-            )}
+            <div className="flex">
+              <InputText
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={(e) => handleChange(e, "password")}
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="opacity-60 w-6 h-6 pl-1" />
+                ) : (
+                  <Eye className="opacity-60 w-6 h-6 pl-1" />
+                )}
+              </button>
+            </div>
+            {errorText && <ValidateError>{errorText}</ValidateError>}
           </div>
           <div>
             <Button type="submit">Next</Button>
@@ -110,6 +186,14 @@ export default function RegistrationMain() {
               <Button type="button" onClick={handleBack}>
                 Back
               </Button>
+            </Link>
+          </div>
+          <div className="flex flex-col items-center justify-center pt-2">
+            <p className="opacity-70">Already have an account?</p>
+            <Link to="/loginForm">
+              <p className="text-(--purple-default) font-semibold hover:text-(--purple-hover) transition duration-500 ease-in-out">
+                Sign in
+              </p>
             </Link>
           </div>
         </form>

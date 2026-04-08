@@ -71,7 +71,7 @@ export default function RegistrationPreferences() {
 
       if (response.ok) {
         // const data = await response.json();
-        navigate("/login");
+        navigate("/loginForm");
       } else {
         const errorData = await response.json();
         console.error(errorData);

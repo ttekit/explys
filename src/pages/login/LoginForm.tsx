@@ -4,6 +4,7 @@ import LabelRegister from "../../components/LabelRegister";
 import ValidateError from "../../components/ValidateError";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginForm() {
   const [loginData, setLoginData] = useState({
@@ -11,6 +12,7 @@ export default function LoginForm() {
     password: "",
   });
   const [emptyError, setEmptyError] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const isEmpty = [loginData.email, loginData.password].some(
@@ -40,6 +42,7 @@ export default function LoginForm() {
 
         if (response.ok) {
           navigate("/");
+          console.log("Logged in");
         } else {
           const errorData = await response.json();
           console.error(errorData);
@@ -79,13 +82,25 @@ export default function LoginForm() {
               placeholder="Email"
             />
             <LabelRegister isRequired={true}>Password</LabelRegister>
-            <InputText
-              name="password"
-              value={loginData.password}
-              onChange={handleChange}
-              type="password"
-              placeholder="Create password"
-            />
+            <div className="flex">
+              <InputText
+                name="password"
+                value={loginData.password}
+                onChange={handleChange}
+                type={showPassword ? "text" : "password"}
+                placeholder="Create password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? (
+                  <EyeOff className="opacity-60 w-6 h-6 pl-1" />
+                ) : (
+                  <Eye className="opacity-60 w-6 h-6 pl-1" />
+                )}
+              </button>
+            </div>
             {emptyError && (
               <ValidateError>Please fill in all required fields.</ValidateError>
             )}
@@ -94,6 +109,14 @@ export default function LoginForm() {
             <Button type="submit">Login</Button>
             <Link to="/">
               <Button type="button">Back</Button>
+            </Link>
+          </div>
+          <div className="flex flex-col items-center justify-center pt-2">
+            <p className="opacity-70">Don't have an account?</p>
+            <Link to="/registrationMain">
+              <p className="text-(--purple-default) font-semibold hover:text-(--purple-hover) transition duration-500 ease-in-out">
+                Create one
+              </p>
             </Link>
           </div>
         </form>
