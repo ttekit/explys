@@ -39,20 +39,12 @@ export default function RegistrationPreferences() {
         .filter((n) => !isNaN(n));
     };
 
-    const formattedHobbies = (str: string) => {
-      if (!str || str.trim() === "") return undefined;
-      return str
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s !== "");
-    };
-
     const dataToSend = {
       ...restData,
       englishLevel: englishLevel === "choose" ? undefined : englishLevel,
       education: education === "choose" ? undefined : education,
       workField: workField === "choose" ? undefined : workField,
-      hobbies: formattedHobbies(hobbies),
+      hobbies: hobbies,
       favoriteGenres: formattedGenres(favoriteGenres),
       hatedGenres: formattedGenres(hatedGenres),
     };
