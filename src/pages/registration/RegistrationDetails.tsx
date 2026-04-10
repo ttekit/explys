@@ -1,4 +1,3 @@
-import InputText from "../../components/InputText";
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
 import ValidateError from "../../components/ValidateError";
@@ -6,6 +5,7 @@ import { Link, useNavigate } from "react-router";
 import SelectRegister from "../../components/SelectRegister";
 import { useState, useContext, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
+import Select from "react-select";
 
 interface SelectOption {
   value: string;
@@ -62,11 +62,45 @@ export default function RegistrationDetails() {
     { value: "other", text: "Other" },
   ];
 
+  const hobbyOptions: { value: string; label: string }[] = [
+    { value: "football", label: "Football" },
+    { value: "basketball", label: "Basketball" },
+    { value: "yoga", label: "Yoga" },
+    { value: "gym", label: "Gym & Fitness" },
+    { value: "swimming", label: "Swimming" },
+    { value: "cycling", label: "Cycling" },
+
+    { value: "painting", label: "Painting" },
+    { value: "photography", label: "Photography" },
+    { value: "music", label: "Music" },
+    { value: "dancing", label: "Dancing" },
+    { value: "cooking", label: "Cooking" },
+    { value: "writing", label: "Writing" },
+
+    { value: "gaming", label: "Gaming" },
+    { value: "coding", label: "Coding" },
+    { value: "cybersecurity", label: "Cybersecurity" },
+    { value: "design", label: "UI/UX Design" },
+
+    { value: "reading", label: "Reading" },
+    { value: "traveling", label: "Traveling" },
+    { value: "gardening", label: "Gardening" },
+    { value: "chess", label: "Chess" },
+    { value: "movies", label: "Movies & Cinema" },
+  ];
+
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     updateFormData({ [name]: value } as Record<string, string>);
+  };
+
+  const handleHobbyChange = (selectedOptions: any) => {
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
+    updateFormData({ hobbies: values } as any);
   };
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
@@ -105,12 +139,12 @@ export default function RegistrationDetails() {
             />
 
             <LabelRegister isRequired={false}>Hobbies:</LabelRegister>
-            <InputText
+            <Select
+              options={hobbyOptions}
+              isMulti
               name="hobbies"
-              value={formData.hobbies}
-              onChange={handleChange}
-              type="text"
-              placeholder="Select"
+              placeholder="Choose hobbies"
+              onChange={handleHobbyChange}
             />
 
             <LabelRegister isRequired={false}>Education:</LabelRegister>

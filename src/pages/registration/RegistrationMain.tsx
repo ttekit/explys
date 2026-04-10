@@ -98,11 +98,11 @@ export default function RegistrationMain() {
       password: "",
       confirmPassword: "",
       englishLevel: "choose",
-      hobbies: "",
+      hobbies: [],
       education: "choose",
       workField: "choose",
-      favoriteGenres: "",
-      hatedGenres: "",
+      favoriteGenres: [],
+      hatedGenres: [],
     });
   };
 

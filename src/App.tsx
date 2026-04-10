@@ -1,5 +1,4 @@
 import { Routes, Route } from "react-router";
-
 import { RegistrationProvider } from "./pages/registration/RegistrationContext";
 import MainPage from "./pages/MainPage";
 import RegistrationMain from "./pages/registration/RegistrationMain";
