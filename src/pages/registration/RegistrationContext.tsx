@@ -7,11 +7,11 @@ export interface FormData {
   password: string;
   confirmPassword: string;
   englishLevel: string;
-  hobbies: string;
+  hobbies: string[];
   education: string;
   workField: string;
-  favoriteGenres: string;
-  hatedGenres: string;
+  favoriteGenres: string[];
+  hatedGenres: string[];
 }
 
 interface RegistrationContextType {
@@ -19,24 +19,28 @@ interface RegistrationContextType {
   updateFormData: (newData: Partial<FormData>) => void;
 }
 
-export const RegistrationContext = createContext<RegistrationContextType | undefined>(undefined);
+export const RegistrationContext = createContext<
+  RegistrationContextType | undefined
+>(undefined);
 
 interface RegistrationProviderProps {
   children: ReactNode;
 }
 
-export const RegistrationProvider = ({ children }: RegistrationProviderProps) => {
+export const RegistrationProvider = ({
+  children,
+}: RegistrationProviderProps) => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     englishLevel: "choose",
-    hobbies: "",
+    hobbies: [],
     education: "choose",
     workField: "choose",
-    favoriteGenres: "",
-    hatedGenres: "",
+    favoriteGenres: [],
+    hatedGenres: [],
   });
 
   const updateFormData = (newData: Partial<FormData>) => {
@@ -49,4 +53,3 @@ export const RegistrationProvider = ({ children }: RegistrationProviderProps) =>
     </RegistrationContext.Provider>
   );
 };
-

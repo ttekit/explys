@@ -1,9 +1,9 @@
-import InputText from "../../components/InputText";
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
-import { useContext, ChangeEvent, FormEvent } from "react";
+import { useContext, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
+import Select from "react-select";
 
 export default function RegistrationPreferences() {
   const context = useContext(RegistrationContext);
@@ -12,9 +12,44 @@ export default function RegistrationPreferences() {
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    updateFormData({ [name]: value } as Record<string, string>);
+  const genreOptions: { value: string; label: string }[] = [
+    { value: "action", label: "Action" },
+    { value: "comedy", label: "Comedy" },
+    { value: "drama", label: "Drama" },
+    { value: "thriller", label: "Thriller" },
+    { value: "horror", label: "Horror" },
+
+    { value: "sci-fi", label: "Sci-Fi" },
+    { value: "fantasy", label: "Fantasy" },
+    { value: "adventure", label: "Adventure" },
+
+    { value: "romance", label: "Romance" },
+    { value: "family", label: "Family" },
+    { value: "animation", label: "Animation" },
+
+    { value: "mystery", label: "Mystery" },
+    { value: "crime", label: "Crime" },
+    { value: "documentary", label: "Documentary" },
+    { value: "biography", label: "Biography" },
+    { value: "historical", label: "Historical" },
+
+    { value: "western", label: "Western" },
+    { value: "musical", label: "Musical" },
+    { value: "noir", label: "Noir" },
+  ];
+
+  const handleFavoriteGenreChange = (selectedOptions: any) => {
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
+    updateFormData({ favoriteGenres: values } as any);
+  };
+
+  const handleHatedGenreChange = (selectedOptions: any) => {
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
+    updateFormData({ hatedGenres: values } as any);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -31,22 +66,14 @@ export default function RegistrationPreferences() {
       ...restData
     } = formData;
 
-    const formattedGenres = (str: string) => {
-      if (!str || str.trim() === "") return undefined;
-      return str
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !isNaN(n));
-    };
-
     const dataToSend = {
       ...restData,
       englishLevel: englishLevel === "choose" ? undefined : englishLevel,
       education: education === "choose" ? undefined : education,
       workField: workField === "choose" ? undefined : workField,
       hobbies: hobbies,
-      favoriteGenres: formattedGenres(favoriteGenres),
-      hatedGenres: formattedGenres(hatedGenres),
+      favoriteGenres: favoriteGenres,
+      hatedGenres: hatedGenres,
     };
 
     try {
@@ -90,20 +117,26 @@ export default function RegistrationPreferences() {
           </div>
           <div className="mb-1.5 flex flex-col">
             <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
-            <InputText
+            <Select
+              options={genreOptions}
+              isMulti
               name="favoriteGenres"
-              value={formData.favoriteGenres}
-              onChange={handleChange}
-              type="text"
-              placeholder="Select"
+              placeholder="Choose favotite genres"
+              onChange={handleFavoriteGenreChange}
+              value={genreOptions.filter((options: any) =>
+                formData.favoriteGenres?.includes(options.value),
+              )}
             />
             <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
-            <InputText
+            <Select
+              options={genreOptions}
+              isMulti
               name="hatedGenres"
-              value={formData.hatedGenres}
-              onChange={handleChange}
-              type="text"
-              placeholder="Select"
+              placeholder="Choose hated genres"
+              onChange={handleHatedGenreChange}
+              value={genreOptions.filter((options: any) =>
+                formData.hatedGenres?.includes(options.value),
+              )}
             />
           </div>
           <div>
