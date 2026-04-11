@@ -12,6 +12,8 @@ import { ContentVideoModule } from "./content/content-video/content-video.module
 import { ContentStatsModule } from "./content/content-stats/content-stats.module";
 import { ContentMediaModule } from "./content/content-media/content-media.module";
 import { AlcorythmModule } from "./alcorythm/alcorythm.module";
+import { Prisma } from "@generated/prisma/browser";
+import { PrismaService } from "./prisma.service";
 
 @Module({
   imports: [
@@ -30,6 +32,6 @@ import { AlcorythmModule } from "./alcorythm/alcorythm.module";
     TopicsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PrismaService],
 })
-export class AppModule {}
+export class AppModule { }
