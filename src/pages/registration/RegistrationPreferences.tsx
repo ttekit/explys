@@ -1,7 +1,7 @@
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
-import { useContext, FormEvent } from "react";
+import { useContext, FormEvent, useState, useEffect } from "react";
 import { RegistrationContext } from "./RegistrationContext";
 import Select from "react-select";
 
@@ -12,31 +12,32 @@ export default function RegistrationPreferences() {
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
 
-  const genreOptions: { value: string; label: string }[] = [
-    { value: "action", label: "Action" },
-    { value: "comedy", label: "Comedy" },
-    { value: "drama", label: "Drama" },
-    { value: "thriller", label: "Thriller" },
-    { value: "horror", label: "Horror" },
+  const [genreOptions, setGenreOptions] = useState<{ value: string; label: string }[]>([]);
 
-    { value: "sci-fi", label: "Sci-Fi" },
-    { value: "fantasy", label: "Fantasy" },
-    { value: "adventure", label: "Adventure" },
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/genres`);
 
-    { value: "romance", label: "Romance" },
-    { value: "family", label: "Family" },
-    { value: "animation", label: "Animation" },
+        if (response.ok) {
+          const data = await response.json();
 
-    { value: "mystery", label: "Mystery" },
-    { value: "crime", label: "Crime" },
-    { value: "documentary", label: "Documentary" },
-    { value: "biography", label: "Biography" },
-    { value: "historical", label: "Historical" },
+          const formattedOptions = data.map((genre: any) => ({
+            value: genre.id,
+            label: genre.name,
+          }));
 
-    { value: "western", label: "Western" },
-    { value: "musical", label: "Musical" },
-    { value: "noir", label: "Noir" },
-  ];
+          setGenreOptions(formattedOptions);
+        } else {
+          console.error("Failed to fetch genres");
+        }
+      } catch (error) {
+        console.error("Error fetching genres:", error);
+      }
+    };
+
+    fetchGenres();
+  }, []);
 
   const handleFavoriteGenreChange = (selectedOptions: any) => {
     const values = selectedOptions
@@ -89,7 +90,6 @@ export default function RegistrationPreferences() {
       );
 
       if (response.ok) {
-        // const data = await response.json();
         navigate("/loginForm");
       } else {
         const errorData = await response.json();
@@ -121,10 +121,10 @@ export default function RegistrationPreferences() {
               options={genreOptions}
               isMulti
               name="favoriteGenres"
-              placeholder="Choose favotite genres"
+              placeholder="Choose favorite genres"
               onChange={handleFavoriteGenreChange}
-              value={genreOptions.filter((options: any) =>
-                formData.favoriteGenres?.includes(options.value),
+              value={genreOptions.filter((option: any) =>
+                formData.favoriteGenres?.includes(option.value),
               )}
             />
             <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
@@ -134,8 +134,8 @@ export default function RegistrationPreferences() {
               name="hatedGenres"
               placeholder="Choose hated genres"
               onChange={handleHatedGenreChange}
-              value={genreOptions.filter((options: any) =>
-                formData.hatedGenres?.includes(options.value),
+              value={genreOptions.filter((option: any) =>
+                formData.hatedGenres?.includes(option.value),
               )}
             />
           </div>

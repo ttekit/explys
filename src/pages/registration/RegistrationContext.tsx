@@ -10,8 +10,8 @@ export interface FormData {
   hobbies: string[];
   education: string;
   workField: string;
-  favoriteGenres: string[];
-  hatedGenres: string[];
+  favoriteGenres: number[];
+  hatedGenres: number[];
 }
 
 interface RegistrationContextType {
