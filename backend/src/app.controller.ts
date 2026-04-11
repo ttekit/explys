@@ -1,19 +1,23 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PrismaService } from './prisma.service';
 
 @ApiTags('health')
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly prisma: PrismaService,
+  ) { }
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Welcome endpoint',
     description: 'Returns a welcome message with API documentation link'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Welcome message',
     schema: { example: 'Welcome to Eng Curses API! Visit http://localhost:4200/api for Swagger documentation.' }
   })
@@ -22,14 +26,14 @@ export class AppController {
   }
 
   @Get('status')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'API status',
     description: 'Returns current API status and version information'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'API status',
-    schema: { 
+    schema: {
       example: {
         status: 'ok',
         message: 'API is running',
@@ -43,14 +47,14 @@ export class AppController {
   }
 
   @Get('health')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Health check',
     description: 'Returns API health status and uptime'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Health check successful',
-    schema: { 
+    schema: {
       example: {
         health: 'healthy',
         uptime: 3600,
@@ -60,5 +64,19 @@ export class AppController {
   })
   getHealth(): object {
     return this.appService.getHealth();
+  }
+
+  @Get('genres')
+  @ApiOperation({
+    summary: 'Get all genres',
+    description: 'Returns a list of all available genres from the database'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of genres retrieved successfully.'
+  })
+  async getGenres() {
+
+    return this.prisma.genre.findMany();
   }
 }
