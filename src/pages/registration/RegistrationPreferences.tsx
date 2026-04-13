@@ -12,12 +12,16 @@ export default function RegistrationPreferences() {
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
 
-  const [genreOptions, setGenreOptions] = useState<{ value: string; label: string }[]>([]);
+  const [genreOptions, setGenreOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/genres`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/genres`,
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -143,6 +147,14 @@ export default function RegistrationPreferences() {
             <Button type="submit">Register</Button>
             <Link to="/registrationDetails">
               <Button type="button">Back</Button>
+            </Link>
+          </div>
+          <div className="flex flex-col items-center justify-center pt-2">
+            <p className="opacity-70">Already have an account?</p>
+            <Link to="/loginForm">
+              <p className="text-(--purple-default) font-semibold hover:text-(--purple-hover) transition duration-500 ease-in-out">
+                Sign in
+              </p>
             </Link>
           </div>
         </form>

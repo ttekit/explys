@@ -172,6 +172,14 @@ export default function RegistrationDetails() {
               <Button type="button">Back</Button>
             </Link>
           </div>
+          <div className="flex flex-col items-center justify-center pt-2">
+            <p className="opacity-70">Already have an account?</p>
+            <Link to="/loginForm">
+              <p className="text-(--purple-default) font-semibold hover:text-(--purple-hover) transition duration-500 ease-in-out">
+                Sign in
+              </p>
+            </Link>
+          </div>
         </form>
       </div>
     </>

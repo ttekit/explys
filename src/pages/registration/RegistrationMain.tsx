@@ -23,7 +23,7 @@ export default function RegistrationMain() {
 
   const validateField = (
     value: string,
-    type: "password" | "email" | "other",
+    type: "password" | "email" | "confirmPassword" | "other",
   ) => {
     if (type === "password") {
       if (value.length < 8) {
@@ -48,6 +48,13 @@ export default function RegistrationMain() {
       }
     }
 
+    if (type == "confirmPassword") {
+      if (value != formData.password) {
+        setErrorText("Passwords do not match.");
+        return false;
+      }
+    }
+
     if (type === "email") {
       if (!/^\S+@\S+\.\S+$/.test(value)) {
         setErrorText("Invalid email format.");
@@ -68,7 +75,7 @@ export default function RegistrationMain() {
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement>,
-    type: "password" | "email" | "other",
+    type: "password" | "email" | "confirmPassword" | "other",
   ) => {
     validateField(e.target.value, type);
     const { name, value } = e.target;
@@ -82,6 +89,7 @@ export default function RegistrationMain() {
       !formData.email ||
       !/^\S+@\S+\.\S+$/.test(formData.email) ||
       !formData.password ||
+      !formData.confirmPassword ||
       !isValidPasswordRegex.test(formData.password)
     ) {
       setErrorText("Please fill in all required fields correctly.");
@@ -163,7 +171,7 @@ export default function RegistrationMain() {
               <InputText
                 name="confirmPassword"
                 value={formData.confirmPassword}
-                onChange={(e) => handleChange(e, "password")}
+                onChange={(e) => handleChange(e, "confirmPassword")}
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm password"
               />
