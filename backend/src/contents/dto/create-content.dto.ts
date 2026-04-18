@@ -1,12 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateContentDto {
   @ApiProperty({ description: 'The name of the content' })
-  name: string;
+  @IsString()
+  @MinLength(2)
+  name!: string;
 
   @ApiProperty({ description: 'The friendly link for the content' })
-  friendlyLink: string;
+  @IsString()
+  friendlyLink!: string;
 
   @ApiProperty({ description: 'The description of the content' })
-  description: string;
+  @IsString()
+  @MaxLength(250)
+  description!: string;
 }

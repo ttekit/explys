@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
+import { CreateContentDto } from './dto/create-content.dto';
 
 @Injectable()
 export class ContentsService {
@@ -15,16 +16,16 @@ export class ContentsService {
         })
     }
 
-    updateContent(id: number, name: string, friendlyLink: string, description: string){
+    async updateContent(id: number, dto: CreateContentDto){
         return this.prisma.content.update({
             where: { id },
             data: {
-                name,
-                friendlyLink,
-                description,
+                ...dto,
             },
         })
     }
+
+
     deleteContent(id: number){
         return this.prisma.content.delete({
             where: { id }

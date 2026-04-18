@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ContentsService } from './contents.service';
 import { CreateContentDto } from './dto/create-content.dto';
 
@@ -20,6 +20,11 @@ export class ContentsController {
   createContent(@Body() dto: CreateContentDto ) {
     const {name, friendlyLink, description} = dto;
     return this.contentsService.createContent(name, friendlyLink, description);
+  }
+
+  @Patch(':id')
+  updateContent(@Param('id') id: string, @Body() dto: CreateContentDto){
+    return this.contentsService.updateContent(+id, dto);
   }
 
   @Delete('delete/:id') 
