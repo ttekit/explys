@@ -8,8 +8,8 @@ export default function ValidateError({ children }: ValidateErrorProps) {
   return (
     <>
       <div
-        className="bg-(--error-transparent) border-solid border-(--error-bright) border-[0.5px] rounded-[10px] w-full text-[14px]
-     text-(--error-bright) px-2 py-1 mt-1 max-w-56"
+        className="bg-(--error-transparent) border-solid border-(--error-bright) border-[0.5px] rounded-full w-full text-3md
+     text-(--error-bright) px-2 py-1 mt-1"
       >
         {children}
       </div>

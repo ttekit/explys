@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router";
 import SelectRegister from "../../components/SelectRegister";
 import { useState, useContext, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
-import Select from "react-select";
+import MultiSelect from "../../components/MultiSelect";
 
 interface SelectOption {
   value: string;
@@ -116,46 +116,53 @@ export default function RegistrationDetails() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-2">
         <form
-          className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
+          className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
           onSubmit={handleNext}
           tabIndex={0}
         >
-          <div className="justify-start my-2">
-            <p className="font-bold text-2xl m-0">Create an account</p>
+          <div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">
+              Create an account
+            </p>
             <div className="flex">
-              <p className="font-semibold m-0 pr-1">Account Credentials</p>
+              <p className="text-gray-500 mb-8">Account Credentials</p>
               <p>- Page 2</p>
             </div>
           </div>
           <div className="mb-1.5 flex flex-col">
-            <LabelRegister isRequired={true}>English level:</LabelRegister>
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={true}>English level:</LabelRegister>
+            </div>
             <SelectRegister
               name="englishLevel"
               value={formData.englishLevel}
               onChange={handleChange}
               options={engLevels}
             />
-
-            <LabelRegister isRequired={false}>Hobbies:</LabelRegister>
-            <Select
-              options={hobbyOptions}
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={false}>Hobbies:</LabelRegister>
+            </div>
+            <MultiSelect
               isMulti
               name="hobbies"
               placeholder="Choose hobbies"
+              options={hobbyOptions}
               onChange={handleHobbyChange}
             />
-
-            <LabelRegister isRequired={false}>Education:</LabelRegister>
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={false}>Education:</LabelRegister>
+            </div>
             <SelectRegister
               name="education"
               value={formData.education}
               onChange={handleChange}
               options={educationLevels}
             />
-
-            <LabelRegister isRequired={false}>Field of work:</LabelRegister>
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={false}>Field of work:</LabelRegister>
+            </div>
             <SelectRegister
               name="workField"
               value={formData.workField}
@@ -172,12 +179,10 @@ export default function RegistrationDetails() {
               <Button type="button">Back</Button>
             </Link>
           </div>
-          <div className="flex flex-col items-center justify-center pt-2">
+          <div className="mt-6 flex justify-center gap-4 text-gray-500 font-medium">
             <p className="opacity-70">Already have an account?</p>
             <Link to="/loginForm">
-              <p className="text-(--purple-default) font-semibold hover:text-(--purple-hover) transition duration-500 ease-in-out">
-                Sign in
-              </p>
+              <p className="text-[#7c66f5] hover:underline">Sign in</p>
             </Link>
           </div>
         </form>

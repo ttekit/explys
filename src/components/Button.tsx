@@ -4,13 +4,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
 }
 
+const styleClass: string =
+  "w-full py-2 mt-3 bg-(--purple-default) hover:bg-(--purple-hover) hover:cursor-pointer text-white rounded-full font-bold text-lg shadow-lg shadow-purple-200 transition-all";
+
 export default function Button({ children, ...props }: ButtonProps) {
   return (
     <>
-      <button
-        {...props}
-        className="bg-(--purple-default) text-white font-semibold rounded-[9px] px-5 cursor-pointer mx-1 hover:bg-(--purple-hover) transition duration-500 ease-in-out"
-      >
+      <button {...props} className={styleClass}>
         {children}
       </button>
     </>

@@ -58,22 +58,26 @@ export default function LoginForm() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-2">
         <form
-          className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
+          className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
           onSubmit={handleLogin}
           tabIndex={0}
         >
-          <div className="justify-center my-2">
-            <p className="font-bold text-2xl">Welcome back</p>
+          <div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">
+              Welcome back
+            </p>
             <div className="flex">
-              <p className="font-semibold pr-1">
+              <p className="text-gray-500 mb-8">
                 Sign in to continue learning!
               </p>
             </div>
           </div>
-          <div className="mb-1.5 flex flex-col w-fit">
-            <LabelRegister isRequired={true}>Email</LabelRegister>
+          <div className="space-y-2 flex flex-col">
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={true}>Email</LabelRegister>
+            </div>
             <InputText
               name="email"
               value={loginData.email}
@@ -81,7 +85,19 @@ export default function LoginForm() {
               type="email"
               placeholder="Email"
             />
-            <LabelRegister isRequired={true}>Password</LabelRegister>
+            <div className="flex flex-row justify-end">
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? (
+                  <EyeOff className="opacity-60 w-6 h-6 pr-1" />
+                ) : (
+                  <Eye className="opacity-60 w-6 h-6 pr-1s" />
+                )}
+              </button>
+              <LabelRegister isRequired={true}>Password</LabelRegister>
+            </div>
             <div className="flex">
               <InputText
                 name="password"
@@ -90,16 +106,6 @@ export default function LoginForm() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Create password"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? (
-                  <EyeOff className="opacity-60 w-6 h-6 pl-1" />
-                ) : (
-                  <Eye className="opacity-60 w-6 h-6 pl-1" />
-                )}
-              </button>
             </div>
             {emptyError && (
               <ValidateError>Please fill in all required fields.</ValidateError>
