@@ -28,12 +28,62 @@ export type Content = Prisma.ContentModel
  */
 export type ContentMedia = Prisma.ContentMediaModel
 /**
+ * Model ContentStats
+ * 
+ */
+export type ContentStats = Prisma.ContentStatsModel
+/**
+ * Model ContentVideo
+ * 
+ */
+export type ContentVideo = Prisma.ContentVideoModel
+/**
  * Model User
  * 
  */
 export type User = Prisma.UserModel
 /**
+ * Model AdditionalUserData
+ * 
+ */
+export type AdditionalUserData = Prisma.AdditionalUserDataModel
+/**
  * Model Genre
  * 
  */
 export type Genre = Prisma.GenreModel
+/**
+ * Model Topic
+ * 
+ */
+export type Topic = Prisma.TopicModel
+/**
+ * Model Category
+ * 
+ */
+export type Category = Prisma.CategoryModel
+/**
+ * Model Tag
+ * 
+ */
+export type Tag = Prisma.TagModel
+/**
+ * Model UserSettings
+ * 
+ */
+export type UserSettings = Prisma.UserSettingsModel
+/**
+ * Model UserStatistic
+ * 
+ */
+export type UserStatistic = Prisma.UserStatisticModel
+/**
+ * Model UserLanguageData
+ * 
+ */
+export type UserLanguageData = Prisma.UserLanguageDataModel
+/**
+ * Model UserFriend
+ * 
+ */
+export type UserFriend = Prisma.UserFriendModel

@@ -213,6 +213,8 @@ export type ContentMediaWhereInput = {
   createAt?: Prisma.DateTimeFilter<"ContentMedia"> | Date | string
   updateAt?: Prisma.DateTimeFilter<"ContentMedia"> | Date | string
   category?: Prisma.XOR<Prisma.ContentScalarRelationFilter, Prisma.ContentWhereInput>
+  stats?: Prisma.XOR<Prisma.ContentStatsNullableScalarRelationFilter, Prisma.ContentStatsWhereInput> | null
+  ContentVideo?: Prisma.ContentVideoListRelationFilter
 }
 
 export type ContentMediaOrderByWithRelationInput = {
@@ -221,6 +223,8 @@ export type ContentMediaOrderByWithRelationInput = {
   createAt?: Prisma.SortOrder
   updateAt?: Prisma.SortOrder
   category?: Prisma.ContentOrderByWithRelationInput
+  stats?: Prisma.ContentStatsOrderByWithRelationInput
+  ContentVideo?: Prisma.ContentVideoOrderByRelationAggregateInput
 }
 
 export type ContentMediaWhereUniqueInput = Prisma.AtLeast<{
@@ -232,6 +236,8 @@ export type ContentMediaWhereUniqueInput = Prisma.AtLeast<{
   createAt?: Prisma.DateTimeFilter<"ContentMedia"> | Date | string
   updateAt?: Prisma.DateTimeFilter<"ContentMedia"> | Date | string
   category?: Prisma.XOR<Prisma.ContentScalarRelationFilter, Prisma.ContentWhereInput>
+  stats?: Prisma.XOR<Prisma.ContentStatsNullableScalarRelationFilter, Prisma.ContentStatsWhereInput> | null
+  ContentVideo?: Prisma.ContentVideoListRelationFilter
 }, "id">
 
 export type ContentMediaOrderByWithAggregationInput = {
@@ -260,6 +266,8 @@ export type ContentMediaCreateInput = {
   createAt?: Date | string
   updateAt?: Date | string
   category: Prisma.ContentCreateNestedOneWithoutCategoryInput
+  stats?: Prisma.ContentStatsCreateNestedOneWithoutContentMediaInput
+  ContentVideo?: Prisma.ContentVideoCreateNestedManyWithoutContentInput
 }
 
 export type ContentMediaUncheckedCreateInput = {
@@ -267,12 +275,16 @@ export type ContentMediaUncheckedCreateInput = {
   categoryId: number
   createAt?: Date | string
   updateAt?: Date | string
+  stats?: Prisma.ContentStatsUncheckedCreateNestedOneWithoutContentMediaInput
+  ContentVideo?: Prisma.ContentVideoUncheckedCreateNestedManyWithoutContentInput
 }
 
 export type ContentMediaUpdateInput = {
   createAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.ContentUpdateOneRequiredWithoutCategoryNestedInput
+  stats?: Prisma.ContentStatsUpdateOneWithoutContentMediaNestedInput
+  ContentVideo?: Prisma.ContentVideoUpdateManyWithoutContentNestedInput
 }
 
 export type ContentMediaUncheckedUpdateInput = {
@@ -280,6 +292,8 @@ export type ContentMediaUncheckedUpdateInput = {
   categoryId?: Prisma.IntFieldUpdateOperationsInput | number
   createAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stats?: Prisma.ContentStatsUncheckedUpdateOneWithoutContentMediaNestedInput
+  ContentVideo?: Prisma.ContentVideoUncheckedUpdateManyWithoutContentNestedInput
 }
 
 export type ContentMediaCreateManyInput = {
@@ -342,6 +356,11 @@ export type ContentMediaSumOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
 }
 
+export type ContentMediaScalarRelationFilter = {
+  is?: Prisma.ContentMediaWhereInput
+  isNot?: Prisma.ContentMediaWhereInput
+}
+
 export type ContentMediaCreateNestedManyWithoutCategoryInput = {
   create?: Prisma.XOR<Prisma.ContentMediaCreateWithoutCategoryInput, Prisma.ContentMediaUncheckedCreateWithoutCategoryInput> | Prisma.ContentMediaCreateWithoutCategoryInput[] | Prisma.ContentMediaUncheckedCreateWithoutCategoryInput[]
   connectOrCreate?: Prisma.ContentMediaCreateOrConnectWithoutCategoryInput | Prisma.ContentMediaCreateOrConnectWithoutCategoryInput[]
@@ -384,15 +403,47 @@ export type ContentMediaUncheckedUpdateManyWithoutCategoryNestedInput = {
   deleteMany?: Prisma.ContentMediaScalarWhereInput | Prisma.ContentMediaScalarWhereInput[]
 }
 
+export type ContentMediaCreateNestedOneWithoutStatsInput = {
+  create?: Prisma.XOR<Prisma.ContentMediaCreateWithoutStatsInput, Prisma.ContentMediaUncheckedCreateWithoutStatsInput>
+  connectOrCreate?: Prisma.ContentMediaCreateOrConnectWithoutStatsInput
+  connect?: Prisma.ContentMediaWhereUniqueInput
+}
+
+export type ContentMediaUpdateOneRequiredWithoutStatsNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentMediaCreateWithoutStatsInput, Prisma.ContentMediaUncheckedCreateWithoutStatsInput>
+  connectOrCreate?: Prisma.ContentMediaCreateOrConnectWithoutStatsInput
+  upsert?: Prisma.ContentMediaUpsertWithoutStatsInput
+  connect?: Prisma.ContentMediaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContentMediaUpdateToOneWithWhereWithoutStatsInput, Prisma.ContentMediaUpdateWithoutStatsInput>, Prisma.ContentMediaUncheckedUpdateWithoutStatsInput>
+}
+
+export type ContentMediaCreateNestedOneWithoutContentVideoInput = {
+  create?: Prisma.XOR<Prisma.ContentMediaCreateWithoutContentVideoInput, Prisma.ContentMediaUncheckedCreateWithoutContentVideoInput>
+  connectOrCreate?: Prisma.ContentMediaCreateOrConnectWithoutContentVideoInput
+  connect?: Prisma.ContentMediaWhereUniqueInput
+}
+
+export type ContentMediaUpdateOneRequiredWithoutContentVideoNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentMediaCreateWithoutContentVideoInput, Prisma.ContentMediaUncheckedCreateWithoutContentVideoInput>
+  connectOrCreate?: Prisma.ContentMediaCreateOrConnectWithoutContentVideoInput
+  upsert?: Prisma.ContentMediaUpsertWithoutContentVideoInput
+  connect?: Prisma.ContentMediaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContentMediaUpdateToOneWithWhereWithoutContentVideoInput, Prisma.ContentMediaUpdateWithoutContentVideoInput>, Prisma.ContentMediaUncheckedUpdateWithoutContentVideoInput>
+}
+
 export type ContentMediaCreateWithoutCategoryInput = {
   createAt?: Date | string
   updateAt?: Date | string
+  stats?: Prisma.ContentStatsCreateNestedOneWithoutContentMediaInput
+  ContentVideo?: Prisma.ContentVideoCreateNestedManyWithoutContentInput
 }
 
 export type ContentMediaUncheckedCreateWithoutCategoryInput = {
   id?: number
   createAt?: Date | string
   updateAt?: Date | string
+  stats?: Prisma.ContentStatsUncheckedCreateNestedOneWithoutContentMediaInput
+  ContentVideo?: Prisma.ContentVideoUncheckedCreateNestedManyWithoutContentInput
 }
 
 export type ContentMediaCreateOrConnectWithoutCategoryInput = {
@@ -431,6 +482,98 @@ export type ContentMediaScalarWhereInput = {
   updateAt?: Prisma.DateTimeFilter<"ContentMedia"> | Date | string
 }
 
+export type ContentMediaCreateWithoutStatsInput = {
+  createAt?: Date | string
+  updateAt?: Date | string
+  category: Prisma.ContentCreateNestedOneWithoutCategoryInput
+  ContentVideo?: Prisma.ContentVideoCreateNestedManyWithoutContentInput
+}
+
+export type ContentMediaUncheckedCreateWithoutStatsInput = {
+  id?: number
+  categoryId: number
+  createAt?: Date | string
+  updateAt?: Date | string
+  ContentVideo?: Prisma.ContentVideoUncheckedCreateNestedManyWithoutContentInput
+}
+
+export type ContentMediaCreateOrConnectWithoutStatsInput = {
+  where: Prisma.ContentMediaWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentMediaCreateWithoutStatsInput, Prisma.ContentMediaUncheckedCreateWithoutStatsInput>
+}
+
+export type ContentMediaUpsertWithoutStatsInput = {
+  update: Prisma.XOR<Prisma.ContentMediaUpdateWithoutStatsInput, Prisma.ContentMediaUncheckedUpdateWithoutStatsInput>
+  create: Prisma.XOR<Prisma.ContentMediaCreateWithoutStatsInput, Prisma.ContentMediaUncheckedCreateWithoutStatsInput>
+  where?: Prisma.ContentMediaWhereInput
+}
+
+export type ContentMediaUpdateToOneWithWhereWithoutStatsInput = {
+  where?: Prisma.ContentMediaWhereInput
+  data: Prisma.XOR<Prisma.ContentMediaUpdateWithoutStatsInput, Prisma.ContentMediaUncheckedUpdateWithoutStatsInput>
+}
+
+export type ContentMediaUpdateWithoutStatsInput = {
+  createAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  category?: Prisma.ContentUpdateOneRequiredWithoutCategoryNestedInput
+  ContentVideo?: Prisma.ContentVideoUpdateManyWithoutContentNestedInput
+}
+
+export type ContentMediaUncheckedUpdateWithoutStatsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  createAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ContentVideo?: Prisma.ContentVideoUncheckedUpdateManyWithoutContentNestedInput
+}
+
+export type ContentMediaCreateWithoutContentVideoInput = {
+  createAt?: Date | string
+  updateAt?: Date | string
+  category: Prisma.ContentCreateNestedOneWithoutCategoryInput
+  stats?: Prisma.ContentStatsCreateNestedOneWithoutContentMediaInput
+}
+
+export type ContentMediaUncheckedCreateWithoutContentVideoInput = {
+  id?: number
+  categoryId: number
+  createAt?: Date | string
+  updateAt?: Date | string
+  stats?: Prisma.ContentStatsUncheckedCreateNestedOneWithoutContentMediaInput
+}
+
+export type ContentMediaCreateOrConnectWithoutContentVideoInput = {
+  where: Prisma.ContentMediaWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentMediaCreateWithoutContentVideoInput, Prisma.ContentMediaUncheckedCreateWithoutContentVideoInput>
+}
+
+export type ContentMediaUpsertWithoutContentVideoInput = {
+  update: Prisma.XOR<Prisma.ContentMediaUpdateWithoutContentVideoInput, Prisma.ContentMediaUncheckedUpdateWithoutContentVideoInput>
+  create: Prisma.XOR<Prisma.ContentMediaCreateWithoutContentVideoInput, Prisma.ContentMediaUncheckedCreateWithoutContentVideoInput>
+  where?: Prisma.ContentMediaWhereInput
+}
+
+export type ContentMediaUpdateToOneWithWhereWithoutContentVideoInput = {
+  where?: Prisma.ContentMediaWhereInput
+  data: Prisma.XOR<Prisma.ContentMediaUpdateWithoutContentVideoInput, Prisma.ContentMediaUncheckedUpdateWithoutContentVideoInput>
+}
+
+export type ContentMediaUpdateWithoutContentVideoInput = {
+  createAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  category?: Prisma.ContentUpdateOneRequiredWithoutCategoryNestedInput
+  stats?: Prisma.ContentStatsUpdateOneWithoutContentMediaNestedInput
+}
+
+export type ContentMediaUncheckedUpdateWithoutContentVideoInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  createAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stats?: Prisma.ContentStatsUncheckedUpdateOneWithoutContentMediaNestedInput
+}
+
 export type ContentMediaCreateManyCategoryInput = {
   id?: number
   createAt?: Date | string
@@ -440,12 +583,16 @@ export type ContentMediaCreateManyCategoryInput = {
 export type ContentMediaUpdateWithoutCategoryInput = {
   createAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stats?: Prisma.ContentStatsUpdateOneWithoutContentMediaNestedInput
+  ContentVideo?: Prisma.ContentVideoUpdateManyWithoutContentNestedInput
 }
 
 export type ContentMediaUncheckedUpdateWithoutCategoryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   createAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stats?: Prisma.ContentStatsUncheckedUpdateOneWithoutContentMediaNestedInput
+  ContentVideo?: Prisma.ContentVideoUncheckedUpdateManyWithoutContentNestedInput
 }
 
 export type ContentMediaUncheckedUpdateManyWithoutCategoryInput = {
@@ -455,6 +602,35 @@ export type ContentMediaUncheckedUpdateManyWithoutCategoryInput = {
 }
 
 
+/**
+ * Count Type ContentMediaCountOutputType
+ */
+
+export type ContentMediaCountOutputType = {
+  ContentVideo: number
+}
+
+export type ContentMediaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  ContentVideo?: boolean | ContentMediaCountOutputTypeCountContentVideoArgs
+}
+
+/**
+ * ContentMediaCountOutputType without action
+ */
+export type ContentMediaCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContentMediaCountOutputType
+   */
+  select?: Prisma.ContentMediaCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ContentMediaCountOutputType without action
+ */
+export type ContentMediaCountOutputTypeCountContentVideoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ContentVideoWhereInput
+}
+
 
 export type ContentMediaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -462,6 +638,9 @@ export type ContentMediaSelect<ExtArgs extends runtime.Types.Extensions.Internal
   createAt?: boolean
   updateAt?: boolean
   category?: boolean | Prisma.ContentDefaultArgs<ExtArgs>
+  stats?: boolean | Prisma.ContentMedia$statsArgs<ExtArgs>
+  ContentVideo?: boolean | Prisma.ContentMedia$ContentVideoArgs<ExtArgs>
+  _count?: boolean | Prisma.ContentMediaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contentMedia"]>
 
 export type ContentMediaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -490,6 +669,9 @@ export type ContentMediaSelectScalar = {
 export type ContentMediaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "categoryId" | "createAt" | "updateAt", ExtArgs["result"]["contentMedia"]>
 export type ContentMediaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.ContentDefaultArgs<ExtArgs>
+  stats?: boolean | Prisma.ContentMedia$statsArgs<ExtArgs>
+  ContentVideo?: boolean | Prisma.ContentMedia$ContentVideoArgs<ExtArgs>
+  _count?: boolean | Prisma.ContentMediaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ContentMediaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.ContentDefaultArgs<ExtArgs>
@@ -502,6 +684,8 @@ export type $ContentMediaPayload<ExtArgs extends runtime.Types.Extensions.Intern
   name: "ContentMedia"
   objects: {
     category: Prisma.$ContentPayload<ExtArgs>
+    stats: Prisma.$ContentStatsPayload<ExtArgs> | null
+    ContentVideo: Prisma.$ContentVideoPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -903,6 +1087,8 @@ readonly fields: ContentMediaFieldRefs;
 export interface Prisma__ContentMediaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   category<T extends Prisma.ContentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentDefaultArgs<ExtArgs>>): Prisma.Prisma__ContentClient<runtime.Types.Result.GetResult<Prisma.$ContentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  stats<T extends Prisma.ContentMedia$statsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentMedia$statsArgs<ExtArgs>>): Prisma.Prisma__ContentStatsClient<runtime.Types.Result.GetResult<Prisma.$ContentStatsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  ContentVideo<T extends Prisma.ContentMedia$ContentVideoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentMedia$ContentVideoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentVideoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1334,6 +1520,49 @@ export type ContentMediaDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many ContentMedias to delete.
    */
   limit?: number
+}
+
+/**
+ * ContentMedia.stats
+ */
+export type ContentMedia$statsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContentStats
+   */
+  select?: Prisma.ContentStatsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ContentStats
+   */
+  omit?: Prisma.ContentStatsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContentStatsInclude<ExtArgs> | null
+  where?: Prisma.ContentStatsWhereInput
+}
+
+/**
+ * ContentMedia.ContentVideo
+ */
+export type ContentMedia$ContentVideoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContentVideo
+   */
+  select?: Prisma.ContentVideoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ContentVideo
+   */
+  omit?: Prisma.ContentVideoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContentVideoInclude<ExtArgs> | null
+  where?: Prisma.ContentVideoWhereInput
+  orderBy?: Prisma.ContentVideoOrderByWithRelationInput | Prisma.ContentVideoOrderByWithRelationInput[]
+  cursor?: Prisma.ContentVideoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ContentVideoScalarFieldEnum | Prisma.ContentVideoScalarFieldEnum[]
 }
 
 /**

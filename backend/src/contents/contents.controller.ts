@@ -1,6 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ContentsService } from './contents.service';
 import { CreateContentDto } from './dto/create-content.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Multer } from 'multer';
+import { Express } from 'express';
+import { UpdateContentDto } from './dto/update-content.dto';
 
 @Controller('contents')
 export class ContentsController {
@@ -16,15 +20,28 @@ export class ContentsController {
     return this.contentsService.getContentById(id);
   }
 
-  @Post()
-  createContent(@Body() dto: CreateContentDto ) {
-    const {name, friendlyLink, description} = dto;
-    return this.contentsService.createContent(name, friendlyLink, description);
+  @Post('create')
+  @UseInterceptors(FileInterceptor('file'))
+  async createContent(
+    @Body() createContentDto: CreateContentDto,
+    @UploadedFile(
+    new ParseFilePipe({
+      validators: [
+        new MaxFileSizeValidator({maxSize: 1024 * 1024 * 5}),
+        new FileTypeValidator({fileType: 'video/mp4'}),
+      ]
+    })
+  ) file: Express.Multer.File){
+    await this.contentsService.createContent(createContentDto, file);
   }
 
   @Patch(':id')
-  updateContent(@Param('id') id: string, @Body() dto: CreateContentDto){
-    return this.contentsService.updateContent(+id, dto);
+  @UseInterceptors(FileInterceptor('file'))
+  updateContent(
+    @Param('id') id: string, 
+    @Body() dto: UpdateContentDto, 
+    @UploadedFile() file?: Express.Multer.File){
+      return this.contentsService.updateContent(+id, dto, file);
   }
 
   @Delete('delete/:id') 

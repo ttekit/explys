@@ -5,14 +5,15 @@ export class CreateContentDto {
   @ApiProperty({ description: 'The name of the content' })
   @IsString()
   @MinLength(2)
-  name!: string;
+  @MaxLength(100, {message: "The maximum number of characters is 100"})
+  name: string;
 
   @ApiProperty({ description: 'The friendly link for the content' })
   @IsString()
-  friendlyLink!: string;
+  friendlyLink: string;
 
   @ApiProperty({ description: 'The description of the content' })
   @IsString()
   @MaxLength(250)
-  description!: string;
+  description: string;
 }

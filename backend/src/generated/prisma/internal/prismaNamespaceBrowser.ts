@@ -53,8 +53,18 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Content: 'Content',
   ContentMedia: 'ContentMedia',
+  ContentStats: 'ContentStats',
+  ContentVideo: 'ContentVideo',
   User: 'User',
-  Genre: 'Genre'
+  AdditionalUserData: 'AdditionalUserData',
+  Genre: 'Genre',
+  Topic: 'Topic',
+  Category: 'Category',
+  Tag: 'Tag',
+  UserSettings: 'UserSettings',
+  UserStatistic: 'UserStatistic',
+  UserLanguageData: 'UserLanguageData',
+  UserFriend: 'UserFriend'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -95,19 +105,54 @@ export const ContentMediaScalarFieldEnum = {
 export type ContentMediaScalarFieldEnum = (typeof ContentMediaScalarFieldEnum)[keyof typeof ContentMediaScalarFieldEnum]
 
 
+export const ContentStatsScalarFieldEnum = {
+  id: 'id',
+  contentMediaId: 'contentMediaId',
+  usersWatched: 'usersWatched',
+  rating: 'rating'
+} as const
+
+export type ContentStatsScalarFieldEnum = (typeof ContentStatsScalarFieldEnum)[keyof typeof ContentStatsScalarFieldEnum]
+
+
+export const ContentVideoScalarFieldEnum = {
+  id: 'id',
+  contentId: 'contentId',
+  videoLink: 'videoLink',
+  videoName: 'videoName',
+  videoDescription: 'videoDescription'
+} as const
+
+export type ContentVideoScalarFieldEnum = (typeof ContentVideoScalarFieldEnum)[keyof typeof ContentVideoScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
   password: 'password',
-  createdAt: 'createdAt',
-  englishLevel: 'englishLevel',
-  hobbies: 'hobbies',
-  education: 'education',
-  workField: 'workField'
+  lastLogin: 'lastLogin',
+  createdAt: 'createdAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const AdditionalUserDataScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  nativeLanguage: 'nativeLanguage',
+  knownLanguages: 'knownLanguages',
+  knownLanguageLevels: 'knownLanguageLevels',
+  job: 'job',
+  education: 'education',
+  englishLevel: 'englishLevel',
+  workField: 'workField',
+  hobbies: 'hobbies',
+  interests: 'interests'
+} as const
+
+export type AdditionalUserDataScalarFieldEnum = (typeof AdditionalUserDataScalarFieldEnum)[keyof typeof AdditionalUserDataScalarFieldEnum]
 
 
 export const GenreScalarFieldEnum = {
@@ -118,12 +163,96 @@ export const GenreScalarFieldEnum = {
 export type GenreScalarFieldEnum = (typeof GenreScalarFieldEnum)[keyof typeof GenreScalarFieldEnum]
 
 
+export const TopicScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  categoryId: 'categoryId',
+  complexity: 'complexity',
+  language: 'language',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TopicScalarFieldEnum = (typeof TopicScalarFieldEnum)[keyof typeof TopicScalarFieldEnum]
+
+
+export const CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name'
+} as const
+
+export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
+
+
+export const TagScalarFieldEnum = {
+  id: 'id',
+  name: 'name'
+} as const
+
+export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagScalarFieldEnum]
+
+
+export const UserSettingsScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  currentResolution: 'currentResolution',
+  playbackSpeed: 'playbackSpeed',
+  studyingLanguage: 'studyingLanguage'
+} as const
+
+export type UserSettingsScalarFieldEnum = (typeof UserSettingsScalarFieldEnum)[keyof typeof UserSettingsScalarFieldEnum]
+
+
+export const UserStatisticScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  studyingProgress: 'studyingProgress',
+  lastLesson: 'lastLesson',
+  isCurrentlyLearning: 'isCurrentlyLearning',
+  learnedAmount: 'learnedAmount'
+} as const
+
+export type UserStatisticScalarFieldEnum = (typeof UserStatisticScalarFieldEnum)[keyof typeof UserStatisticScalarFieldEnum]
+
+
+export const UserLanguageDataScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  topicId: 'topicId',
+  score: 'score',
+  confidence: 'confidence',
+  coverage: 'coverage',
+  algorithmVersion: 'algorithmVersion',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserLanguageDataScalarFieldEnum = (typeof UserLanguageDataScalarFieldEnum)[keyof typeof UserLanguageDataScalarFieldEnum]
+
+
+export const UserFriendScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  friendId: 'friendId',
+  friendshipCreatedDate: 'friendshipCreatedDate'
+} as const
+
+export type UserFriendScalarFieldEnum = (typeof UserFriendScalarFieldEnum)[keyof typeof UserFriendScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -140,4 +269,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

@@ -192,15 +192,15 @@ export type GenreWhereInput = {
   NOT?: Prisma.GenreWhereInput | Prisma.GenreWhereInput[]
   id?: Prisma.IntFilter<"Genre"> | number
   name?: Prisma.StringFilter<"Genre"> | string
-  favoritedBy?: Prisma.UserListRelationFilter
-  hatedBy?: Prisma.UserListRelationFilter
+  favoritedBy?: Prisma.AdditionalUserDataListRelationFilter
+  hatedBy?: Prisma.AdditionalUserDataListRelationFilter
 }
 
 export type GenreOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  favoritedBy?: Prisma.UserOrderByRelationAggregateInput
-  hatedBy?: Prisma.UserOrderByRelationAggregateInput
+  favoritedBy?: Prisma.AdditionalUserDataOrderByRelationAggregateInput
+  hatedBy?: Prisma.AdditionalUserDataOrderByRelationAggregateInput
 }
 
 export type GenreWhereUniqueInput = Prisma.AtLeast<{
@@ -209,8 +209,8 @@ export type GenreWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.GenreWhereInput | Prisma.GenreWhereInput[]
   OR?: Prisma.GenreWhereInput[]
   NOT?: Prisma.GenreWhereInput | Prisma.GenreWhereInput[]
-  favoritedBy?: Prisma.UserListRelationFilter
-  hatedBy?: Prisma.UserListRelationFilter
+  favoritedBy?: Prisma.AdditionalUserDataListRelationFilter
+  hatedBy?: Prisma.AdditionalUserDataListRelationFilter
 }, "id" | "name">
 
 export type GenreOrderByWithAggregationInput = {
@@ -233,28 +233,28 @@ export type GenreScalarWhereWithAggregatesInput = {
 
 export type GenreCreateInput = {
   name: string
-  favoritedBy?: Prisma.UserCreateNestedManyWithoutFavoriteGenresInput
-  hatedBy?: Prisma.UserCreateNestedManyWithoutHatedGenresInput
+  favoritedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutFavoriteGenresInput
+  hatedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutHatedGenresInput
 }
 
 export type GenreUncheckedCreateInput = {
   id?: number
   name: string
-  favoritedBy?: Prisma.UserUncheckedCreateNestedManyWithoutFavoriteGenresInput
-  hatedBy?: Prisma.UserUncheckedCreateNestedManyWithoutHatedGenresInput
+  favoritedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutFavoriteGenresInput
+  hatedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutHatedGenresInput
 }
 
 export type GenreUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  favoritedBy?: Prisma.UserUpdateManyWithoutFavoriteGenresNestedInput
-  hatedBy?: Prisma.UserUpdateManyWithoutHatedGenresNestedInput
+  favoritedBy?: Prisma.AdditionalUserDataUpdateManyWithoutFavoriteGenresNestedInput
+  hatedBy?: Prisma.AdditionalUserDataUpdateManyWithoutHatedGenresNestedInput
 }
 
 export type GenreUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  favoritedBy?: Prisma.UserUncheckedUpdateManyWithoutFavoriteGenresNestedInput
-  hatedBy?: Prisma.UserUncheckedUpdateManyWithoutHatedGenresNestedInput
+  favoritedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutFavoriteGenresNestedInput
+  hatedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutHatedGenresNestedInput
 }
 
 export type GenreCreateManyInput = {
@@ -382,13 +382,13 @@ export type GenreUncheckedUpdateManyWithoutHatedByNestedInput = {
 
 export type GenreCreateWithoutFavoritedByInput = {
   name: string
-  hatedBy?: Prisma.UserCreateNestedManyWithoutHatedGenresInput
+  hatedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutHatedGenresInput
 }
 
 export type GenreUncheckedCreateWithoutFavoritedByInput = {
   id?: number
   name: string
-  hatedBy?: Prisma.UserUncheckedCreateNestedManyWithoutHatedGenresInput
+  hatedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutHatedGenresInput
 }
 
 export type GenreCreateOrConnectWithoutFavoritedByInput = {
@@ -398,13 +398,13 @@ export type GenreCreateOrConnectWithoutFavoritedByInput = {
 
 export type GenreCreateWithoutHatedByInput = {
   name: string
-  favoritedBy?: Prisma.UserCreateNestedManyWithoutFavoriteGenresInput
+  favoritedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutFavoriteGenresInput
 }
 
 export type GenreUncheckedCreateWithoutHatedByInput = {
   id?: number
   name: string
-  favoritedBy?: Prisma.UserUncheckedCreateNestedManyWithoutFavoriteGenresInput
+  favoritedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutFavoriteGenresInput
 }
 
 export type GenreCreateOrConnectWithoutHatedByInput = {
@@ -454,13 +454,13 @@ export type GenreUpdateManyWithWhereWithoutHatedByInput = {
 
 export type GenreUpdateWithoutFavoritedByInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  hatedBy?: Prisma.UserUpdateManyWithoutHatedGenresNestedInput
+  hatedBy?: Prisma.AdditionalUserDataUpdateManyWithoutHatedGenresNestedInput
 }
 
 export type GenreUncheckedUpdateWithoutFavoritedByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  hatedBy?: Prisma.UserUncheckedUpdateManyWithoutHatedGenresNestedInput
+  hatedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutHatedGenresNestedInput
 }
 
 export type GenreUncheckedUpdateManyWithoutFavoritedByInput = {
@@ -470,13 +470,13 @@ export type GenreUncheckedUpdateManyWithoutFavoritedByInput = {
 
 export type GenreUpdateWithoutHatedByInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  favoritedBy?: Prisma.UserUpdateManyWithoutFavoriteGenresNestedInput
+  favoritedBy?: Prisma.AdditionalUserDataUpdateManyWithoutFavoriteGenresNestedInput
 }
 
 export type GenreUncheckedUpdateWithoutHatedByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  favoritedBy?: Prisma.UserUncheckedUpdateManyWithoutFavoriteGenresNestedInput
+  favoritedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutFavoriteGenresNestedInput
 }
 
 export type GenreUncheckedUpdateManyWithoutHatedByInput = {
@@ -513,14 +513,14 @@ export type GenreCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extens
  * GenreCountOutputType without action
  */
 export type GenreCountOutputTypeCountFavoritedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.UserWhereInput
+  where?: Prisma.AdditionalUserDataWhereInput
 }
 
 /**
  * GenreCountOutputType without action
  */
 export type GenreCountOutputTypeCountHatedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.UserWhereInput
+  where?: Prisma.AdditionalUserDataWhereInput
 }
 
 
@@ -559,8 +559,8 @@ export type GenreIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type $GenrePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Genre"
   objects: {
-    favoritedBy: Prisma.$UserPayload<ExtArgs>[]
-    hatedBy: Prisma.$UserPayload<ExtArgs>[]
+    favoritedBy: Prisma.$AdditionalUserDataPayload<ExtArgs>[]
+    hatedBy: Prisma.$AdditionalUserDataPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -959,8 +959,8 @@ readonly fields: GenreFieldRefs;
  */
 export interface Prisma__GenreClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  favoritedBy<T extends Prisma.Genre$favoritedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Genre$favoritedByArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  hatedBy<T extends Prisma.Genre$hatedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Genre$hatedByArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  favoritedBy<T extends Prisma.Genre$favoritedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Genre$favoritedByArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdditionalUserDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  hatedBy<T extends Prisma.Genre$hatedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Genre$hatedByArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdditionalUserDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1389,23 +1389,23 @@ export type GenreDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
  */
 export type Genre$favoritedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the User
+   * Select specific fields to fetch from the AdditionalUserData
    */
-  select?: Prisma.UserSelect<ExtArgs> | null
+  select?: Prisma.AdditionalUserDataSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the User
+   * Omit specific fields from the AdditionalUserData
    */
-  omit?: Prisma.UserOmit<ExtArgs> | null
+  omit?: Prisma.AdditionalUserDataOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
-  orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
-  cursor?: Prisma.UserWhereUniqueInput
+  include?: Prisma.AdditionalUserDataInclude<ExtArgs> | null
+  where?: Prisma.AdditionalUserDataWhereInput
+  orderBy?: Prisma.AdditionalUserDataOrderByWithRelationInput | Prisma.AdditionalUserDataOrderByWithRelationInput[]
+  cursor?: Prisma.AdditionalUserDataWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
+  distinct?: Prisma.AdditionalUserDataScalarFieldEnum | Prisma.AdditionalUserDataScalarFieldEnum[]
 }
 
 /**
@@ -1413,23 +1413,23 @@ export type Genre$favoritedByArgs<ExtArgs extends runtime.Types.Extensions.Inter
  */
 export type Genre$hatedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the User
+   * Select specific fields to fetch from the AdditionalUserData
    */
-  select?: Prisma.UserSelect<ExtArgs> | null
+  select?: Prisma.AdditionalUserDataSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the User
+   * Omit specific fields from the AdditionalUserData
    */
-  omit?: Prisma.UserOmit<ExtArgs> | null
+  omit?: Prisma.AdditionalUserDataOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
-  orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
-  cursor?: Prisma.UserWhereUniqueInput
+  include?: Prisma.AdditionalUserDataInclude<ExtArgs> | null
+  where?: Prisma.AdditionalUserDataWhereInput
+  orderBy?: Prisma.AdditionalUserDataOrderByWithRelationInput | Prisma.AdditionalUserDataOrderByWithRelationInput[]
+  cursor?: Prisma.AdditionalUserDataWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
+  distinct?: Prisma.AdditionalUserDataScalarFieldEnum | Prisma.AdditionalUserDataScalarFieldEnum[]
 }
 
 /**
