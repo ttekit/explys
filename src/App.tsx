@@ -5,6 +5,7 @@ import RegistrationMain from "./pages/registration/RegistrationMain";
 import RegistrationDetails from "./pages/registration/RegistrationDetails";
 import RegistrationPreferences from "./pages/registration/RegistrationPreferences";
 import LoginForm from "./pages/login/LoginForm";
+import ProfileMain from "./pages/profile/ProfileMain";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           element={<RegistrationPreferences />}
         />
         <Route path="/loginForm" element={<LoginForm />} />
+        <Route path="/ProfileMain" element={<ProfileMain />} />
       </Routes>
     </RegistrationProvider>
   );

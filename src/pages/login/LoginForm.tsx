@@ -93,7 +93,7 @@ export default function LoginForm() {
                 {showPassword ? (
                   <EyeOff className="opacity-60 w-6 h-6 pr-1" />
                 ) : (
-                  <Eye className="opacity-60 w-6 h-6 pr-1s" />
+                  <Eye className="opacity-60 w-6 h-6 pr-1" />
                 )}
               </button>
               <LabelRegister isRequired={true}>Password</LabelRegister>

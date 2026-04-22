@@ -10,6 +10,9 @@ export default function MainPage() {
       <Link to="/loginForm">
         <Button>Login</Button>
       </Link>
+      <Link to="/ProfileMain">
+        <Button>Profile</Button>
+      </Link>
     </>
   );
 }
