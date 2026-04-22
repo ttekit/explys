@@ -1,111 +1,147 @@
-import { Body, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
-import { CreateContentDto } from './dto/create-content.dto';
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { ConfigService } from '@nestjs/config';
-import { UpdateContentDto } from './dto/update-content.dto';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { PrismaService } from "src/prisma.service";
+import { CreateContentDto } from "./dto/create-content.dto";
+import { UpdateContentDto } from "./dto/update-content.dto";
+import {
+  buildSafeS3ObjectKey,
+  publicS3ObjectUrl,
+} from "../common/s3-key.util";
+
 @Injectable()
 export class ContentsService {
-    private readonly s3Client : S3Client;
+  private readonly s3Client: S3Client;
+  private readonly bucket: string;
+  private readonly region: string;
 
-    constructor (private readonly prisma: PrismaService,
-        private readonly configService: ConfigService){
-            this.s3Client = new S3Client({
-                region: this.configService.getOrThrow('AWS_S3_REGION'),
-            })
-        }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {
+    this.bucket = this.configService.getOrThrow<string>("AWS_S3_BUCKET_NAME");
+    this.region =
+      this.configService.get<string>("AWS_S3_REGION") ??
+      this.configService.getOrThrow<string>("AWS_REGION");
+    this.s3Client = new S3Client({
+      region: this.region,
+    });
+  }
 
+  async createContent(dto: CreateContentDto, file: Express.Multer.File) {
+    const key = buildSafeS3ObjectKey(file.originalname);
+    await this.s3Client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: file.buffer,
+      }),
+    );
+    const videoUrl = publicS3ObjectUrl(this.bucket, this.region, key);
 
-    async createContent(dto: CreateContentDto, file: Express.Multer.File){
-        await this.s3Client.send(
-            new PutObjectCommand({
-                Bucket: 'kpi-eng-course',
-                Key: file.originalname,
-                Body: file.buffer,
-            })
-        )
-        const videoUrl = `https://kpi-eng-course.s3.amazonaws.com/${file.originalname}`;
-
-        return await this.prisma.content.create({
-            data: {
-                name: dto.name,
-                description: dto.description,
-                friendlyLink: dto.friendlyLink,
-                category: {
-                    create: {
-                        ContentVideo: {
-                            create: {
-                                videoLink: videoUrl,
-                                videoName: dto.name,
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    async updateContent(id: number, dto: UpdateContentDto, file?: Express.Multer.File){
-        
-        const updateContent = await this.prisma.content.update({
-            where: { id },
-            data: {
-                ...dto,
+    return await this.prisma.content.create({
+      data: {
+        name: dto.name,
+        description: dto.description,
+        friendlyLink: dto.friendlyLink,
+        category: {
+          create: {
+            ContentVideo: {
+              create: {
+                videoLink: videoUrl,
+                videoName: dto.name,
+              },
             },
+          },
+        },
+      },
+    });
+  }
+
+  async updateContent(
+    id: number,
+    dto: UpdateContentDto,
+    file?: Express.Multer.File,
+  ) {
+    const updateContent = await this.prisma.content.update({
+      where: { id },
+      data: {
+        ...dto,
+      },
+    });
+
+    if (file) {
+      const contentMedia = await this.prisma.contentMedia.findFirst({
+        where: { categoryId: id },
+      });
+
+      if (contentMedia) {
+        const existingVideo = await this.prisma.contentVideo.findFirst({
+          where: { contentId: contentMedia.id },
         });
 
-        if(file){
-            const media = await this.prisma.contentVideo.findFirst({
-                where:{
-                    contentId: id,
-                }
-            })
-
-            if(media && media.videoLink){
-                const oldKey = media.videoLink.split('/').pop();
-
-                if(oldKey){
-                    await this.s3Client.send(
-                        new DeleteObjectCommand({
-                            Bucket: 'kpi-eng-course',
-                            Key: oldKey,
-                        })
-                    );
-                }
-            }
-
-            await this.s3Client.send(
-                new PutObjectCommand({
-                    Bucket: 'kpi-eng-course',
-                    Key: file.originalname,
-                    Body: file.buffer,
+        if (existingVideo?.videoLink) {
+          try {
+            const url = new URL(existingVideo.videoLink);
+            const oldKey = url.pathname.replace(/^\//, "");
+            if (oldKey) {
+              await this.s3Client.send(
+                new DeleteObjectCommand({
+                  Bucket: this.bucket,
+                  Key: decodeURIComponent(oldKey),
                 }),
-            );
-
-            const newUrl = `https://kpi-eng-course.s3.amazonaws.com/${file.originalname}`
-            await this.prisma.contentVideo.updateMany({
-                where: {contentId: id },
-                data: {videoLink: newUrl }
-            });
+              );
+            }
+          } catch {
+            const fallbackKey = existingVideo.videoLink.split("/").pop();
+            if (fallbackKey) {
+              await this.s3Client.send(
+                new DeleteObjectCommand({
+                  Bucket: this.bucket,
+                  Key: decodeURIComponent(fallbackKey),
+                }),
+              );
+            }
+          }
         }
 
-        return updateContent;
-    }
+        const key = buildSafeS3ObjectKey(file.originalname);
+        await this.s3Client.send(
+          new PutObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
+            Body: file.buffer,
+          }),
+        );
 
-    deleteContent(id: number){
-        return this.prisma.content.delete({
-            where: { id }
-        })
-    }
-
-    async getAllContent(){
-        return await this.prisma.content.findMany();
-    }
-    
-    async getContentById(id: number){
-        return await this.prisma.content.findUnique({
-            where:{ id }
+        const newUrl = publicS3ObjectUrl(this.bucket, this.region, key);
+        await this.prisma.contentVideo.updateMany({
+          where: { contentId: contentMedia.id },
+          data: { videoLink: newUrl },
         });
+      }
     }
 
+    return updateContent;
+  }
+
+  deleteContent(id: number) {
+    return this.prisma.content.delete({
+      where: { id },
+    });
+  }
+
+  async getAllContent() {
+    return await this.prisma.content.findMany();
+  }
+
+  async getContentById(id: number) {
+    return await this.prisma.content.findUnique({
+      where: { id },
+    });
+  }
 }

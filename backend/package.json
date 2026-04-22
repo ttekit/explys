@@ -37,14 +37,12 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0"
   },
-  "prisma": {
-    "seed": "npx ts-node prisma/seed.ts"
-  },
   "scripts": {
     "start": "nest start",
     "dev": "nest start --watch",
     "build": "nest build",
     "test": "jest",
+    "seed": "npx ts-node prisma/seed.ts",
     "postbuild": "xcopy /E /I /Y src\\generated dist\\generated"
   }
 }

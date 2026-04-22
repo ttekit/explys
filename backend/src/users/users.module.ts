@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { UsersController } from './users.controller';
-import { PrismaService } from 'src/prisma.service';
-import { AlcorythmModule } from '../alcorythm/alcorythm.module';
+import { Module } from "@nestjs/common";
+import { AuthModule } from "../auth/auth.module";
+import { AlcorythmModule } from "../alcorythm/alcorythm.module";
+import { UsersController } from "./users.controller";
+import { UsersService } from "./users.service";
 
 @Module({
-    imports: [AlcorythmModule],
-    controllers: [UsersController],
-    providers: [UsersService, PrismaService],
-    exports: [UsersService],
+  imports: [AlcorythmModule, AuthModule],
+  controllers: [UsersController],
+  providers: [UsersService],
+  exports: [UsersService],
 })
-export class UsersModule { }
+export class UsersModule {}
