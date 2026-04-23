@@ -2,7 +2,7 @@
   "compilerOptions": {
     "ignoreDeprecations": "6.0",
     "module": "commonjs",
-    "types": ["node", "jest"],
+    "types": ["jest", "node", "multer"],
     "esModuleInterop": true,
     "isolatedModules": true,
     "declaration": true,

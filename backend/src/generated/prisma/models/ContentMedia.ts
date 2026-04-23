@@ -189,7 +189,7 @@ export type ContentMediaGroupByOutputType = {
   _max: ContentMediaMaxAggregateOutputType | null
 }
 
-type GetContentMediaGroupByPayload<T extends ContentMediaGroupByArgs> = Prisma.PrismaPromise<
+export type GetContentMediaGroupByPayload<T extends ContentMediaGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ContentMediaGroupByOutputType, T['by']> &
       {

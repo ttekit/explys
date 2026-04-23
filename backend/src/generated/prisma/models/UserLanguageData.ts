@@ -233,7 +233,7 @@ export type UserLanguageDataGroupByOutputType = {
   _max: UserLanguageDataMaxAggregateOutputType | null
 }
 
-type GetUserLanguageDataGroupByPayload<T extends UserLanguageDataGroupByArgs> = Prisma.PrismaPromise<
+export type GetUserLanguageDataGroupByPayload<T extends UserLanguageDataGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<UserLanguageDataGroupByOutputType, T['by']> &
       {

@@ -1,12 +1,12 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { ContentMediaService } from "./content-media.service";

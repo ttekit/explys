@@ -193,7 +193,7 @@ export type UserFriendGroupByOutputType = {
   _max: UserFriendMaxAggregateOutputType | null
 }
 
-type GetUserFriendGroupByPayload<T extends UserFriendGroupByArgs> = Prisma.PrismaPromise<
+export type GetUserFriendGroupByPayload<T extends UserFriendGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<UserFriendGroupByOutputType, T['by']> &
       {

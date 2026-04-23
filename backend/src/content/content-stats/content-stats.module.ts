@@ -1,10 +1,9 @@
-import { Module } from '@nestjs/common';
-import { ContentStatsService } from './content-stats.service';
-import { ContentStatsController } from './content-stats.controller';
-import { PrismaService } from 'src/prisma.service';
+import { Module } from "@nestjs/common";
+import { ContentStatsController } from "./content-stats.controller";
+import { ContentStatsService } from "./content-stats.service";
 
 @Module({
   controllers: [ContentStatsController],
-  providers: [ContentStatsService, PrismaService],
+  providers: [ContentStatsService],
 })
 export class ContentStatsModule {}
