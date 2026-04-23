@@ -1,7 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
-import { Toaster } from "react-hot-toast";
 import "./index.css";
 import RegistrationMain from "./pages/registration/RegistrationMain";
 import RegistrationDetails from "./pages/registration/RegistrationDetails";
@@ -17,14 +16,13 @@ const router = createBrowserRouter([
   { path: "/registrationDetails", element: <RegistrationDetails /> },
   { path: "/registrationPreferences", element: <RegistrationPreferences /> },
   { path: "/loginForm", element: <LoginForm /> },
-  { path: "/profile", element: <ProfileMain /> },
+  { path: "/profileMain", element: <ProfileMain /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RegistrationProvider>
       <RouterProvider router={router} />
-      <Toaster position="top-center" />
     </RegistrationProvider>
   </StrictMode>,
 );
