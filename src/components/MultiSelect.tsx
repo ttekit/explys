@@ -1,4 +1,4 @@
-import Select from "react-select";
+import Select, { type GroupBase, type Props as SelectProps } from "react-select";
 
 const selectClassNames = {
   control: ({ isFocused }: { isFocused: boolean }) =>
@@ -34,12 +34,14 @@ const selectClassNames = {
     }`,
 };
 
-export default function MultiSelect({ ...props }) {
+export default function MultiSelect<
+  Option,
+  IsMulti extends boolean = true,
+  Group extends GroupBase<Option> = GroupBase<Option>,
+>(props: SelectProps<Option, IsMulti, Group>) {
   return (
-    <>
-      <div>
-        <Select unstyled classNames={selectClassNames} {...props} />
-      </div>
-    </>
+    <div>
+      <Select unstyled classNames={selectClassNames} {...props} />
+    </div>
   );
 }

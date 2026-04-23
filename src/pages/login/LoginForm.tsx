@@ -5,6 +5,8 @@ import ValidateError from "../../components/ValidateError";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
+import { apiUrl, getResponseErrorMessage } from "../../lib/api";
 
 export default function LoginForm() {
   const [loginData, setLoginData] = useState({
@@ -29,30 +31,28 @@ export default function LoginForm() {
     if (!isEmpty) {
       setEmptyError(false);
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/auth/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-type": "application/json",
-            },
-            body: JSON.stringify(loginData),
+        const response = await fetch(apiUrl("/auth/login"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify(loginData),
+        });
 
         if (response.ok) {
+          toast.success("Signed in successfully.");
           navigate("/");
-          console.log("Logged in");
         } else {
-          const errorData = await response.json();
-          console.error(errorData);
+          const message = await getResponseErrorMessage(response);
+          toast.error(message);
         }
       } catch (error) {
-        console.log(error);
+        const message =
+          error instanceof Error ? error.message : "Could not sign in";
+        toast.error(message);
       }
     } else {
       setEmptyError(true);
-      console.log("error");
     }
   };
 
@@ -88,6 +88,8 @@ export default function LoginForm() {
             <div className="flex flex-row justify-end">
               <button
                 type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
                 onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? (
@@ -104,7 +106,7 @@ export default function LoginForm() {
                 value={loginData.password}
                 onChange={handleChange}
                 type={showPassword ? "text" : "password"}
-                placeholder="Create password"
+                placeholder="Password"
               />
             </div>
             {emptyError && (

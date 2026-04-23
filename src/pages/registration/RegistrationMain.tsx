@@ -93,10 +93,14 @@ export default function RegistrationMain() {
       !isValidPasswordRegex.test(formData.password)
     ) {
       setErrorText("Please fill in all required fields correctly.");
-    } else {
-      setErrorText(null);
-      navigate("/registrationDetails");
+      return;
     }
+    if (formData.password !== formData.confirmPassword) {
+      setErrorText("Passwords do not match.");
+      return;
+    }
+    setErrorText(null);
+    navigate("/registrationDetails");
   };
 
   const handleBack = () => {
@@ -155,6 +159,8 @@ export default function RegistrationMain() {
             <div className="flex flex-row justify-end">
               <button
                 type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
                 onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? (
@@ -177,6 +183,10 @@ export default function RegistrationMain() {
             <div className="flex flex-row justify-end">
               <button
                 type="button"
+                aria-label={
+                  showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+                }
+                aria-pressed={showConfirmPassword}
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
               >
                 {showConfirmPassword ? (

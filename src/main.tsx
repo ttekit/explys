@@ -1,12 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
+import { Toaster } from "react-hot-toast";
 import "./index.css";
 import RegistrationMain from "./pages/registration/RegistrationMain";
 import RegistrationDetails from "./pages/registration/RegistrationDetails";
 import RegistrationPreferences from "./pages/registration/RegistrationPreferences";
 import LoginForm from "./pages/login/LoginForm";
 import MainPage from "./pages/MainPage";
+import ProfileMain from "./pages/profile/ProfileMain";
 import { RegistrationProvider } from "./pages/registration/RegistrationContext";
 
 const router = createBrowserRouter([
@@ -15,12 +17,14 @@ const router = createBrowserRouter([
   { path: "/registrationDetails", element: <RegistrationDetails /> },
   { path: "/registrationPreferences", element: <RegistrationPreferences /> },
   { path: "/loginForm", element: <LoginForm /> },
+  { path: "/profile", element: <ProfileMain /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RegistrationProvider>
       <RouterProvider router={router} />
+      <Toaster position="top-center" />
     </RegistrationProvider>
   </StrictMode>,
 );

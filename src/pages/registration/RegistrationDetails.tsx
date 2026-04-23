@@ -6,6 +6,7 @@ import SelectRegister from "../../components/SelectRegister";
 import { useState, useContext, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "./RegistrationContext";
 import MultiSelect from "../../components/MultiSelect";
+import type { MultiValue } from "react-select";
 
 interface SelectOption {
   value: string;
@@ -96,18 +97,16 @@ export default function RegistrationDetails() {
     updateFormData({ [name]: value } as Record<string, string>);
   };
 
-  const handleHobbyChange = (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
-    updateFormData({ hobbies: values } as any);
+  const handleHobbyChange = (
+    selected: MultiValue<{ value: string; label: string }>,
+  ) => {
+    updateFormData({ hobbies: selected.map((option) => option.value) });
   };
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (formData.englishLevel == "choose") {
       setEmptyError(true);
-      console.log("error");
     } else {
       setEmptyError(false);
       navigate("/registrationPreferences");
