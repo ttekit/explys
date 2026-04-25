@@ -12,12 +12,16 @@ export default function RegistrationPreferences() {
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
 
-  const [genreOptions, setGenreOptions] = useState<{ value: string; label: string }[]>([]);
+  const [genreOptions, setGenreOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/genres`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/genres`,
+        );
         if (response.ok) {
           const data = await response.json();
           const formattedOptions = data.map((genre: any) => ({
@@ -34,12 +38,16 @@ export default function RegistrationPreferences() {
   }, []);
 
   const handleFavoriteGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions ? selectedOptions.map((option: any) => option.value) : [];
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
     updateFormData({ favoriteGenres: values } as any);
   };
 
   const handleHatedGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions ? selectedOptions.map((option: any) => option.value) : [];
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
     updateFormData({ hatedGenres: values } as any);
   };
 
@@ -100,7 +108,9 @@ export default function RegistrationPreferences() {
         onSubmit={handleSubmit}
       >
         <div>
-          <p className="text-3xl font-bold text-gray-900 mb-1">Create an account</p>
+          <p className="text-3xl font-bold text-gray-900 mb-1">
+            Create an account
+          </p>
           <div className="flex text-gray-500 mb-8">
             <p>Preferences</p>
             <p className="ml-1">- Page 3</p>
@@ -119,11 +129,11 @@ export default function RegistrationPreferences() {
             value={genreOptions.filter((option: any) =>
               (formData.favoriteGenres ?? []).includes(option.value),
             )}
-            onMenuOpen={() => { }}
-            onMenuClose={() => { }}
+            onMenuOpen={() => {}}
+            onMenuClose={() => {}}
           />
 
-          <LabelRegister isRequired={false} className="mt-4">Hated genres:</LabelRegister>
+          <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
           <Select
             options={genreOptions}
             isMulti
@@ -134,8 +144,8 @@ export default function RegistrationPreferences() {
             value={genreOptions.filter((option: any) =>
               (formData.hatedGenres ?? []).includes(option.value),
             )}
-            onMenuOpen={() => { }}
-            onMenuClose={() => { }}
+            onMenuOpen={() => {}}
+            onMenuClose={() => {}}
           />
         </div>
 
