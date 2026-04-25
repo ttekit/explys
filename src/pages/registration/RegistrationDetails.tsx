@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router";
 import SelectRegister from "../../components/SelectRegister";
 import { useState, useContext, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "../../context/RegistrationContext";
-import Select from "react-select";
+import MultiSelect from "../../components/MultiSelect";
 
 interface SelectOption {
   value: string;
@@ -169,7 +169,9 @@ export default function RegistrationDetails() {
         onSubmit={handleNext}
       >
         <div>
-          <p className="text-3xl font-bold text-gray-900 mb-1">Create an account</p>
+          <p className="text-3xl font-bold text-gray-900 mb-1">
+            Create an account
+          </p>
           <div className="flex text-gray-500 mb-8">
             <p>Profile Details</p>
             <p className="ml-1">- Page 2</p>
@@ -187,97 +189,130 @@ export default function RegistrationDetails() {
 
           {formData.role === "teacher" && (
             <>
-              <LabelRegister isRequired={true}>Student grades:</LabelRegister>
-              <SelectRegister
-                name="teacherGrades"
-                value={formData.teacherGrades}
-                onChange={handleChange}
-                options={gradeOptions}
-              />
-              <LabelRegister isRequired={false}>Learning topics:</LabelRegister>
-              <Select
-                options={topicOptions}
-                isMulti
-                name="teacherTopics"
-                placeholder="Choose topics"
-                onChange={handleMultiSelectChange("teacherTopics")}
-                onMenuOpen={() => { }}
-                onMenuClose={() => { }}
-              />
-              <LabelRegister isRequired={false}>Student list (comma separated):</LabelRegister>
-              <textarea
-                name="studentNames"
-                value={formData.studentNames}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-md resize-y"
-                placeholder="Alice, Bob, Charlie..."
-                rows={3}
-              />
+              <div className="pb-3">
+                <LabelRegister isRequired={true}>Student grades:</LabelRegister>
+                <SelectRegister
+                  name="teacherGrades"
+                  value={formData.teacherGrades}
+                  onChange={handleChange}
+                  options={gradeOptions}
+                />
+              </div>
+
+              <div className="pb-3">
+                <LabelRegister isRequired={false}>
+                  Learning topics:
+                </LabelRegister>
+                <MultiSelect
+                  options={topicOptions}
+                  isMulti
+                  name="teacherTopics"
+                  placeholder="Choose topics"
+                  onChange={handleMultiSelectChange("teacherTopics")}
+                  onMenuOpen={() => {}}
+                  onMenuClose={() => {}}
+                />
+              </div>
+
+              <div className="">
+                <LabelRegister isRequired={false}>
+                  Student list (comma separated):
+                </LabelRegister>
+                <textarea
+                  name="studentNames"
+                  value={formData.studentNames}
+                  onChange={handleChange}
+                  className="w-full bg-(--white-background) border border-gray-300 rounded-lg px-4 py-2 shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-all duration-300 focus-within:outline-none focus-within:border-(--purple-default) focus-within:shadow-[0_0_15px_rgba(124,102,245,0.4)] flex items-center gap-2"
+                  placeholder="Alice, Bob, Charlie..."
+                  rows={3}
+                />
+              </div>
             </>
           )}
 
           {formData.role === "student" && (
             <>
-              <LabelRegister isRequired={true}>Grade:</LabelRegister>
-              <SelectRegister
-                name="studentGrade"
-                value={formData.studentGrade}
-                onChange={handleChange}
-                options={gradeOptions}
-              />
-              <LabelRegister isRequired={true}>English level:</LabelRegister>
-              <SelectRegister
-                name="englishLevel"
-                value={formData.englishLevel}
-                onChange={handleChange}
-                options={engLevels}
-              />
-              <LabelRegister isRequired={false}>Problem topics:</LabelRegister>
-              <Select
-                options={topicOptions}
-                isMulti
-                name="studentProblemTopics"
-                placeholder="Choose topics"
-                onChange={handleMultiSelectChange("studentProblemTopics")}
-                onMenuOpen={() => { }}
-                onMenuClose={() => { }}
-              />
+              <div className="pb-3">
+                <LabelRegister isRequired={true}>Grade:</LabelRegister>
+                <SelectRegister
+                  name="studentGrade"
+                  value={formData.studentGrade}
+                  onChange={handleChange}
+                  options={gradeOptions}
+                />
+              </div>
+
+              <div className="pb-3">
+                <LabelRegister isRequired={true}>English level:</LabelRegister>
+                <SelectRegister
+                  name="englishLevel"
+                  value={formData.englishLevel}
+                  onChange={handleChange}
+                  options={engLevels}
+                />
+              </div>
+
+              <div className="pb-3">
+                <LabelRegister isRequired={false}>
+                  Problem topics:
+                </LabelRegister>
+                <MultiSelect
+                  options={topicOptions}
+                  isMulti
+                  name="studentProblemTopics"
+                  placeholder="Choose topics"
+                  onChange={handleMultiSelectChange("studentProblemTopics")}
+                  onMenuOpen={() => {}}
+                  onMenuClose={() => {}}
+                />
+              </div>
             </>
           )}
 
           {formData.role === "adult" && (
             <>
-              <LabelRegister isRequired={true}>English level:</LabelRegister>
-              <SelectRegister
-                name="englishLevel"
-                value={formData.englishLevel}
-                onChange={handleChange}
-                options={engLevels}
-              />
-              <LabelRegister isRequired={false}>Hobbies:</LabelRegister>
-              <Select
-                options={hobbyOptions}
-                isMulti
-                name="hobbies"
-                placeholder="Choose hobbies"
-                onChange={handleMultiSelectChange("hobbies")}
-                onMenuOpen={() => { }}
-                onMenuClose={() => { }}
-              />
-              <LabelRegister isRequired={false}>Education:</LabelRegister>
-              <SelectRegister
-                name="education"
-                value={formData.education}
-                onChange={handleChange}
-                options={educationLevels}
-              />
-              <LabelRegister isRequired={false}>Field of work:</LabelRegister>
-              <SelectRegister
-                name="workField"
-                value={formData.workField}
-                onChange={handleChange}
-                options={workFields}
-              />
+              <div className="pb-3">
+                <LabelRegister isRequired={true}>English level:</LabelRegister>
+                <SelectRegister
+                  name="englishLevel"
+                  value={formData.englishLevel}
+                  onChange={handleChange}
+                  options={engLevels}
+                />
+              </div>
+
+              <div className="pb-3">
+                <LabelRegister isRequired={false}>Hobbies:</LabelRegister>
+                <MultiSelect
+                  options={hobbyOptions}
+                  isMulti
+                  name="hobbies"
+                  placeholder="Choose hobbies"
+                  onChange={handleMultiSelectChange("hobbies")}
+                  onMenuOpen={() => {}}
+                  onMenuClose={() => {}}
+                />
+              </div>
+
+              <div className="pb-3">
+                <LabelRegister isRequired={false}>Education:</LabelRegister>
+                <SelectRegister
+                  name="education"
+                  value={formData.education}
+                  onChange={handleChange}
+                  options={educationLevels}
+                />
+              </div>
+
+              <div className="pb-3">
+                <LabelRegister isRequired={false}>Field of work:</LabelRegister>
+                <SelectRegister
+                  name="workField"
+                  value={formData.workField}
+                  onChange={handleChange}
+                  options={workFields}
+                />
+              </div>
             </>
           )}
 
@@ -286,7 +321,7 @@ export default function RegistrationDetails() {
           )}
         </div>
 
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-col">
           <Button type="submit">Next</Button>
           <Link to="/registrationMain">
             <Button type="button">Back</Button>

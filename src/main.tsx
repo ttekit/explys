@@ -7,7 +7,7 @@ import RegistrationDetails from "./pages/registration/RegistrationDetails";
 import RegistrationPreferences from "./pages/registration/RegistrationPreferences";
 import LoginForm from "./pages/login/LoginForm";
 import MainPage from "./pages/MainPage";
-import { RegistrationProvider } from "./pages/registration/RegistrationContext";
+import { RegistrationProvider } from "./context/RegistrationContext";
 import ContentPage from "./pages/content/ContentPage";
 import ProfileMain from "./pages/profile/ProfileMain";
 import { UserProvider } from "./context/UserContext";
