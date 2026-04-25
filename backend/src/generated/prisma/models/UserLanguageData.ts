@@ -1438,6 +1438,11 @@ export type UserLanguageDataFindManyArgs<ExtArgs extends runtime.Types.Extension
    * Skip the first `n` UserLanguageData.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of UserLanguageData.
+   */
   distinct?: Prisma.UserLanguageDataScalarFieldEnum | Prisma.UserLanguageDataScalarFieldEnum[]
 }
 

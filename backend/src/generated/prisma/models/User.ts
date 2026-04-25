@@ -28,10 +28,12 @@ export type AggregateUser = {
 
 export type UserAvgAggregateOutputType = {
   id: number | null
+  teacherId: number | null
 }
 
 export type UserSumAggregateOutputType = {
   id: number | null
+  teacherId: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -40,6 +42,8 @@ export type UserMinAggregateOutputType = {
   email: string | null
   password: string | null
   role: string | null
+  hasCompletedPlacement: boolean | null
+  teacherId: number | null
   lastLogin: Date | null
   createdAt: Date | null
 }
@@ -50,6 +54,8 @@ export type UserMaxAggregateOutputType = {
   email: string | null
   password: string | null
   role: string | null
+  hasCompletedPlacement: boolean | null
+  teacherId: number | null
   lastLogin: Date | null
   createdAt: Date | null
 }
@@ -60,6 +66,8 @@ export type UserCountAggregateOutputType = {
   email: number
   password: number
   role: number
+  hasCompletedPlacement: number
+  teacherId: number
   lastLogin: number
   createdAt: number
   _all: number
@@ -68,10 +76,12 @@ export type UserCountAggregateOutputType = {
 
 export type UserAvgAggregateInputType = {
   id?: true
+  teacherId?: true
 }
 
 export type UserSumAggregateInputType = {
   id?: true
+  teacherId?: true
 }
 
 export type UserMinAggregateInputType = {
@@ -80,6 +90,8 @@ export type UserMinAggregateInputType = {
   email?: true
   password?: true
   role?: true
+  hasCompletedPlacement?: true
+  teacherId?: true
   lastLogin?: true
   createdAt?: true
 }
@@ -90,6 +102,8 @@ export type UserMaxAggregateInputType = {
   email?: true
   password?: true
   role?: true
+  hasCompletedPlacement?: true
+  teacherId?: true
   lastLogin?: true
   createdAt?: true
 }
@@ -100,6 +114,8 @@ export type UserCountAggregateInputType = {
   email?: true
   password?: true
   role?: true
+  hasCompletedPlacement?: true
+  teacherId?: true
   lastLogin?: true
   createdAt?: true
   _all?: true
@@ -197,6 +213,8 @@ export type UserGroupByOutputType = {
   email: string
   password: string
   role: string
+  hasCompletedPlacement: boolean
+  teacherId: number | null
   lastLogin: Date | null
   createdAt: Date
   _count: UserCountAggregateOutputType | null
@@ -230,9 +248,13 @@ export type UserWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
   role?: Prisma.StringFilter<"User"> | string
+  hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
+  teacherId?: Prisma.IntNullableFilter<"User"> | number | null
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
+  teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  pupils?: Prisma.UserListRelationFilter
   statistic?: Prisma.XOR<Prisma.UserStatisticNullableScalarRelationFilter, Prisma.UserStatisticWhereInput> | null
   languageData?: Prisma.UserLanguageDataListRelationFilter
   additionalUserData?: Prisma.XOR<Prisma.AdditionalUserDataNullableScalarRelationFilter, Prisma.AdditionalUserDataWhereInput> | null
@@ -246,9 +268,13 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   settings?: Prisma.UserSettingsOrderByWithRelationInput
+  teacher?: Prisma.UserOrderByWithRelationInput
+  pupils?: Prisma.UserOrderByRelationAggregateInput
   statistic?: Prisma.UserStatisticOrderByWithRelationInput
   languageData?: Prisma.UserLanguageDataOrderByRelationAggregateInput
   additionalUserData?: Prisma.AdditionalUserDataOrderByWithRelationInput
@@ -265,9 +291,13 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
   role?: Prisma.StringFilter<"User"> | string
+  hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
+  teacherId?: Prisma.IntNullableFilter<"User"> | number | null
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
+  teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  pupils?: Prisma.UserListRelationFilter
   statistic?: Prisma.XOR<Prisma.UserStatisticNullableScalarRelationFilter, Prisma.UserStatisticWhereInput> | null
   languageData?: Prisma.UserLanguageDataListRelationFilter
   additionalUserData?: Prisma.XOR<Prisma.AdditionalUserDataNullableScalarRelationFilter, Prisma.AdditionalUserDataWhereInput> | null
@@ -281,6 +311,8 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -299,6 +331,8 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
   role?: Prisma.StringWithAggregatesFilter<"User"> | string
+  hasCompletedPlacement?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  teacherId?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
   lastLogin?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -308,9 +342,12 @@ export type UserCreateInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  teacher?: Prisma.UserCreateNestedOneWithoutPupilsInput
+  pupils?: Prisma.UserCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -324,9 +361,12 @@ export type UserUncheckedCreateInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
+  teacherId?: number | null
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  pupils?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -339,9 +379,12 @@ export type UserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  teacher?: Prisma.UserUpdateOneWithoutPupilsNestedInput
+  pupils?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -355,9 +398,12 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  pupils?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -371,6 +417,8 @@ export type UserCreateManyInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
+  teacherId?: number | null
   lastLogin?: Date | string | null
   createdAt?: Date | string
 }
@@ -380,6 +428,7 @@ export type UserUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -390,8 +439,25 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
+}
+
+export type UserListRelationFilter = {
+  every?: Prisma.UserWhereInput
+  some?: Prisma.UserWhereInput
+  none?: Prisma.UserWhereInput
+}
+
+export type UserOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -400,12 +466,15 @@ export type UserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -414,6 +483,8 @@ export type UserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -424,12 +495,15 @@ export type UserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -437,8 +511,78 @@ export type UserScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput
 }
 
+export type UserCreateNestedOneWithoutPupilsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPupilsInput, Prisma.UserUncheckedCreateWithoutPupilsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPupilsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedManyWithoutTeacherInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput> | Prisma.UserCreateWithoutTeacherInput[] | Prisma.UserUncheckedCreateWithoutTeacherInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeacherInput | Prisma.UserCreateOrConnectWithoutTeacherInput[]
+  createMany?: Prisma.UserCreateManyTeacherInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
+export type UserUncheckedCreateNestedManyWithoutTeacherInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput> | Prisma.UserCreateWithoutTeacherInput[] | Prisma.UserUncheckedCreateWithoutTeacherInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeacherInput | Prisma.UserCreateOrConnectWithoutTeacherInput[]
+  createMany?: Prisma.UserCreateManyTeacherInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type UserUpdateOneWithoutPupilsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPupilsInput, Prisma.UserUncheckedCreateWithoutPupilsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPupilsInput
+  upsert?: Prisma.UserUpsertWithoutPupilsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPupilsInput, Prisma.UserUpdateWithoutPupilsInput>, Prisma.UserUncheckedUpdateWithoutPupilsInput>
+}
+
+export type UserUpdateManyWithoutTeacherNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput> | Prisma.UserCreateWithoutTeacherInput[] | Prisma.UserUncheckedCreateWithoutTeacherInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeacherInput | Prisma.UserCreateOrConnectWithoutTeacherInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutTeacherInput | Prisma.UserUpsertWithWhereUniqueWithoutTeacherInput[]
+  createMany?: Prisma.UserCreateManyTeacherInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput | Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutTeacherInput | Prisma.UserUpdateManyWithWhereWithoutTeacherInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type UserUncheckedUpdateManyWithoutTeacherNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput> | Prisma.UserCreateWithoutTeacherInput[] | Prisma.UserUncheckedCreateWithoutTeacherInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeacherInput | Prisma.UserCreateOrConnectWithoutTeacherInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutTeacherInput | Prisma.UserUpsertWithWhereUniqueWithoutTeacherInput[]
+  createMany?: Prisma.UserCreateManyTeacherInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput | Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutTeacherInput | Prisma.UserUpdateManyWithWhereWithoutTeacherInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
 export type UserCreateNestedOneWithoutAdditionalUserDataInput = {
@@ -525,14 +669,179 @@ export type UserUpdateOneRequiredWithoutFriendOfNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutFriendOfInput, Prisma.UserUpdateWithoutFriendOfInput>, Prisma.UserUncheckedUpdateWithoutFriendOfInput>
 }
 
+export type UserCreateWithoutPupilsInput = {
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  teacher?: Prisma.UserCreateNestedOneWithoutPupilsInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+}
+
+export type UserUncheckedCreateWithoutPupilsInput = {
+  id?: number
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  teacherId?: number | null
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+}
+
+export type UserCreateOrConnectWithoutPupilsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPupilsInput, Prisma.UserUncheckedCreateWithoutPupilsInput>
+}
+
+export type UserCreateWithoutTeacherInput = {
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  pupils?: Prisma.UserCreateNestedManyWithoutTeacherInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+}
+
+export type UserUncheckedCreateWithoutTeacherInput = {
+  id?: number
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  pupils?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+}
+
+export type UserCreateOrConnectWithoutTeacherInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput>
+}
+
+export type UserCreateManyTeacherInputEnvelope = {
+  data: Prisma.UserCreateManyTeacherInput | Prisma.UserCreateManyTeacherInput[]
+  skipDuplicates?: boolean
+}
+
+export type UserUpsertWithoutPupilsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPupilsInput, Prisma.UserUncheckedUpdateWithoutPupilsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPupilsInput, Prisma.UserUncheckedCreateWithoutPupilsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPupilsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPupilsInput, Prisma.UserUncheckedUpdateWithoutPupilsInput>
+}
+
+export type UserUpdateWithoutPupilsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  teacher?: Prisma.UserUpdateOneWithoutPupilsNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPupilsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+}
+
+export type UserUpsertWithWhereUniqueWithoutTeacherInput = {
+  where: Prisma.UserWhereUniqueInput
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTeacherInput, Prisma.UserUncheckedUpdateWithoutTeacherInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput>
+}
+
+export type UserUpdateWithWhereUniqueWithoutTeacherInput = {
+  where: Prisma.UserWhereUniqueInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTeacherInput, Prisma.UserUncheckedUpdateWithoutTeacherInput>
+}
+
+export type UserUpdateManyWithWhereWithoutTeacherInput = {
+  where: Prisma.UserScalarWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateManyMutationInput, Prisma.UserUncheckedUpdateManyWithoutTeacherInput>
+}
+
+export type UserScalarWhereInput = {
+  AND?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+  OR?: Prisma.UserScalarWhereInput[]
+  NOT?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+  id?: Prisma.IntFilter<"User"> | number
+  name?: Prisma.StringFilter<"User"> | string
+  email?: Prisma.StringFilter<"User"> | string
+  password?: Prisma.StringFilter<"User"> | string
+  role?: Prisma.StringFilter<"User"> | string
+  hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
+  teacherId?: Prisma.IntNullableFilter<"User"> | number | null
+  lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+}
+
 export type UserCreateWithoutAdditionalUserDataInput = {
   name: string
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  teacher?: Prisma.UserCreateNestedOneWithoutPupilsInput
+  pupils?: Prisma.UserCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
@@ -545,9 +854,12 @@ export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
+  teacherId?: number | null
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  pupils?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
@@ -575,9 +887,12 @@ export type UserUpdateWithoutAdditionalUserDataInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  teacher?: Prisma.UserUpdateOneWithoutPupilsNestedInput
+  pupils?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
@@ -590,9 +905,12 @@ export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  pupils?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
@@ -604,8 +922,11 @@ export type UserCreateWithoutSettingsInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutPupilsInput
+  pupils?: Prisma.UserCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -619,8 +940,11 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
+  teacherId?: number | null
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  pupils?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -649,8 +973,11 @@ export type UserUpdateWithoutSettingsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutPupilsNestedInput
+  pupils?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -664,8 +991,11 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  pupils?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -678,9 +1008,12 @@ export type UserCreateWithoutStatisticInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  teacher?: Prisma.UserCreateNestedOneWithoutPupilsInput
+  pupils?: Prisma.UserCreateNestedManyWithoutTeacherInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
@@ -693,9 +1026,12 @@ export type UserUncheckedCreateWithoutStatisticInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
+  teacherId?: number | null
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  pupils?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
@@ -723,9 +1059,12 @@ export type UserUpdateWithoutStatisticInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  teacher?: Prisma.UserUpdateOneWithoutPupilsNestedInput
+  pupils?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
@@ -738,9 +1077,12 @@ export type UserUncheckedUpdateWithoutStatisticInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  pupils?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
@@ -752,9 +1094,12 @@ export type UserCreateWithoutLanguageDataInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  teacher?: Prisma.UserCreateNestedOneWithoutPupilsInput
+  pupils?: Prisma.UserCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
@@ -767,9 +1112,12 @@ export type UserUncheckedCreateWithoutLanguageDataInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
+  teacherId?: number | null
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  pupils?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
@@ -797,9 +1145,12 @@ export type UserUpdateWithoutLanguageDataInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  teacher?: Prisma.UserUpdateOneWithoutPupilsNestedInput
+  pupils?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
@@ -812,9 +1163,12 @@ export type UserUncheckedUpdateWithoutLanguageDataInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  pupils?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
@@ -826,9 +1180,12 @@ export type UserCreateWithoutFriendsInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  teacher?: Prisma.UserCreateNestedOneWithoutPupilsInput
+  pupils?: Prisma.UserCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -841,9 +1198,12 @@ export type UserUncheckedCreateWithoutFriendsInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
+  teacherId?: number | null
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  pupils?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -860,9 +1220,12 @@ export type UserCreateWithoutFriendOfInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  teacher?: Prisma.UserCreateNestedOneWithoutPupilsInput
+  pupils?: Prisma.UserCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -875,9 +1238,12 @@ export type UserUncheckedCreateWithoutFriendOfInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
+  teacherId?: number | null
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  pupils?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -905,9 +1271,12 @@ export type UserUpdateWithoutFriendsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  teacher?: Prisma.UserUpdateOneWithoutPupilsNestedInput
+  pupils?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -920,9 +1289,12 @@ export type UserUncheckedUpdateWithoutFriendsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  pupils?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -945,9 +1317,12 @@ export type UserUpdateWithoutFriendOfInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  teacher?: Prisma.UserUpdateOneWithoutPupilsNestedInput
+  pupils?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -960,13 +1335,73 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  pupils?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateManyTeacherInput = {
+  id?: number
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type UserUpdateWithoutTeacherInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  pupils?: Prisma.UserUpdateManyWithoutTeacherNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTeacherInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  pupils?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+}
+
+export type UserUncheckedUpdateManyWithoutTeacherInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -975,12 +1410,14 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
  */
 
 export type UserCountOutputType = {
+  pupils: number
   languageData: number
   friends: number
   friendOf: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  pupils?: boolean | UserCountOutputTypeCountPupilsArgs
   languageData?: boolean | UserCountOutputTypeCountLanguageDataArgs
   friends?: boolean | UserCountOutputTypeCountFriendsArgs
   friendOf?: boolean | UserCountOutputTypeCountFriendOfArgs
@@ -994,6 +1431,13 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
    * Select specific fields to fetch from the UserCountOutputType
    */
   select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPupilsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserWhereInput
 }
 
 /**
@@ -1024,9 +1468,13 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   password?: boolean
   role?: boolean
+  hasCompletedPlacement?: boolean
+  teacherId?: boolean
   lastLogin?: boolean
   createdAt?: boolean
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
+  pupils?: boolean | Prisma.User$pupilsArgs<ExtArgs>
   statistic?: boolean | Prisma.User$statisticArgs<ExtArgs>
   languageData?: boolean | Prisma.User$languageDataArgs<ExtArgs>
   additionalUserData?: boolean | Prisma.User$additionalUserDataArgs<ExtArgs>
@@ -1041,8 +1489,11 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   role?: boolean
+  hasCompletedPlacement?: boolean
+  teacherId?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1051,8 +1502,11 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   role?: boolean
+  hasCompletedPlacement?: boolean
+  teacherId?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -1061,13 +1515,17 @@ export type UserSelectScalar = {
   email?: boolean
   password?: boolean
   role?: boolean
+  hasCompletedPlacement?: boolean
+  teacherId?: boolean
   lastLogin?: boolean
   createdAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "lastLogin" | "createdAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "teacherId" | "lastLogin" | "createdAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
+  pupils?: boolean | Prisma.User$pupilsArgs<ExtArgs>
   statistic?: boolean | Prisma.User$statisticArgs<ExtArgs>
   languageData?: boolean | Prisma.User$languageDataArgs<ExtArgs>
   additionalUserData?: boolean | Prisma.User$additionalUserDataArgs<ExtArgs>
@@ -1075,13 +1533,19 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   friendOf?: boolean | Prisma.User$friendOfArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
+}
+export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
+}
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
   objects: {
     settings: Prisma.$UserSettingsPayload<ExtArgs> | null
+    teacher: Prisma.$UserPayload<ExtArgs> | null
+    pupils: Prisma.$UserPayload<ExtArgs>[]
     statistic: Prisma.$UserStatisticPayload<ExtArgs> | null
     languageData: Prisma.$UserLanguageDataPayload<ExtArgs>[]
     additionalUserData: Prisma.$AdditionalUserDataPayload<ExtArgs> | null
@@ -1094,6 +1558,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string
     password: string
     role: string
+    hasCompletedPlacement: boolean
+    teacherId: number | null
     lastLogin: Date | null
     createdAt: Date
   }, ExtArgs["result"]["user"]>
@@ -1491,6 +1957,8 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   settings<T extends Prisma.User$settingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$settingsArgs<ExtArgs>>): Prisma.Prisma__UserSettingsClient<runtime.Types.Result.GetResult<Prisma.$UserSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  teacher<T extends Prisma.User$teacherArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$teacherArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  pupils<T extends Prisma.User$pupilsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pupilsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   statistic<T extends Prisma.User$statisticArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$statisticArgs<ExtArgs>>): Prisma.Prisma__UserStatisticClient<runtime.Types.Result.GetResult<Prisma.$UserStatisticPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   languageData<T extends Prisma.User$languageDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$languageDataArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserLanguageDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   additionalUserData<T extends Prisma.User$additionalUserDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$additionalUserDataArgs<ExtArgs>>): Prisma.Prisma__AdditionalUserDataClient<runtime.Types.Result.GetResult<Prisma.$AdditionalUserDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -1530,6 +1998,8 @@ export interface UserFieldRefs {
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'String'>
+  readonly hasCompletedPlacement: Prisma.FieldRef<"User", 'Boolean'>
+  readonly teacherId: Prisma.FieldRef<"User", 'Int'>
   readonly lastLogin: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
 }
@@ -1728,6 +2198,11 @@ export type UserFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Skip the first `n` Users.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Users.
+   */
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
 }
 
@@ -1781,6 +2256,10 @@ export type UserCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    */
   data: Prisma.UserCreateManyInput | Prisma.UserCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1851,6 +2330,10 @@ export type UserUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many Users to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1936,6 +2419,49 @@ export type User$settingsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.UserSettingsInclude<ExtArgs> | null
   where?: Prisma.UserSettingsWhereInput
+}
+
+/**
+ * User.teacher
+ */
+export type User$teacherArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+}
+
+/**
+ * User.pupils
+ */
+export type User$pupilsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+  orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
+  cursor?: Prisma.UserWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
 }
 
 /**

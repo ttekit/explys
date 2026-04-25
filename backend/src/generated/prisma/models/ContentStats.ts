@@ -1263,6 +1263,11 @@ export type ContentStatsFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Skip the first `n` ContentStats.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ContentStats.
+   */
   distinct?: Prisma.ContentStatsScalarFieldEnum | Prisma.ContentStatsScalarFieldEnum[]
 }
 

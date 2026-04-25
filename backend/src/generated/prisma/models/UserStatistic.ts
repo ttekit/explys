@@ -425,10 +425,6 @@ export type UserStatisticUncheckedUpdateOneWithoutUserNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserStatisticUpdateToOneWithWhereWithoutUserInput, Prisma.UserStatisticUpdateWithoutUserInput>, Prisma.UserStatisticUncheckedUpdateWithoutUserInput>
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type UserStatisticCreateWithoutUserInput = {
   studyingProgress?: number | null
   lastLesson?: Date | string | null
@@ -1165,6 +1161,11 @@ export type UserStatisticFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` UserStatistics.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of UserStatistics.
+   */
   distinct?: Prisma.UserStatisticScalarFieldEnum | Prisma.UserStatisticScalarFieldEnum[]
 }
 

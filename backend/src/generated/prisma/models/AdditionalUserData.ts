@@ -2092,6 +2092,11 @@ export type AdditionalUserDataFindManyArgs<ExtArgs extends runtime.Types.Extensi
    * Skip the first `n` AdditionalUserData.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of AdditionalUserData.
+   */
   distinct?: Prisma.AdditionalUserDataScalarFieldEnum | Prisma.AdditionalUserDataScalarFieldEnum[]
 }
 

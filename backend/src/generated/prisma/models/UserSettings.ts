@@ -1131,6 +1131,11 @@ export type UserSettingsFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Skip the first `n` UserSettings.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of UserSettings.
+   */
   distinct?: Prisma.UserSettingsScalarFieldEnum | Prisma.UserSettingsScalarFieldEnum[]
 }
 
