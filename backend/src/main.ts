@@ -4,7 +4,9 @@ config();
 
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { join } from "path";
 import { AppModule } from "./app.module";
 
 function resolveCorsOrigin():
@@ -34,7 +36,9 @@ function resolveCorsOrigin():
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Dev helper: same-origin test UI for the placement/entrance test (e.g. /dev/entrance-test.html)
+  app.useStaticAssets(join(process.cwd(), "public"), { prefix: "/dev/" });
 
   app.enableCors({
     origin: resolveCorsOrigin(),
@@ -64,6 +68,10 @@ async function bootstrap() {
     .addTag("tags", "Tag management endpoints")
     .addTag("categories", "Category management endpoints")
     .addTag("topics", "Topic management endpoints")
+    .addTag(
+      "placement-test",
+      "Entry placement test (post-registration, one time)",
+    )
     .addTag("content-video", "Content Video management endpoints")
     .addTag("content-stats", "Content Statistics management endpoints")
     .addTag("content-media", "Content Media management endpoints")

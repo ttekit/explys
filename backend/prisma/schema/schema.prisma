@@ -12,6 +12,7 @@ model User {
   name               String
   email              String              @unique
   password           String
+  hasCompletedPlacement Boolean          @default(false) @map("has_completed_placement")
   lastLogin          DateTime?
   createdAt          DateTime            @default(now())
   settings           UserSettings?

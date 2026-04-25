@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Entrance / placement test — dev</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --text: #e7ecf3;
+      --muted: #8b9cb3;
+      --accent: #3d8bfd;
+      --border: #2d3a4d;
+      --ok: #22c55e;
+      --warn: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      min-height: 100vh;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 1.25rem; }
+    h1 { font-size: 1.25rem; margin: 0 0 0.35rem; }
+    p.sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 1.25rem; }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+    h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.75rem; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.25rem; }
+    input, button, select {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #111820;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    button {
+      cursor: pointer;
+      background: linear-gradient(180deg, #3d8bfd, #2563eb);
+      border: 0;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+    button.secondary {
+      background: #243044;
+      border: 1px solid var(--border);
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .row { display: grid; gap: 0.65rem; margin-bottom: 0.65rem; }
+    @media (min-width: 560px) {
+      .row.cols-2 { grid-template-columns: 1fr 1fr; }
+    }
+    .status {
+      font-size: 0.9rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      background: #111820;
+      border: 1px solid var(--border);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .status.ok { border-color: rgba(34, 197, 94, 0.4); color: var(--ok); }
+    .status.err { border-color: rgba(248, 113, 113, 0.4); color: #f87171; }
+    .status.warn { border-color: rgba(251, 191, 36, 0.35); color: var(--warn); }
+    iframe {
+      width: 100%;
+      min-height: 520px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #0a0e14;
+    }
+    .hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.35rem; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Entrance test (placement) — manual test</h1>
+    <p class="sub">Served from this API at <code>/dev/entrance-test.html</code>. Log in or paste a JWT, then load status and embed the test.</p>
+
+    <section>
+      <h2>API</h2>
+      <div class="row">
+        <div>
+          <label for="baseUrl">API base URL</label>
+          <input id="baseUrl" type="url" value="" placeholder="http://localhost:4200" autocomplete="off" />
+        </div>
+        <div>
+          <label for="apiToken">x-api-token (production only)</label>
+          <input id="apiToken" type="password" placeholder="Optional" autocomplete="off" />
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Session</h2>
+      <div class="row cols-2">
+        <div>
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="username" />
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input id="password" type="password" autocomplete="current-password" />
+        </div>
+      </div>
+      <button type="button" id="btnLogin">Log in</button>
+      <p class="hint">Or paste JWT from <a href="/api" target="_blank" rel="noopener">Swagger</a> / your app.</p>
+      <label for="token">access_token (JWT)</label>
+      <input id="token" type="text" placeholder="eyJhbGciOi…" autocomplete="off" />
+      <div class="row cols-2" style="margin-top:0.65rem">
+        <button type="button" class="secondary" id="btnSave">Save token to session</button>
+        <button type="button" class="secondary" id="btnClear">Clear token</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Placement status</h2>
+      <button type="button" id="btnStatus">GET /placement-test/status</button>
+      <div id="statusBox" class="status" style="margin-top:0.65rem; display:none;"></div>
+    </section>
+
+    <section>
+      <h2>Test iframe</h2>
+      <p class="hint" style="margin:0 0 0.65rem">Loads <code>GET /placement-test/document?access_token=…</code> (same origin as this page).</p>
+      <button type="button" id="btnLoadIframe">Load / reload test in iframe</button>
+      <div id="iframeHint" class="hint" style="margin-top:0.5rem"></div>
+      <iframe id="frame" title="Placement test" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+    </section>
+
+    <section>
+      <h2>Complete (without using iframe button)</h2>
+      <button type="button" class="secondary" id="btnComplete">POST /placement-test/complete</button>
+      <p class="hint">Use if you need to flip <code>has_completed_placement</code> after testing.</p>
+      <div id="completeBox" class="status" style="margin-top:0.65rem; display:none;"></div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var baseInput = document.getElementById("baseUrl");
+      var apiTokenInput = document.getElementById("apiToken");
+      var tokenInput = document.getElementById("token");
+      var emailInput = document.getElementById("email");
+      var passwordInput = document.getElementById("password");
+      var statusBox = document.getElementById("statusBox");
+      var completeBox = document.getElementById("completeBox");
+      var frame = document.getElementById("frame");
+      var iframeHint = document.getElementById("iframeHint");
+
+      function base() {
+        var u = (baseInput.value || "").trim().replace(/\/$/, "");
+        return u || window.location.origin;
+      }
+
+      function headers() {
+        var h = { "Content-Type": "application/json" };
+        var t = (tokenInput.value || "").trim();
+        if (t) h["Authorization"] = "Bearer " + t;
+        var k = (apiTokenInput.value || "").trim();
+        if (k) h["x-api-token"] = k;
+        return h;
+      }
+
+      function show(el, text, kind) {
+        el.style.display = "block";
+        el.textContent = text;
+        el.className = "status" + (kind ? " " + kind : "");
+      }
+
+      baseInput.value = window.location.origin;
+
+      document.getElementById("btnSave").addEventListener("click", function () {
+        try {
+          sessionStorage.setItem("placement_test_jwt", (tokenInput.value || "").trim());
+          show(statusBox, "Token saved to sessionStorage (this tab).", "ok");
+        } catch (e) {
+          show(statusBox, String(e), "err");
+        }
+      });
+
+      document.getElementById("btnClear").addEventListener("click", function () {
+        tokenInput.value = "";
+        sessionStorage.removeItem("placement_test_jwt");
+        show(statusBox, "Token cleared.", "warn");
+      });
+
+      try {
+        var saved = sessionStorage.getItem("placement_test_jwt");
+        if (saved) tokenInput.value = saved;
+      } catch (_) {}
+
+      document.getElementById("btnLogin").addEventListener("click", function () {
+        var email = (emailInput.value || "").trim();
+        var password = passwordInput.value || "";
+        if (!email || !password) {
+          show(statusBox, "Enter email and password.", "warn");
+          return;
+        }
+        fetch(base() + "/auth/login", {
+          method: "POST",
+          headers: headers(),
+          body: JSON.stringify({ email: email, password: password }),
+        })
+          .then(function (r) {
+            if (!r.ok) return r.text().then(function (t) { throw new Error(t || r.status); });
+            return r.json();
+          })
+          .then(function (data) {
+            if (data && data.access_token) {
+              tokenInput.value = data.access_token;
+              try { sessionStorage.setItem("placement_test_jwt", data.access_token); } catch (_) {}
+              show(statusBox, "Logged in. Token stored in the field above.", "ok");
+            } else {
+              show(statusBox, "Unexpected response: " + JSON.stringify(data), "err");
+            }
+          })
+          .catch(function (e) {
+            show(statusBox, "Login failed: " + e.message, "err");
+          });
+      });
+
+      document.getElementById("btnStatus").addEventListener("click", function () {
+        var t = (tokenInput.value || "").trim();
+        if (!t) {
+          show(statusBox, "Paste a JWT first.", "warn");
+          return;
+        }
+        fetch(base() + "/placement-test/status", { headers: headers() })
+          .then(function (r) {
+            if (!r.ok) return r.text().then(function (x) { throw new Error(x || r.status); });
+            return r.json();
+          })
+          .then(function (data) {
+            show(statusBox, JSON.stringify(data, null, 2), "ok");
+          })
+          .catch(function (e) {
+            show(statusBox, "Error: " + e.message, "err");
+          });
+      });
+
+      function loadIframe() {
+        var t = (tokenInput.value || "").trim();
+        if (!t) {
+          iframeHint.textContent = "Set a JWT first.";
+          return;
+        }
+        var u = base() + "/placement-test/document?access_token=" + encodeURIComponent(t);
+        frame.src = u;
+        iframeHint.textContent = "Loaded: " + u.split("access_token=")[0] + "access_token=…";
+      }
+      document.getElementById("btnLoadIframe").addEventListener("click", loadIframe);
+
+      document.getElementById("btnComplete").addEventListener("click", function () {
+        var t = (tokenInput.value || "").trim();
+        if (!t) {
+          show(completeBox, "Paste a JWT first.", "warn");
+          return;
+        }
+        fetch(base() + "/placement-test/complete", {
+          method: "POST",
+          headers: headers(),
+          body: JSON.stringify({ access_token: t }),
+        })
+          .then(function (r) {
+            if (!r.ok) return r.text().then(function (x) { throw new Error(x || r.status); });
+            return r.json();
+          })
+          .then(function (data) {
+            show(completeBox, JSON.stringify(data, null, 2), "ok");
+          })
+          .catch(function (e) {
+            show(completeBox, "Error: " + e.message, "err");
+          });
+      });
+
+      window.addEventListener("message", function (ev) {
+        if (ev.data && ev.data.type === "placement_test_complete") {
+          show(completeBox, "Iframe reported: placement_test_complete. Consider refreshing status.", "ok");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -15,6 +15,7 @@ import { TagsModule } from "./tags/tags.module";
 import { TopicsModule } from "./topics/topics.module";
 import { UsersModule } from "./users/users.module";
 import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
+import { PlacementTestModule } from "./placement-test/placement-test.module";
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
     TagsModule,
     CategoriesModule,
     TopicsModule,
+    PlacementTestModule,
   ],
   controllers: [AppController],
   providers: [
