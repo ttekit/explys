@@ -5,6 +5,8 @@ import ValidateError from "../../components/ValidateError";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
+import { apiUrl, getResponseErrorMessage } from "../../lib/api";
 
 export default function LoginForm() {
   const [loginData, setLoginData] = useState({
@@ -29,51 +31,53 @@ export default function LoginForm() {
     if (!isEmpty) {
       setEmptyError(false);
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/auth/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-type": "application/json",
-            },
-            body: JSON.stringify(loginData),
+        const response = await fetch(apiUrl("/auth/login"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify(loginData),
+        });
 
         if (response.ok) {
+          toast.success("Signed in successfully.");
           navigate("/");
-          console.log("Logged in");
         } else {
-          const errorData = await response.json();
-          console.error(errorData);
+          const message = await getResponseErrorMessage(response);
+          toast.error(message);
         }
       } catch (error) {
-        console.log(error);
+        const message =
+          error instanceof Error ? error.message : "Could not sign in";
+        toast.error(message);
       }
     } else {
       setEmptyError(true);
-      console.log("error");
     }
   };
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-2">
         <form
-          className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
+          className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
           onSubmit={handleLogin}
           tabIndex={0}
         >
-          <div className="justify-center my-2">
-            <p className="font-bold text-2xl">Welcome back</p>
+          <div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">
+              Welcome back
+            </p>
             <div className="flex">
-              <p className="font-semibold pr-1">
+              <p className="text-gray-500 mb-8">
                 Sign in to continue learning!
               </p>
             </div>
           </div>
-          <div className="mb-1.5 flex flex-col w-fit">
-            <LabelRegister isRequired={true}>Email</LabelRegister>
+          <div className="space-y-2 flex flex-col">
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={true}>Email</LabelRegister>
+            </div>
             <InputText
               name="email"
               value={loginData.email}
@@ -81,25 +85,29 @@ export default function LoginForm() {
               type="email"
               placeholder="Email"
             />
-            <LabelRegister isRequired={true}>Password</LabelRegister>
+            <div className="flex flex-row justify-end">
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? (
+                  <EyeOff className="opacity-60 w-6 h-6 pr-1" />
+                ) : (
+                  <Eye className="opacity-60 w-6 h-6 pr-1" />
+                )}
+              </button>
+              <LabelRegister isRequired={true}>Password</LabelRegister>
+            </div>
             <div className="flex">
               <InputText
                 name="password"
                 value={loginData.password}
                 onChange={handleChange}
                 type={showPassword ? "text" : "password"}
-                placeholder="Create password"
+                placeholder="Password"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? (
-                  <EyeOff className="opacity-60 w-6 h-6 pl-1" />
-                ) : (
-                  <Eye className="opacity-60 w-6 h-6 pl-1" />
-                )}
-              </button>
             </div>
             {emptyError && (
               <ValidateError>Please fill in all required fields.</ValidateError>

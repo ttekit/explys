@@ -9,6 +9,8 @@ import LoginForm from "./pages/login/LoginForm";
 import MainPage from "./pages/MainPage";
 import { RegistrationProvider } from "./pages/registration/RegistrationContext";
 import ContentPage from "./pages/content/ContentPage";
+import ProfileMain from "./pages/profile/ProfileMain";
+import { UserProvider } from "./context/UserContext";
 
 const router = createBrowserRouter([
   { path: "/", element: <MainPage /> },
@@ -17,12 +19,15 @@ const router = createBrowserRouter([
   { path: "/registrationPreferences", element: <RegistrationPreferences /> },
   { path: "/loginForm", element: <LoginForm /> },
   { path: "/contentPage", element: <ContentPage /> },
+  { path: "/profileMain", element: <ProfileMain /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RegistrationProvider>
-      <RouterProvider router={router} />
-    </RegistrationProvider>
+    <UserProvider>
+      <RegistrationProvider>
+        <RouterProvider router={router} />
+      </RegistrationProvider>
+    </UserProvider>
   </StrictMode>,
 );

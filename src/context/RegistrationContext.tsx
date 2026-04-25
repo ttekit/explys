@@ -6,6 +6,12 @@ export interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
+  role: string;
+  teacherGrades: string;
+  teacherTopics: string[];
+  studentNames: string;
+  studentGrade: string;
+  studentProblemTopics: string[];
   englishLevel: string;
   hobbies: string[];
   education: string;
@@ -35,6 +41,12 @@ export const RegistrationProvider = ({
     email: "",
     password: "",
     confirmPassword: "",
+    role: "choose",
+    teacherGrades: "choose",
+    teacherTopics: [],
+    studentNames: "",
+    studentGrade: "choose",
+    studentProblemTopics: [],
     englishLevel: "choose",
     hobbies: [],
     education: "choose",

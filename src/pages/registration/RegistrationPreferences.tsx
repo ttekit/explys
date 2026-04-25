@@ -2,7 +2,7 @@ import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
 import { useContext, FormEvent, useState, useEffect } from "react";
-import { RegistrationContext } from "./RegistrationContext";
+import { RegistrationContext } from "../../context/RegistrationContext";
 import Select from "react-select";
 
 export default function RegistrationPreferences() {
@@ -18,38 +18,28 @@ export default function RegistrationPreferences() {
     const fetchGenres = async () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/genres`);
-
         if (response.ok) {
           const data = await response.json();
-
           const formattedOptions = data.map((genre: any) => ({
             value: genre.id,
             label: genre.name,
           }));
-
           setGenreOptions(formattedOptions);
-        } else {
-          console.error("Failed to fetch genres");
         }
       } catch (error) {
         console.error("Error fetching genres:", error);
       }
     };
-
     fetchGenres();
   }, []);
 
   const handleFavoriteGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
+    const values = selectedOptions ? selectedOptions.map((option: any) => option.value) : [];
     updateFormData({ favoriteGenres: values } as any);
   };
 
   const handleHatedGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
+    const values = selectedOptions ? selectedOptions.map((option: any) => option.value) : [];
     updateFormData({ hatedGenres: values } as any);
   };
 
@@ -64,6 +54,8 @@ export default function RegistrationPreferences() {
       englishLevel,
       education,
       workField,
+      teacherGrades,
+      studentGrade,
       ...restData
     } = formData;
 
@@ -72,6 +64,8 @@ export default function RegistrationPreferences() {
       englishLevel: englishLevel === "choose" ? undefined : englishLevel,
       education: education === "choose" ? undefined : education,
       workField: workField === "choose" ? undefined : workField,
+      teacherGrades: teacherGrades === "choose" ? undefined : teacherGrades,
+      studentGrade: studentGrade === "choose" ? undefined : studentGrade,
       hobbies: hobbies,
       favoriteGenres: favoriteGenres,
       hatedGenres: hatedGenres,
@@ -82,9 +76,7 @@ export default function RegistrationPreferences() {
         `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(dataToSend),
         },
       );
@@ -93,60 +85,74 @@ export default function RegistrationPreferences() {
         navigate("/loginForm");
       } else {
         const errorData = await response.json();
-        console.error(errorData);
+        alert(`Registration error: ${errorData.message || "Invalid data"}`);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Network error:", error);
+      alert("Network error. Please check your connection.");
     }
   };
 
   return (
-    <>
-      <div className="min-h-screen flex items-center justify-center">
-        <form
-          className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
-          onSubmit={handleSubmit}
-          tabIndex={0}
-        >
-          <div className="justify-start my-2">
-            <p className="font-bold text-2xl m-0">Create an account</p>
-            <div className="flex">
-              <p className="font-semibold m-0 pr-1">Account Credentials</p>
-              <p>- Page 3</p>
-            </div>
+    <div className="min-h-screen flex items-center justify-center p-2">
+      <form
+        className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
+        onSubmit={handleSubmit}
+      >
+        <div>
+          <p className="text-3xl font-bold text-gray-900 mb-1">Create an account</p>
+          <div className="flex text-gray-500 mb-8">
+            <p>Preferences</p>
+            <p className="ml-1">- Page 3</p>
           </div>
-          <div className="mb-1.5 flex flex-col">
-            <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
-            <Select
-              options={genreOptions}
-              isMulti
-              name="favoriteGenres"
-              placeholder="Choose favorite genres"
-              onChange={handleFavoriteGenreChange}
-              value={genreOptions.filter((option: any) =>
-                formData.favoriteGenres?.includes(option.value),
-              )}
-            />
-            <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
-            <Select
-              options={genreOptions}
-              isMulti
-              name="hatedGenres"
-              placeholder="Choose hated genres"
-              onChange={handleHatedGenreChange}
-              value={genreOptions.filter((option: any) =>
-                formData.hatedGenres?.includes(option.value),
-              )}
-            />
-          </div>
-          <div>
-            <Button type="submit">Register</Button>
-            <Link to="/registrationDetails">
-              <Button type="button">Back</Button>
-            </Link>
-          </div>
-        </form>
-      </div>
-    </>
+        </div>
+
+        <div className="mb-4 flex flex-col px-5">
+          <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
+          <Select
+            options={genreOptions}
+            isMulti
+            name="favoriteGenres"
+            placeholder="Choose genres"
+            onChange={handleFavoriteGenreChange}
+            // Fix: added null-check with ?? []
+            value={genreOptions.filter((option: any) =>
+              (formData.favoriteGenres ?? []).includes(option.value),
+            )}
+            onMenuOpen={() => { }}
+            onMenuClose={() => { }}
+          />
+
+          <LabelRegister isRequired={false} className="mt-4">Hated genres:</LabelRegister>
+          <Select
+            options={genreOptions}
+            isMulti
+            name="hatedGenres"
+            placeholder="Choose genres"
+            onChange={handleHatedGenreChange}
+            // Fix: added null-check with ?? []
+            value={genreOptions.filter((option: any) =>
+              (formData.hatedGenres ?? []).includes(option.value),
+            )}
+            onMenuOpen={() => { }}
+            onMenuClose={() => { }}
+          />
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <Button type="submit">Register</Button>
+          <Link to="/registrationDetails">
+            <Button type="button">Back</Button>
+          </Link>
+        </div>
+
+        <div className="mt-6 flex justify-center gap-4 text-gray-500 font-medium">
+          <p className="opacity-70">Already have an account?</p>
+          <Link to="/loginForm">
+            <p className="text-[#7c66f5] hover:underline">Sign in</p>
+          </Link>
+        </div>
+      </form>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import ValidateError from "../../components/ValidateError";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
 import { useContext, useState, ChangeEvent, FormEvent } from "react";
-import { RegistrationContext } from "./RegistrationContext";
+import { RegistrationContext } from "../../context/RegistrationContext";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function RegistrationMain() {
@@ -23,7 +23,7 @@ export default function RegistrationMain() {
 
   const validateField = (
     value: string,
-    type: "password" | "email" | "other",
+    type: "password" | "email" | "confirmPassword" | "other",
   ) => {
     if (type === "password") {
       if (value.length < 8) {
@@ -48,6 +48,13 @@ export default function RegistrationMain() {
       }
     }
 
+    if (type == "confirmPassword") {
+      if (value != formData.password) {
+        setErrorText("Passwords do not match.");
+        return false;
+      }
+    }
+
     if (type === "email") {
       if (!/^\S+@\S+\.\S+$/.test(value)) {
         setErrorText("Invalid email format.");
@@ -68,7 +75,7 @@ export default function RegistrationMain() {
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement>,
-    type: "password" | "email" | "other",
+    type: "password" | "email" | "confirmPassword" | "other",
   ) => {
     validateField(e.target.value, type);
     const { name, value } = e.target;
@@ -82,13 +89,18 @@ export default function RegistrationMain() {
       !formData.email ||
       !/^\S+@\S+\.\S+$/.test(formData.email) ||
       !formData.password ||
+      !formData.confirmPassword ||
       !isValidPasswordRegex.test(formData.password)
     ) {
       setErrorText("Please fill in all required fields correctly.");
-    } else {
-      setErrorText(null);
-      navigate("/registrationDetails");
+      return;
     }
+    if (formData.password !== formData.confirmPassword) {
+      setErrorText("Passwords do not match.");
+      return;
+    }
+    setErrorText(null);
+    navigate("/registrationDetails");
   };
 
   const handleBack = () => {
@@ -108,37 +120,57 @@ export default function RegistrationMain() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-2">
         <form
-          className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
+          className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
           onSubmit={handleNext}
           tabIndex={0}
         >
-          <div className="justify-start my-2">
-            <p className="font-bold text-2xl m-0">Create an account</p>
+          <div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">
+              Create an account
+            </p>
             <div className="flex">
-              <p className="font-semibold m-0 pr-1">Account Credentials</p>
+              <p className="text-gray-500 mb-8">Account Credentials</p>
               <p>- Page 1</p>
             </div>
           </div>
-          <div className="mb-1.5 flex flex-col w-fit">
-            <LabelRegister isRequired={true}>Username</LabelRegister>
+          <div className="space-y-2 flex flex-col">
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={true}>Username</LabelRegister>
+            </div>
             <InputText
               name="name"
               value={formData.name}
               onChange={(e) => handleChange(e, "other")}
               type="text"
-              placeholder="Username"
+              placeholder="Enter your username"
             />
-            <LabelRegister isRequired={true}>Email</LabelRegister>
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={true}>Email</LabelRegister>
+            </div>
             <InputText
               name="email"
               value={formData.email}
               onChange={(e) => handleChange(e, "email")}
               type="email"
-              placeholder="Email"
+              placeholder="Enter your email"
             />
-            <LabelRegister isRequired={true}>Password</LabelRegister>
+            <div className="flex flex-row justify-end">
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? (
+                  <EyeOff className="opacity-60 w-6 h-6 pr-1" />
+                ) : (
+                  <Eye className="opacity-60 w-6 h-6 pr-1" />
+                )}
+              </button>
+              <LabelRegister isRequired={true}>Password</LabelRegister>
+            </div>
             <div className="flex">
               <InputText
                 name="password"
@@ -147,36 +179,34 @@ export default function RegistrationMain() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Create password"
               />
+            </div>
+            <div className="flex flex-row justify-end">
               <button
                 type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
+                aria-pressed={showConfirmPassword}
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
               >
-                {showPassword ? (
-                  <EyeOff className="opacity-60 w-6 h-6 pl-1" />
+                {showConfirmPassword ? (
+                  <EyeOff className="opacity-60 w-6 h-6 pr-1" />
                 ) : (
-                  <Eye className="opacity-60 w-6 h-6 pl-1" />
+                  <Eye className="opacity-60 w-6 h-6 pr-1" />
                 )}
               </button>
+              <LabelRegister isRequired={true}>Confirm password</LabelRegister>
             </div>
-            <LabelRegister isRequired={true}>Confirm password</LabelRegister>
             <div className="flex">
               <InputText
                 name="confirmPassword"
                 value={formData.confirmPassword}
-                onChange={(e) => handleChange(e, "password")}
+                onChange={(e) => handleChange(e, "confirmPassword")}
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm password"
               />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="opacity-60 w-6 h-6 pl-1" />
-                ) : (
-                  <Eye className="opacity-60 w-6 h-6 pl-1" />
-                )}
-              </button>
             </div>
             {errorText && <ValidateError>{errorText}</ValidateError>}
           </div>
@@ -188,12 +218,10 @@ export default function RegistrationMain() {
               </Button>
             </Link>
           </div>
-          <div className="flex flex-col items-center justify-center pt-2">
+          <div className="mt-6 flex justify-center gap-4 text-gray-500 font-medium">
             <p className="opacity-70">Already have an account?</p>
             <Link to="/loginForm">
-              <p className="text-(--purple-default) font-semibold hover:text-(--purple-hover) transition duration-500 ease-in-out">
-                Sign in
-              </p>
+              <p className="text-[#7c66f5] hover:underline">Sign in</p>
             </Link>
           </div>
         </form>
