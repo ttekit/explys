@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router";
 import SelectRegister from "../../components/SelectRegister";
 import { useState, useContext, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "../../context/RegistrationContext";
-import Select from "react-select";
+import MultiSelect from "../../components/MultiSelect";
 
 interface SelectOption {
   value: string;

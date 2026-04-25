@@ -3,7 +3,7 @@ import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
 import { useContext, FormEvent, useState, useEffect } from "react";
 import { RegistrationContext } from "../../context/RegistrationContext";
-import Select from "react-select";
+import MultiSelect from "../../components/MultiSelect";
 
 export default function RegistrationPreferences() {
   const context = useContext(RegistrationContext);
@@ -13,14 +13,18 @@ export default function RegistrationPreferences() {
   const navigate = useNavigate();
   const isTeacher = formData.role === "teacher";
 
-  const [genreOptions, setGenreOptions] = useState<{ value: string; label: string }[]>([]);
+  const [genreOptions, setGenreOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   useEffect(() => {
     if (isTeacher) return;
 
     const fetchGenres = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/genres`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/genres`,
+        );
         if (response.ok) {
           const data = await response.json();
           setGenreOptions(data.map((g: any) => ({ value: g.id, label: g.name })));
@@ -107,7 +111,7 @@ export default function RegistrationPreferences() {
           )}
         </div>
 
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-col">
           <Button type="submit">Register</Button>
           <Link to="/registrationDetails"><Button type="button">Back</Button></Link>
         </div>

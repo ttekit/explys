@@ -7,8 +7,9 @@ import RegistrationDetails from "./pages/registration/RegistrationDetails";
 import RegistrationPreferences from "./pages/registration/RegistrationPreferences";
 import LoginForm from "./pages/login/LoginForm";
 import MainPage from "./pages/MainPage";
-import ProfileMain from "./pages/profile/ProfileMain";
 import { RegistrationProvider } from "./context/RegistrationContext";
+import ContentPage from "./pages/content/ContentPage";
+import ProfileMain from "./pages/profile/ProfileMain";
 import { UserProvider } from "./context/UserContext";
 
 const router = createBrowserRouter([
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
   { path: "/registrationDetails", element: <RegistrationDetails /> },
   { path: "/registrationPreferences", element: <RegistrationPreferences /> },
   { path: "/loginForm", element: <LoginForm /> },
+  { path: "/contentPage", element: <ContentPage /> },
   { path: "/profileMain", element: <ProfileMain /> },
 ]);
 
