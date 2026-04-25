@@ -1,12 +1,32 @@
-import { Link } from "react-router";
-import { useState } from "react";
+import { Link, useParams } from "react-router";
+import { useState, useEffect } from "react";
 import ProgressbarContent from "../../components/ProgressbarContent";
 import TestLabel from "../../components/TestLabel";
 import VideoPlayer from "../../components/VideoPlayer";
 import TestsArea from "../../components/TestsArea";
 
-export default function FilmPage() {
+export default function ContentPage() {
+  const { id } = useParams();
   const [filmView, setFilmView] = useState(true);
+  const [videoData, setVideoData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVideo = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/content-video/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setVideoData(data);
+        }
+      } catch (error) {
+        console.error("Error loading video:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchVideo();
+  }, [id]);
 
   const handleToTestsVideo = () => {
     if (filmView) {
@@ -16,17 +36,20 @@ export default function FilmPage() {
     }
   };
 
+  if (loading) return <div className="min-h-screen bg-[#F2F3F7] flex items-center justify-center font-bold">Loading...</div>;
+  if (!videoData) return <div className="min-h-screen bg-[#F2F3F7] flex items-center justify-center font-bold">Video not found</div>;
+
   return (
     <div className="min-h-screen bg-[#F2F3F7] p-5 font-sans">
       <div className="max-w-5xl mx-auto flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-violet-500 flex items-center justify-center shadow-sm shrink-0">
-              <img src="./mainIcon.svg" alt="mainIcon" />
+              <img src="/mainIcon.svg" alt="mainIcon" />
             </div>
 
             <div className="leading-tight">
-              <h1 className="text-lg font-bold text-gray-900">Film</h1>
+              <h1 className="text-lg font-bold text-gray-900">{videoData.content.category.name}</h1>
               <p className="text-sm text-gray-400">
                 Level:{" "}
                 <span className="text-violet-500 font-medium">level</span>
@@ -34,8 +57,8 @@ export default function FilmPage() {
             </div>
           </div>
 
-          <Link to="/">
-            <img className="w-12 h-12" src="backButton.svg" alt="backButton" />
+          <Link to="/videoPage">
+            <img className="w-12 h-12" src="/backButton.svg" alt="backButton" />
           </Link>
         </div>
 
@@ -46,7 +69,7 @@ export default function FilmPage() {
                 <div>
                   <div className="flex flex-row justify-between pb-2">
                     <p className="text-[16px] font-bold text-gray-900 mb-3">
-                      Video
+                      {videoData.videoName}
                     </p>
                     <button
                       onClick={handleToTestsVideo}
@@ -56,7 +79,7 @@ export default function FilmPage() {
                     </button>
                   </div>
 
-                  <VideoPlayer src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" />
+                  <VideoPlayer src={videoData.videoLink} />
                 </div>
               ) : (
                 <div>

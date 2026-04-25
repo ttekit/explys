@@ -21,7 +21,8 @@ const router = createBrowserRouter([
   { path: "/loginForm", element: <LoginForm /> },
   { path: "/contentPage", element: <ContentPage /> },
   { path: "/profileMain", element: <ProfileMain /> },
-  { path: "/videoPage", element: <VideoPage /> }
+  { path: "/video-page", element: <VideoPage /> },
+  { path: "/content/:id?", element: <ContentPage /> }
 ]);
 
 createRoot(document.getElementById("root")!).render(
