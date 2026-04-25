@@ -122,30 +122,50 @@ export class ContentsService {
         return updateContent;
     }
 
-    async deleteContent(id: number, file?: Express.Multer.File){
-        const media = await this.prisma.contentVideo.findFirst({
-            where:{
-                contentId: id,
-            }
-        })
-        if(media){
-            const oldKey = media.videoLink.split('/').pop();
+    async deleteContent(id: number) {
+        const content = await this.prisma.content.findUnique({
+            where: { id },
+            include: {
+            category: {
+                include: {
+                ContentVideo: true,
+                },
+            },
+            },
+        });
 
-            if(oldKey){
-                await this.s3Client.send(
-                        new DeleteObjectCommand({
-                            Bucket: this.bucketName,
-                            Key: oldKey,
-                        })
-                    );
+        if (!content) {
+            throw new InternalServerErrorException('Content not found');
+        }
+
+        const videoLinks: string[] = [];
+        content.category.forEach(media => {
+            media.ContentVideo.forEach(video => {
+            if (video.videoLink) {
+                videoLinks.push(video.videoLink);
+            }
+            });
+        });
+
+        const bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME');
+        
+        for (const link of videoLinks) {
+            const fileKey = link.split('/').pop();
+            if (fileKey) {
+            await this.s3Client.send(
+                new DeleteObjectCommand({
+                Bucket: bucketName,
+                Key: fileKey,
+                }),
+            );
             }
         }
 
-        await this.redis.del(this.getRedisKey(id));
-
+        await this.redis.del(`file:${content.id}`);
+            
         return this.prisma.content.delete({
             where: { id }
-        })
+        });
     }
 
     async getAllContent(){
