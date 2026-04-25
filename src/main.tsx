@@ -11,6 +11,7 @@ import { RegistrationProvider } from "./context/RegistrationContext";
 import ContentPage from "./pages/content/ContentPage";
 import ProfileMain from "./pages/profile/ProfileMain";
 import { UserProvider } from "./context/UserContext";
+import VideoPage from "./pages/content/VideosPage";
 
 const router = createBrowserRouter([
   { path: "/", element: <MainPage /> },
@@ -20,6 +21,7 @@ const router = createBrowserRouter([
   { path: "/loginForm", element: <LoginForm /> },
   { path: "/contentPage", element: <ContentPage /> },
   { path: "/profileMain", element: <ProfileMain /> },
+  { path: "/videoPage", element: <VideoPage /> }
 ]);
 
 createRoot(document.getElementById("root")!).render(

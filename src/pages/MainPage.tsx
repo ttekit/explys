@@ -18,6 +18,9 @@ export default function MainPage() {
       <Link to="/profileMain">
         <Button>Profile</Button>
       </Link>
+      <Link to="/VideoPage">
+        <Button>Videos</Button>
+      </Link>
     </>
   );
 }
