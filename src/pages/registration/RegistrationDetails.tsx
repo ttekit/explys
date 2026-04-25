@@ -12,6 +12,11 @@ interface SelectOption {
   text: string;
 }
 
+interface Pupil {
+  name: string;
+  surname: string;
+}
+
 export default function RegistrationDetails() {
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
@@ -44,69 +49,6 @@ export default function RegistrationDetails() {
     { value: "university", text: "University" },
   ];
 
-  const engLevels: SelectOption[] = [
-    { value: "choose", text: "Choose level" },
-    { value: "starter", text: "Starter" },
-    { value: "beginner", text: "Beginner" },
-    { value: "pre-intermediate", text: "Pre-Intermediate" },
-    { value: "intermediate", text: "Intermediate" },
-    { value: "upper-intermediate", text: "Upper-Intermediate" },
-    { value: "advanced", text: "Advanced" },
-    { value: "proficiency", text: "Proficiency" },
-  ];
-
-  const educationLevels: SelectOption[] = [
-    { value: "choose", text: "Choose education level" },
-    { value: "school", text: "Secondary School" },
-    { value: "high-school", text: "High School Diploma" },
-    { value: "college", text: "College" },
-    { value: "bachelor", text: "Bachelor's Degree" },
-    { value: "master", text: "Master's Degree" },
-    { value: "phd", text: "PhD / Doctorate" },
-    { value: "other", text: "Other" },
-  ];
-
-  const workFields: SelectOption[] = [
-    { value: "choose", text: "Choose field of work" },
-    { value: "it", text: "IT / Software Development" },
-    { value: "education", text: "Education / Teaching" },
-    { value: "healthcare", text: "Healthcare / Medicine" },
-    { value: "finance", text: "Finance / Banking" },
-    { value: "marketing", text: "Marketing / Advertising" },
-    { value: "sales", text: "Sales" },
-    { value: "engineering", text: "Engineering" },
-    { value: "law", text: "Law / Legal Services" },
-    { value: "business", text: "Business / Management" },
-    { value: "design", text: "Design / Creative" },
-    { value: "customer-support", text: "Customer Support" },
-    { value: "hospitality", text: "Hospitality / Tourism" },
-    { value: "logistics", text: "Logistics / Transportation" },
-    { value: "student", text: "Student" },
-    { value: "unemployed", text: "Unemployed" },
-    { value: "other", text: "Other" },
-  ];
-
-  const hobbyOptions = [
-    { value: "football", label: "Football" },
-    { value: "basketball", label: "Basketball" },
-    { value: "yoga", label: "Yoga" },
-    { value: "gym", label: "Gym & Fitness" },
-    { value: "swimming", label: "Swimming" },
-    { value: "cycling", label: "Cycling" },
-    { value: "painting", label: "Painting" },
-    { value: "photography", label: "Photography" },
-    { value: "music", label: "Music" },
-    { value: "dancing", label: "Dancing" },
-    { value: "cooking", label: "Cooking" },
-    { value: "writing", label: "Writing" },
-    { value: "gaming", label: "Gaming" },
-    { value: "coding", label: "Coding" },
-    { value: "reading", label: "Reading" },
-    { value: "traveling", label: "Traveling" },
-    { value: "chess", label: "Chess" },
-    { value: "movies", label: "Movies & Cinema" },
-  ];
-
   const topicOptions = [
     { value: "grammar", label: "Grammar" },
     { value: "vocabulary", label: "Vocabulary" },
@@ -114,225 +56,108 @@ export default function RegistrationDetails() {
     { value: "listening", label: "Listening" },
     { value: "writing", label: "Writing" },
     { value: "reading", label: "Reading" },
-    { value: "pronunciation", label: "Pronunciation" },
   ];
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-  ) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    updateFormData({ [name]: value } as Record<string, string>);
+    updateFormData({ [name]: value } as any);
   };
 
   const handleMultiSelectChange = (name: string) => (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
+    const values = selectedOptions ? selectedOptions.map((o: any) => o.value) : [];
     updateFormData({ [name]: values } as any);
+  };
+
+  // Pupils Table Logic
+  const pupils: Pupil[] = Array.isArray(formData.studentNames) ? formData.studentNames : [];
+
+  const addPupil = () => {
+    updateFormData({ studentNames: [...pupils, { name: "", surname: "" }] } as any);
+  };
+
+  const updatePupil = (index: number, field: keyof Pupil, value: string) => {
+    const updated = [...pupils];
+    updated[index][field] = value;
+    updateFormData({ studentNames: updated } as any);
+  };
+
+  const removePupil = (index: number) => {
+    updateFormData({ studentNames: pupils.filter((_, i) => i !== index) } as any);
   };
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    let hasError = false;
-
     if (formData.role === "choose") {
-      hasError = true;
-    } else if (
-      formData.role === "teacher" &&
-      formData.teacherGrades === "choose"
-    ) {
-      hasError = true;
-    } else if (
-      formData.role === "student" &&
-      (formData.studentGrade === "choose" || formData.englishLevel === "choose")
-    ) {
-      hasError = true;
-    } else if (
-      formData.role === "adult" &&
-      formData.englishLevel === "choose"
-    ) {
-      hasError = true;
-    }
-
-    if (hasError) {
       setEmptyError(true);
-    } else {
-      setEmptyError(false);
-      navigate("/registrationPreferences");
+      return;
     }
+    setEmptyError(false);
+    navigate("/registrationPreferences");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-2">
-      <form
-        className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
-        onSubmit={handleNext}
-      >
-        <div>
-          <p className="text-3xl font-bold text-gray-900 mb-1">
-            Create an account
-          </p>
-          <div className="flex text-gray-500 mb-8">
-            <p>Profile Details</p>
-            <p className="ml-1">- Page 2</p>
-          </div>
-        </div>
+      <form className="w-full max-w-150 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col" onSubmit={handleNext}>
+        <p className="text-3xl font-bold mb-1">Create an account</p>
+        <p className="text-gray-500 mb-8">Profile Details - Page 2</p>
 
-        <div className="mb-4 flex flex-col w-full px-5">
+        <div className="mb-4 flex flex-col px-5">
           <LabelRegister isRequired={true}>I am a:</LabelRegister>
-          <SelectRegister
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            options={roleOptions}
-          />
+          <SelectRegister name="role" value={formData.role} onChange={handleChange} options={roleOptions} />
 
           {formData.role === "teacher" && (
-            <>
-              <div className="pb-3">
-                <LabelRegister isRequired={true}>Student grades:</LabelRegister>
-                <SelectRegister
-                  name="teacherGrades"
-                  value={formData.teacherGrades}
-                  onChange={handleChange}
-                  options={gradeOptions}
-                />
-              </div>
+            <div className="mt-4 flex flex-col gap-4">
+              <LabelRegister isRequired={true}>Student grades:</LabelRegister>
+              <SelectRegister name="teacherGrades" value={formData.teacherGrades} onChange={handleChange} options={gradeOptions} />
 
-              <div className="pb-3">
-                <LabelRegister isRequired={false}>
-                  Learning topics:
-                </LabelRegister>
-                <MultiSelect
-                  options={topicOptions}
-                  isMulti
-                  name="teacherTopics"
-                  placeholder="Choose topics"
-                  onChange={handleMultiSelectChange("teacherTopics")}
-                  onMenuOpen={() => {}}
-                  onMenuClose={() => {}}
-                />
-              </div>
+              <LabelRegister isRequired={false}>Learning topics:</LabelRegister>
+              <Select options={topicOptions} isMulti placeholder="Choose topics" onChange={handleMultiSelectChange("teacherTopics")} onMenuOpen={() => { }} onMenuClose={() => { }} />
 
-              <div className="">
-                <LabelRegister isRequired={false}>
-                  Student list (comma separated):
-                </LabelRegister>
-                <textarea
-                  name="studentNames"
-                  value={formData.studentNames}
-                  onChange={handleChange}
-                  className="w-full bg-(--white-background) border border-gray-300 rounded-lg px-4 py-2 shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-all duration-300 focus-within:outline-none focus-within:border-(--purple-default) focus-within:shadow-[0_0_15px_rgba(124,102,245,0.4)] flex items-center gap-2"
-                  placeholder="Alice, Bob, Charlie..."
-                  rows={3}
-                />
-              </div>
-            </>
-          )}
+              <div className="mt-4 border-t pt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <LabelRegister isRequired={false}>Pupils List:</LabelRegister>
+                  <button type="button" onClick={addPupil} className="text-sm bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600">
+                    + Add Pupil
+                  </button>
+                </div>
 
-          {formData.role === "student" && (
-            <>
-              <div className="pb-3">
-                <LabelRegister isRequired={true}>Grade:</LabelRegister>
-                <SelectRegister
-                  name="studentGrade"
-                  value={formData.studentGrade}
-                  onChange={handleChange}
-                  options={gradeOptions}
-                />
+                <div className="max-h-60 overflow-y-auto border rounded-xl p-2 bg-white">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-sm text-gray-500 border-b">
+                        <th className="pb-2">Name</th>
+                        <th className="pb-2">Surname</th>
+                        <th className="pb-2 w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pupils.map((pupil, index) => (
+                        <tr key={index} className="border-b last:border-0">
+                          <td className="py-2 pr-2">
+                            <input type="text" value={pupil.name} onChange={(e) => updatePupil(index, "name", e.target.value)} placeholder="Name" className="w-full p-1 border rounded" />
+                          </td>
+                          <td className="py-2 pr-2">
+                            <input type="text" value={pupil.surname} onChange={(e) => updatePupil(index, "surname", e.target.value)} placeholder="Surname" className="w-full p-1 border rounded" />
+                          </td>
+                          <td className="py-2">
+                            <button type="button" onClick={() => removePupil(index)} className="text-red-500 font-bold px-2">✕</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {pupils.length === 0 && <p className="text-center text-gray-400 py-4">No pupils added yet.</p>}
+                </div>
               </div>
-
-              <div className="pb-3">
-                <LabelRegister isRequired={true}>English level:</LabelRegister>
-                <SelectRegister
-                  name="englishLevel"
-                  value={formData.englishLevel}
-                  onChange={handleChange}
-                  options={engLevels}
-                />
-              </div>
-
-              <div className="pb-3">
-                <LabelRegister isRequired={false}>
-                  Problem topics:
-                </LabelRegister>
-                <MultiSelect
-                  options={topicOptions}
-                  isMulti
-                  name="studentProblemTopics"
-                  placeholder="Choose topics"
-                  onChange={handleMultiSelectChange("studentProblemTopics")}
-                  onMenuOpen={() => {}}
-                  onMenuClose={() => {}}
-                />
-              </div>
-            </>
-          )}
-
-          {formData.role === "adult" && (
-            <>
-              <div className="pb-3">
-                <LabelRegister isRequired={true}>English level:</LabelRegister>
-                <SelectRegister
-                  name="englishLevel"
-                  value={formData.englishLevel}
-                  onChange={handleChange}
-                  options={engLevels}
-                />
-              </div>
-
-              <div className="pb-3">
-                <LabelRegister isRequired={false}>Hobbies:</LabelRegister>
-                <MultiSelect
-                  options={hobbyOptions}
-                  isMulti
-                  name="hobbies"
-                  placeholder="Choose hobbies"
-                  onChange={handleMultiSelectChange("hobbies")}
-                  onMenuOpen={() => {}}
-                  onMenuClose={() => {}}
-                />
-              </div>
-
-              <div className="pb-3">
-                <LabelRegister isRequired={false}>Education:</LabelRegister>
-                <SelectRegister
-                  name="education"
-                  value={formData.education}
-                  onChange={handleChange}
-                  options={educationLevels}
-                />
-              </div>
-
-              <div className="pb-3">
-                <LabelRegister isRequired={false}>Field of work:</LabelRegister>
-                <SelectRegister
-                  name="workField"
-                  value={formData.workField}
-                  onChange={handleChange}
-                  options={workFields}
-                />
-              </div>
-            </>
-          )}
-
-          {emptyError && (
-            <ValidateError>Please fill in all required fields.</ValidateError>
+            </div>
           )}
         </div>
 
-        <div className="mt-4 flex flex-col">
+        {emptyError && <ValidateError>Please select a role.</ValidateError>}
+
+        <div className="mt-4 flex gap-2">
           <Button type="submit">Next</Button>
-          <Link to="/registrationMain">
-            <Button type="button">Back</Button>
-          </Link>
-        </div>
-
-        <div className="mt-6 flex justify-center gap-4 text-gray-500 font-medium">
-          <p className="opacity-70">Already have an account?</p>
-          <Link to="/loginForm">
-            <p className="text-[#7c66f5] hover:underline">Sign in</p>
-          </Link>
+          <Link to="/registrationMain"><Button type="button">Back</Button></Link>
         </div>
       </form>
     </div>
