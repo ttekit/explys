@@ -8,6 +8,7 @@ import RegistrationPreferences from "./pages/registration/RegistrationPreference
 import LoginForm from "./pages/login/LoginForm";
 import MainPage from "./pages/MainPage";
 import { RegistrationProvider } from "./pages/registration/RegistrationContext";
+import ContentPage from "./pages/content/ContentPage";
 
 const router = createBrowserRouter([
   { path: "/", element: <MainPage /> },
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
   { path: "/registrationDetails", element: <RegistrationDetails /> },
   { path: "/registrationPreferences", element: <RegistrationPreferences /> },
   { path: "/loginForm", element: <LoginForm /> },
+  { path: "/contentPage", element: <ContentPage /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
