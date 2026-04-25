@@ -1,9 +1,9 @@
-import InputText from "../../components/InputText";
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
-import { useContext, ChangeEvent, FormEvent } from "react";
+import { useContext, FormEvent, useState, useEffect } from "react";
 import { RegistrationContext } from "./RegistrationContext";
+import Select from "react-select";
 
 export default function RegistrationPreferences() {
   const context = useContext(RegistrationContext);
@@ -12,49 +12,76 @@ export default function RegistrationPreferences() {
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    updateFormData({ [name]: value } as Record<string, string>);
+  const [genreOptions, setGenreOptions] = useState<{ value: string; label: string }[]>([]);
+
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/genres`);
+
+        if (response.ok) {
+          const data = await response.json();
+
+          const formattedOptions = data.map((genre: any) => ({
+            value: genre.id,
+            label: genre.name,
+          }));
+
+          setGenreOptions(formattedOptions);
+        } else {
+          console.error("Failed to fetch genres");
+        }
+      } catch (error) {
+        console.error("Error fetching genres:", error);
+      }
+    };
+
+    fetchGenres();
+  }, []);
+
+  const handleFavoriteGenreChange = (selectedOptions: any) => {
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
+    updateFormData({ favoriteGenres: values } as any);
+  };
+
+  const handleHatedGenreChange = (selectedOptions: any) => {
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
+    updateFormData({ hatedGenres: values } as any);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+
     const {
       confirmPassword,
+
       favoriteGenres,
       hatedGenres,
       hobbies,
       englishLevel,
       education,
       workField,
+      teacherGrades,
+      studentGrade,
       ...restData
     } = formData;
 
-    const formattedGenres = (str: string) => {
-      if (!str || str.trim() === "") return undefined;
-      return str
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !isNaN(n));
-    };
-
-    const formattedHobbies = (str: string) => {
-      if (!str || str.trim() === "") return undefined;
-      return str
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s !== "");
-    };
 
     const dataToSend = {
       ...restData,
       englishLevel: englishLevel === "choose" ? undefined : englishLevel,
       education: education === "choose" ? undefined : education,
       workField: workField === "choose" ? undefined : workField,
-      hobbies: formattedHobbies(hobbies),
-      favoriteGenres: formattedGenres(favoriteGenres),
-      hatedGenres: formattedGenres(hatedGenres),
+      teacherGrades: teacherGrades === "choose" ? undefined : teacherGrades,
+      studentGrade: studentGrade === "choose" ? undefined : studentGrade,
+      hobbies: hobbies,
+      favoriteGenres: favoriteGenres,
+      hatedGenres: hatedGenres,
     };
 
     try {
@@ -70,14 +97,15 @@ export default function RegistrationPreferences() {
       );
 
       if (response.ok) {
-        // const data = await response.json();
-        navigate("/login");
+        navigate("/loginForm");
       } else {
         const errorData = await response.json();
-        console.error(errorData);
+        console.error("Registration error:", errorData);
+        alert(`Reg error: ${errorData.message || "Invalid data"}`);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Network error:", error);
+      alert("Network error. ");
     }
   };
 
@@ -98,23 +126,29 @@ export default function RegistrationPreferences() {
           </div>
           <div className="mb-1.5 flex flex-col">
             <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
-            <InputText
+            <Select
+              options={genreOptions}
+              isMulti
               name="favoriteGenres"
-              value={formData.favoriteGenres}
-              onChange={handleChange}
-              type="text"
-              placeholder="Select"
+              placeholder="Choose favorite genres"
+              onChange={handleFavoriteGenreChange}
+              value={genreOptions.filter((option: any) =>
+                formData.favoriteGenres?.includes(option.value),
+              )}
             />
             <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
-            <InputText
+            <Select
+              options={genreOptions}
+              isMulti
               name="hatedGenres"
-              value={formData.hatedGenres}
-              onChange={handleChange}
-              type="text"
-              placeholder="Select"
+              placeholder="Choose hated genres"
+              onChange={handleHatedGenreChange}
+              value={genreOptions.filter((option: any) =>
+                formData.hatedGenres?.includes(option.value),
+              )}
             />
           </div>
-          <div>
+          <div className="mt-4 flex gap-2">
             <Button type="submit">Register</Button>
             <Link to="/registrationDetails">
               <Button type="button">Back</Button>
