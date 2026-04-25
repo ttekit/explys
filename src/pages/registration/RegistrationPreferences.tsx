@@ -1,9 +1,15 @@
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
+import ValidateError from "../../components/ValidateError";
 import { Link, useNavigate } from "react-router";
 import { useContext, FormEvent, useState, useEffect } from "react";
-import { RegistrationContext } from "./RegistrationContext";
-import Select from "react-select";
+import { RegistrationContext } from "../../context/RegistrationContext";
+import MultiSelect from "../../components/MultiSelect";
+import toast from "react-hot-toast";
+import { apiUrl, getResponseErrorMessage } from "../../lib/api";
+import type { MultiValue } from "react-select";
+
+type GenreOption = { value: number; label: string };
 
 export default function RegistrationPreferences() {
   const context = useContext(RegistrationContext);
@@ -12,45 +18,71 @@ export default function RegistrationPreferences() {
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
 
-  const [genreOptions, setGenreOptions] = useState<{ value: string; label: string }[]>([]);
+  const [genreOptions, setGenreOptions] = useState<GenreOption[]>([]);
+  const [genreLoadError, setGenreLoadError] = useState(false);
+  const [genresLoading, setGenresLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchGenres = async () => {
+      setGenresLoading(true);
+      setGenreLoadError(false);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/genres`);
+        const response = await fetch(apiUrl("/genres"));
 
-        if (response.ok) {
-          const data = await response.json();
+        if (!response.ok) {
+          const message = await getResponseErrorMessage(response);
+          throw new Error(message);
+        }
 
-          const formattedOptions = data.map((genre: any) => ({
-            value: genre.id,
-            label: genre.name,
-          }));
+        const data: unknown = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid genres response");
+        }
 
+        const formattedOptions: GenreOption[] = data.map((genre: unknown) => {
+          if (!genre || typeof genre !== "object") {
+            throw new Error("Invalid genre entry");
+          }
+          const g = genre as { id?: unknown; name?: unknown };
+          const id = Number(g.id);
+          const name = g.name;
+          if (!Number.isFinite(id) || typeof name !== "string") {
+            throw new Error("Invalid genre entry");
+          }
+          return { value: id, label: name };
+        });
+
+        if (!cancelled) {
           setGenreOptions(formattedOptions);
-        } else {
-          console.error("Failed to fetch genres");
         }
       } catch (error) {
-        console.error("Error fetching genres:", error);
+        if (!cancelled) {
+          const message =
+            error instanceof Error ? error.message : "Could not load genres";
+          toast.error(message);
+          setGenreLoadError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setGenresLoading(false);
+        }
       }
     };
 
     fetchGenres();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleFavoriteGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
-    updateFormData({ favoriteGenres: values } as any);
+  const handleFavoriteGenreChange = (selected: MultiValue<GenreOption>) => {
+    updateFormData({ favoriteGenres: selected.map((option) => option.value) });
   };
 
-  const handleHatedGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
-    updateFormData({ hatedGenres: values } as any);
+  const handleHatedGenreChange = (selected: MultiValue<GenreOption>) => {
+    updateFormData({ hatedGenres: selected.map((option) => option.value) });
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -73,7 +105,9 @@ export default function RegistrationPreferences() {
 
 
     const dataToSend = {
-      ...restData,
+      name,
+      email,
+      password,
       englishLevel: englishLevel === "choose" ? undefined : englishLevel,
       education: education === "choose" ? undefined : education,
       workField: workField === "choose" ? undefined : workField,
@@ -85,18 +119,16 @@ export default function RegistrationPreferences() {
     };
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(dataToSend),
+      const response = await fetch(apiUrl("/auth/register"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(dataToSend),
+      });
 
       if (response.ok) {
+        toast.success("Account created. You can sign in.");
         navigate("/loginForm");
       } else {
         const errorData = await response.json();
@@ -111,47 +143,65 @@ export default function RegistrationPreferences() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-2">
         <form
-          className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
+          className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
           onSubmit={handleSubmit}
           tabIndex={0}
         >
-          <div className="justify-start my-2">
-            <p className="font-bold text-2xl m-0">Create an account</p>
+          <div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">
+              Create an account
+            </p>
             <div className="flex">
-              <p className="font-semibold m-0 pr-1">Account Credentials</p>
+              <p className="text-gray-500 mb-8">Account Credentials</p>
               <p>- Page 3</p>
             </div>
           </div>
           <div className="mb-1.5 flex flex-col">
-            <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
-            <Select
-              options={genreOptions}
+            {genreLoadError && (
+              <ValidateError>
+                Could not load genres. Check your connection and API settings,
+                then refresh the page.
+              </ValidateError>
+            )}
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
+            </div>
+            <MultiSelect
               isMulti
+              options={genreOptions}
               name="favoriteGenres"
-              placeholder="Choose favorite genres"
+              placeholder={
+                genresLoading ? "Loading genres…" : "Choose favorite genres"
+              }
               onChange={handleFavoriteGenreChange}
-              value={genreOptions.filter((option: any) =>
-                formData.favoriteGenres?.includes(option.value),
-              )}
+              isDisabled={genresLoading || genreLoadError}
             />
-            <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
-            <Select
-              options={genreOptions}
+            <div className="flex flex-row justify-end">
+              <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
+            </div>
+            <MultiSelect
               isMulti
+              options={genreOptions}
               name="hatedGenres"
-              placeholder="Choose hated genres"
+              placeholder={
+                genresLoading ? "Loading genres…" : "Choose hated genres"
+              }
               onChange={handleHatedGenreChange}
-              value={genreOptions.filter((option: any) =>
-                formData.hatedGenres?.includes(option.value),
-              )}
+              isDisabled={genresLoading || genreLoadError}
             />
           </div>
           <div className="mt-4 flex gap-2">
             <Button type="submit">Register</Button>
             <Link to="/registrationDetails">
               <Button type="button">Back</Button>
+            </Link>
+          </div>
+          <div className="mt-6 flex justify-center gap-4 text-gray-500 font-medium">
+            <p className="opacity-70">Already have an account?</p>
+            <Link to="/loginForm">
+              <p className="text-[#7c66f5] hover:underline">Sign in</p>
             </Link>
           </div>
         </form>

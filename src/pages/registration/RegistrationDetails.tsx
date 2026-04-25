@@ -4,8 +4,9 @@ import ValidateError from "../../components/ValidateError";
 import { Link, useNavigate } from "react-router";
 import SelectRegister from "../../components/SelectRegister";
 import { useState, useContext, ChangeEvent, FormEvent } from "react";
-import { RegistrationContext } from "./RegistrationContext";
-import Select from "react-select";
+import { RegistrationContext } from "../../context/RegistrationContext";
+import MultiSelect from "../../components/MultiSelect";
+import type { MultiValue } from "react-select";
 
 interface SelectOption {
   value: string;
@@ -167,16 +168,18 @@ export default function RegistrationDetails() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-2">
         <form
-          className="w-full max-w-75 mx-auto flex flex-col items-center justify-center rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.15)] my-5 pb-5"
+          className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
           onSubmit={handleNext}
           tabIndex={0}
         >
-          <div className="justify-start my-2">
-            <p className="font-bold text-2xl m-0">Create an account</p>
+          <div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">
+              Create an account
+            </p>
             <div className="flex">
-              <p className="font-semibold m-0 pr-1">Account Credentials</p>
+              <p className="text-gray-500 mb-8">Account Credentials</p>
               <p>- Page 2</p>
             </div>
           </div>
@@ -300,6 +303,12 @@ export default function RegistrationDetails() {
             <Button type="submit">Next</Button>
             <Link to="/registrationMain">
               <Button type="button">Back</Button>
+            </Link>
+          </div>
+          <div className="mt-6 flex justify-center gap-4 text-gray-500 font-medium">
+            <p className="opacity-70">Already have an account?</p>
+            <Link to="/loginForm">
+              <p className="text-[#7c66f5] hover:underline">Sign in</p>
             </Link>
           </div>
         </form>

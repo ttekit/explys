@@ -6,6 +6,15 @@ export default function MainPage() {
   return (
     <>
     <Navigation />
+      <Link to="/registrationMain">
+        <Button>Register</Button>
+      </Link>
+      <Link to="/loginForm">
+        <Button>Login</Button>
+      </Link>
+      <Link to="/profileMain">
+        <Button>Profile</Button>
+      </Link>
     </>
   );
 }

@@ -7,7 +7,9 @@ import RegistrationDetails from "./pages/registration/RegistrationDetails";
 import RegistrationPreferences from "./pages/registration/RegistrationPreferences";
 import LoginForm from "./pages/login/LoginForm";
 import MainPage from "./pages/MainPage";
-import { RegistrationProvider } from "./pages/registration/RegistrationContext";
+import ProfileMain from "./pages/profile/ProfileMain";
+import { RegistrationProvider } from "./context/RegistrationContext";
+import { UserProvider } from "./context/UserContext";
 
 const router = createBrowserRouter([
   { path: "/", element: <MainPage /> },
@@ -15,12 +17,15 @@ const router = createBrowserRouter([
   { path: "/registrationDetails", element: <RegistrationDetails /> },
   { path: "/registrationPreferences", element: <RegistrationPreferences /> },
   { path: "/loginForm", element: <LoginForm /> },
+  { path: "/profileMain", element: <ProfileMain /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RegistrationProvider>
-      <RouterProvider router={router} />
-    </RegistrationProvider>
+    <UserProvider>
+      <RegistrationProvider>
+        <RouterProvider router={router} />
+      </RegistrationProvider>
+    </UserProvider>
   </StrictMode>,
 );
