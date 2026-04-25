@@ -1436,6 +1436,9 @@ export type $AdditionalUserDataPayload<ExtArgs extends runtime.Types.Extensions.
     interests: string[]
     teacherGrades: string | null
     teacherTopics: string[]
+    /**
+     * Roster of pupils as JSON, e.g. [{ "name", "surname" }] — matches DB JSONB
+     */
     studentNames: runtime.JsonValue | null
     studentGrade: string | null
     studentProblemTopics: string[]

@@ -12,6 +12,7 @@ import {
 } from "@/lib/api";
 import { getSession } from "@/lib/session";
 import type { PlacementStatus, UserProfile } from "@/lib/types";
+import { Navigation } from "@/components/Navigation";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -67,29 +68,37 @@ export default function DashboardPage() {
 
   if (loading && !me) {
     return (
-      <main className="mx-auto max-w-4xl px-4 py-10 text-sm text-zinc-500">
-        Loading…
-      </main>
+      <>
+        <Navigation />
+        <main className="mx-auto max-w-4xl px-4 py-10 text-sm text-zinc-500">
+          Loading…
+        </main>
+      </>
     );
   }
 
   if (err && !me) {
     return (
-      <main className="mx-auto max-w-4xl px-4 py-10">
-        <p className="whitespace-pre-wrap text-red-600 dark:text-red-400">
-          {err}
-        </p>
-        <Link
-          className="mt-4 inline-block text-sm underline"
-          href="/login"
-        >
-          Back to log in
-        </Link>
-      </main>
+      <>
+        <Navigation />
+        <main className="mx-auto max-w-4xl px-4 py-10">
+          <p className="whitespace-pre-wrap text-red-600 dark:text-red-400">
+            {err}
+          </p>
+          <Link
+            className="mt-4 inline-block text-sm underline"
+            href="/login"
+          >
+            Back to log in
+          </Link>
+        </main>
+      </>
     );
   }
 
   return (
+    <>
+      <Navigation />
     <main className="mx-auto max-w-4xl px-4 py-8">
       <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
         Dashboard
@@ -256,5 +265,6 @@ export default function DashboardPage() {
         </a>
       </div>
     </main>
+    </>
   );
 }

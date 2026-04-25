@@ -1,443 +1,291 @@
 "use client";
 
-import { useState } from "react";
+import InputText from "@/components/InputText";
+import Button from "@/components/Button";
+import ValidateError from "@/components/ValidateError";
+import LabelRegister from "@/components/LabelRegister";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { apiRegister } from "@/lib/api";
-import { setSession } from "@/lib/session";
-import { buildPupilCredentialsList } from "@/lib/teacher-student-accounts";
-import {
-  buildTeacherCredentialsSheetCsv,
-  downloadTextFile,
-} from "@/lib/teacher-roster-csv";
-import type { TeacherStudentRow } from "@/lib/teacher-roster.types";
+import { useContext, useState, type ChangeEvent, type FormEvent } from "react";
+import { RegistrationContext } from "@/context/RegistrationContext";
+import { Eye, EyeOff } from "lucide-react";
 
-function newTeacherRow(): TeacherStudentRow {
-  return {
-    id: typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `row-${Date.now()}-${Math.random()}`,
-    firstName: "",
-    lastName: "",
-  };
-}
+export default function RegisterStepOne() {
+  const context = useContext(RegistrationContext);
+  if (!context) throw new Error("RegistrationContext is not available");
 
-function teacherRowsToStudentNamesString(rows: TeacherStudentRow[]): string {
-  const lines = rows
-    .map((r) => {
-      const a = r.firstName.trim();
-      const b = r.lastName.trim();
-      if (!a && !b) return null;
-      return b ? `${a} ${b}`.trim() : a;
-    })
-    .filter((line): line is string => Boolean(line));
-  return lines.join("\n");
-}
-
-export default function RegisterPage() {
+  const { formData, updateFormData } = context;
+  const [errorText, setErrorText] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [englishLevel, setEnglishLevel] = useState("B1");
-  const [hobbies, setHobbies] = useState("reading, music");
-  const [education, setEducation] = useState("");
-  const [workField, setWorkField] = useState("");
-  const [nativeLanguage, setNativeLanguage] = useState("uk");
-  const [role, setRole] = useState("adult");
-  const [teacherGrades, setTeacherGrades] = useState("");
-  const [teacherTopics, setTeacherTopics] = useState("");
-  const [studentNames, setStudentNames] = useState("");
-  const [teacherStudentRows, setTeacherStudentRows] = useState<TeacherStudentRow[]>([
-    newTeacherRow(),
-  ]);
-  const [studentGrade, setStudentGrade] = useState("");
-  const [studentProblemTopics, setStudentProblemTopics] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  function splitList(s: string): string[] {
-    return s
-      .split(/[,;]/)
-      .map((x) => x.trim())
-      .filter(Boolean);
-  }
+  const isValidPassword = (p: string) =>
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(p);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    try {
-      const isTeacher = role === "teacher";
-      const hobbyList = splitList(hobbies);
-      const passTrimmed = password.trim();
-      const payload: Parameters<typeof apiRegister>[0] = {
-        name: name.trim(),
-        email: email.trim(),
-        password: passTrimmed,
-        role: role || "adult",
-      };
-      if (!isTeacher) {
-        payload.englishLevel = englishLevel || undefined;
-        payload.hobbies = hobbyList.length ? hobbyList : undefined;
-        payload.education = education.trim() || undefined;
-        payload.workField = workField.trim() || undefined;
-        payload.nativeLanguage = nativeLanguage.trim() || undefined;
+  const validateField = (
+    value: string,
+    type: "password" | "email" | "confirmPassword" | "other",
+    passwordToCompare?: string,
+  ) => {
+    if (type === "password") {
+      if (value.length < 8) {
+        setErrorText("Password must be at least 8 characters.");
+        return false;
       }
-      let teacherPupils: ReturnType<typeof buildPupilCredentialsList> = [];
-      if (isTeacher) {
-        if (teacherGrades.trim()) payload.teacherGrades = teacherGrades.trim();
-        const tt = splitList(teacherTopics);
-        if (tt.length) payload.teacherTopics = tt;
-        const roster = teacherRowsToStudentNamesString(teacherStudentRows);
-        if (roster) payload.studentNames = roster;
-        teacherPupils = buildPupilCredentialsList(
-          teacherStudentRows,
-          email.trim(),
-        );
-        if (teacherPupils.length) {
-          payload.studentAccounts = teacherPupils;
-        }
+      if (!/[A-Z]/.test(value)) {
+        setErrorText("Password must contain at least one uppercase letter.");
+        return false;
       }
-      if (role === "student") {
-        if (studentNames.trim()) payload.studentNames = studentNames.trim();
-        if (studentGrade.trim()) payload.studentGrade = studentGrade.trim();
-        const st = splitList(studentProblemTopics);
-        if (st.length) payload.studentProblemTopics = st;
+      if (!/[a-z]/.test(value)) {
+        setErrorText("Password must contain at least one lowercase letter.");
+        return false;
       }
-      const session = await apiRegister(payload);
-      setSession(session);
-      if (isTeacher) {
-        const csv = buildTeacherCredentialsSheetCsv({
-          teacherName: name.trim(),
-          teacherEmail: email.trim(),
-          teacherPassword: passTrimmed,
-          pupils: teacherPupils,
-        });
-        const stamp = new Date().toISOString().slice(0, 10);
-        downloadTextFile(`class-credentials-${stamp}.csv`, csv);
+      if (!/\d/.test(value)) {
+        setErrorText("Password must contain at least one number.");
+        return false;
       }
-      router.push("/dashboard");
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Register error");
-    } finally {
-      setLoading(false);
+      if (!/[@$!%*?&]/.test(value)) {
+        setErrorText("Password must contain at least one of: @ $ ! % * ? &");
+        return false;
+      }
     }
-  }
+
+    if (type === "confirmPassword") {
+      const pw = passwordToCompare ?? formData.password;
+      if (value !== pw) {
+        setErrorText("Passwords do not match.");
+        return false;
+      }
+    }
+
+    if (type === "email") {
+      if (!/^\S+@\S+\.\S+$/.test(value)) {
+        setErrorText("Invalid email format.");
+        return false;
+      }
+    }
+
+    if (type === "other") {
+      if (value.trim() === "") {
+        setErrorText("Please fill in all required fields.");
+        return false;
+      }
+    }
+
+    setErrorText(null);
+    return true;
+  };
+
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    type: "password" | "email" | "confirmPassword" | "other",
+  ) => {
+    const { name, value } = e.target;
+    updateFormData({ [name]: value } as Record<string, string>);
+
+    const passFromForm =
+      e.currentTarget.form?.querySelector<HTMLInputElement>(
+        'input[name="password"]',
+      )?.value ?? formData.password;
+    if (type === "confirmPassword") {
+      validateField(value, "confirmPassword", passFromForm);
+    } else {
+      validateField(value, type);
+    }
+  };
+
+  const handleNext = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const name = String(fd.get("name") ?? "").trim();
+    const email = String(fd.get("email") ?? "").trim();
+    const password = String(fd.get("password") ?? "");
+    const confirmPassword = String(fd.get("confirmPassword") ?? "");
+    updateFormData({ name, email, password, confirmPassword });
+
+    if (!name) {
+      setErrorText("Username is required.");
+      return;
+    }
+    if (!email) {
+      setErrorText("Email is required.");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setErrorText("Invalid email format.");
+      return;
+    }
+    if (!password) {
+      setErrorText("Password is required.");
+      return;
+    }
+    if (!isValidPassword(password)) {
+      if (password.length < 8) {
+        setErrorText("Password must be at least 8 characters.");
+        return;
+      }
+      if (!/[A-Z]/.test(password)) {
+        setErrorText("Password must contain at least one uppercase letter.");
+        return;
+      }
+      if (!/[a-z]/.test(password)) {
+        setErrorText("Password must contain at least one lowercase letter.");
+        return;
+      }
+      if (!/\d/.test(password)) {
+        setErrorText("Password must contain at least one number.");
+        return;
+      }
+      if (!/[@$!%*?&]/.test(password)) {
+        setErrorText("Password must contain at least one of: @ $ ! % * ? &");
+        return;
+      }
+      setErrorText("Password does not meet the requirements.");
+      return;
+    }
+    if (!confirmPassword) {
+      setErrorText("Please confirm your password.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorText("Passwords do not match.");
+      return;
+    }
+    setErrorText(null);
+    router.push("/register/details");
+  };
+
+  const handleBack = () => {
+    updateFormData({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      englishLevel: "choose",
+      hobbies: [],
+      education: "choose",
+      workField: "choose",
+      favoriteGenres: [],
+      hatedGenres: [],
+    });
+  };
 
   return (
-    <main
-      className={`mx-auto px-4 py-10 ${role === "teacher" ? "max-w-2xl" : "max-w-md"}`}
-    >
-      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        Register
-      </h1>
-      <p className="mt-1 text-sm text-zinc-500">
-        Calls <code className="rounded bg-zinc-100 px-1 text-xs dark:bg-zinc-800">POST /auth/register</code> — includes <code className="text-xs">role</code> (adult / teacher / student) and role-specific profile fields matching the backend.
-        {role === "teacher" ? (
-          <span>
-            {" "}
-            For teachers, the same list creates real <strong>student</strong>{" "}
-            accounts in the API (with <code>teacher_id</code>), and a CSV
-            (Excel-friendly) with names, logins, and passwords downloads
-            after sign-up.
-          </span>
-        ) : null}
-      </p>
-      <form onSubmit={onSubmit} className="mt-6 max-h-[min(70vh,520px)] space-y-3 overflow-y-auto pr-1">
+    <div className="min-h-screen flex items-center justify-center p-2">
+      <form
+        className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
+        onSubmit={handleNext}
+        tabIndex={0}
+      >
         <div>
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Name
-          </label>
-          <input
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Email
-          </label>
-          <input
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-            type="text"
-            inputMode="email"
-            autoComplete="email"
-            spellCheck={false}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Password
-          </label>
-          <input
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-            placeholder="8+ chars, upper, lower, digit"
-          />
-        </div>
-        <div>
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Role
-          </label>
-          <select
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="adult">adult (learner)</option>
-            <option value="teacher">teacher</option>
-            <option value="student">student</option>
-          </select>
-        </div>
-        {role === "teacher" ? (
-          <>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Grades (optional)
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={teacherGrades}
-                onChange={(e) => setTeacherGrades(e.target.value)}
-                placeholder="e.g. Grades 9–11"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Teaching topics (comma-separated, optional)
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={teacherTopics}
-                onChange={(e) => setTeacherTopics(e.target.value)}
-                placeholder="grammar, writing, …"
-              />
-            </div>
-            <div>
-              <div className="mb-1 flex items-end justify-between gap-2">
-                <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                  Students
-                </label>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setTeacherStudentRows((r) => [...r, newTeacherRow()])
-                  }
-                  className="rounded border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                >
-                  Add row
-                </button>
-              </div>
-              <div className="mt-1 overflow-x-auto rounded-md border border-zinc-300 dark:border-zinc-600">
-                <table className="w-full min-w-[360px] border-collapse text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-zinc-200 bg-zinc-100 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
-                      <th className="w-8 px-2 py-2 font-medium">#</th>
-                      <th className="px-2 py-2 font-medium">First name</th>
-                      <th className="px-2 py-2 font-medium">Last name</th>
-                      <th className="w-20 px-2 py-2 font-medium" aria-label="actions" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teacherStudentRows.map((row, i) => (
-                      <tr
-                        key={row.id}
-                        className="border-b border-zinc-200 last:border-0 dark:border-zinc-700"
-                      >
-                        <td className="px-2 py-1.5 align-middle text-zinc-500">
-                          {i + 1}
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <input
-                            className="w-full min-w-0 rounded border-0 bg-transparent py-1 text-sm outline-none focus:ring-0 dark:bg-zinc-900/30"
-                            value={row.firstName}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setTeacherStudentRows((list) =>
-                                list.map((r) =>
-                                  r.id === row.id
-                                    ? { ...r, firstName: v }
-                                    : r,
-                                ),
-                              );
-                            }}
-                            autoComplete="given-name"
-                            placeholder="—"
-                            aria-label={`Student ${i + 1} first name`}
-                          />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <input
-                            className="w-full min-w-0 rounded border-0 bg-transparent py-1 text-sm outline-none focus:ring-0 dark:bg-zinc-900/30"
-                            value={row.lastName}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setTeacherStudentRows((list) =>
-                                list.map((r) =>
-                                  r.id === row.id
-                                    ? { ...r, lastName: v }
-                                    : r,
-                                ),
-                              );
-                            }}
-                            autoComplete="family-name"
-                            placeholder="—"
-                            aria-label={`Student ${i + 1} last name`}
-                          />
-                        </td>
-                        <td className="px-2 py-1.5 text-right">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setTeacherStudentRows((list) => {
-                                const next = list.filter((x) => x.id !== row.id);
-                                if (next.length === 0) {
-                                  return [newTeacherRow()];
-                                }
-                                return next;
-                              });
-                            }}
-                            className="text-xs text-zinc-500 underline hover:text-zinc-800 dark:hover:text-zinc-200"
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="mt-1 text-xs text-zinc-500">
-                Optional. Each row is one student; data is sent as one name per
-                line. Saved to your account profile.
-              </p>
-            </div>
-          </>
-        ) : null}
-        {role === "student" ? (
-          <>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Student — names
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={studentNames}
-                onChange={(e) => setStudentNames(e.target.value)}
-                placeholder="optional"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Student — grade
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={studentGrade}
-                onChange={(e) => setStudentGrade(e.target.value)}
-                placeholder="optional"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Student — problem topics (comma-separated)
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={studentProblemTopics}
-                onChange={(e) => setStudentProblemTopics(e.target.value)}
-              />
-            </div>
-          </>
-        ) : null}
-        {role !== "teacher" ? (
-          <>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                English level (CEFR)
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={englishLevel}
-                onChange={(e) => setEnglishLevel(e.target.value)}
-                placeholder="A2, B1, …"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Hobbies (comma-separated)
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={hobbies}
-                onChange={(e) => setHobbies(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Education
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={education}
-                onChange={(e) => setEducation(e.target.value)}
-                placeholder="optional"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Work / field
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={workField}
-                onChange={(e) => setWorkField(e.target.value)}
-                placeholder="optional"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Native language code
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-                value={nativeLanguage}
-                onChange={(e) => setNativeLanguage(e.target.value)}
-                placeholder="e.g. uk, en"
-              />
-            </div>
-          </>
-        ) : null}
-        {error ? (
-          <p className="whitespace-pre-wrap text-sm text-red-600 dark:text-red-400">
-            {error}
+          <p className="text-3xl font-bold text-gray-900 mb-1">
+            Create an account
           </p>
-        ) : null}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-zinc-900 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          {loading ? "…" : "Create account"}
-        </button>
+          <div className="flex">
+            <p className="text-gray-500 mb-8">Account Credentials</p>
+            <p className="text-gray-500">- Page 1</p>
+          </div>
+        </div>
+        <div className="space-y-2 flex flex-col">
+          <div className="flex flex-row justify-end">
+            <LabelRegister isRequired>Username</LabelRegister>
+          </div>
+          <InputText
+            name="name"
+            value={formData.name}
+            onChange={(e) => handleChange(e, "other")}
+            type="text"
+            placeholder="Enter your username"
+            autoComplete="username"
+          />
+          <div className="flex flex-row justify-end">
+            <LabelRegister isRequired>Email</LabelRegister>
+          </div>
+          <InputText
+            name="email"
+            value={formData.email}
+            onChange={(e) => handleChange(e, "email")}
+            type="email"
+            placeholder="Enter your email"
+            autoComplete="email"
+          />
+          <div className="flex flex-row justify-end">
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? (
+                <EyeOff className="opacity-60 w-6 h-6 pr-1" />
+              ) : (
+                <Eye className="opacity-60 w-6 h-6 pr-1" />
+              )}
+            </button>
+            <LabelRegister isRequired>Password</LabelRegister>
+          </div>
+          <div className="flex">
+            <InputText
+              name="password"
+              value={formData.password}
+              onChange={(e) => handleChange(e, "password")}
+              type={showPassword ? "text" : "password"}
+              placeholder="Create password"
+              autoComplete="new-password"
+            />
+          </div>
+          <div className="flex flex-row justify-end">
+            <button
+              type="button"
+              aria-label={
+                showConfirmPassword
+                  ? "Hide confirm password"
+                  : "Show confirm password"
+              }
+              aria-pressed={showConfirmPassword}
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="opacity-60 w-6 h-6 pr-1" />
+              ) : (
+                <Eye className="opacity-60 w-6 h-6 pr-1" />
+              )}
+            </button>
+            <LabelRegister isRequired>Confirm password</LabelRegister>
+          </div>
+          <div className="flex">
+            <InputText
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={(e) => handleChange(e, "confirmPassword")}
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm password"
+              autoComplete="new-password"
+            />
+          </div>
+          {errorText ? <ValidateError>{errorText}</ValidateError> : null}
+        </div>
+        <div>
+          <Button type="submit">Next</Button>
+          <Button
+            type="button"
+            onClick={() => {
+              handleBack();
+              router.push("/video-page");
+            }}
+          >
+            Back
+          </Button>
+        </div>
+        <div className="mt-6 flex justify-center gap-4 text-gray-500 font-medium">
+          <p className="opacity-70">Already have an account?</p>
+          <Link href="/login">
+            <p className="text-[#7c66f5] hover:underline">Sign in</p>
+          </Link>
+        </div>
       </form>
-      <p className="mt-4 text-sm text-zinc-500">
-        Already have an account?{" "}
-        <Link className="text-zinc-900 underline dark:text-zinc-100" href="/login">
-          Log in
-        </Link>
-      </p>
-    </main>
+    </div>
   );
 }

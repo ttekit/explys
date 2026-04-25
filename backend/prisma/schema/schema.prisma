@@ -16,6 +16,9 @@ model User {
   hasCompletedPlacement Boolean          @default(false) @map("has_completed_placement")
   lastLogin          DateTime?
   createdAt          DateTime            @default(now())
+  teacherId          Int?                @map("teacher_id")
+  teacher            User?               @relation("UserTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  students           User[]              @relation("UserTeacher")
   settings           UserSettings?
 
   statistic          UserStatistic?
@@ -26,6 +29,7 @@ model User {
   postWatchSurveys   PostWatchSurvey[]
   userVocabulary     UserVocabulary[]
 
+  @@index([teacherId], map: "users_teacher_id_idx")
   @@map("users")
 }
 
@@ -45,7 +49,8 @@ model AdditionalUserData {
 
   teacherGrades        String?
   teacherTopics        String[]
-  studentNames         String?
+  /// Roster of pupils as JSON, e.g. [{ "name", "surname" }] — matches DB JSONB
+  studentNames         Json?
   studentGrade         String?
   studentProblemTopics String[]
 

@@ -1,21 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { AppHeader } from "@/components/AppHeader";
+import { DM_Sans } from "next/font/google";
+import { AppProviders } from "./providers";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const dmSans = DM_Sans({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-dm-sans",
 });
 
 export const metadata: Metadata = {
-  title: "Eng Curses — API test",
-  description: "Next.js UI to test the Eng Curses Nest API",
+  title: "CineLingo — Eng Curses",
+  description: "Learn English with movies and series",
 };
 
 export default function RootLayout({
@@ -24,13 +19,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <AppHeader />
-        {children}
+    <html lang="en" className={`${dmSans.variable} h-full antialiased`}>
+      <body className="min-h-dvh">
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

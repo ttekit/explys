@@ -1757,7 +1757,8 @@ export const ContentVideoScalarFieldEnum = {
   contentId: 'contentId',
   videoLink: 'videoLink',
   videoName: 'videoName',
-  videoDescription: 'videoDescription'
+  videoDescription: 'videoDescription',
+  comprehensionTestsCache: 'comprehensionTestsCache'
 } as const
 
 export type ContentVideoScalarFieldEnum = (typeof ContentVideoScalarFieldEnum)[keyof typeof ContentVideoScalarFieldEnum]
@@ -1795,7 +1796,8 @@ export const UserScalarFieldEnum = {
   role: 'role',
   hasCompletedPlacement: 'hasCompletedPlacement',
   lastLogin: 'lastLogin',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  teacherId: 'teacherId'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -1930,19 +1932,19 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
-export const JsonNullValueInput = {
-  JsonNull: JsonNull
-} as const
-
-export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
-
-
 export const NullableJsonNullValueInput = {
   DbNull: DbNull,
   JsonNull: JsonNull
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

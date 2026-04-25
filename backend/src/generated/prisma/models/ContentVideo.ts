@@ -58,6 +58,7 @@ export type ContentVideoCountAggregateOutputType = {
   videoLink: number
   videoName: number
   videoDescription: number
+  comprehensionTestsCache: number
   _all: number
 }
 
@@ -94,6 +95,7 @@ export type ContentVideoCountAggregateInputType = {
   videoLink?: true
   videoName?: true
   videoDescription?: true
+  comprehensionTestsCache?: true
   _all?: true
 }
 
@@ -189,6 +191,7 @@ export type ContentVideoGroupByOutputType = {
   videoLink: string
   videoName: string
   videoDescription: string | null
+  comprehensionTestsCache: runtime.JsonValue | null
   _count: ContentVideoCountAggregateOutputType | null
   _avg: ContentVideoAvgAggregateOutputType | null
   _sum: ContentVideoSumAggregateOutputType | null
@@ -220,6 +223,7 @@ export type ContentVideoWhereInput = {
   videoLink?: Prisma.StringFilter<"ContentVideo"> | string
   videoName?: Prisma.StringFilter<"ContentVideo"> | string
   videoDescription?: Prisma.StringNullableFilter<"ContentVideo"> | string | null
+  comprehensionTestsCache?: Prisma.JsonNullableFilter<"ContentVideo">
   content?: Prisma.XOR<Prisma.ContentMediaScalarRelationFilter, Prisma.ContentMediaWhereInput>
   videoCaption?: Prisma.XOR<Prisma.VideoCaptionsNullableScalarRelationFilter, Prisma.VideoCaptionsWhereInput> | null
   postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
@@ -231,6 +235,7 @@ export type ContentVideoOrderByWithRelationInput = {
   videoLink?: Prisma.SortOrder
   videoName?: Prisma.SortOrder
   videoDescription?: Prisma.SortOrderInput | Prisma.SortOrder
+  comprehensionTestsCache?: Prisma.SortOrderInput | Prisma.SortOrder
   content?: Prisma.ContentMediaOrderByWithRelationInput
   videoCaption?: Prisma.VideoCaptionsOrderByWithRelationInput
   postWatchSurveys?: Prisma.PostWatchSurveyOrderByRelationAggregateInput
@@ -245,6 +250,7 @@ export type ContentVideoWhereUniqueInput = Prisma.AtLeast<{
   videoLink?: Prisma.StringFilter<"ContentVideo"> | string
   videoName?: Prisma.StringFilter<"ContentVideo"> | string
   videoDescription?: Prisma.StringNullableFilter<"ContentVideo"> | string | null
+  comprehensionTestsCache?: Prisma.JsonNullableFilter<"ContentVideo">
   content?: Prisma.XOR<Prisma.ContentMediaScalarRelationFilter, Prisma.ContentMediaWhereInput>
   videoCaption?: Prisma.XOR<Prisma.VideoCaptionsNullableScalarRelationFilter, Prisma.VideoCaptionsWhereInput> | null
   postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
@@ -256,6 +262,7 @@ export type ContentVideoOrderByWithAggregationInput = {
   videoLink?: Prisma.SortOrder
   videoName?: Prisma.SortOrder
   videoDescription?: Prisma.SortOrderInput | Prisma.SortOrder
+  comprehensionTestsCache?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ContentVideoCountOrderByAggregateInput
   _avg?: Prisma.ContentVideoAvgOrderByAggregateInput
   _max?: Prisma.ContentVideoMaxOrderByAggregateInput
@@ -272,12 +279,14 @@ export type ContentVideoScalarWhereWithAggregatesInput = {
   videoLink?: Prisma.StringWithAggregatesFilter<"ContentVideo"> | string
   videoName?: Prisma.StringWithAggregatesFilter<"ContentVideo"> | string
   videoDescription?: Prisma.StringNullableWithAggregatesFilter<"ContentVideo"> | string | null
+  comprehensionTestsCache?: Prisma.JsonNullableWithAggregatesFilter<"ContentVideo">
 }
 
 export type ContentVideoCreateInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   content: Prisma.ContentMediaCreateNestedOneWithoutContentVideoInput
   videoCaption?: Prisma.VideoCaptionsCreateNestedOneWithoutContentVideoInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutContentVideoInput
@@ -289,6 +298,7 @@ export type ContentVideoUncheckedCreateInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   videoCaption?: Prisma.VideoCaptionsUncheckedCreateNestedOneWithoutContentVideoInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutContentVideoInput
 }
@@ -297,6 +307,7 @@ export type ContentVideoUpdateInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   content?: Prisma.ContentMediaUpdateOneRequiredWithoutContentVideoNestedInput
   videoCaption?: Prisma.VideoCaptionsUpdateOneWithoutContentVideoNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutContentVideoNestedInput
@@ -308,6 +319,7 @@ export type ContentVideoUncheckedUpdateInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   videoCaption?: Prisma.VideoCaptionsUncheckedUpdateOneWithoutContentVideoNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutContentVideoNestedInput
 }
@@ -318,12 +330,14 @@ export type ContentVideoCreateManyInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ContentVideoUpdateManyMutationInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ContentVideoUncheckedUpdateManyInput = {
@@ -332,6 +346,7 @@ export type ContentVideoUncheckedUpdateManyInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ContentVideoListRelationFilter = {
@@ -350,6 +365,7 @@ export type ContentVideoCountOrderByAggregateInput = {
   videoLink?: Prisma.SortOrder
   videoName?: Prisma.SortOrder
   videoDescription?: Prisma.SortOrder
+  comprehensionTestsCache?: Prisma.SortOrder
 }
 
 export type ContentVideoAvgOrderByAggregateInput = {
@@ -461,6 +477,7 @@ export type ContentVideoCreateWithoutContentInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   videoCaption?: Prisma.VideoCaptionsCreateNestedOneWithoutContentVideoInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutContentVideoInput
 }
@@ -470,6 +487,7 @@ export type ContentVideoUncheckedCreateWithoutContentInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   videoCaption?: Prisma.VideoCaptionsUncheckedCreateNestedOneWithoutContentVideoInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutContentVideoInput
 }
@@ -509,12 +527,14 @@ export type ContentVideoScalarWhereInput = {
   videoLink?: Prisma.StringFilter<"ContentVideo"> | string
   videoName?: Prisma.StringFilter<"ContentVideo"> | string
   videoDescription?: Prisma.StringNullableFilter<"ContentVideo"> | string | null
+  comprehensionTestsCache?: Prisma.JsonNullableFilter<"ContentVideo">
 }
 
 export type ContentVideoCreateWithoutVideoCaptionInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   content: Prisma.ContentMediaCreateNestedOneWithoutContentVideoInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutContentVideoInput
 }
@@ -525,6 +545,7 @@ export type ContentVideoUncheckedCreateWithoutVideoCaptionInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutContentVideoInput
 }
 
@@ -548,6 +569,7 @@ export type ContentVideoUpdateWithoutVideoCaptionInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   content?: Prisma.ContentMediaUpdateOneRequiredWithoutContentVideoNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutContentVideoNestedInput
 }
@@ -558,6 +580,7 @@ export type ContentVideoUncheckedUpdateWithoutVideoCaptionInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutContentVideoNestedInput
 }
 
@@ -565,6 +588,7 @@ export type ContentVideoCreateWithoutPostWatchSurveysInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   content: Prisma.ContentMediaCreateNestedOneWithoutContentVideoInput
   videoCaption?: Prisma.VideoCaptionsCreateNestedOneWithoutContentVideoInput
 }
@@ -575,6 +599,7 @@ export type ContentVideoUncheckedCreateWithoutPostWatchSurveysInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   videoCaption?: Prisma.VideoCaptionsUncheckedCreateNestedOneWithoutContentVideoInput
 }
 
@@ -598,6 +623,7 @@ export type ContentVideoUpdateWithoutPostWatchSurveysInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   content?: Prisma.ContentMediaUpdateOneRequiredWithoutContentVideoNestedInput
   videoCaption?: Prisma.VideoCaptionsUpdateOneWithoutContentVideoNestedInput
 }
@@ -608,6 +634,7 @@ export type ContentVideoUncheckedUpdateWithoutPostWatchSurveysInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   videoCaption?: Prisma.VideoCaptionsUncheckedUpdateOneWithoutContentVideoNestedInput
 }
 
@@ -616,12 +643,14 @@ export type ContentVideoCreateManyContentInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type ContentVideoUpdateWithoutContentInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   videoCaption?: Prisma.VideoCaptionsUpdateOneWithoutContentVideoNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutContentVideoNestedInput
 }
@@ -631,6 +660,7 @@ export type ContentVideoUncheckedUpdateWithoutContentInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   videoCaption?: Prisma.VideoCaptionsUncheckedUpdateOneWithoutContentVideoNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutContentVideoNestedInput
 }
@@ -640,6 +670,7 @@ export type ContentVideoUncheckedUpdateManyWithoutContentInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprehensionTestsCache?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 
@@ -679,6 +710,7 @@ export type ContentVideoSelect<ExtArgs extends runtime.Types.Extensions.Internal
   videoLink?: boolean
   videoName?: boolean
   videoDescription?: boolean
+  comprehensionTestsCache?: boolean
   content?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
   videoCaption?: boolean | Prisma.ContentVideo$videoCaptionArgs<ExtArgs>
   postWatchSurveys?: boolean | Prisma.ContentVideo$postWatchSurveysArgs<ExtArgs>
@@ -691,6 +723,7 @@ export type ContentVideoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   videoLink?: boolean
   videoName?: boolean
   videoDescription?: boolean
+  comprehensionTestsCache?: boolean
   content?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contentVideo"]>
 
@@ -700,6 +733,7 @@ export type ContentVideoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   videoLink?: boolean
   videoName?: boolean
   videoDescription?: boolean
+  comprehensionTestsCache?: boolean
   content?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contentVideo"]>
 
@@ -709,9 +743,10 @@ export type ContentVideoSelectScalar = {
   videoLink?: boolean
   videoName?: boolean
   videoDescription?: boolean
+  comprehensionTestsCache?: boolean
 }
 
-export type ContentVideoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "contentId" | "videoLink" | "videoName" | "videoDescription", ExtArgs["result"]["contentVideo"]>
+export type ContentVideoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "contentId" | "videoLink" | "videoName" | "videoDescription" | "comprehensionTestsCache", ExtArgs["result"]["contentVideo"]>
 export type ContentVideoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   content?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
   videoCaption?: boolean | Prisma.ContentVideo$videoCaptionArgs<ExtArgs>
@@ -738,6 +773,11 @@ export type $ContentVideoPayload<ExtArgs extends runtime.Types.Extensions.Intern
     videoLink: string
     videoName: string
     videoDescription: string | null
+    /**
+     * Cached multiple-choice set from last generate; refreshed when absent or on forced regen.
+     * Shape: { source: "gemini"|"fallback", tests: ComprehensionTestItem[] }
+     */
+    comprehensionTestsCache: runtime.JsonValue | null
   }, ExtArgs["result"]["contentVideo"]>
   composites: {}
 }
@@ -1169,6 +1209,7 @@ export interface ContentVideoFieldRefs {
   readonly videoLink: Prisma.FieldRef<"ContentVideo", 'String'>
   readonly videoName: Prisma.FieldRef<"ContentVideo", 'String'>
   readonly videoDescription: Prisma.FieldRef<"ContentVideo", 'String'>
+  readonly comprehensionTestsCache: Prisma.FieldRef<"ContentVideo", 'Json'>
 }
     
 

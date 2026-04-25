@@ -37,6 +37,7 @@ export default function TestPage() {
   const base = getApiBase();
   const [check, setCheck] = useState<CheckState>({ kind: "idle" });
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [appOrigin, setAppOrigin] = useState("");
   const [videoUrlInput, setVideoUrlInput] = useState("");
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [videoErr, setVideoErr] = useState<string | null>(null);
@@ -73,12 +74,21 @@ export default function TestPage() {
     return comprehensionTestsIframeUrl(
       contentVideoRow.id,
       getSession()?.user?.id ?? null,
+      appOrigin
+        ? { summaryBaseUrl: `${appOrigin}/test/comprehension-summary` }
+        : undefined,
     );
-  }, [contentVideoRow?.id, sessionEmail]);
+  }, [contentVideoRow?.id, sessionEmail, appOrigin]);
 
   useEffect(() => {
     refreshSession();
   }, [refreshSession]);
+
+  useEffect(() => {
+    setAppOrigin(
+      typeof window !== "undefined" ? window.location.origin : "",
+    );
+  }, []);
 
   useEffect(() => {
     setPostWatchSurvey(null);
