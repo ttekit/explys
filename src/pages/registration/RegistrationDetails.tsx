@@ -21,6 +21,30 @@ export default function RegistrationDetails() {
   const [emptyError, setEmptyError] = useState(false);
   const navigate = useNavigate();
 
+  const roleOptions: SelectOption[] = [
+    { value: "choose", text: "Choose your role" },
+    { value: "teacher", text: "Teacher" },
+    { value: "student", text: "Student" },
+    { value: "adult", text: "Adult" },
+  ];
+
+  const gradeOptions: SelectOption[] = [
+    { value: "choose", text: "Choose grade" },
+    { value: "1", text: "1st Grade" },
+    { value: "2", text: "2nd Grade" },
+    { value: "3", text: "3rd Grade" },
+    { value: "4", text: "4th Grade" },
+    { value: "5", text: "5th Grade" },
+    { value: "6", text: "6th Grade" },
+    { value: "7", text: "7th Grade" },
+    { value: "8", text: "8th Grade" },
+    { value: "9", text: "9th Grade" },
+    { value: "10", text: "10th Grade" },
+    { value: "11", text: "11th Grade" },
+    { value: "12", text: "12th Grade" },
+    { value: "university", text: "University" },
+  ];
+
   const engLevels: SelectOption[] = [
     { value: "choose", text: "Choose level" },
     { value: "starter", text: "Starter" },
@@ -63,26 +87,23 @@ export default function RegistrationDetails() {
     { value: "other", text: "Other" },
   ];
 
-  const hobbyOptions: { value: string; label: string }[] = [
+  const hobbyOptions = [
     { value: "football", label: "Football" },
     { value: "basketball", label: "Basketball" },
     { value: "yoga", label: "Yoga" },
     { value: "gym", label: "Gym & Fitness" },
     { value: "swimming", label: "Swimming" },
     { value: "cycling", label: "Cycling" },
-
     { value: "painting", label: "Painting" },
     { value: "photography", label: "Photography" },
     { value: "music", label: "Music" },
     { value: "dancing", label: "Dancing" },
     { value: "cooking", label: "Cooking" },
     { value: "writing", label: "Writing" },
-
     { value: "gaming", label: "Gaming" },
     { value: "coding", label: "Coding" },
     { value: "cybersecurity", label: "Cybersecurity" },
     { value: "design", label: "UI/UX Design" },
-
     { value: "reading", label: "Reading" },
     { value: "traveling", label: "Traveling" },
     { value: "gardening", label: "Gardening" },
@@ -90,22 +111,54 @@ export default function RegistrationDetails() {
     { value: "movies", label: "Movies & Cinema" },
   ];
 
+  const topicOptions = [
+    { value: "grammar", label: "Grammar" },
+    { value: "vocabulary", label: "Vocabulary" },
+    { value: "speaking", label: "Speaking" },
+    { value: "listening", label: "Listening" },
+    { value: "writing", label: "Writing" },
+    { value: "reading", label: "Reading" },
+    { value: "pronunciation", label: "Pronunciation" },
+  ];
+
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     updateFormData({ [name]: value } as Record<string, string>);
   };
 
-  const handleHobbyChange = (
-    selected: MultiValue<{ value: string; label: string }>,
-  ) => {
-    updateFormData({ hobbies: selected.map((option) => option.value) });
+  const handleMultiSelectChange = (name: string) => (selectedOptions: any) => {
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
+    updateFormData({ [name]: values } as any);
   };
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (formData.englishLevel == "choose") {
+    let hasError = false;
+
+    if (formData.role === "choose") {
+      hasError = true;
+    } else if (
+      formData.role === "teacher" &&
+      formData.teacherGrades === "choose"
+    ) {
+      hasError = true;
+    } else if (
+      formData.role === "student" &&
+      (formData.studentGrade === "choose" || formData.englishLevel === "choose")
+    ) {
+      hasError = true;
+    } else if (
+      formData.role === "adult" &&
+      formData.englishLevel === "choose"
+    ) {
+      hasError = true;
+    }
+
+    if (hasError) {
       setEmptyError(true);
     } else {
       setEmptyError(false);
@@ -130,49 +183,123 @@ export default function RegistrationDetails() {
               <p>- Page 2</p>
             </div>
           </div>
-          <div className="mb-1.5 flex flex-col">
-            <div className="flex flex-row justify-end">
-              <LabelRegister isRequired={true}>English level:</LabelRegister>
-            </div>
+          <div className="mb-1.5 flex flex-col w-full px-5">
+            <LabelRegister isRequired={true}>I am a:</LabelRegister>
             <SelectRegister
-              name="englishLevel"
-              value={formData.englishLevel}
+              name="role"
+              value={formData.role}
               onChange={handleChange}
-              options={engLevels}
+              options={roleOptions}
             />
-            <div className="flex flex-row justify-end">
-              <LabelRegister isRequired={false}>Hobbies:</LabelRegister>
-            </div>
-            <MultiSelect
-              isMulti
-              name="hobbies"
-              placeholder="Choose hobbies"
-              options={hobbyOptions}
-              onChange={handleHobbyChange}
-            />
-            <div className="flex flex-row justify-end">
-              <LabelRegister isRequired={false}>Education:</LabelRegister>
-            </div>
-            <SelectRegister
-              name="education"
-              value={formData.education}
-              onChange={handleChange}
-              options={educationLevels}
-            />
-            <div className="flex flex-row justify-end">
-              <LabelRegister isRequired={false}>Field of work:</LabelRegister>
-            </div>
-            <SelectRegister
-              name="workField"
-              value={formData.workField}
-              onChange={handleChange}
-              options={workFields}
-            />
+
+            {formData.role === "teacher" && (
+              <>
+                <LabelRegister isRequired={true}>
+                  Grade of students:
+                </LabelRegister>
+                <SelectRegister
+                  name="teacherGrades"
+                  value={formData.teacherGrades}
+                  onChange={handleChange}
+                  options={gradeOptions}
+                />
+
+                <LabelRegister isRequired={false}>
+                  Topics they are learning:
+                </LabelRegister>
+                <Select
+                  options={topicOptions}
+                  isMulti
+                  name="teacherTopics"
+                  placeholder="Choose topics"
+                  onChange={handleMultiSelectChange("teacherTopics")}
+                />
+
+                <LabelRegister isRequired={false}>
+                  Students list (comma separated):
+                </LabelRegister>
+                <textarea
+                  name="studentNames"
+                  value={formData.studentNames}
+                  onChange={handleChange}
+                  className="w-full p-2 border rounded-md resize-y"
+                  placeholder="Alice, Bob, Charlie..."
+                  rows={3}
+                />
+              </>
+            )}
+
+            {formData.role === "student" && (
+              <>
+                <LabelRegister isRequired={true}>Grade:</LabelRegister>
+                <SelectRegister
+                  name="studentGrade"
+                  value={formData.studentGrade}
+                  onChange={handleChange}
+                  options={gradeOptions}
+                />
+
+                <LabelRegister isRequired={true}>English level:</LabelRegister>
+                <SelectRegister
+                  name="englishLevel"
+                  value={formData.englishLevel}
+                  onChange={handleChange}
+                  options={engLevels}
+                />
+
+                <LabelRegister isRequired={false}>Problem topics:</LabelRegister>
+                <Select
+                  options={topicOptions}
+                  isMulti
+                  name="studentProblemTopics"
+                  placeholder="Choose problem topics"
+                  onChange={handleMultiSelectChange("studentProblemTopics")}
+                />
+              </>
+            )}
+
+            {formData.role === "adult" && (
+              <>
+                <LabelRegister isRequired={true}>English level:</LabelRegister>
+                <SelectRegister
+                  name="englishLevel"
+                  value={formData.englishLevel}
+                  onChange={handleChange}
+                  options={engLevels}
+                />
+
+                <LabelRegister isRequired={false}>Hobbies:</LabelRegister>
+                <Select
+                  options={hobbyOptions}
+                  isMulti
+                  name="hobbies"
+                  placeholder="Choose hobbies"
+                  onChange={handleMultiSelectChange("hobbies")}
+                />
+
+                <LabelRegister isRequired={false}>Education:</LabelRegister>
+                <SelectRegister
+                  name="education"
+                  value={formData.education}
+                  onChange={handleChange}
+                  options={educationLevels}
+                />
+
+                <LabelRegister isRequired={false}>Field of work:</LabelRegister>
+                <SelectRegister
+                  name="workField"
+                  value={formData.workField}
+                  onChange={handleChange}
+                  options={workFields}
+                />
+              </>
+            )}
+
             {emptyError && (
               <ValidateError>Please fill in all required fields.</ValidateError>
             )}
           </div>
-          <div>
+          <div className="mt-4">
             <Button type="submit">Next</Button>
             <Link to="/registrationMain">
               <Button type="button">Back</Button>

@@ -88,17 +88,21 @@ export default function RegistrationPreferences() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+
     const {
+      confirmPassword,
+
       favoriteGenres,
       hatedGenres,
       hobbies,
       englishLevel,
       education,
       workField,
-      name,
-      email,
-      password,
+      teacherGrades,
+      studentGrade,
+      ...restData
     } = formData;
+
 
     const dataToSend = {
       name,
@@ -107,9 +111,11 @@ export default function RegistrationPreferences() {
       englishLevel: englishLevel === "choose" ? undefined : englishLevel,
       education: education === "choose" ? undefined : education,
       workField: workField === "choose" ? undefined : workField,
-      hobbies,
-      favoriteGenres,
-      hatedGenres,
+      teacherGrades: teacherGrades === "choose" ? undefined : teacherGrades,
+      studentGrade: studentGrade === "choose" ? undefined : studentGrade,
+      hobbies: hobbies,
+      favoriteGenres: favoriteGenres,
+      hatedGenres: hatedGenres,
     };
 
     try {
@@ -125,13 +131,13 @@ export default function RegistrationPreferences() {
         toast.success("Account created. You can sign in.");
         navigate("/loginForm");
       } else {
-        const message = await getResponseErrorMessage(response);
-        toast.error(message);
+        const errorData = await response.json();
+        console.error("Registration error:", errorData);
+        alert(`Reg error: ${errorData.message || "Invalid data"}`);
       }
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Registration failed";
-      toast.error(message);
+      console.error("Network error:", error);
+      alert("Network error. ");
     }
   };
 
@@ -186,10 +192,8 @@ export default function RegistrationPreferences() {
               isDisabled={genresLoading || genreLoadError}
             />
           </div>
-          <div>
-            <Button type="submit" disabled={genresLoading}>
-              Register
-            </Button>
+          <div className="mt-4 flex gap-2">
+            <Button type="submit">Register</Button>
             <Link to="/registrationDetails">
               <Button type="button">Back</Button>
             </Link>
