@@ -31,6 +31,7 @@ export type ContentStatsAvgAggregateOutputType = {
   contentMediaId: number | null
   usersWatched: number | null
   rating: number | null
+  processingComplexity: number | null
 }
 
 export type ContentStatsSumAggregateOutputType = {
@@ -38,6 +39,7 @@ export type ContentStatsSumAggregateOutputType = {
   contentMediaId: number | null
   usersWatched: number | null
   rating: number | null
+  processingComplexity: number | null
 }
 
 export type ContentStatsMinAggregateOutputType = {
@@ -45,6 +47,7 @@ export type ContentStatsMinAggregateOutputType = {
   contentMediaId: number | null
   usersWatched: number | null
   rating: number | null
+  processingComplexity: number | null
 }
 
 export type ContentStatsMaxAggregateOutputType = {
@@ -52,6 +55,7 @@ export type ContentStatsMaxAggregateOutputType = {
   contentMediaId: number | null
   usersWatched: number | null
   rating: number | null
+  processingComplexity: number | null
 }
 
 export type ContentStatsCountAggregateOutputType = {
@@ -59,6 +63,9 @@ export type ContentStatsCountAggregateOutputType = {
   contentMediaId: number
   usersWatched: number
   rating: number
+  systemTags: number
+  userTags: number
+  processingComplexity: number
   _all: number
 }
 
@@ -68,6 +75,7 @@ export type ContentStatsAvgAggregateInputType = {
   contentMediaId?: true
   usersWatched?: true
   rating?: true
+  processingComplexity?: true
 }
 
 export type ContentStatsSumAggregateInputType = {
@@ -75,6 +83,7 @@ export type ContentStatsSumAggregateInputType = {
   contentMediaId?: true
   usersWatched?: true
   rating?: true
+  processingComplexity?: true
 }
 
 export type ContentStatsMinAggregateInputType = {
@@ -82,6 +91,7 @@ export type ContentStatsMinAggregateInputType = {
   contentMediaId?: true
   usersWatched?: true
   rating?: true
+  processingComplexity?: true
 }
 
 export type ContentStatsMaxAggregateInputType = {
@@ -89,6 +99,7 @@ export type ContentStatsMaxAggregateInputType = {
   contentMediaId?: true
   usersWatched?: true
   rating?: true
+  processingComplexity?: true
 }
 
 export type ContentStatsCountAggregateInputType = {
@@ -96,6 +107,9 @@ export type ContentStatsCountAggregateInputType = {
   contentMediaId?: true
   usersWatched?: true
   rating?: true
+  systemTags?: true
+  userTags?: true
+  processingComplexity?: true
   _all?: true
 }
 
@@ -190,6 +204,9 @@ export type ContentStatsGroupByOutputType = {
   contentMediaId: number
   usersWatched: number
   rating: number
+  systemTags: string[]
+  userTags: string[]
+  processingComplexity: number | null
   _count: ContentStatsCountAggregateOutputType | null
   _avg: ContentStatsAvgAggregateOutputType | null
   _sum: ContentStatsSumAggregateOutputType | null
@@ -220,6 +237,9 @@ export type ContentStatsWhereInput = {
   contentMediaId?: Prisma.IntFilter<"ContentStats"> | number
   usersWatched?: Prisma.IntFilter<"ContentStats"> | number
   rating?: Prisma.FloatFilter<"ContentStats"> | number
+  systemTags?: Prisma.StringNullableListFilter<"ContentStats">
+  userTags?: Prisma.StringNullableListFilter<"ContentStats">
+  processingComplexity?: Prisma.IntNullableFilter<"ContentStats"> | number | null
   contentMedia?: Prisma.XOR<Prisma.ContentMediaScalarRelationFilter, Prisma.ContentMediaWhereInput>
   topics?: Prisma.TopicListRelationFilter
 }
@@ -229,6 +249,9 @@ export type ContentStatsOrderByWithRelationInput = {
   contentMediaId?: Prisma.SortOrder
   usersWatched?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  systemTags?: Prisma.SortOrder
+  userTags?: Prisma.SortOrder
+  processingComplexity?: Prisma.SortOrderInput | Prisma.SortOrder
   contentMedia?: Prisma.ContentMediaOrderByWithRelationInput
   topics?: Prisma.TopicOrderByRelationAggregateInput
 }
@@ -241,6 +264,9 @@ export type ContentStatsWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ContentStatsWhereInput | Prisma.ContentStatsWhereInput[]
   usersWatched?: Prisma.IntFilter<"ContentStats"> | number
   rating?: Prisma.FloatFilter<"ContentStats"> | number
+  systemTags?: Prisma.StringNullableListFilter<"ContentStats">
+  userTags?: Prisma.StringNullableListFilter<"ContentStats">
+  processingComplexity?: Prisma.IntNullableFilter<"ContentStats"> | number | null
   contentMedia?: Prisma.XOR<Prisma.ContentMediaScalarRelationFilter, Prisma.ContentMediaWhereInput>
   topics?: Prisma.TopicListRelationFilter
 }, "id" | "contentMediaId">
@@ -250,6 +276,9 @@ export type ContentStatsOrderByWithAggregationInput = {
   contentMediaId?: Prisma.SortOrder
   usersWatched?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  systemTags?: Prisma.SortOrder
+  userTags?: Prisma.SortOrder
+  processingComplexity?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ContentStatsCountOrderByAggregateInput
   _avg?: Prisma.ContentStatsAvgOrderByAggregateInput
   _max?: Prisma.ContentStatsMaxOrderByAggregateInput
@@ -265,11 +294,17 @@ export type ContentStatsScalarWhereWithAggregatesInput = {
   contentMediaId?: Prisma.IntWithAggregatesFilter<"ContentStats"> | number
   usersWatched?: Prisma.IntWithAggregatesFilter<"ContentStats"> | number
   rating?: Prisma.FloatWithAggregatesFilter<"ContentStats"> | number
+  systemTags?: Prisma.StringNullableListFilter<"ContentStats">
+  userTags?: Prisma.StringNullableListFilter<"ContentStats">
+  processingComplexity?: Prisma.IntNullableWithAggregatesFilter<"ContentStats"> | number | null
 }
 
 export type ContentStatsCreateInput = {
   usersWatched?: number
   rating?: number
+  systemTags?: Prisma.ContentStatsCreatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsCreateuserTagsInput | string[]
+  processingComplexity?: number | null
   contentMedia: Prisma.ContentMediaCreateNestedOneWithoutStatsInput
   topics?: Prisma.TopicCreateNestedManyWithoutContentStatsInput
 }
@@ -279,12 +314,18 @@ export type ContentStatsUncheckedCreateInput = {
   contentMediaId: number
   usersWatched?: number
   rating?: number
+  systemTags?: Prisma.ContentStatsCreatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsCreateuserTagsInput | string[]
+  processingComplexity?: number | null
   topics?: Prisma.TopicUncheckedCreateNestedManyWithoutContentStatsInput
 }
 
 export type ContentStatsUpdateInput = {
   usersWatched?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  systemTags?: Prisma.ContentStatsUpdatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsUpdateuserTagsInput | string[]
+  processingComplexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   contentMedia?: Prisma.ContentMediaUpdateOneRequiredWithoutStatsNestedInput
   topics?: Prisma.TopicUpdateManyWithoutContentStatsNestedInput
 }
@@ -294,6 +335,9 @@ export type ContentStatsUncheckedUpdateInput = {
   contentMediaId?: Prisma.IntFieldUpdateOperationsInput | number
   usersWatched?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  systemTags?: Prisma.ContentStatsUpdatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsUpdateuserTagsInput | string[]
+  processingComplexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   topics?: Prisma.TopicUncheckedUpdateManyWithoutContentStatsNestedInput
 }
 
@@ -302,11 +346,17 @@ export type ContentStatsCreateManyInput = {
   contentMediaId: number
   usersWatched?: number
   rating?: number
+  systemTags?: Prisma.ContentStatsCreatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsCreateuserTagsInput | string[]
+  processingComplexity?: number | null
 }
 
 export type ContentStatsUpdateManyMutationInput = {
   usersWatched?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  systemTags?: Prisma.ContentStatsUpdatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsUpdateuserTagsInput | string[]
+  processingComplexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type ContentStatsUncheckedUpdateManyInput = {
@@ -314,6 +364,9 @@ export type ContentStatsUncheckedUpdateManyInput = {
   contentMediaId?: Prisma.IntFieldUpdateOperationsInput | number
   usersWatched?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  systemTags?: Prisma.ContentStatsUpdatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsUpdateuserTagsInput | string[]
+  processingComplexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type ContentStatsNullableScalarRelationFilter = {
@@ -321,11 +374,22 @@ export type ContentStatsNullableScalarRelationFilter = {
   isNot?: Prisma.ContentStatsWhereInput | null
 }
 
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
+}
+
 export type ContentStatsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   contentMediaId?: Prisma.SortOrder
   usersWatched?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  systemTags?: Prisma.SortOrder
+  userTags?: Prisma.SortOrder
+  processingComplexity?: Prisma.SortOrder
 }
 
 export type ContentStatsAvgOrderByAggregateInput = {
@@ -333,6 +397,7 @@ export type ContentStatsAvgOrderByAggregateInput = {
   contentMediaId?: Prisma.SortOrder
   usersWatched?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  processingComplexity?: Prisma.SortOrder
 }
 
 export type ContentStatsMaxOrderByAggregateInput = {
@@ -340,6 +405,7 @@ export type ContentStatsMaxOrderByAggregateInput = {
   contentMediaId?: Prisma.SortOrder
   usersWatched?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  processingComplexity?: Prisma.SortOrder
 }
 
 export type ContentStatsMinOrderByAggregateInput = {
@@ -347,6 +413,7 @@ export type ContentStatsMinOrderByAggregateInput = {
   contentMediaId?: Prisma.SortOrder
   usersWatched?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  processingComplexity?: Prisma.SortOrder
 }
 
 export type ContentStatsSumOrderByAggregateInput = {
@@ -354,6 +421,7 @@ export type ContentStatsSumOrderByAggregateInput = {
   contentMediaId?: Prisma.SortOrder
   usersWatched?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  processingComplexity?: Prisma.SortOrder
 }
 
 export type ContentStatsListRelationFilter = {
@@ -398,8 +466,34 @@ export type ContentStatsUncheckedUpdateOneWithoutContentMediaNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContentStatsUpdateToOneWithWhereWithoutContentMediaInput, Prisma.ContentStatsUpdateWithoutContentMediaInput>, Prisma.ContentStatsUncheckedUpdateWithoutContentMediaInput>
 }
 
+export type ContentStatsCreatesystemTagsInput = {
+  set: string[]
+}
+
+export type ContentStatsCreateuserTagsInput = {
+  set: string[]
+}
+
 export type FloatFieldUpdateOperationsInput = {
   set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type ContentStatsUpdatesystemTagsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type ContentStatsUpdateuserTagsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
   increment?: number
   decrement?: number
   multiply?: number
@@ -447,6 +541,9 @@ export type ContentStatsUncheckedUpdateManyWithoutTopicsNestedInput = {
 export type ContentStatsCreateWithoutContentMediaInput = {
   usersWatched?: number
   rating?: number
+  systemTags?: Prisma.ContentStatsCreatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsCreateuserTagsInput | string[]
+  processingComplexity?: number | null
   topics?: Prisma.TopicCreateNestedManyWithoutContentStatsInput
 }
 
@@ -454,6 +551,9 @@ export type ContentStatsUncheckedCreateWithoutContentMediaInput = {
   id?: number
   usersWatched?: number
   rating?: number
+  systemTags?: Prisma.ContentStatsCreatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsCreateuserTagsInput | string[]
+  processingComplexity?: number | null
   topics?: Prisma.TopicUncheckedCreateNestedManyWithoutContentStatsInput
 }
 
@@ -476,6 +576,9 @@ export type ContentStatsUpdateToOneWithWhereWithoutContentMediaInput = {
 export type ContentStatsUpdateWithoutContentMediaInput = {
   usersWatched?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  systemTags?: Prisma.ContentStatsUpdatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsUpdateuserTagsInput | string[]
+  processingComplexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   topics?: Prisma.TopicUpdateManyWithoutContentStatsNestedInput
 }
 
@@ -483,12 +586,18 @@ export type ContentStatsUncheckedUpdateWithoutContentMediaInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   usersWatched?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  systemTags?: Prisma.ContentStatsUpdatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsUpdateuserTagsInput | string[]
+  processingComplexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   topics?: Prisma.TopicUncheckedUpdateManyWithoutContentStatsNestedInput
 }
 
 export type ContentStatsCreateWithoutTopicsInput = {
   usersWatched?: number
   rating?: number
+  systemTags?: Prisma.ContentStatsCreatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsCreateuserTagsInput | string[]
+  processingComplexity?: number | null
   contentMedia: Prisma.ContentMediaCreateNestedOneWithoutStatsInput
 }
 
@@ -497,6 +606,9 @@ export type ContentStatsUncheckedCreateWithoutTopicsInput = {
   contentMediaId: number
   usersWatched?: number
   rating?: number
+  systemTags?: Prisma.ContentStatsCreatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsCreateuserTagsInput | string[]
+  processingComplexity?: number | null
 }
 
 export type ContentStatsCreateOrConnectWithoutTopicsInput = {
@@ -528,11 +640,17 @@ export type ContentStatsScalarWhereInput = {
   contentMediaId?: Prisma.IntFilter<"ContentStats"> | number
   usersWatched?: Prisma.IntFilter<"ContentStats"> | number
   rating?: Prisma.FloatFilter<"ContentStats"> | number
+  systemTags?: Prisma.StringNullableListFilter<"ContentStats">
+  userTags?: Prisma.StringNullableListFilter<"ContentStats">
+  processingComplexity?: Prisma.IntNullableFilter<"ContentStats"> | number | null
 }
 
 export type ContentStatsUpdateWithoutTopicsInput = {
   usersWatched?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  systemTags?: Prisma.ContentStatsUpdatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsUpdateuserTagsInput | string[]
+  processingComplexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   contentMedia?: Prisma.ContentMediaUpdateOneRequiredWithoutStatsNestedInput
 }
 
@@ -541,6 +659,9 @@ export type ContentStatsUncheckedUpdateWithoutTopicsInput = {
   contentMediaId?: Prisma.IntFieldUpdateOperationsInput | number
   usersWatched?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  systemTags?: Prisma.ContentStatsUpdatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsUpdateuserTagsInput | string[]
+  processingComplexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type ContentStatsUncheckedUpdateManyWithoutTopicsInput = {
@@ -548,6 +669,9 @@ export type ContentStatsUncheckedUpdateManyWithoutTopicsInput = {
   contentMediaId?: Prisma.IntFieldUpdateOperationsInput | number
   usersWatched?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  systemTags?: Prisma.ContentStatsUpdatesystemTagsInput | string[]
+  userTags?: Prisma.ContentStatsUpdateuserTagsInput | string[]
+  processingComplexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 
@@ -586,6 +710,9 @@ export type ContentStatsSelect<ExtArgs extends runtime.Types.Extensions.Internal
   contentMediaId?: boolean
   usersWatched?: boolean
   rating?: boolean
+  systemTags?: boolean
+  userTags?: boolean
+  processingComplexity?: boolean
   contentMedia?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
   topics?: boolean | Prisma.ContentStats$topicsArgs<ExtArgs>
   _count?: boolean | Prisma.ContentStatsCountOutputTypeDefaultArgs<ExtArgs>
@@ -596,6 +723,9 @@ export type ContentStatsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   contentMediaId?: boolean
   usersWatched?: boolean
   rating?: boolean
+  systemTags?: boolean
+  userTags?: boolean
+  processingComplexity?: boolean
   contentMedia?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contentStats"]>
 
@@ -604,6 +734,9 @@ export type ContentStatsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   contentMediaId?: boolean
   usersWatched?: boolean
   rating?: boolean
+  systemTags?: boolean
+  userTags?: boolean
+  processingComplexity?: boolean
   contentMedia?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contentStats"]>
 
@@ -612,9 +745,12 @@ export type ContentStatsSelectScalar = {
   contentMediaId?: boolean
   usersWatched?: boolean
   rating?: boolean
+  systemTags?: boolean
+  userTags?: boolean
+  processingComplexity?: boolean
 }
 
-export type ContentStatsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "contentMediaId" | "usersWatched" | "rating", ExtArgs["result"]["contentStats"]>
+export type ContentStatsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "contentMediaId" | "usersWatched" | "rating" | "systemTags" | "userTags" | "processingComplexity", ExtArgs["result"]["contentStats"]>
 export type ContentStatsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   contentMedia?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
   topics?: boolean | Prisma.ContentStats$topicsArgs<ExtArgs>
@@ -638,6 +774,18 @@ export type $ContentStatsPayload<ExtArgs extends runtime.Types.Extensions.Intern
     contentMediaId: number
     usersWatched: number
     rating: number
+    /**
+     * CEFR band tags from transcript analysis (e.g. A2, B1)
+     */
+    systemTags: string[]
+    /**
+     * Theme / topic tags from transcript analysis
+     */
+    userTags: string[]
+    /**
+     * 1–10 processing load estimate, or null if not inferred
+     */
+    processingComplexity: number | null
   }, ExtArgs["result"]["contentStats"]>
   composites: {}
 }
@@ -1067,6 +1215,9 @@ export interface ContentStatsFieldRefs {
   readonly contentMediaId: Prisma.FieldRef<"ContentStats", 'Int'>
   readonly usersWatched: Prisma.FieldRef<"ContentStats", 'Int'>
   readonly rating: Prisma.FieldRef<"ContentStats", 'Float'>
+  readonly systemTags: Prisma.FieldRef<"ContentStats", 'String[]'>
+  readonly userTags: Prisma.FieldRef<"ContentStats", 'String[]'>
+  readonly processingComplexity: Prisma.FieldRef<"ContentStats", 'Int'>
 }
     
 
@@ -1263,6 +1414,11 @@ export type ContentStatsFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Skip the first `n` ContentStats.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ContentStats.
+   */
   distinct?: Prisma.ContentStatsScalarFieldEnum | Prisma.ContentStatsScalarFieldEnum[]
 }
 

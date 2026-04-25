@@ -23,6 +23,8 @@ model User {
   additionalUserData AdditionalUserData?
   friends            UserFriend[]        @relation("UserFriends")
   friendOf           UserFriend[]        @relation("UserFriendsReverse")
+  postWatchSurveys   PostWatchSurvey[]
+  userVocabulary     UserVocabulary[]
 
   @@map("users")
 }
@@ -75,6 +77,7 @@ model Topic {
   contentStats ContentStats[]
   selectedBy   AdditionalUserData[] @relation("SelectedTopics")
   languageData UserLanguageData[]
+  userVocabulary UserVocabulary[]
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
@@ -145,4 +148,23 @@ model UserFriend {
   friendshipCreatedDate DateTime @default(now())
 
   @@map("user_friends")
+}
+
+model UserVocabulary {
+  id       Int     @id @default(autoincrement())
+  userId   Int     @map("user_id")
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Study language (matches DB `language_code`)
+  language String  @map("language_code")
+  term     String
+  source   String  @default("topic_tags")
+  topicId  Int?    @map("topic_id")
+  topic    Topic?  @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  mastery  Float   @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([userId, language, term])
+  @@index([userId, language])
+  @@map("user_vocabulary")
 }

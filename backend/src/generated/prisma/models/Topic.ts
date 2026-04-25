@@ -245,6 +245,7 @@ export type TopicWhereInput = {
   contentStats?: Prisma.ContentStatsListRelationFilter
   selectedBy?: Prisma.AdditionalUserDataListRelationFilter
   languageData?: Prisma.UserLanguageDataListRelationFilter
+  userVocabulary?: Prisma.UserVocabularyListRelationFilter
 }
 
 export type TopicOrderByWithRelationInput = {
@@ -260,6 +261,7 @@ export type TopicOrderByWithRelationInput = {
   contentStats?: Prisma.ContentStatsOrderByRelationAggregateInput
   selectedBy?: Prisma.AdditionalUserDataOrderByRelationAggregateInput
   languageData?: Prisma.UserLanguageDataOrderByRelationAggregateInput
+  userVocabulary?: Prisma.UserVocabularyOrderByRelationAggregateInput
 }
 
 export type TopicWhereUniqueInput = Prisma.AtLeast<{
@@ -278,6 +280,7 @@ export type TopicWhereUniqueInput = Prisma.AtLeast<{
   contentStats?: Prisma.ContentStatsListRelationFilter
   selectedBy?: Prisma.AdditionalUserDataListRelationFilter
   languageData?: Prisma.UserLanguageDataListRelationFilter
+  userVocabulary?: Prisma.UserVocabularyListRelationFilter
 }, "id">
 
 export type TopicOrderByWithAggregationInput = {
@@ -319,6 +322,7 @@ export type TopicCreateInput = {
   contentStats?: Prisma.ContentStatsCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutSelectedTopicsInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutTopicInput
 }
 
 export type TopicUncheckedCreateInput = {
@@ -333,6 +337,7 @@ export type TopicUncheckedCreateInput = {
   contentStats?: Prisma.ContentStatsUncheckedCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutSelectedTopicsInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutTopicInput
 }
 
 export type TopicUpdateInput = {
@@ -346,6 +351,7 @@ export type TopicUpdateInput = {
   contentStats?: Prisma.ContentStatsUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUpdateManyWithoutSelectedTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateInput = {
@@ -360,6 +366,7 @@ export type TopicUncheckedUpdateInput = {
   contentStats?: Prisma.ContentStatsUncheckedUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutSelectedTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicCreateManyInput = {
@@ -445,6 +452,11 @@ export type TopicSumOrderByAggregateInput = {
 export type TopicScalarRelationFilter = {
   is?: Prisma.TopicWhereInput
   isNot?: Prisma.TopicWhereInput
+}
+
+export type TopicNullableScalarRelationFilter = {
+  is?: Prisma.TopicWhereInput | null
+  isNot?: Prisma.TopicWhereInput | null
 }
 
 export type TopicCreateNestedManyWithoutContentStatsInput = {
@@ -617,6 +629,22 @@ export type TopicUpdateOneRequiredWithoutLanguageDataNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TopicUpdateToOneWithWhereWithoutLanguageDataInput, Prisma.TopicUpdateWithoutLanguageDataInput>, Prisma.TopicUncheckedUpdateWithoutLanguageDataInput>
 }
 
+export type TopicCreateNestedOneWithoutUserVocabularyInput = {
+  create?: Prisma.XOR<Prisma.TopicCreateWithoutUserVocabularyInput, Prisma.TopicUncheckedCreateWithoutUserVocabularyInput>
+  connectOrCreate?: Prisma.TopicCreateOrConnectWithoutUserVocabularyInput
+  connect?: Prisma.TopicWhereUniqueInput
+}
+
+export type TopicUpdateOneWithoutUserVocabularyNestedInput = {
+  create?: Prisma.XOR<Prisma.TopicCreateWithoutUserVocabularyInput, Prisma.TopicUncheckedCreateWithoutUserVocabularyInput>
+  connectOrCreate?: Prisma.TopicCreateOrConnectWithoutUserVocabularyInput
+  upsert?: Prisma.TopicUpsertWithoutUserVocabularyInput
+  disconnect?: Prisma.TopicWhereInput | boolean
+  delete?: Prisma.TopicWhereInput | boolean
+  connect?: Prisma.TopicWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TopicUpdateToOneWithWhereWithoutUserVocabularyInput, Prisma.TopicUpdateWithoutUserVocabularyInput>, Prisma.TopicUncheckedUpdateWithoutUserVocabularyInput>
+}
+
 export type TopicCreateWithoutContentStatsInput = {
   name: string
   complexity: number
@@ -627,6 +655,7 @@ export type TopicCreateWithoutContentStatsInput = {
   tags?: Prisma.TagCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutSelectedTopicsInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutTopicInput
 }
 
 export type TopicUncheckedCreateWithoutContentStatsInput = {
@@ -640,6 +669,7 @@ export type TopicUncheckedCreateWithoutContentStatsInput = {
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutSelectedTopicsInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutTopicInput
 }
 
 export type TopicCreateOrConnectWithoutContentStatsInput = {
@@ -686,6 +716,7 @@ export type TopicCreateWithoutSelectedByInput = {
   tags?: Prisma.TagCreateNestedManyWithoutTopicsInput
   contentStats?: Prisma.ContentStatsCreateNestedManyWithoutTopicsInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutTopicInput
 }
 
 export type TopicUncheckedCreateWithoutSelectedByInput = {
@@ -699,6 +730,7 @@ export type TopicUncheckedCreateWithoutSelectedByInput = {
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutTopicsInput
   contentStats?: Prisma.ContentStatsUncheckedCreateNestedManyWithoutTopicsInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutTopicInput
 }
 
 export type TopicCreateOrConnectWithoutSelectedByInput = {
@@ -732,6 +764,7 @@ export type TopicCreateWithoutCategoryInput = {
   contentStats?: Prisma.ContentStatsCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutSelectedTopicsInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutTopicInput
 }
 
 export type TopicUncheckedCreateWithoutCategoryInput = {
@@ -745,6 +778,7 @@ export type TopicUncheckedCreateWithoutCategoryInput = {
   contentStats?: Prisma.ContentStatsUncheckedCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutSelectedTopicsInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutTopicInput
 }
 
 export type TopicCreateOrConnectWithoutCategoryInput = {
@@ -783,6 +817,7 @@ export type TopicCreateWithoutTagsInput = {
   contentStats?: Prisma.ContentStatsCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutSelectedTopicsInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutTopicInput
 }
 
 export type TopicUncheckedCreateWithoutTagsInput = {
@@ -796,6 +831,7 @@ export type TopicUncheckedCreateWithoutTagsInput = {
   contentStats?: Prisma.ContentStatsUncheckedCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutSelectedTopicsInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutTopicInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutTopicInput
 }
 
 export type TopicCreateOrConnectWithoutTagsInput = {
@@ -829,6 +865,7 @@ export type TopicCreateWithoutLanguageDataInput = {
   tags?: Prisma.TagCreateNestedManyWithoutTopicsInput
   contentStats?: Prisma.ContentStatsCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutSelectedTopicsInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutTopicInput
 }
 
 export type TopicUncheckedCreateWithoutLanguageDataInput = {
@@ -842,6 +879,7 @@ export type TopicUncheckedCreateWithoutLanguageDataInput = {
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutTopicsInput
   contentStats?: Prisma.ContentStatsUncheckedCreateNestedManyWithoutTopicsInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutSelectedTopicsInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutTopicInput
 }
 
 export type TopicCreateOrConnectWithoutLanguageDataInput = {
@@ -870,6 +908,7 @@ export type TopicUpdateWithoutLanguageDataInput = {
   tags?: Prisma.TagUpdateManyWithoutTopicsNestedInput
   contentStats?: Prisma.ContentStatsUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUpdateManyWithoutSelectedTopicsNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateWithoutLanguageDataInput = {
@@ -883,6 +922,77 @@ export type TopicUncheckedUpdateWithoutLanguageDataInput = {
   tags?: Prisma.TagUncheckedUpdateManyWithoutTopicsNestedInput
   contentStats?: Prisma.ContentStatsUncheckedUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutSelectedTopicsNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutTopicNestedInput
+}
+
+export type TopicCreateWithoutUserVocabularyInput = {
+  name: string
+  complexity: number
+  language: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  category: Prisma.CategoryCreateNestedOneWithoutTopicsInput
+  tags?: Prisma.TagCreateNestedManyWithoutTopicsInput
+  contentStats?: Prisma.ContentStatsCreateNestedManyWithoutTopicsInput
+  selectedBy?: Prisma.AdditionalUserDataCreateNestedManyWithoutSelectedTopicsInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutTopicInput
+}
+
+export type TopicUncheckedCreateWithoutUserVocabularyInput = {
+  id?: number
+  name: string
+  categoryId: number
+  complexity: number
+  language: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tags?: Prisma.TagUncheckedCreateNestedManyWithoutTopicsInput
+  contentStats?: Prisma.ContentStatsUncheckedCreateNestedManyWithoutTopicsInput
+  selectedBy?: Prisma.AdditionalUserDataUncheckedCreateNestedManyWithoutSelectedTopicsInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutTopicInput
+}
+
+export type TopicCreateOrConnectWithoutUserVocabularyInput = {
+  where: Prisma.TopicWhereUniqueInput
+  create: Prisma.XOR<Prisma.TopicCreateWithoutUserVocabularyInput, Prisma.TopicUncheckedCreateWithoutUserVocabularyInput>
+}
+
+export type TopicUpsertWithoutUserVocabularyInput = {
+  update: Prisma.XOR<Prisma.TopicUpdateWithoutUserVocabularyInput, Prisma.TopicUncheckedUpdateWithoutUserVocabularyInput>
+  create: Prisma.XOR<Prisma.TopicCreateWithoutUserVocabularyInput, Prisma.TopicUncheckedCreateWithoutUserVocabularyInput>
+  where?: Prisma.TopicWhereInput
+}
+
+export type TopicUpdateToOneWithWhereWithoutUserVocabularyInput = {
+  where?: Prisma.TopicWhereInput
+  data: Prisma.XOR<Prisma.TopicUpdateWithoutUserVocabularyInput, Prisma.TopicUncheckedUpdateWithoutUserVocabularyInput>
+}
+
+export type TopicUpdateWithoutUserVocabularyInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  complexity?: Prisma.FloatFieldUpdateOperationsInput | number
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  category?: Prisma.CategoryUpdateOneRequiredWithoutTopicsNestedInput
+  tags?: Prisma.TagUpdateManyWithoutTopicsNestedInput
+  contentStats?: Prisma.ContentStatsUpdateManyWithoutTopicsNestedInput
+  selectedBy?: Prisma.AdditionalUserDataUpdateManyWithoutSelectedTopicsNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutTopicNestedInput
+}
+
+export type TopicUncheckedUpdateWithoutUserVocabularyInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  complexity?: Prisma.FloatFieldUpdateOperationsInput | number
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tags?: Prisma.TagUncheckedUpdateManyWithoutTopicsNestedInput
+  contentStats?: Prisma.ContentStatsUncheckedUpdateManyWithoutTopicsNestedInput
+  selectedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutSelectedTopicsNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUpdateWithoutContentStatsInput = {
@@ -895,6 +1005,7 @@ export type TopicUpdateWithoutContentStatsInput = {
   tags?: Prisma.TagUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUpdateManyWithoutSelectedTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateWithoutContentStatsInput = {
@@ -908,6 +1019,7 @@ export type TopicUncheckedUpdateWithoutContentStatsInput = {
   tags?: Prisma.TagUncheckedUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutSelectedTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateManyWithoutContentStatsInput = {
@@ -930,6 +1042,7 @@ export type TopicUpdateWithoutSelectedByInput = {
   tags?: Prisma.TagUpdateManyWithoutTopicsNestedInput
   contentStats?: Prisma.ContentStatsUpdateManyWithoutTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateWithoutSelectedByInput = {
@@ -943,6 +1056,7 @@ export type TopicUncheckedUpdateWithoutSelectedByInput = {
   tags?: Prisma.TagUncheckedUpdateManyWithoutTopicsNestedInput
   contentStats?: Prisma.ContentStatsUncheckedUpdateManyWithoutTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateManyWithoutSelectedByInput = {
@@ -974,6 +1088,7 @@ export type TopicUpdateWithoutCategoryInput = {
   contentStats?: Prisma.ContentStatsUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUpdateManyWithoutSelectedTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateWithoutCategoryInput = {
@@ -987,6 +1102,7 @@ export type TopicUncheckedUpdateWithoutCategoryInput = {
   contentStats?: Prisma.ContentStatsUncheckedUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutSelectedTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateManyWithoutCategoryInput = {
@@ -1008,6 +1124,7 @@ export type TopicUpdateWithoutTagsInput = {
   contentStats?: Prisma.ContentStatsUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUpdateManyWithoutSelectedTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateWithoutTagsInput = {
@@ -1021,6 +1138,7 @@ export type TopicUncheckedUpdateWithoutTagsInput = {
   contentStats?: Prisma.ContentStatsUncheckedUpdateManyWithoutTopicsNestedInput
   selectedBy?: Prisma.AdditionalUserDataUncheckedUpdateManyWithoutSelectedTopicsNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutTopicNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateManyWithoutTagsInput = {
@@ -1043,6 +1161,7 @@ export type TopicCountOutputType = {
   contentStats: number
   selectedBy: number
   languageData: number
+  userVocabulary: number
 }
 
 export type TopicCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1050,6 +1169,7 @@ export type TopicCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   contentStats?: boolean | TopicCountOutputTypeCountContentStatsArgs
   selectedBy?: boolean | TopicCountOutputTypeCountSelectedByArgs
   languageData?: boolean | TopicCountOutputTypeCountLanguageDataArgs
+  userVocabulary?: boolean | TopicCountOutputTypeCountUserVocabularyArgs
 }
 
 /**
@@ -1090,6 +1210,13 @@ export type TopicCountOutputTypeCountLanguageDataArgs<ExtArgs extends runtime.Ty
   where?: Prisma.UserLanguageDataWhereInput
 }
 
+/**
+ * TopicCountOutputType without action
+ */
+export type TopicCountOutputTypeCountUserVocabularyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserVocabularyWhereInput
+}
+
 
 export type TopicSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1104,6 +1231,7 @@ export type TopicSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   contentStats?: boolean | Prisma.Topic$contentStatsArgs<ExtArgs>
   selectedBy?: boolean | Prisma.Topic$selectedByArgs<ExtArgs>
   languageData?: boolean | Prisma.Topic$languageDataArgs<ExtArgs>
+  userVocabulary?: boolean | Prisma.Topic$userVocabularyArgs<ExtArgs>
   _count?: boolean | Prisma.TopicCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["topic"]>
 
@@ -1146,6 +1274,7 @@ export type TopicInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   contentStats?: boolean | Prisma.Topic$contentStatsArgs<ExtArgs>
   selectedBy?: boolean | Prisma.Topic$selectedByArgs<ExtArgs>
   languageData?: boolean | Prisma.Topic$languageDataArgs<ExtArgs>
+  userVocabulary?: boolean | Prisma.Topic$userVocabularyArgs<ExtArgs>
   _count?: boolean | Prisma.TopicCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TopicIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1163,6 +1292,7 @@ export type $TopicPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     contentStats: Prisma.$ContentStatsPayload<ExtArgs>[]
     selectedBy: Prisma.$AdditionalUserDataPayload<ExtArgs>[]
     languageData: Prisma.$UserLanguageDataPayload<ExtArgs>[]
+    userVocabulary: Prisma.$UserVocabularyPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1571,6 +1701,7 @@ export interface Prisma__TopicClient<T, Null = never, ExtArgs extends runtime.Ty
   contentStats<T extends Prisma.Topic$contentStatsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Topic$contentStatsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentStatsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   selectedBy<T extends Prisma.Topic$selectedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Topic$selectedByArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdditionalUserDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   languageData<T extends Prisma.Topic$languageDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Topic$languageDataArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserLanguageDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  userVocabulary<T extends Prisma.Topic$userVocabularyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Topic$userVocabularyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserVocabularyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1803,6 +1934,11 @@ export type TopicFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Skip the first `n` Topics.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Topics.
+   */
   distinct?: Prisma.TopicScalarFieldEnum | Prisma.TopicScalarFieldEnum[]
 }
 
@@ -2096,6 +2232,30 @@ export type Topic$languageDataArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.UserLanguageDataScalarFieldEnum | Prisma.UserLanguageDataScalarFieldEnum[]
+}
+
+/**
+ * Topic.userVocabulary
+ */
+export type Topic$userVocabularyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserVocabulary
+   */
+  select?: Prisma.UserVocabularySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserVocabulary
+   */
+  omit?: Prisma.UserVocabularyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserVocabularyInclude<ExtArgs> | null
+  where?: Prisma.UserVocabularyWhereInput
+  orderBy?: Prisma.UserVocabularyOrderByWithRelationInput | Prisma.UserVocabularyOrderByWithRelationInput[]
+  cursor?: Prisma.UserVocabularyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserVocabularyScalarFieldEnum | Prisma.UserVocabularyScalarFieldEnum[]
 }
 
 /**

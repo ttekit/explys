@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { generateContentVideoIframe } from "src/common/content-video-iframe.util";
+import { PrismaService } from "src/prisma.service";
 import { CreateContentVideoDto } from "./dto/create-content-video.dto";
 import { UpdateContentVideoDto } from "./dto/update-content-video.dto";
-import { PrismaService } from "src/prisma.service";
 
 @Injectable()
 export class ContentVideoService {
@@ -23,6 +24,15 @@ export class ContentVideoService {
       throw new NotFoundException(`ContentVideo with ID ${id} not found`);
     }
     return contentVideo;
+  }
+
+  /** HTML iframe snippet for embedding the raw `videoLink` in docs or test UIs. */
+  async getIframePayload(id: number): Promise<{ iframeHtml: string }> {
+    const v = await this.findOne(id);
+    const iframeHtml = generateContentVideoIframe(v.videoLink, {
+      title: v.videoName,
+    });
+    return { iframeHtml };
   }
 
   async update(id: number, updateContentVideoDto: UpdateContentVideoDto) {

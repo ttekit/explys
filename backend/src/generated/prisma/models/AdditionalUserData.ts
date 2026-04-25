@@ -531,14 +531,6 @@ export type AdditionalUserDataNullableScalarRelationFilter = {
   isNot?: Prisma.AdditionalUserDataWhereInput | null
 }
 
-export type StringNullableListFilter<$PrismaModel = never> = {
-  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
-  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
-  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
-  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
-  isEmpty?: boolean
-}
-
 export type AdditionalUserDataCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -2092,6 +2084,11 @@ export type AdditionalUserDataFindManyArgs<ExtArgs extends runtime.Types.Extensi
    * Skip the first `n` AdditionalUserData.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of AdditionalUserData.
+   */
   distinct?: Prisma.AdditionalUserDataScalarFieldEnum | Prisma.AdditionalUserDataScalarFieldEnum[]
 }
 

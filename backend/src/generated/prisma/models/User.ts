@@ -40,6 +40,7 @@ export type UserMinAggregateOutputType = {
   email: string | null
   password: string | null
   role: string | null
+  hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
 }
@@ -50,6 +51,7 @@ export type UserMaxAggregateOutputType = {
   email: string | null
   password: string | null
   role: string | null
+  hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
 }
@@ -60,6 +62,7 @@ export type UserCountAggregateOutputType = {
   email: number
   password: number
   role: number
+  hasCompletedPlacement: number
   lastLogin: number
   createdAt: number
   _all: number
@@ -80,6 +83,7 @@ export type UserMinAggregateInputType = {
   email?: true
   password?: true
   role?: true
+  hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
 }
@@ -90,6 +94,7 @@ export type UserMaxAggregateInputType = {
   email?: true
   password?: true
   role?: true
+  hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
 }
@@ -100,6 +105,7 @@ export type UserCountAggregateInputType = {
   email?: true
   password?: true
   role?: true
+  hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
   _all?: true
@@ -197,6 +203,7 @@ export type UserGroupByOutputType = {
   email: string
   password: string
   role: string
+  hasCompletedPlacement: boolean
   lastLogin: Date | null
   createdAt: Date
   _count: UserCountAggregateOutputType | null
@@ -230,6 +237,7 @@ export type UserWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
   role?: Prisma.StringFilter<"User"> | string
+  hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
@@ -238,6 +246,8 @@ export type UserWhereInput = {
   additionalUserData?: Prisma.XOR<Prisma.AdditionalUserDataNullableScalarRelationFilter, Prisma.AdditionalUserDataWhereInput> | null
   friends?: Prisma.UserFriendListRelationFilter
   friendOf?: Prisma.UserFriendListRelationFilter
+  postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
+  userVocabulary?: Prisma.UserVocabularyListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -246,6 +256,7 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   settings?: Prisma.UserSettingsOrderByWithRelationInput
@@ -254,6 +265,8 @@ export type UserOrderByWithRelationInput = {
   additionalUserData?: Prisma.AdditionalUserDataOrderByWithRelationInput
   friends?: Prisma.UserFriendOrderByRelationAggregateInput
   friendOf?: Prisma.UserFriendOrderByRelationAggregateInput
+  postWatchSurveys?: Prisma.PostWatchSurveyOrderByRelationAggregateInput
+  userVocabulary?: Prisma.UserVocabularyOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -265,6 +278,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
   role?: Prisma.StringFilter<"User"> | string
+  hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
@@ -273,6 +287,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   additionalUserData?: Prisma.XOR<Prisma.AdditionalUserDataNullableScalarRelationFilter, Prisma.AdditionalUserDataWhereInput> | null
   friends?: Prisma.UserFriendListRelationFilter
   friendOf?: Prisma.UserFriendListRelationFilter
+  postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
+  userVocabulary?: Prisma.UserVocabularyListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -281,6 +297,7 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -299,6 +316,7 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
   role?: Prisma.StringWithAggregatesFilter<"User"> | string
+  hasCompletedPlacement?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -308,6 +326,7 @@ export type UserCreateInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -316,6 +335,8 @@ export type UserCreateInput = {
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -324,6 +345,7 @@ export type UserUncheckedCreateInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
@@ -332,6 +354,8 @@ export type UserUncheckedCreateInput = {
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -339,6 +363,7 @@ export type UserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -347,6 +372,8 @@ export type UserUpdateInput = {
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -355,6 +382,7 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
@@ -363,6 +391,8 @@ export type UserUncheckedUpdateInput = {
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -371,6 +401,7 @@ export type UserCreateManyInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
 }
@@ -380,6 +411,7 @@ export type UserUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -390,8 +422,14 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -400,6 +438,7 @@ export type UserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -414,6 +453,7 @@ export type UserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -424,6 +464,7 @@ export type UserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -437,8 +478,24 @@ export type UserScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
+export type UserCreateNestedOneWithoutPostWatchSurveysInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPostWatchSurveysInput, Prisma.UserUncheckedCreateWithoutPostWatchSurveysInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPostWatchSurveysInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutPostWatchSurveysNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPostWatchSurveysInput, Prisma.UserUncheckedCreateWithoutPostWatchSurveysInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPostWatchSurveysInput
+  upsert?: Prisma.UserUpsertWithoutPostWatchSurveysInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPostWatchSurveysInput, Prisma.UserUpdateWithoutPostWatchSurveysInput>, Prisma.UserUncheckedUpdateWithoutPostWatchSurveysInput>
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type UserCreateNestedOneWithoutAdditionalUserDataInput = {
@@ -525,11 +582,112 @@ export type UserUpdateOneRequiredWithoutFriendOfNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutFriendOfInput, Prisma.UserUpdateWithoutFriendOfInput>, Prisma.UserUncheckedUpdateWithoutFriendOfInput>
 }
 
+export type UserCreateNestedOneWithoutUserVocabularyInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUserVocabularyInput, Prisma.UserUncheckedCreateWithoutUserVocabularyInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserVocabularyInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutUserVocabularyNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUserVocabularyInput, Prisma.UserUncheckedCreateWithoutUserVocabularyInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserVocabularyInput
+  upsert?: Prisma.UserUpsertWithoutUserVocabularyInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutUserVocabularyInput, Prisma.UserUpdateWithoutUserVocabularyInput>, Prisma.UserUncheckedUpdateWithoutUserVocabularyInput>
+}
+
+export type UserCreateWithoutPostWatchSurveysInput = {
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutPostWatchSurveysInput = {
+  id?: number
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutPostWatchSurveysInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPostWatchSurveysInput, Prisma.UserUncheckedCreateWithoutPostWatchSurveysInput>
+}
+
+export type UserUpsertWithoutPostWatchSurveysInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPostWatchSurveysInput, Prisma.UserUncheckedUpdateWithoutPostWatchSurveysInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPostWatchSurveysInput, Prisma.UserUncheckedCreateWithoutPostWatchSurveysInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPostWatchSurveysInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPostWatchSurveysInput, Prisma.UserUncheckedUpdateWithoutPostWatchSurveysInput>
+}
+
+export type UserUpdateWithoutPostWatchSurveysInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+}
+
 export type UserCreateWithoutAdditionalUserDataInput = {
   name: string
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -537,6 +695,8 @@ export type UserCreateWithoutAdditionalUserDataInput = {
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
@@ -545,6 +705,7 @@ export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
@@ -552,6 +713,8 @@ export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAdditionalUserDataInput = {
@@ -575,6 +738,7 @@ export type UserUpdateWithoutAdditionalUserDataInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -582,6 +746,8 @@ export type UserUpdateWithoutAdditionalUserDataInput = {
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
@@ -590,6 +756,7 @@ export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
@@ -597,6 +764,8 @@ export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSettingsInput = {
@@ -604,6 +773,7 @@ export type UserCreateWithoutSettingsInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
@@ -611,6 +781,8 @@ export type UserCreateWithoutSettingsInput = {
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSettingsInput = {
@@ -619,6 +791,7 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -626,6 +799,8 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSettingsInput = {
@@ -649,6 +824,7 @@ export type UserUpdateWithoutSettingsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
@@ -656,6 +832,8 @@ export type UserUpdateWithoutSettingsInput = {
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSettingsInput = {
@@ -664,6 +842,7 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -671,6 +850,8 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutStatisticInput = {
@@ -678,6 +859,7 @@ export type UserCreateWithoutStatisticInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -685,6 +867,8 @@ export type UserCreateWithoutStatisticInput = {
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutStatisticInput = {
@@ -693,6 +877,7 @@ export type UserUncheckedCreateWithoutStatisticInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
@@ -700,6 +885,8 @@ export type UserUncheckedCreateWithoutStatisticInput = {
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutStatisticInput = {
@@ -723,6 +910,7 @@ export type UserUpdateWithoutStatisticInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -730,6 +918,8 @@ export type UserUpdateWithoutStatisticInput = {
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStatisticInput = {
@@ -738,6 +928,7 @@ export type UserUncheckedUpdateWithoutStatisticInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
@@ -745,6 +936,8 @@ export type UserUncheckedUpdateWithoutStatisticInput = {
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutLanguageDataInput = {
@@ -752,6 +945,7 @@ export type UserCreateWithoutLanguageDataInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -759,6 +953,8 @@ export type UserCreateWithoutLanguageDataInput = {
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutLanguageDataInput = {
@@ -767,6 +963,7 @@ export type UserUncheckedCreateWithoutLanguageDataInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
@@ -774,6 +971,8 @@ export type UserUncheckedCreateWithoutLanguageDataInput = {
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutLanguageDataInput = {
@@ -797,6 +996,7 @@ export type UserUpdateWithoutLanguageDataInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -804,6 +1004,8 @@ export type UserUpdateWithoutLanguageDataInput = {
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLanguageDataInput = {
@@ -812,6 +1014,7 @@ export type UserUncheckedUpdateWithoutLanguageDataInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
@@ -819,6 +1022,8 @@ export type UserUncheckedUpdateWithoutLanguageDataInput = {
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutFriendsInput = {
@@ -826,6 +1031,7 @@ export type UserCreateWithoutFriendsInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -833,6 +1039,8 @@ export type UserCreateWithoutFriendsInput = {
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFriendsInput = {
@@ -841,6 +1049,7 @@ export type UserUncheckedCreateWithoutFriendsInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
@@ -848,6 +1057,8 @@ export type UserUncheckedCreateWithoutFriendsInput = {
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFriendsInput = {
@@ -860,6 +1071,7 @@ export type UserCreateWithoutFriendOfInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -867,6 +1079,8 @@ export type UserCreateWithoutFriendOfInput = {
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFriendOfInput = {
@@ -875,6 +1089,7 @@ export type UserUncheckedCreateWithoutFriendOfInput = {
   email: string
   password: string
   role?: string
+  hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
@@ -882,6 +1097,8 @@ export type UserUncheckedCreateWithoutFriendOfInput = {
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFriendOfInput = {
@@ -905,6 +1122,7 @@ export type UserUpdateWithoutFriendsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -912,6 +1130,8 @@ export type UserUpdateWithoutFriendsInput = {
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFriendsInput = {
@@ -920,6 +1140,7 @@ export type UserUncheckedUpdateWithoutFriendsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
@@ -927,6 +1148,8 @@ export type UserUncheckedUpdateWithoutFriendsInput = {
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutFriendOfInput = {
@@ -945,6 +1168,7 @@ export type UserUpdateWithoutFriendOfInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -952,6 +1176,8 @@ export type UserUpdateWithoutFriendOfInput = {
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFriendOfInput = {
@@ -960,6 +1186,7 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
@@ -967,6 +1194,94 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutUserVocabularyInput = {
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutUserVocabularyInput = {
+  id?: number
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutUserVocabularyInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutUserVocabularyInput, Prisma.UserUncheckedCreateWithoutUserVocabularyInput>
+}
+
+export type UserUpsertWithoutUserVocabularyInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutUserVocabularyInput, Prisma.UserUncheckedUpdateWithoutUserVocabularyInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutUserVocabularyInput, Prisma.UserUncheckedCreateWithoutUserVocabularyInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutUserVocabularyInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutUserVocabularyInput, Prisma.UserUncheckedUpdateWithoutUserVocabularyInput>
+}
+
+export type UserUpdateWithoutUserVocabularyInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutUserVocabularyInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -978,12 +1293,16 @@ export type UserCountOutputType = {
   languageData: number
   friends: number
   friendOf: number
+  postWatchSurveys: number
+  userVocabulary: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   languageData?: boolean | UserCountOutputTypeCountLanguageDataArgs
   friends?: boolean | UserCountOutputTypeCountFriendsArgs
   friendOf?: boolean | UserCountOutputTypeCountFriendOfArgs
+  postWatchSurveys?: boolean | UserCountOutputTypeCountPostWatchSurveysArgs
+  userVocabulary?: boolean | UserCountOutputTypeCountUserVocabularyArgs
 }
 
 /**
@@ -1017,6 +1336,20 @@ export type UserCountOutputTypeCountFriendOfArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.UserFriendWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPostWatchSurveysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PostWatchSurveyWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountUserVocabularyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserVocabularyWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1024,6 +1357,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   password?: boolean
   role?: boolean
+  hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
@@ -1032,6 +1366,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   additionalUserData?: boolean | Prisma.User$additionalUserDataArgs<ExtArgs>
   friends?: boolean | Prisma.User$friendsArgs<ExtArgs>
   friendOf?: boolean | Prisma.User$friendOfArgs<ExtArgs>
+  postWatchSurveys?: boolean | Prisma.User$postWatchSurveysArgs<ExtArgs>
+  userVocabulary?: boolean | Prisma.User$userVocabularyArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1041,6 +1377,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   role?: boolean
+  hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1051,6 +1388,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   role?: boolean
+  hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1061,11 +1399,12 @@ export type UserSelectScalar = {
   email?: boolean
   password?: boolean
   role?: boolean
+  hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "lastLogin" | "createdAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "lastLogin" | "createdAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
   statistic?: boolean | Prisma.User$statisticArgs<ExtArgs>
@@ -1073,6 +1412,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   additionalUserData?: boolean | Prisma.User$additionalUserDataArgs<ExtArgs>
   friends?: boolean | Prisma.User$friendsArgs<ExtArgs>
   friendOf?: boolean | Prisma.User$friendOfArgs<ExtArgs>
+  postWatchSurveys?: boolean | Prisma.User$postWatchSurveysArgs<ExtArgs>
+  userVocabulary?: boolean | Prisma.User$userVocabularyArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1087,6 +1428,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     additionalUserData: Prisma.$AdditionalUserDataPayload<ExtArgs> | null
     friends: Prisma.$UserFriendPayload<ExtArgs>[]
     friendOf: Prisma.$UserFriendPayload<ExtArgs>[]
+    postWatchSurveys: Prisma.$PostWatchSurveyPayload<ExtArgs>[]
+    userVocabulary: Prisma.$UserVocabularyPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1094,6 +1437,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string
     password: string
     role: string
+    hasCompletedPlacement: boolean
     lastLogin: Date | null
     createdAt: Date
   }, ExtArgs["result"]["user"]>
@@ -1496,6 +1840,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   additionalUserData<T extends Prisma.User$additionalUserDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$additionalUserDataArgs<ExtArgs>>): Prisma.Prisma__AdditionalUserDataClient<runtime.Types.Result.GetResult<Prisma.$AdditionalUserDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   friends<T extends Prisma.User$friendsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$friendsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserFriendPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   friendOf<T extends Prisma.User$friendOfArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$friendOfArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserFriendPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  postWatchSurveys<T extends Prisma.User$postWatchSurveysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$postWatchSurveysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostWatchSurveyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  userVocabulary<T extends Prisma.User$userVocabularyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$userVocabularyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserVocabularyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1530,6 +1876,7 @@ export interface UserFieldRefs {
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'String'>
+  readonly hasCompletedPlacement: Prisma.FieldRef<"User", 'Boolean'>
   readonly lastLogin: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
 }
@@ -1728,6 +2075,11 @@ export type UserFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Skip the first `n` Users.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Users.
+   */
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
 }
 
@@ -2046,6 +2398,54 @@ export type User$friendOfArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.UserFriendScalarFieldEnum | Prisma.UserFriendScalarFieldEnum[]
+}
+
+/**
+ * User.postWatchSurveys
+ */
+export type User$postWatchSurveysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PostWatchSurvey
+   */
+  select?: Prisma.PostWatchSurveySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PostWatchSurvey
+   */
+  omit?: Prisma.PostWatchSurveyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PostWatchSurveyInclude<ExtArgs> | null
+  where?: Prisma.PostWatchSurveyWhereInput
+  orderBy?: Prisma.PostWatchSurveyOrderByWithRelationInput | Prisma.PostWatchSurveyOrderByWithRelationInput[]
+  cursor?: Prisma.PostWatchSurveyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PostWatchSurveyScalarFieldEnum | Prisma.PostWatchSurveyScalarFieldEnum[]
+}
+
+/**
+ * User.userVocabulary
+ */
+export type User$userVocabularyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserVocabulary
+   */
+  select?: Prisma.UserVocabularySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserVocabulary
+   */
+  omit?: Prisma.UserVocabularyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserVocabularyInclude<ExtArgs> | null
+  where?: Prisma.UserVocabularyWhereInput
+  orderBy?: Prisma.UserVocabularyOrderByWithRelationInput | Prisma.UserVocabularyOrderByWithRelationInput[]
+  cursor?: Prisma.UserVocabularyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserVocabularyScalarFieldEnum | Prisma.UserVocabularyScalarFieldEnum[]
 }
 
 /**

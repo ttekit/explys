@@ -55,6 +55,8 @@ export const ModelName = {
   ContentMedia: 'ContentMedia',
   ContentStats: 'ContentStats',
   ContentVideo: 'ContentVideo',
+  VideoCaptions: 'VideoCaptions',
+  PostWatchSurvey: 'PostWatchSurvey',
   User: 'User',
   AdditionalUserData: 'AdditionalUserData',
   Genre: 'Genre',
@@ -64,7 +66,8 @@ export const ModelName = {
   UserSettings: 'UserSettings',
   UserStatistic: 'UserStatistic',
   UserLanguageData: 'UserLanguageData',
-  UserFriend: 'UserFriend'
+  UserFriend: 'UserFriend',
+  UserVocabulary: 'UserVocabulary'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -109,7 +112,10 @@ export const ContentStatsScalarFieldEnum = {
   id: 'id',
   contentMediaId: 'contentMediaId',
   usersWatched: 'usersWatched',
-  rating: 'rating'
+  rating: 'rating',
+  systemTags: 'systemTags',
+  userTags: 'userTags',
+  processingComplexity: 'processingComplexity'
 } as const
 
 export type ContentStatsScalarFieldEnum = (typeof ContentStatsScalarFieldEnum)[keyof typeof ContentStatsScalarFieldEnum]
@@ -126,12 +132,37 @@ export const ContentVideoScalarFieldEnum = {
 export type ContentVideoScalarFieldEnum = (typeof ContentVideoScalarFieldEnum)[keyof typeof ContentVideoScalarFieldEnum]
 
 
+export const VideoCaptionsScalarFieldEnum = {
+  id: 'id',
+  contentVideoId: 'contentVideoId',
+  subtitlesFileLink: 'subtitlesFileLink',
+  createAt: 'createAt',
+  updateAt: 'updateAt'
+} as const
+
+export type VideoCaptionsScalarFieldEnum = (typeof VideoCaptionsScalarFieldEnum)[keyof typeof VideoCaptionsScalarFieldEnum]
+
+
+export const PostWatchSurveyScalarFieldEnum = {
+  id: 'id',
+  contentVideoId: 'contentVideoId',
+  userId: 'userId',
+  questionsJson: 'questionsJson',
+  answersJson: 'answersJson',
+  createdAt: 'createdAt',
+  submittedAt: 'submittedAt'
+} as const
+
+export type PostWatchSurveyScalarFieldEnum = (typeof PostWatchSurveyScalarFieldEnum)[keyof typeof PostWatchSurveyScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
   password: 'password',
   role: 'role',
+  hasCompletedPlacement: 'hasCompletedPlacement',
   lastLogin: 'lastLogin',
   createdAt: 'createdAt'
 } as const
@@ -245,12 +276,34 @@ export const UserFriendScalarFieldEnum = {
 export type UserFriendScalarFieldEnum = (typeof UserFriendScalarFieldEnum)[keyof typeof UserFriendScalarFieldEnum]
 
 
+export const UserVocabularyScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  language: 'language',
+  term: 'term',
+  source: 'source',
+  topicId: 'topicId',
+  mastery: 'mastery',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserVocabularyScalarFieldEnum = (typeof UserVocabularyScalarFieldEnum)[keyof typeof UserVocabularyScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const NullableJsonNullValueInput = {

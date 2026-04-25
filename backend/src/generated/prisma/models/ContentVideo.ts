@@ -221,6 +221,8 @@ export type ContentVideoWhereInput = {
   videoName?: Prisma.StringFilter<"ContentVideo"> | string
   videoDescription?: Prisma.StringNullableFilter<"ContentVideo"> | string | null
   content?: Prisma.XOR<Prisma.ContentMediaScalarRelationFilter, Prisma.ContentMediaWhereInput>
+  videoCaption?: Prisma.XOR<Prisma.VideoCaptionsNullableScalarRelationFilter, Prisma.VideoCaptionsWhereInput> | null
+  postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
 }
 
 export type ContentVideoOrderByWithRelationInput = {
@@ -230,6 +232,8 @@ export type ContentVideoOrderByWithRelationInput = {
   videoName?: Prisma.SortOrder
   videoDescription?: Prisma.SortOrderInput | Prisma.SortOrder
   content?: Prisma.ContentMediaOrderByWithRelationInput
+  videoCaption?: Prisma.VideoCaptionsOrderByWithRelationInput
+  postWatchSurveys?: Prisma.PostWatchSurveyOrderByRelationAggregateInput
 }
 
 export type ContentVideoWhereUniqueInput = Prisma.AtLeast<{
@@ -242,6 +246,8 @@ export type ContentVideoWhereUniqueInput = Prisma.AtLeast<{
   videoName?: Prisma.StringFilter<"ContentVideo"> | string
   videoDescription?: Prisma.StringNullableFilter<"ContentVideo"> | string | null
   content?: Prisma.XOR<Prisma.ContentMediaScalarRelationFilter, Prisma.ContentMediaWhereInput>
+  videoCaption?: Prisma.XOR<Prisma.VideoCaptionsNullableScalarRelationFilter, Prisma.VideoCaptionsWhereInput> | null
+  postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
 }, "id">
 
 export type ContentVideoOrderByWithAggregationInput = {
@@ -273,6 +279,8 @@ export type ContentVideoCreateInput = {
   videoName: string
   videoDescription?: string | null
   content: Prisma.ContentMediaCreateNestedOneWithoutContentVideoInput
+  videoCaption?: Prisma.VideoCaptionsCreateNestedOneWithoutContentVideoInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutContentVideoInput
 }
 
 export type ContentVideoUncheckedCreateInput = {
@@ -281,6 +289,8 @@ export type ContentVideoUncheckedCreateInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  videoCaption?: Prisma.VideoCaptionsUncheckedCreateNestedOneWithoutContentVideoInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutContentVideoInput
 }
 
 export type ContentVideoUpdateInput = {
@@ -288,6 +298,8 @@ export type ContentVideoUpdateInput = {
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   content?: Prisma.ContentMediaUpdateOneRequiredWithoutContentVideoNestedInput
+  videoCaption?: Prisma.VideoCaptionsUpdateOneWithoutContentVideoNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutContentVideoNestedInput
 }
 
 export type ContentVideoUncheckedUpdateInput = {
@@ -296,6 +308,8 @@ export type ContentVideoUncheckedUpdateInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  videoCaption?: Prisma.VideoCaptionsUncheckedUpdateOneWithoutContentVideoNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutContentVideoNestedInput
 }
 
 export type ContentVideoCreateManyInput = {
@@ -364,6 +378,11 @@ export type ContentVideoSumOrderByAggregateInput = {
   contentId?: Prisma.SortOrder
 }
 
+export type ContentVideoScalarRelationFilter = {
+  is?: Prisma.ContentVideoWhereInput
+  isNot?: Prisma.ContentVideoWhereInput
+}
+
 export type ContentVideoCreateNestedManyWithoutContentInput = {
   create?: Prisma.XOR<Prisma.ContentVideoCreateWithoutContentInput, Prisma.ContentVideoUncheckedCreateWithoutContentInput> | Prisma.ContentVideoCreateWithoutContentInput[] | Prisma.ContentVideoUncheckedCreateWithoutContentInput[]
   connectOrCreate?: Prisma.ContentVideoCreateOrConnectWithoutContentInput | Prisma.ContentVideoCreateOrConnectWithoutContentInput[]
@@ -410,10 +429,40 @@ export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
 
+export type ContentVideoCreateNestedOneWithoutVideoCaptionInput = {
+  create?: Prisma.XOR<Prisma.ContentVideoCreateWithoutVideoCaptionInput, Prisma.ContentVideoUncheckedCreateWithoutVideoCaptionInput>
+  connectOrCreate?: Prisma.ContentVideoCreateOrConnectWithoutVideoCaptionInput
+  connect?: Prisma.ContentVideoWhereUniqueInput
+}
+
+export type ContentVideoUpdateOneRequiredWithoutVideoCaptionNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentVideoCreateWithoutVideoCaptionInput, Prisma.ContentVideoUncheckedCreateWithoutVideoCaptionInput>
+  connectOrCreate?: Prisma.ContentVideoCreateOrConnectWithoutVideoCaptionInput
+  upsert?: Prisma.ContentVideoUpsertWithoutVideoCaptionInput
+  connect?: Prisma.ContentVideoWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContentVideoUpdateToOneWithWhereWithoutVideoCaptionInput, Prisma.ContentVideoUpdateWithoutVideoCaptionInput>, Prisma.ContentVideoUncheckedUpdateWithoutVideoCaptionInput>
+}
+
+export type ContentVideoCreateNestedOneWithoutPostWatchSurveysInput = {
+  create?: Prisma.XOR<Prisma.ContentVideoCreateWithoutPostWatchSurveysInput, Prisma.ContentVideoUncheckedCreateWithoutPostWatchSurveysInput>
+  connectOrCreate?: Prisma.ContentVideoCreateOrConnectWithoutPostWatchSurveysInput
+  connect?: Prisma.ContentVideoWhereUniqueInput
+}
+
+export type ContentVideoUpdateOneRequiredWithoutPostWatchSurveysNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentVideoCreateWithoutPostWatchSurveysInput, Prisma.ContentVideoUncheckedCreateWithoutPostWatchSurveysInput>
+  connectOrCreate?: Prisma.ContentVideoCreateOrConnectWithoutPostWatchSurveysInput
+  upsert?: Prisma.ContentVideoUpsertWithoutPostWatchSurveysInput
+  connect?: Prisma.ContentVideoWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContentVideoUpdateToOneWithWhereWithoutPostWatchSurveysInput, Prisma.ContentVideoUpdateWithoutPostWatchSurveysInput>, Prisma.ContentVideoUncheckedUpdateWithoutPostWatchSurveysInput>
+}
+
 export type ContentVideoCreateWithoutContentInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  videoCaption?: Prisma.VideoCaptionsCreateNestedOneWithoutContentVideoInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutContentVideoInput
 }
 
 export type ContentVideoUncheckedCreateWithoutContentInput = {
@@ -421,6 +470,8 @@ export type ContentVideoUncheckedCreateWithoutContentInput = {
   videoLink: string
   videoName: string
   videoDescription?: string | null
+  videoCaption?: Prisma.VideoCaptionsUncheckedCreateNestedOneWithoutContentVideoInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutContentVideoInput
 }
 
 export type ContentVideoCreateOrConnectWithoutContentInput = {
@@ -460,6 +511,106 @@ export type ContentVideoScalarWhereInput = {
   videoDescription?: Prisma.StringNullableFilter<"ContentVideo"> | string | null
 }
 
+export type ContentVideoCreateWithoutVideoCaptionInput = {
+  videoLink: string
+  videoName: string
+  videoDescription?: string | null
+  content: Prisma.ContentMediaCreateNestedOneWithoutContentVideoInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutContentVideoInput
+}
+
+export type ContentVideoUncheckedCreateWithoutVideoCaptionInput = {
+  id?: number
+  contentId: number
+  videoLink: string
+  videoName: string
+  videoDescription?: string | null
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutContentVideoInput
+}
+
+export type ContentVideoCreateOrConnectWithoutVideoCaptionInput = {
+  where: Prisma.ContentVideoWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentVideoCreateWithoutVideoCaptionInput, Prisma.ContentVideoUncheckedCreateWithoutVideoCaptionInput>
+}
+
+export type ContentVideoUpsertWithoutVideoCaptionInput = {
+  update: Prisma.XOR<Prisma.ContentVideoUpdateWithoutVideoCaptionInput, Prisma.ContentVideoUncheckedUpdateWithoutVideoCaptionInput>
+  create: Prisma.XOR<Prisma.ContentVideoCreateWithoutVideoCaptionInput, Prisma.ContentVideoUncheckedCreateWithoutVideoCaptionInput>
+  where?: Prisma.ContentVideoWhereInput
+}
+
+export type ContentVideoUpdateToOneWithWhereWithoutVideoCaptionInput = {
+  where?: Prisma.ContentVideoWhereInput
+  data: Prisma.XOR<Prisma.ContentVideoUpdateWithoutVideoCaptionInput, Prisma.ContentVideoUncheckedUpdateWithoutVideoCaptionInput>
+}
+
+export type ContentVideoUpdateWithoutVideoCaptionInput = {
+  videoLink?: Prisma.StringFieldUpdateOperationsInput | string
+  videoName?: Prisma.StringFieldUpdateOperationsInput | string
+  videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  content?: Prisma.ContentMediaUpdateOneRequiredWithoutContentVideoNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutContentVideoNestedInput
+}
+
+export type ContentVideoUncheckedUpdateWithoutVideoCaptionInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  contentId?: Prisma.IntFieldUpdateOperationsInput | number
+  videoLink?: Prisma.StringFieldUpdateOperationsInput | string
+  videoName?: Prisma.StringFieldUpdateOperationsInput | string
+  videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutContentVideoNestedInput
+}
+
+export type ContentVideoCreateWithoutPostWatchSurveysInput = {
+  videoLink: string
+  videoName: string
+  videoDescription?: string | null
+  content: Prisma.ContentMediaCreateNestedOneWithoutContentVideoInput
+  videoCaption?: Prisma.VideoCaptionsCreateNestedOneWithoutContentVideoInput
+}
+
+export type ContentVideoUncheckedCreateWithoutPostWatchSurveysInput = {
+  id?: number
+  contentId: number
+  videoLink: string
+  videoName: string
+  videoDescription?: string | null
+  videoCaption?: Prisma.VideoCaptionsUncheckedCreateNestedOneWithoutContentVideoInput
+}
+
+export type ContentVideoCreateOrConnectWithoutPostWatchSurveysInput = {
+  where: Prisma.ContentVideoWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentVideoCreateWithoutPostWatchSurveysInput, Prisma.ContentVideoUncheckedCreateWithoutPostWatchSurveysInput>
+}
+
+export type ContentVideoUpsertWithoutPostWatchSurveysInput = {
+  update: Prisma.XOR<Prisma.ContentVideoUpdateWithoutPostWatchSurveysInput, Prisma.ContentVideoUncheckedUpdateWithoutPostWatchSurveysInput>
+  create: Prisma.XOR<Prisma.ContentVideoCreateWithoutPostWatchSurveysInput, Prisma.ContentVideoUncheckedCreateWithoutPostWatchSurveysInput>
+  where?: Prisma.ContentVideoWhereInput
+}
+
+export type ContentVideoUpdateToOneWithWhereWithoutPostWatchSurveysInput = {
+  where?: Prisma.ContentVideoWhereInput
+  data: Prisma.XOR<Prisma.ContentVideoUpdateWithoutPostWatchSurveysInput, Prisma.ContentVideoUncheckedUpdateWithoutPostWatchSurveysInput>
+}
+
+export type ContentVideoUpdateWithoutPostWatchSurveysInput = {
+  videoLink?: Prisma.StringFieldUpdateOperationsInput | string
+  videoName?: Prisma.StringFieldUpdateOperationsInput | string
+  videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  content?: Prisma.ContentMediaUpdateOneRequiredWithoutContentVideoNestedInput
+  videoCaption?: Prisma.VideoCaptionsUpdateOneWithoutContentVideoNestedInput
+}
+
+export type ContentVideoUncheckedUpdateWithoutPostWatchSurveysInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  contentId?: Prisma.IntFieldUpdateOperationsInput | number
+  videoLink?: Prisma.StringFieldUpdateOperationsInput | string
+  videoName?: Prisma.StringFieldUpdateOperationsInput | string
+  videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  videoCaption?: Prisma.VideoCaptionsUncheckedUpdateOneWithoutContentVideoNestedInput
+}
+
 export type ContentVideoCreateManyContentInput = {
   id?: number
   videoLink: string
@@ -471,6 +622,8 @@ export type ContentVideoUpdateWithoutContentInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  videoCaption?: Prisma.VideoCaptionsUpdateOneWithoutContentVideoNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutContentVideoNestedInput
 }
 
 export type ContentVideoUncheckedUpdateWithoutContentInput = {
@@ -478,6 +631,8 @@ export type ContentVideoUncheckedUpdateWithoutContentInput = {
   videoLink?: Prisma.StringFieldUpdateOperationsInput | string
   videoName?: Prisma.StringFieldUpdateOperationsInput | string
   videoDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  videoCaption?: Prisma.VideoCaptionsUncheckedUpdateOneWithoutContentVideoNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutContentVideoNestedInput
 }
 
 export type ContentVideoUncheckedUpdateManyWithoutContentInput = {
@@ -488,6 +643,35 @@ export type ContentVideoUncheckedUpdateManyWithoutContentInput = {
 }
 
 
+/**
+ * Count Type ContentVideoCountOutputType
+ */
+
+export type ContentVideoCountOutputType = {
+  postWatchSurveys: number
+}
+
+export type ContentVideoCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  postWatchSurveys?: boolean | ContentVideoCountOutputTypeCountPostWatchSurveysArgs
+}
+
+/**
+ * ContentVideoCountOutputType without action
+ */
+export type ContentVideoCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContentVideoCountOutputType
+   */
+  select?: Prisma.ContentVideoCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ContentVideoCountOutputType without action
+ */
+export type ContentVideoCountOutputTypeCountPostWatchSurveysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PostWatchSurveyWhereInput
+}
+
 
 export type ContentVideoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -496,6 +680,9 @@ export type ContentVideoSelect<ExtArgs extends runtime.Types.Extensions.Internal
   videoName?: boolean
   videoDescription?: boolean
   content?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
+  videoCaption?: boolean | Prisma.ContentVideo$videoCaptionArgs<ExtArgs>
+  postWatchSurveys?: boolean | Prisma.ContentVideo$postWatchSurveysArgs<ExtArgs>
+  _count?: boolean | Prisma.ContentVideoCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contentVideo"]>
 
 export type ContentVideoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -527,6 +714,9 @@ export type ContentVideoSelectScalar = {
 export type ContentVideoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "contentId" | "videoLink" | "videoName" | "videoDescription", ExtArgs["result"]["contentVideo"]>
 export type ContentVideoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   content?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
+  videoCaption?: boolean | Prisma.ContentVideo$videoCaptionArgs<ExtArgs>
+  postWatchSurveys?: boolean | Prisma.ContentVideo$postWatchSurveysArgs<ExtArgs>
+  _count?: boolean | Prisma.ContentVideoCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ContentVideoIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   content?: boolean | Prisma.ContentMediaDefaultArgs<ExtArgs>
@@ -539,6 +729,8 @@ export type $ContentVideoPayload<ExtArgs extends runtime.Types.Extensions.Intern
   name: "ContentVideo"
   objects: {
     content: Prisma.$ContentMediaPayload<ExtArgs>
+    videoCaption: Prisma.$VideoCaptionsPayload<ExtArgs> | null
+    postWatchSurveys: Prisma.$PostWatchSurveyPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -941,6 +1133,8 @@ readonly fields: ContentVideoFieldRefs;
 export interface Prisma__ContentVideoClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   content<T extends Prisma.ContentMediaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentMediaDefaultArgs<ExtArgs>>): Prisma.Prisma__ContentMediaClient<runtime.Types.Result.GetResult<Prisma.$ContentMediaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  videoCaption<T extends Prisma.ContentVideo$videoCaptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentVideo$videoCaptionArgs<ExtArgs>>): Prisma.Prisma__VideoCaptionsClient<runtime.Types.Result.GetResult<Prisma.$VideoCaptionsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  postWatchSurveys<T extends Prisma.ContentVideo$postWatchSurveysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentVideo$postWatchSurveysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostWatchSurveyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1171,6 +1365,11 @@ export type ContentVideoFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Skip the first `n` ContentVideos.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ContentVideos.
+   */
   distinct?: Prisma.ContentVideoScalarFieldEnum | Prisma.ContentVideoScalarFieldEnum[]
 }
 
@@ -1368,6 +1567,49 @@ export type ContentVideoDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many ContentVideos to delete.
    */
   limit?: number
+}
+
+/**
+ * ContentVideo.videoCaption
+ */
+export type ContentVideo$videoCaptionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VideoCaptions
+   */
+  select?: Prisma.VideoCaptionsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VideoCaptions
+   */
+  omit?: Prisma.VideoCaptionsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VideoCaptionsInclude<ExtArgs> | null
+  where?: Prisma.VideoCaptionsWhereInput
+}
+
+/**
+ * ContentVideo.postWatchSurveys
+ */
+export type ContentVideo$postWatchSurveysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PostWatchSurvey
+   */
+  select?: Prisma.PostWatchSurveySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PostWatchSurvey
+   */
+  omit?: Prisma.PostWatchSurveyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PostWatchSurveyInclude<ExtArgs> | null
+  where?: Prisma.PostWatchSurveyWhereInput
+  orderBy?: Prisma.PostWatchSurveyOrderByWithRelationInput | Prisma.PostWatchSurveyOrderByWithRelationInput[]
+  cursor?: Prisma.PostWatchSurveyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PostWatchSurveyScalarFieldEnum | Prisma.PostWatchSurveyScalarFieldEnum[]
 }
 
 /**

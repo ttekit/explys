@@ -38,6 +38,16 @@ export type ContentStats = Prisma.ContentStatsModel
  */
 export type ContentVideo = Prisma.ContentVideoModel
 /**
+ * Model VideoCaptions
+ * 
+ */
+export type VideoCaptions = Prisma.VideoCaptionsModel
+/**
+ * Model PostWatchSurvey
+ * Short comprehension / reflection survey shown after the learner finishes watching a video.
+ */
+export type PostWatchSurvey = Prisma.PostWatchSurveyModel
+/**
  * Model User
  * 
  */
@@ -87,3 +97,8 @@ export type UserLanguageData = Prisma.UserLanguageDataModel
  * 
  */
 export type UserFriend = Prisma.UserFriendModel
+/**
+ * Model UserVocabulary
+ * 
+ */
+export type UserVocabulary = Prisma.UserVocabularyModel

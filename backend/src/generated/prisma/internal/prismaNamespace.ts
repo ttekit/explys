@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.4.1
- * Query Engine version: 55ae170b1ced7fc6ed07a15f110549408c501bb3
+ * Prisma Client JS version: 7.5.0
+ * Query Engine version: 280c870be64f457428992c43c1f6d557fab6e29e
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.4.1",
-  engine: "55ae170b1ced7fc6ed07a15f110549408c501bb3"
+  client: "7.5.0",
+  engine: "280c870be64f457428992c43c1f6d557fab6e29e"
 }
 
 /**
@@ -388,6 +388,8 @@ export const ModelName = {
   ContentMedia: 'ContentMedia',
   ContentStats: 'ContentStats',
   ContentVideo: 'ContentVideo',
+  VideoCaptions: 'VideoCaptions',
+  PostWatchSurvey: 'PostWatchSurvey',
   User: 'User',
   AdditionalUserData: 'AdditionalUserData',
   Genre: 'Genre',
@@ -397,7 +399,8 @@ export const ModelName = {
   UserSettings: 'UserSettings',
   UserStatistic: 'UserStatistic',
   UserLanguageData: 'UserLanguageData',
-  UserFriend: 'UserFriend'
+  UserFriend: 'UserFriend',
+  UserVocabulary: 'UserVocabulary'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -413,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "content" | "contentMedia" | "contentStats" | "contentVideo" | "user" | "additionalUserData" | "genre" | "topic" | "category" | "tag" | "userSettings" | "userStatistic" | "userLanguageData" | "userFriend"
+    modelProps: "content" | "contentMedia" | "contentStats" | "contentVideo" | "videoCaptions" | "postWatchSurvey" | "user" | "additionalUserData" | "genre" | "topic" | "category" | "tag" | "userSettings" | "userStatistic" | "userLanguageData" | "userFriend" | "userVocabulary"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -710,6 +713,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ContentVideoCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ContentVideoCountAggregateOutputType> | number
+        }
+      }
+    }
+    VideoCaptions: {
+      payload: Prisma.$VideoCaptionsPayload<ExtArgs>
+      fields: Prisma.VideoCaptionsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VideoCaptionsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VideoCaptionsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload>
+        }
+        findFirst: {
+          args: Prisma.VideoCaptionsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VideoCaptionsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload>
+        }
+        findMany: {
+          args: Prisma.VideoCaptionsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload>[]
+        }
+        create: {
+          args: Prisma.VideoCaptionsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload>
+        }
+        createMany: {
+          args: Prisma.VideoCaptionsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VideoCaptionsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload>[]
+        }
+        delete: {
+          args: Prisma.VideoCaptionsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload>
+        }
+        update: {
+          args: Prisma.VideoCaptionsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload>
+        }
+        deleteMany: {
+          args: Prisma.VideoCaptionsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VideoCaptionsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VideoCaptionsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload>[]
+        }
+        upsert: {
+          args: Prisma.VideoCaptionsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VideoCaptionsPayload>
+        }
+        aggregate: {
+          args: Prisma.VideoCaptionsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVideoCaptions>
+        }
+        groupBy: {
+          args: Prisma.VideoCaptionsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VideoCaptionsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VideoCaptionsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VideoCaptionsCountAggregateOutputType> | number
+        }
+      }
+    }
+    PostWatchSurvey: {
+      payload: Prisma.$PostWatchSurveyPayload<ExtArgs>
+      fields: Prisma.PostWatchSurveyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PostWatchSurveyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PostWatchSurveyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload>
+        }
+        findFirst: {
+          args: Prisma.PostWatchSurveyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PostWatchSurveyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload>
+        }
+        findMany: {
+          args: Prisma.PostWatchSurveyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload>[]
+        }
+        create: {
+          args: Prisma.PostWatchSurveyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload>
+        }
+        createMany: {
+          args: Prisma.PostWatchSurveyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PostWatchSurveyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload>[]
+        }
+        delete: {
+          args: Prisma.PostWatchSurveyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload>
+        }
+        update: {
+          args: Prisma.PostWatchSurveyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload>
+        }
+        deleteMany: {
+          args: Prisma.PostWatchSurveyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PostWatchSurveyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PostWatchSurveyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload>[]
+        }
+        upsert: {
+          args: Prisma.PostWatchSurveyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostWatchSurveyPayload>
+        }
+        aggregate: {
+          args: Prisma.PostWatchSurveyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePostWatchSurvey>
+        }
+        groupBy: {
+          args: Prisma.PostWatchSurveyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PostWatchSurveyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PostWatchSurveyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PostWatchSurveyCountAggregateOutputType> | number
         }
       }
     }
@@ -1453,6 +1604,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    UserVocabulary: {
+      payload: Prisma.$UserVocabularyPayload<ExtArgs>
+      fields: Prisma.UserVocabularyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserVocabularyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserVocabularyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload>
+        }
+        findFirst: {
+          args: Prisma.UserVocabularyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserVocabularyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload>
+        }
+        findMany: {
+          args: Prisma.UserVocabularyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload>[]
+        }
+        create: {
+          args: Prisma.UserVocabularyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload>
+        }
+        createMany: {
+          args: Prisma.UserVocabularyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserVocabularyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload>[]
+        }
+        delete: {
+          args: Prisma.UserVocabularyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload>
+        }
+        update: {
+          args: Prisma.UserVocabularyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserVocabularyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserVocabularyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserVocabularyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserVocabularyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserVocabularyPayload>
+        }
+        aggregate: {
+          args: Prisma.UserVocabularyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserVocabulary>
+        }
+        groupBy: {
+          args: Prisma.UserVocabularyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserVocabularyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserVocabularyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserVocabularyCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1518,7 +1743,10 @@ export const ContentStatsScalarFieldEnum = {
   id: 'id',
   contentMediaId: 'contentMediaId',
   usersWatched: 'usersWatched',
-  rating: 'rating'
+  rating: 'rating',
+  systemTags: 'systemTags',
+  userTags: 'userTags',
+  processingComplexity: 'processingComplexity'
 } as const
 
 export type ContentStatsScalarFieldEnum = (typeof ContentStatsScalarFieldEnum)[keyof typeof ContentStatsScalarFieldEnum]
@@ -1535,12 +1763,37 @@ export const ContentVideoScalarFieldEnum = {
 export type ContentVideoScalarFieldEnum = (typeof ContentVideoScalarFieldEnum)[keyof typeof ContentVideoScalarFieldEnum]
 
 
+export const VideoCaptionsScalarFieldEnum = {
+  id: 'id',
+  contentVideoId: 'contentVideoId',
+  subtitlesFileLink: 'subtitlesFileLink',
+  createAt: 'createAt',
+  updateAt: 'updateAt'
+} as const
+
+export type VideoCaptionsScalarFieldEnum = (typeof VideoCaptionsScalarFieldEnum)[keyof typeof VideoCaptionsScalarFieldEnum]
+
+
+export const PostWatchSurveyScalarFieldEnum = {
+  id: 'id',
+  contentVideoId: 'contentVideoId',
+  userId: 'userId',
+  questionsJson: 'questionsJson',
+  answersJson: 'answersJson',
+  createdAt: 'createdAt',
+  submittedAt: 'submittedAt'
+} as const
+
+export type PostWatchSurveyScalarFieldEnum = (typeof PostWatchSurveyScalarFieldEnum)[keyof typeof PostWatchSurveyScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
   password: 'password',
   role: 'role',
+  hasCompletedPlacement: 'hasCompletedPlacement',
   lastLogin: 'lastLogin',
   createdAt: 'createdAt'
 } as const
@@ -1654,12 +1907,34 @@ export const UserFriendScalarFieldEnum = {
 export type UserFriendScalarFieldEnum = (typeof UserFriendScalarFieldEnum)[keyof typeof UserFriendScalarFieldEnum]
 
 
+export const UserVocabularyScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  language: 'language',
+  term: 'term',
+  source: 'source',
+  topicId: 'topicId',
+  mastery: 'mastery',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserVocabularyScalarFieldEnum = (typeof UserVocabularyScalarFieldEnum)[keyof typeof UserVocabularyScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const NullableJsonNullValueInput = {
@@ -1876,6 +2151,8 @@ export type GlobalOmitConfig = {
   contentMedia?: Prisma.ContentMediaOmit
   contentStats?: Prisma.ContentStatsOmit
   contentVideo?: Prisma.ContentVideoOmit
+  videoCaptions?: Prisma.VideoCaptionsOmit
+  postWatchSurvey?: Prisma.PostWatchSurveyOmit
   user?: Prisma.UserOmit
   additionalUserData?: Prisma.AdditionalUserDataOmit
   genre?: Prisma.GenreOmit
@@ -1886,6 +2163,7 @@ export type GlobalOmitConfig = {
   userStatistic?: Prisma.UserStatisticOmit
   userLanguageData?: Prisma.UserLanguageDataOmit
   userFriend?: Prisma.UserFriendOmit
+  userVocabulary?: Prisma.UserVocabularyOmit
 }
 
 /* Types for Logging */

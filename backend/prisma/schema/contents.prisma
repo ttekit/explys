@@ -36,6 +36,13 @@ model ContentStats {
   usersWatched   Int          @default(0) @map("users_watched")
   rating         Float        @default(0)
 
+  /// CEFR band tags from transcript analysis (e.g. A2, B1)
+  systemTags            String[] @default([]) @map("system_tags")
+  /// Theme / topic tags from transcript analysis
+  userTags              String[] @default([]) @map("user_tags")
+  /// 1–10 processing load estimate, or null if not inferred
+  processingComplexity  Int?     @map("processing_complexity")
+
   topics         Topic[]
 
   @@map("content_stats")
@@ -51,5 +58,37 @@ model ContentVideo {
   videoName        String  @map("video_name")
   videoDescription String? @map("video_description")
 
+  videoCaption     VideoCaptions?
+  postWatchSurveys PostWatchSurvey[]
+
   @@map("content_videos")
+}
+
+model VideoCaptions {
+  id        Int     @id @default(autoincrement())
+  contentVideoId Int  @unique @map("content_video_id")
+  contentVideo   ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
+
+  subtitlesFileLink String @map("subtitles_file_link")
+  createAt  DateTime @default(now()) @map("create_at")
+  updateAt  DateTime @updatedAt @map("update_at")
+
+  @@map("video_captions")
+}
+
+/// Short comprehension / reflection survey shown after the learner finishes watching a video.
+model PostWatchSurvey {
+  id             Int          @id @default(autoincrement())
+  contentVideoId Int          @map("content_video_id")
+  contentVideo   ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
+  userId         Int?         @map("user_id")
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// JSON array: { id, type, prompt, options? }[]
+  questionsJson  Json         @map("questions_json")
+  answersJson    Json?        @map("answers_json")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  submittedAt    DateTime?    @map("submitted_at")
+
+  @@index([contentVideoId, userId])
+  @@map("post_watch_surveys")
 }
