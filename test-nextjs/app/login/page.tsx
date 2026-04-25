@@ -23,7 +23,7 @@ function LoginForm() {
     try {
       const session = await apiLogin(
         email.trim(),
-        password,
+        password.trim(),
       );
       setSession(session);
       router.push(next);
@@ -50,10 +50,12 @@ function LoginForm() {
           </label>
           <input
             className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-            type="email"
+            type="text"
+            inputMode="email"
+            autoComplete="email"
+            spellCheck={false}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
             required
           />
         </div>

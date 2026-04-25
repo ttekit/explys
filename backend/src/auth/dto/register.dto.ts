@@ -1,3 +1,4 @@
+import { Type, Transform } from 'class-transformer';
 import {
   IsString,
   IsEmail,
@@ -8,15 +9,20 @@ import {
   IsArray,
   IsNumber,
   IsObject,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { RegisterStudentAccountDto } from './register-student-account.dto';
+import { trimEmailInput } from './trim-helpers';
 
 export class RegisterDto {
   @ApiProperty({ description: 'The first name of the user', example: 'John' })
+  @Transform(({ value }) => String(value ?? '').trim())
   @IsString()
   name: string;
 
   @ApiProperty({ description: 'The email address of the user', example: 'john.doe@example.com' })
+  @Transform(({ value }) => trimEmailInput(value))
   @IsEmail()
   email: string;
 
@@ -25,6 +31,7 @@ export class RegisterDto {
       'Password: 8–72 characters, at least one uppercase, one lowercase, and one digit',
     example: 'SecurePass1',
   })
+  @Transform(({ value }) => String(value ?? '').trim())
   @IsString()
   @MinLength(8)
   @MaxLength(72)
@@ -113,4 +120,16 @@ export class RegisterDto {
   @IsArray()
   @IsObject({ each: true })
   knownLanguageLevels?: Array<{ language: string; level: string }>;
+
+  @ApiProperty({
+    required: false,
+    type: [RegisterStudentAccountDto],
+    description:
+      'When role is "teacher", optional list of student user accounts to create (same as roster download).',
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RegisterStudentAccountDto)
+  studentAccounts?: RegisterStudentAccountDto[];
 }

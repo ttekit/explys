@@ -14,9 +14,13 @@ model User {
   password           String
   role               String              @default("adult")
   hasCompletedPlacement Boolean          @default(false) @map("has_completed_placement")
+  teacherId          Int?                @map("teacher_id")
   lastLogin          DateTime?
   createdAt          DateTime            @default(now())
   settings           UserSettings?
+
+  teacher            User?               @relation("TeacherPupils", fields: [teacherId], references: [id], onDelete: SetNull)
+  pupils             User[]              @relation("TeacherPupils")
 
   statistic          UserStatistic?
   languageData       UserLanguageData[]
@@ -24,6 +28,7 @@ model User {
   friends            UserFriend[]        @relation("UserFriends")
   friendOf           UserFriend[]        @relation("UserFriendsReverse")
 
+  @@index([teacherId])
   @@map("users")
 }
 

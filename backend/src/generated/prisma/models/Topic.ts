@@ -1803,6 +1803,11 @@ export type TopicFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Skip the first `n` Topics.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Topics.
+   */
   distinct?: Prisma.TopicScalarFieldEnum | Prisma.TopicScalarFieldEnum[]
 }
 

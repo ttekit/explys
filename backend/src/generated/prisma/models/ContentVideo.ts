@@ -1171,6 +1171,11 @@ export type ContentVideoFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Skip the first `n` ContentVideos.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ContentVideos.
+   */
   distinct?: Prisma.ContentVideoScalarFieldEnum | Prisma.ContentVideoScalarFieldEnum[]
 }
 
