@@ -13,7 +13,7 @@ export default function MainPage() {
         <Button>Login</Button>
       </Link>
       <Link to="/contentPage">
-        <Button>Content</Button>
+        <Button>Content</Button>{" "}
       </Link>
       <Link to="/profileMain">
         <Button>Profile</Button>

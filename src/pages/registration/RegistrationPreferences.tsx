@@ -34,11 +34,20 @@ export default function RegistrationPreferences() {
       }
     };
     fetchGenres();
-  }, [isTeacher]);
+  }, []);
 
-  const handleGenreChange = (name: string) => (selected: any) => {
-    const values = selected ? selected.map((o: any) => o.value) : [];
-    updateFormData({ [name]: values } as any);
+  const handleFavoriteGenreChange = (selectedOptions: any) => {
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
+    updateFormData({ favoriteGenres: values } as any);
+  };
+
+  const handleHatedGenreChange = (selectedOptions: any) => {
+    const values = selectedOptions
+      ? selectedOptions.map((option: any) => option.value)
+      : [];
+    updateFormData({ hatedGenres: values } as any);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -89,26 +98,50 @@ export default function RegistrationPreferences() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-2">
-      <form className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col" onSubmit={handleSubmit}>
-        <p className="text-3xl font-bold mb-1">Create an account</p>
-        <p className="text-gray-500 mb-8">Preferences - Page 3</p>
+      <form
+        className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
+        onSubmit={handleSubmit}
+      >
+        <div>
+          <p className="text-3xl font-bold text-gray-900 mb-1">
+            Create an account
+          </p>
+          <div className="flex text-gray-500 mb-8">
+            <p>Preferences</p>
+            <p className="ml-1">- Page 3</p>
+          </div>
+        </div>
 
         <div className="mb-4 flex flex-col px-5">
-          {!isTeacher ? (
-            <>
-              <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
-              <Select options={genreOptions} isMulti placeholder="Choose genres" onChange={handleGenreChange("favoriteGenres")}
-                value={genreOptions.filter(o => (formData.favoriteGenres ?? []).includes(o.value))} onMenuOpen={() => { }} onMenuClose={() => { }} />
+          <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
+          <Select
+            options={genreOptions}
+            isMulti
+            name="favoriteGenres"
+            placeholder="Choose genres"
+            onChange={handleFavoriteGenreChange}
+            // Fix: added null-check with ?? []
+            value={genreOptions.filter((option: any) =>
+              (formData.favoriteGenres ?? []).includes(option.value),
+            )}
+            onMenuOpen={() => {}}
+            onMenuClose={() => {}}
+          />
 
-              <LabelRegister isRequired={false} className="mt-4">Hated genres:</LabelRegister>
-              <Select options={genreOptions} isMulti placeholder="Choose genres" onChange={handleGenreChange("hatedGenres")}
-                value={genreOptions.filter(o => (formData.hatedGenres ?? []).includes(o.value))} onMenuOpen={() => { }} onMenuClose={() => { }} />
-            </>
-          ) : (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-blue-700 text-center">
-              As a teacher, you can skip personal preferences. Click "Register" to finish your setup.
-            </div>
-          )}
+          <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
+          <Select
+            options={genreOptions}
+            isMulti
+            name="hatedGenres"
+            placeholder="Choose genres"
+            onChange={handleHatedGenreChange}
+            // Fix: added null-check with ?? []
+            value={genreOptions.filter((option: any) =>
+              (formData.hatedGenres ?? []).includes(option.value),
+            )}
+            onMenuOpen={() => {}}
+            onMenuClose={() => {}}
+          />
         </div>
 
         <div className="mt-4 flex flex-col">
