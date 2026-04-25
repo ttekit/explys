@@ -1,41 +1,55 @@
-import { Body, Injectable } from '@nestjs/common';
+import { Body, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateContentDto } from './dto/create-content.dto';
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, FilterRuleName, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { ConfigService } from '@nestjs/config';
 import { UpdateContentDto } from './dto/update-content.dto';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import { Redis } from 'ioredis';
 @Injectable()
 export class ContentsService {
     private readonly s3Client : S3Client;
+    private readonly bucketName: string;
+    private readonly region: string;
 
     constructor (private readonly prisma: PrismaService,
-        private readonly configService: ConfigService){
-            this.s3Client = new S3Client({
-                region: this.configService.getOrThrow('AWS_S3_REGION'),
-            })
+                private readonly configService: ConfigService,
+                @InjectRedis() private readonly redis: Redis
+            ){
+                this.bucketName = this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
+                this.region = this.configService.getOrThrow<string>('AWS_S3_REGION');
+                this.s3Client = new S3Client({
+                    region: this.region,
+                })
+        }
+        private getRedisKey(id: number | string) : string{
+            return `content:${id}`;
         }
 
-
     async createContent(dto: CreateContentDto, file: Express.Multer.File){
+      try{
+
         await this.s3Client.send(
             new PutObjectCommand({
-                Bucket: 'kpi-eng-course',
+                Bucket: this.bucketName,
                 Key: file.originalname,
                 Body: file.buffer,
+                ContentType: file.mimetype,
             })
         )
-        const videoUrl = `https://kpi-eng-course.s3.amazonaws.com/${file.originalname}`;
-
-        return await this.prisma.content.create({
+    
+        const fileUrl = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${file.originalname}`;
+        
+        const content = await this.prisma.content.create({
             data: {
                 name: dto.name,
-                description: dto.description,
+                description: dto.description,   
                 friendlyLink: dto.friendlyLink,
                 category: {
                     create: {
                         ContentVideo: {
                             create: {
-                                videoLink: videoUrl,
+                                videoLink: fileUrl,
                                 videoName: dto.name,
                             }
                         }
@@ -43,6 +57,18 @@ export class ContentsService {
                 }
             }
         });
+        
+        await this.redis.set(`file:${content.id}`, fileUrl, 'EX', 3600); //TTL = 3600 seconds
+
+
+        return {
+            id: content.id,
+            url: fileUrl
+        };
+    } catch(error) {
+        console.log('S3/Prisma Error:', error);
+        throw new InternalServerErrorException('Error uploading a file to S3');
+    }
     }
 
     async updateContent(id: number, dto: UpdateContentDto, file?: Express.Multer.File){
@@ -67,7 +93,7 @@ export class ContentsService {
                 if(oldKey){
                     await this.s3Client.send(
                         new DeleteObjectCommand({
-                            Bucket: 'kpi-eng-course',
+                            Bucket: this.bucketName,
                             Key: oldKey,
                         })
                     );
@@ -76,23 +102,47 @@ export class ContentsService {
 
             await this.s3Client.send(
                 new PutObjectCommand({
-                    Bucket: 'kpi-eng-course',
+                    Bucket: this.bucketName,
                     Key: file.originalname,
                     Body: file.buffer,
                 }),
             );
 
-            const newUrl = `https://kpi-eng-course.s3.amazonaws.com/${file.originalname}`
+            const newUrl = `https://${this.bucketName}.s3.${this.region}amazonaws.com/${file.originalname}`;
+           
             await this.prisma.contentVideo.updateMany({
                 where: {contentId: id },
                 data: {videoLink: newUrl }
             });
+
+            await this.redis.set(this.getRedisKey(id), newUrl, 'EX', 3600);
+
         }
 
         return updateContent;
     }
 
-    deleteContent(id: number){
+    async deleteContent(id: number, file?: Express.Multer.File){
+        const media = await this.prisma.contentVideo.findFirst({
+            where:{
+                contentId: id,
+            }
+        })
+        if(media){
+            const oldKey = media.videoLink.split('/').pop();
+
+            if(oldKey){
+                await this.s3Client.send(
+                        new DeleteObjectCommand({
+                            Bucket: this.bucketName,
+                            Key: oldKey,
+                        })
+                    );
+            }
+        }
+
+        await this.redis.del(this.getRedisKey(id));
+
         return this.prisma.content.delete({
             where: { id }
         })
@@ -103,9 +153,27 @@ export class ContentsService {
     }
     
     async getContentById(id: number){
-        return await this.prisma.content.findUnique({
-            where:{ id }
-        });
+    const cached = await this.redis.get(this.getRedisKey(id));
+    if(cached){
+        return {
+            id,
+            videoLink: cached,
+            fromCache: true
+        }
     }
 
+    const content = await this.prisma.content.findUnique({
+        where:{
+            id,
+        },
+        include:{
+            category:{
+                include:{
+                    ContentVideo: true,
+                }
+            }
+        }
+    })
+    return content;
+    }
 }
