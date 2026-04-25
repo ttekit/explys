@@ -1,10 +1,9 @@
-import { Module } from '@nestjs/common';
-import { AlcorythmService } from './alcorythm.service';
-import { PrismaService } from 'src/prisma.service';
-import { AlcorythmGeminiTagScoreClient } from './alcorythm-gemini-tag-score.client';
+import { Module } from "@nestjs/common";
+import { AlcorythmGeminiTagScoreClient } from "./alcorythm-gemini-tag-score.client";
+import { AlcorythmService } from "./alcorythm.service";
 
 @Module({
-  providers: [AlcorythmService, PrismaService, AlcorythmGeminiTagScoreClient],
+  providers: [AlcorythmService, AlcorythmGeminiTagScoreClient],
   exports: [AlcorythmService],
 })
 export class AlcorythmModule {}

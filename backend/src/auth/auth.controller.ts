@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './auth.guard';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -14,8 +14,11 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({ status: 201, description: 'User successfully registered.' })
-  @ApiResponse({ status: 400, description: 'Bad Request.' })
-  @ApiResponse({ status: 409, description: 'Conflict (User already exists).' })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Bad request or unable to register with the provided information.',
+  })
   @ApiBody({ type: RegisterDto })
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -33,13 +36,14 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('profile')
   @ApiOperation({ summary: 'Get user profile (requires authentication)' })
   @ApiResponse({ status: 200, description: 'User profile retrieved successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   getProfile(@Request() req: any) {
     return {
-      message: 'Welcum',
+      message: 'Welcome',
       user: req.user,
     };
   }

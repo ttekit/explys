@@ -1,24 +1,39 @@
-import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { JwtModule } from '@nestjs/jwt';
-import { AuthController } from './auth.controller';
-import { PrismaService } from 'src/prisma.service';
-import { AlcorythmModule } from '../alcorythm/alcorythm.module';
-
-
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { JwtModule } from "@nestjs/jwt";
+import { AlcorythmModule } from "../alcorythm/alcorythm.module";
+import { AuthController } from "./auth.controller";
+import { AuthGuard } from "./auth.guard";
+import { AuthService } from "./auth.service";
+import { ApiTokenOrJwtAuthGuard } from "./guards/api-token-or-jwt.guard";
+import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
 
 @Module({
   imports: [
     AlcorythmModule,
-    JwtModule.register({
+    JwtModule.registerAsync({
       global: true,
-      secret: process.env.JWT_SECRET || 'dev-jwt-secret-change-me',
-      signOptions: { expiresIn: '1d' },
-
-    })
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        secret: config.getOrThrow<string>("JWT_SECRET"),
+        signOptions: { expiresIn: "1d" },
+      }),
+      inject: [ConfigService],
+    }),
   ],
-
   controllers: [AuthController],
-  providers: [PrismaService, AuthService],
+  providers: [
+    AuthService,
+    AuthGuard,
+    ApiTokenOrJwtAuthGuard,
+    UserSelfOrApiGuard,
+  ],
+  exports: [
+    JwtModule,
+    AuthService,
+    AuthGuard,
+    ApiTokenOrJwtAuthGuard,
+    UserSelfOrApiGuard,
+  ],
 })
-export class AuthModule { }
+export class AuthModule {}

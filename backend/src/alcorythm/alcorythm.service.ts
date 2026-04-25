@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from 'src/prisma.service';
 import { AlcorythmGeminiTagScoreClient } from './alcorythm-gemini-tag-score.client';
 import { TagKnowledgeItem, TopicKnowledgeItem } from './alcorythm.types';
@@ -16,6 +16,8 @@ import {
 
 @Injectable()
 export class AlcorythmService {
+  private readonly logger = new Logger(AlcorythmService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly geminiTagScoreClient: AlcorythmGeminiTagScoreClient,
@@ -148,14 +150,22 @@ export class AlcorythmService {
           algorithmVersion: item.algorithmVersion,
         })),
       });
-    } catch {
-      await prisma.userLanguageData.createMany({
-        data: items.map((item) => ({
-          userId,
-          topicId: item.topicId,
-          score: item.score,
-        })),
-      });
+    } catch (firstError: unknown) {
+      try {
+        await prisma.userLanguageData.createMany({
+          data: items.map((item) => ({
+            userId,
+            topicId: item.topicId,
+            score: item.score,
+          })),
+        });
+      } catch (secondError: unknown) {
+        this.logger.error(
+          "userLanguageData createMany failed after fallback",
+          secondError instanceof Error ? secondError.stack : secondError,
+        );
+        throw firstError;
+      }
     }
 
     void this.analizeUsersLevel(userId).catch(() => {});
