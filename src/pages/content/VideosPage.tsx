@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router"; //
 import Navigation from "../mainpage/Navigation";
-
-// Описываем структуру данных согласно твоей Prisma схеме
+// Интерфейс данных на основе твоей схемы Prisma
 interface ContentVideo {
     id: number;
     videoName: string;
@@ -18,18 +18,19 @@ interface ContentVideo {
 export default function VideoPage() {
     const [videos, setVideos] = useState<ContentVideo[]>([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate(); //
 
     useEffect(() => {
         const fetchVideos = async () => {
             try {
-                // Запрос к твоему контроллеру content-video
+                // Запрос к твоему контроллеру
                 const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/content-video`);
                 if (response.ok) {
                     const data = await response.json();
                     setVideos(data);
                 }
             } catch (error) {
-                console.error("Error fetching video content:", error);
+                console.error("Error fetching video library:", error);
             } finally {
                 setLoading(false);
             }
@@ -62,11 +63,11 @@ export default function VideoPage() {
                                 key={video.id}
                                 className="group bg-zinc-900/50 border border-zinc-800 rounded-3xl overflow-hidden hover:border-blue-500/50 hover:bg-zinc-900 transition-all duration-300 flex flex-col shadow-lg"
                             >
-                                {/* Video Preview Section */}
+                                {/* Preview Area */}
                                 <div className="relative aspect-video bg-zinc-800 overflow-hidden">
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60"></div>
 
-                                    {/* Category Badge */}
+                                    {/* Category Name from DB */}
                                     <div className="absolute top-4 left-4 z-10">
                                         <span className="bg-blue-600/20 text-blue-400 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest backdrop-blur-md border border-blue-500/20">
                                             {video.content.category.name}
@@ -82,7 +83,7 @@ export default function VideoPage() {
                                     </div>
                                 </div>
 
-                                {/* Content Info Section */}
+                                {/* Content Info */}
                                 <div className="p-6 flex-grow flex flex-col">
                                     <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300 line-clamp-1 mb-2">
                                         {video.videoName}
@@ -92,7 +93,11 @@ export default function VideoPage() {
                                         {video.videoDescription || video.content.category.description}
                                     </p>
 
-                                    <button className="mt-6 w-full py-3 bg-white/5 hover:bg-blue-600 text-white rounded-2xl font-bold text-sm transition-all duration-300 border border-white/5 hover:border-blue-500 shadow-sm active:scale-95">
+                                    {/* Кнопка перехода на ContentPage */}
+                                    <button
+                                        onClick={() => navigate(`/content/${video.id}`)}
+                                        className="mt-6 w-full py-3 bg-white/5 hover:bg-blue-600 text-white rounded-2xl font-bold text-sm transition-all duration-300 border border-white/5 hover:border-blue-500 shadow-sm active:scale-95"
+                                    >
                                         Watch Now
                                     </button>
                                 </div>
@@ -106,7 +111,7 @@ export default function VideoPage() {
                     <div className="text-center py-32 bg-zinc-900/30 rounded-[40px] border-2 border-dashed border-zinc-800/50">
                         <div className="text-6xl mb-4">🎬</div>
                         <h2 className="text-2xl font-bold text-white">No videos yet</h2>
-                        <p className="text-zinc-500 mt-2">Our team is currently uploading new content for you.</p>
+                        <p className="text-zinc-500 mt-2">Check back later for new content.</p>
                     </div>
                 )}
             </main>
