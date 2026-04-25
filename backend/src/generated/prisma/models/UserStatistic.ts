@@ -1161,11 +1161,6 @@ export type UserStatisticFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` UserStatistics.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of UserStatistics.
-   */
   distinct?: Prisma.UserStatisticScalarFieldEnum | Prisma.UserStatisticScalarFieldEnum[]
 }
 

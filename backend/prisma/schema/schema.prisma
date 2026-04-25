@@ -8,19 +8,19 @@ datasource db {
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
-  name               String
-  email              String              @unique
-  password           String
-  role               String              @default("adult")
-  hasCompletedPlacement Boolean          @default(false) @map("has_completed_placement")
-  teacherId          Int?                @map("teacher_id")
-  lastLogin          DateTime?
-  createdAt          DateTime            @default(now())
-  settings           UserSettings?
+  id                    Int           @id @default(autoincrement())
+  name                  String
+  email                 String        @unique
+  password              String
+  role                  String        @default("adult")
+  hasCompletedPlacement Boolean       @default(false) @map("has_completed_placement")
+  teacherId             Int?          @map("teacher_id")
+  lastLogin             DateTime?
+  createdAt             DateTime      @default(now())
+  settings              UserSettings?
 
-  teacher            User?               @relation("TeacherPupils", fields: [teacherId], references: [id], onDelete: SetNull)
-  pupils             User[]              @relation("TeacherPupils")
+  teacher User?  @relation("TeacherPupils", fields: [teacherId], references: [id], onDelete: SetNull)
+  pupils  User[] @relation("TeacherPupils")
 
   statistic          UserStatistic?
   languageData       UserLanguageData[]
@@ -33,29 +33,28 @@ model User {
 }
 
 model AdditionalUserData {
-  id             Int      @id @default(autoincrement())
-  userId         Int      @unique
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  nativeLanguage String?
-  knownLanguages String[]
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nativeLanguage      String?
+  knownLanguages      String[]
   knownLanguageLevels Json?
-  job            String?
-  education      String?
-  englishLevel   String?
-  workField      String?
-  hobbies        String[]
-  interests      String[]
+  job                 String?
+  education           String?
+  englishLevel        String?
+  workField           String?
+  hobbies             String[]
+  interests           String[]
 
   teacherGrades        String?
   teacherTopics        String[]
-  studentNames         String?
+  studentNames         Json?
   studentGrade         String?
   studentProblemTopics String[]
 
-
-  selectedTopics Topic[]  @relation("SelectedTopics")
-  favoriteGenres Genre[]  @relation("FavoriteGenres")
-  hatedGenres    Genre[]  @relation("HatedGenres")
+  selectedTopics Topic[] @relation("SelectedTopics")
+  favoriteGenres Genre[] @relation("FavoriteGenres")
+  hatedGenres    Genre[] @relation("HatedGenres")
 
   @@map("additional_user_data")
 }
@@ -142,12 +141,13 @@ model UserLanguageData {
 }
 
 model UserFriend {
-  id                    Int      @id @default(autoincrement())
-  userId                Int
-  user                  User     @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
-  friendId              Int
-  friend                User     @relation("UserFriendsReverse", fields: [friendId], references: [id], onDelete: Cascade)
-  friendshipCreatedDate DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  friendId  Int
+  user      User     @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend    User     @relation("UserFriendsReverse", fields: [friendId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
+  @@unique([userId, friendId])
   @@map("user_friends")
 }

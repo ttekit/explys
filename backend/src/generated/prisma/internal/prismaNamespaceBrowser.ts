@@ -241,7 +241,7 @@ export const UserFriendScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   friendId: 'friendId',
-  friendshipCreatedDate: 'friendshipCreatedDate'
+  createdAt: 'createdAt'
 } as const
 
 export type UserFriendScalarFieldEnum = (typeof UserFriendScalarFieldEnum)[keyof typeof UserFriendScalarFieldEnum]
