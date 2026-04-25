@@ -3,7 +3,7 @@ import { useState } from "react";
 import ProgressbarContent from "../../components/ProgressbarContent";
 import TestLabel from "../../components/TestLabel";
 import VideoPlayer from "../../components/VideoPlayer";
-import TestsArea from "../../components/TestsArea";
+import TestArea from "../../components/TestsArea";
 
 export default function FilmPage() {
   const [filmView, setFilmView] = useState(true);
@@ -78,7 +78,7 @@ export default function FilmPage() {
                       </div>
                     </div>
 
-                    <TestsArea />
+                    <TestArea />
                   </div>
                 </div>
               )}

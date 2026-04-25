@@ -1,7 +1,9 @@
-export default function TestsArea() {
+export default function TestArea() {
   return (
-    <>
-      <div></div>
-    </>
+    <iframe
+      src=""
+      className="w-full h-full rounded-xl border-0"
+      title="Test Area"
+    />
   );
 }
