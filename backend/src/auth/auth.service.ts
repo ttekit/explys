@@ -35,6 +35,8 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     let user: { id: number; email: string; name: string };
+
+    // Формуємо об'єкт з додатковими даними, включаючи нові поля для ролей
     const additionalDataPayload: any = {
       englishLevel: dto.englishLevel,
       education: dto.education,
@@ -43,6 +45,14 @@ export class AuthService {
       nativeLanguage: dto.nativeLanguage,
       knownLanguages: dto.knownLanguages || [],
       knownLanguageLevels: dto.knownLanguageLevels,
+
+      // Нові поля залежно від ролі:
+      teacherGrades: dto.teacherGrades,
+      teacherTopics: dto.teacherTopics || [],
+      studentNames: dto.studentNames,
+      studentGrade: dto.studentGrade,
+      studentProblemTopics: dto.studentProblemTopics || [],
+
       favoriteGenres: dto.favoriteGenres && dto.favoriteGenres.length > 0 ? {
         connect: dto.favoriteGenres.map(id => ({ id }))
       } : undefined,
@@ -50,12 +60,14 @@ export class AuthService {
         connect: dto.hatedGenres.map(id => ({ id }))
       } : undefined,
     };
+
     try {
       user = await prisma.user.create({
         data: {
           email: dto.email,
           password: hashedPassword,
           name: dto.name,
+          role: dto.role || 'adult', // Зберігаємо базову роль
           additionalUserData: {
             create: additionalDataPayload,
           },
@@ -81,6 +93,7 @@ export class AuthService {
             email: dto.email,
             password: hashedPassword,
             name: dto.name,
+            role: dto.role || 'adult', // Зберігаємо базову роль
             additionalUserData: {
               create: additionalDataPayload,
             },
@@ -113,6 +126,7 @@ export class AuthService {
           email: dto.email,
           password: hashedPassword,
           name: dto.name,
+          role: dto.role || 'adult', // Зберігаємо базову роль навіть якщо немає additionalUserData
         },
         select: {
           id: true,

@@ -41,4 +41,4 @@ import { PlacementTestModule } from "./placement-test/placement-test.module";
     { provide: APP_GUARD, useClass: GlobalApiTokenGuard },
   ],
 })
-export class AppModule {}
+export class AppModule { }

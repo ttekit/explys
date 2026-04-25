@@ -12,6 +12,7 @@ model User {
   name               String
   email              String              @unique
   password           String
+  role               String              @default("adult")
   hasCompletedPlacement Boolean          @default(false) @map("has_completed_placement")
   lastLogin          DateTime?
   createdAt          DateTime            @default(now())
@@ -39,6 +40,14 @@ model AdditionalUserData {
   workField      String?
   hobbies        String[]
   interests      String[]
+
+  teacherGrades        String?
+  teacherTopics        String[]
+  studentNames         String?
+  studentGrade         String?
+  studentProblemTopics String[]
+
+
   selectedTopics Topic[]  @relation("SelectedTopics")
   favoriteGenres Genre[]  @relation("FavoriteGenres")
   hatedGenres    Genre[]  @relation("HatedGenres")
