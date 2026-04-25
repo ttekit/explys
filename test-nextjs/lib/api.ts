@@ -39,6 +39,27 @@ function apiUrl(path: string): string {
 
 type FetchOpts = RequestInit & { token?: string | null };
 
+/** Parses Nest/JSON error bodies so messages are readable in the UI. */
+async function readApiErrorBody(res: Response): Promise<string> {
+  const t = await res.text();
+  if (!t) return `Request failed (${res.status})`;
+  try {
+    const j = JSON.parse(t) as { message?: string | string[]; error?: string };
+    if (Array.isArray(j.message)) {
+      return j.message.join("; ");
+    }
+    if (typeof j.message === "string" && j.message) {
+      return j.message;
+    }
+    if (typeof j.error === "string" && j.error) {
+      return j.error;
+    }
+  } catch {
+    // not JSON
+  }
+  return t;
+}
+
 export async function apiFetch(
   path: string,
   init: FetchOpts = {},
@@ -75,8 +96,7 @@ export async function apiLogin(
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
-    const t = await res.text();
-    throw new Error(t || `Login failed (${res.status})`);
+    throw new Error(await readApiErrorBody(res) || `Login failed (${res.status})`);
   }
   return (await res.json()) as AuthSession;
 }
@@ -85,19 +105,36 @@ export async function apiRegister(body: {
   name: string;
   email: string;
   password: string;
+  role?: string;
   englishLevel?: string;
   hobbies?: string[];
   education?: string;
   workField?: string;
   nativeLanguage?: string;
+  favoriteGenres?: number[];
+  hatedGenres?: number[];
+  knownLanguages?: string[];
+  knownLanguageLevels?: Array<{ language: string; level: string }>;
+  teacherGrades?: string;
+  teacherTopics?: string[];
+  studentNames?: string;
+  studentGrade?: string;
+  studentProblemTopics?: string[];
+  studentAccounts?: Array<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  }>;
 }): Promise<AuthSession> {
   const res = await apiFetch("/auth/register", {
     method: "POST",
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const t = await res.text();
-    throw new Error(t || `Register failed (${res.status})`);
+    throw new Error(
+      (await readApiErrorBody(res)) || `Register failed (${res.status})`,
+    );
   }
   return (await res.json()) as AuthSession;
 }

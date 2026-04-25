@@ -1,116 +1,72 @@
-import {
-  IsString,
-  IsEmail,
-  MinLength,
-  MaxLength,
-  Matches,
-  IsOptional,
-  IsArray,
-  IsNumber,
-  IsObject,
-} from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, IsOptional, IsArray, MinLength } from 'class-validator';
 
 export class RegisterDto {
-  @ApiProperty({ description: 'The first name of the user', example: 'John' })
-  @IsString()
-  name: string;
-
-  @ApiProperty({ description: 'The email address of the user', example: 'john.doe@example.com' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({
-    description:
-      'Password: 8–72 characters, at least one uppercase, one lowercase, and one digit',
-    example: 'SecurePass1',
-  })
   @IsString()
-  @MinLength(8)
-  @MaxLength(72)
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
-    message:
-      'Password must include at least one uppercase letter, one lowercase letter, and one number',
-  })
+  @MinLength(6)
   password: string;
 
   @IsString()
+  name: string;
+
   @IsOptional()
+  @IsString()
   role?: string;
 
-  @IsString()
   @IsOptional()
+  @IsArray()
+  studentNames?: any;
+
+  @IsOptional()
+  @IsString()
   teacherGrades?: string;
 
-  @IsArray()
-  @IsString({ each: true })
   @IsOptional()
+  @IsArray()
   teacherTopics?: string[];
 
-  @IsString()
-  @IsOptional()
-  studentNames?: string;
-
-  @IsString()
-  @IsOptional()
-  studentGrade?: string;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  studentProblemTopics?: string[];
-
-  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   englishLevel?: string;
 
-  @ApiProperty({ required: false, type: [String], example: ['Reading', 'Gaming'] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  hobbies?: string[];
-
-  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   education?: string;
 
-  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsArray()
+  hobbies?: string[];
+
   @IsOptional()
   @IsString()
   workField?: string;
 
-  @ApiProperty({ required: false, type: [Number], example: [1, 2] })
-  @IsOptional()
-  @IsArray()
-  @IsNumber({}, { each: true })
-  favoriteGenres?: number[];
-
-  @ApiProperty({ required: false, type: [Number], example: [3, 4] })
-  @IsOptional()
-  @IsArray()
-  @IsNumber({}, { each: true })
-  hatedGenres?: number[];
-
-  @ApiProperty({ required: false, example: 'uk' })
   @IsOptional()
   @IsString()
   nativeLanguage?: string;
 
-  @ApiProperty({ required: false, type: [String], example: ['en', 'pl'] })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
   knownLanguages?: string[];
 
-  @ApiProperty({
-    required: false,
-    type: [Object],
-    example: [{ language: 'en', level: 'B2' }, { language: 'de', level: 'A2' }],
-  })
+  @IsOptional()
+  knownLanguageLevels?: any;
+
+  @IsOptional()
+  @IsString()
+  studentGrade?: string;
+
   @IsOptional()
   @IsArray()
-  @IsObject({ each: true })
-  knownLanguageLevels?: Array<{ language: string; level: string }>;
+  studentProblemTopics?: string[];
+
+  @IsOptional()
+  @IsArray()
+  favoriteGenres?: number[];
+
+  @IsOptional()
+  @IsArray()
+  hatedGenres?: number[];
 }

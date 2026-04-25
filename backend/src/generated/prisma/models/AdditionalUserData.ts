@@ -45,7 +45,6 @@ export type AdditionalUserDataMinAggregateOutputType = {
   englishLevel: string | null
   workField: string | null
   teacherGrades: string | null
-  studentNames: string | null
   studentGrade: string | null
 }
 
@@ -58,7 +57,6 @@ export type AdditionalUserDataMaxAggregateOutputType = {
   englishLevel: string | null
   workField: string | null
   teacherGrades: string | null
-  studentNames: string | null
   studentGrade: string | null
 }
 
@@ -102,7 +100,6 @@ export type AdditionalUserDataMinAggregateInputType = {
   englishLevel?: true
   workField?: true
   teacherGrades?: true
-  studentNames?: true
   studentGrade?: true
 }
 
@@ -115,7 +112,6 @@ export type AdditionalUserDataMaxAggregateInputType = {
   englishLevel?: true
   workField?: true
   teacherGrades?: true
-  studentNames?: true
   studentGrade?: true
 }
 
@@ -239,7 +235,7 @@ export type AdditionalUserDataGroupByOutputType = {
   interests: string[]
   teacherGrades: string | null
   teacherTopics: string[]
-  studentNames: string | null
+  studentNames: runtime.JsonValue | null
   studentGrade: string | null
   studentProblemTopics: string[]
   _count: AdditionalUserDataCountAggregateOutputType | null
@@ -281,7 +277,7 @@ export type AdditionalUserDataWhereInput = {
   interests?: Prisma.StringNullableListFilter<"AdditionalUserData">
   teacherGrades?: Prisma.StringNullableFilter<"AdditionalUserData"> | string | null
   teacherTopics?: Prisma.StringNullableListFilter<"AdditionalUserData">
-  studentNames?: Prisma.StringNullableFilter<"AdditionalUserData"> | string | null
+  studentNames?: Prisma.JsonNullableFilter<"AdditionalUserData">
   studentGrade?: Prisma.StringNullableFilter<"AdditionalUserData"> | string | null
   studentProblemTopics?: Prisma.StringNullableListFilter<"AdditionalUserData">
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -330,7 +326,7 @@ export type AdditionalUserDataWhereUniqueInput = Prisma.AtLeast<{
   interests?: Prisma.StringNullableListFilter<"AdditionalUserData">
   teacherGrades?: Prisma.StringNullableFilter<"AdditionalUserData"> | string | null
   teacherTopics?: Prisma.StringNullableListFilter<"AdditionalUserData">
-  studentNames?: Prisma.StringNullableFilter<"AdditionalUserData"> | string | null
+  studentNames?: Prisma.JsonNullableFilter<"AdditionalUserData">
   studentGrade?: Prisma.StringNullableFilter<"AdditionalUserData"> | string | null
   studentProblemTopics?: Prisma.StringNullableListFilter<"AdditionalUserData">
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -380,7 +376,7 @@ export type AdditionalUserDataScalarWhereWithAggregatesInput = {
   interests?: Prisma.StringNullableListFilter<"AdditionalUserData">
   teacherGrades?: Prisma.StringNullableWithAggregatesFilter<"AdditionalUserData"> | string | null
   teacherTopics?: Prisma.StringNullableListFilter<"AdditionalUserData">
-  studentNames?: Prisma.StringNullableWithAggregatesFilter<"AdditionalUserData"> | string | null
+  studentNames?: Prisma.JsonNullableWithAggregatesFilter<"AdditionalUserData">
   studentGrade?: Prisma.StringNullableWithAggregatesFilter<"AdditionalUserData"> | string | null
   studentProblemTopics?: Prisma.StringNullableListFilter<"AdditionalUserData">
 }
@@ -397,7 +393,7 @@ export type AdditionalUserDataCreateInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   user: Prisma.UserCreateNestedOneWithoutAdditionalUserDataInput
@@ -420,7 +416,7 @@ export type AdditionalUserDataUncheckedCreateInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicUncheckedCreateNestedManyWithoutSelectedByInput
@@ -440,7 +436,7 @@ export type AdditionalUserDataUpdateInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   user?: Prisma.UserUpdateOneRequiredWithoutAdditionalUserDataNestedInput
@@ -463,7 +459,7 @@ export type AdditionalUserDataUncheckedUpdateInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicUncheckedUpdateManyWithoutSelectedByNestedInput
@@ -485,7 +481,7 @@ export type AdditionalUserDataCreateManyInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
 }
@@ -502,7 +498,7 @@ export type AdditionalUserDataUpdateManyMutationInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
 }
@@ -521,7 +517,7 @@ export type AdditionalUserDataUncheckedUpdateManyInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
 }
@@ -564,7 +560,6 @@ export type AdditionalUserDataMaxOrderByAggregateInput = {
   englishLevel?: Prisma.SortOrder
   workField?: Prisma.SortOrder
   teacherGrades?: Prisma.SortOrder
-  studentNames?: Prisma.SortOrder
   studentGrade?: Prisma.SortOrder
 }
 
@@ -577,7 +572,6 @@ export type AdditionalUserDataMinOrderByAggregateInput = {
   englishLevel?: Prisma.SortOrder
   workField?: Prisma.SortOrder
   teacherGrades?: Prisma.SortOrder
-  studentNames?: Prisma.SortOrder
   studentGrade?: Prisma.SortOrder
 }
 
@@ -799,7 +793,7 @@ export type AdditionalUserDataCreateWithoutUserInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicCreateNestedManyWithoutSelectedByInput
@@ -820,7 +814,7 @@ export type AdditionalUserDataUncheckedCreateWithoutUserInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicUncheckedCreateNestedManyWithoutSelectedByInput
@@ -856,7 +850,7 @@ export type AdditionalUserDataUpdateWithoutUserInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicUpdateManyWithoutSelectedByNestedInput
@@ -877,7 +871,7 @@ export type AdditionalUserDataUncheckedUpdateWithoutUserInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicUncheckedUpdateManyWithoutSelectedByNestedInput
@@ -897,7 +891,7 @@ export type AdditionalUserDataCreateWithoutFavoriteGenresInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   user: Prisma.UserCreateNestedOneWithoutAdditionalUserDataInput
@@ -919,7 +913,7 @@ export type AdditionalUserDataUncheckedCreateWithoutFavoriteGenresInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicUncheckedCreateNestedManyWithoutSelectedByInput
@@ -943,7 +937,7 @@ export type AdditionalUserDataCreateWithoutHatedGenresInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   user: Prisma.UserCreateNestedOneWithoutAdditionalUserDataInput
@@ -965,7 +959,7 @@ export type AdditionalUserDataUncheckedCreateWithoutHatedGenresInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicUncheckedCreateNestedManyWithoutSelectedByInput
@@ -1010,7 +1004,7 @@ export type AdditionalUserDataScalarWhereInput = {
   interests?: Prisma.StringNullableListFilter<"AdditionalUserData">
   teacherGrades?: Prisma.StringNullableFilter<"AdditionalUserData"> | string | null
   teacherTopics?: Prisma.StringNullableListFilter<"AdditionalUserData">
-  studentNames?: Prisma.StringNullableFilter<"AdditionalUserData"> | string | null
+  studentNames?: Prisma.JsonNullableFilter<"AdditionalUserData">
   studentGrade?: Prisma.StringNullableFilter<"AdditionalUserData"> | string | null
   studentProblemTopics?: Prisma.StringNullableListFilter<"AdditionalUserData">
 }
@@ -1043,7 +1037,7 @@ export type AdditionalUserDataCreateWithoutSelectedTopicsInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   user: Prisma.UserCreateNestedOneWithoutAdditionalUserDataInput
@@ -1065,7 +1059,7 @@ export type AdditionalUserDataUncheckedCreateWithoutSelectedTopicsInput = {
   interests?: Prisma.AdditionalUserDataCreateinterestsInput | string[]
   teacherGrades?: string | null
   teacherTopics?: Prisma.AdditionalUserDataCreateteacherTopicsInput | string[]
-  studentNames?: string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: string | null
   studentProblemTopics?: Prisma.AdditionalUserDataCreatestudentProblemTopicsInput | string[]
   favoriteGenres?: Prisma.GenreUncheckedCreateNestedManyWithoutFavoritedByInput
@@ -1105,7 +1099,7 @@ export type AdditionalUserDataUpdateWithoutFavoriteGenresInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   user?: Prisma.UserUpdateOneRequiredWithoutAdditionalUserDataNestedInput
@@ -1127,7 +1121,7 @@ export type AdditionalUserDataUncheckedUpdateWithoutFavoriteGenresInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicUncheckedUpdateManyWithoutSelectedByNestedInput
@@ -1148,7 +1142,7 @@ export type AdditionalUserDataUncheckedUpdateManyWithoutFavoriteGenresInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
 }
@@ -1165,7 +1159,7 @@ export type AdditionalUserDataUpdateWithoutHatedGenresInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   user?: Prisma.UserUpdateOneRequiredWithoutAdditionalUserDataNestedInput
@@ -1187,7 +1181,7 @@ export type AdditionalUserDataUncheckedUpdateWithoutHatedGenresInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   selectedTopics?: Prisma.TopicUncheckedUpdateManyWithoutSelectedByNestedInput
@@ -1208,7 +1202,7 @@ export type AdditionalUserDataUncheckedUpdateManyWithoutHatedGenresInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
 }
@@ -1225,7 +1219,7 @@ export type AdditionalUserDataUpdateWithoutSelectedTopicsInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   user?: Prisma.UserUpdateOneRequiredWithoutAdditionalUserDataNestedInput
@@ -1247,7 +1241,7 @@ export type AdditionalUserDataUncheckedUpdateWithoutSelectedTopicsInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
   favoriteGenres?: Prisma.GenreUncheckedUpdateManyWithoutFavoritedByNestedInput
@@ -1268,7 +1262,7 @@ export type AdditionalUserDataUncheckedUpdateManyWithoutSelectedTopicsInput = {
   interests?: Prisma.AdditionalUserDataUpdateinterestsInput | string[]
   teacherGrades?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacherTopics?: Prisma.AdditionalUserDataUpdateteacherTopicsInput | string[]
-  studentNames?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentNames?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   studentGrade?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentProblemTopics?: Prisma.AdditionalUserDataUpdatestudentProblemTopicsInput | string[]
 }
@@ -1442,7 +1436,7 @@ export type $AdditionalUserDataPayload<ExtArgs extends runtime.Types.Extensions.
     interests: string[]
     teacherGrades: string | null
     teacherTopics: string[]
-    studentNames: string | null
+    studentNames: runtime.JsonValue | null
     studentGrade: string | null
     studentProblemTopics: string[]
   }, ExtArgs["result"]["additionalUserData"]>
@@ -1885,7 +1879,7 @@ export interface AdditionalUserDataFieldRefs {
   readonly interests: Prisma.FieldRef<"AdditionalUserData", 'String[]'>
   readonly teacherGrades: Prisma.FieldRef<"AdditionalUserData", 'String'>
   readonly teacherTopics: Prisma.FieldRef<"AdditionalUserData", 'String[]'>
-  readonly studentNames: Prisma.FieldRef<"AdditionalUserData", 'String'>
+  readonly studentNames: Prisma.FieldRef<"AdditionalUserData", 'Json'>
   readonly studentGrade: Prisma.FieldRef<"AdditionalUserData", 'String'>
   readonly studentProblemTopics: Prisma.FieldRef<"AdditionalUserData", 'String[]'>
 }

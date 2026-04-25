@@ -115,6 +115,12 @@ export default function DashboardPage() {
               <dd>{me.email}</dd>
             </div>
             <div>
+              <dt className="text-zinc-500">Role</dt>
+              <dd className="font-mono text-sm">
+                {me.role ?? "—"}
+              </dd>
+            </div>
+            <div>
               <dt className="text-zinc-500">hasCompletedPlacement</dt>
               <dd>
                 {String(me.hasCompletedPlacement ?? "—")}{" "}
@@ -204,10 +210,13 @@ export default function DashboardPage() {
             {allUsers.map((u) => (
               <li
                 key={u.id}
-                className="flex items-center justify-between gap-2 px-3 py-2 text-sm"
+                className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm"
               >
                 <span className="font-mono text-zinc-500">#{u.id}</span>
-                <span className="flex-1 text-zinc-900 dark:text-zinc-100">
+                <span className="shrink-0 rounded bg-zinc-200 px-1.5 py-0.5 text-xs font-mono text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
+                  {u.role ?? "—"}
+                </span>
+                <span className="min-w-0 flex-1 text-zinc-900 dark:text-zinc-100">
                   {u.name}
                 </span>
                 <span className="max-w-[12rem] truncate text-zinc-500 sm:max-w-md">

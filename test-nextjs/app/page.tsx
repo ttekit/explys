@@ -7,8 +7,9 @@ export default function Home() {
         Eng Curses API test UI
       </h1>
       <p className="mt-3 text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Next.js shell to try authentication, the users API, and the entry placement
-        test against your Nest backend. Configure the API base URL in{" "}
+        Next.js shell to try authentication (including <code className="text-sm">role</code>{" "}
+        and teacher/student fields), the users API, and the entry placement test
+        against your Nest backend. Configure the API base URL in{" "}
         <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-sm dark:bg-zinc-800">
           .env.local
         </code>{" "}
