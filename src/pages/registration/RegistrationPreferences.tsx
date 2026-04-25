@@ -3,7 +3,7 @@ import LabelRegister from "../../components/LabelRegister";
 import ValidateError from "../../components/ValidateError";
 import { Link, useNavigate } from "react-router";
 import { useContext, FormEvent, useState, useEffect } from "react";
-import { RegistrationContext } from "./RegistrationContext";
+import { RegistrationContext } from "../../context/RegistrationContext";
 import MultiSelect from "../../components/MultiSelect";
 import toast from "react-hot-toast";
 import { apiUrl, getResponseErrorMessage } from "../../lib/api";

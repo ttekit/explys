@@ -4,7 +4,7 @@ import ValidateError from "../../components/ValidateError";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
 import { useContext, useState, ChangeEvent, FormEvent } from "react";
-import { RegistrationContext } from "./RegistrationContext";
+import { RegistrationContext } from "../../context/RegistrationContext";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function RegistrationMain() {
@@ -184,7 +184,9 @@ export default function RegistrationMain() {
               <button
                 type="button"
                 aria-label={
-                  showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
                 }
                 aria-pressed={showConfirmPassword}
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
