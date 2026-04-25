@@ -1,8 +1,21 @@
 import { Link } from "react-router";
+import { useState } from "react";
 import ProgressbarContent from "../../components/ProgressbarContent";
 import TestLabel from "../../components/TestLabel";
+import VideoPlayer from "../../components/VideoPlayer";
+import TestsArea from "../../components/TestsArea";
 
 export default function FilmPage() {
+  const [filmView, setFilmView] = useState(true);
+
+  const handleToTestsVideo = () => {
+    if (filmView) {
+      setFilmView(false);
+    } else {
+      setFilmView(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F2F3F7] p-5 font-sans">
       <div className="max-w-5xl mx-auto flex flex-col gap-4">
@@ -28,18 +41,47 @@ export default function FilmPage() {
 
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2 bg-white rounded-2xl shadow-sm p-5">
-            <p className="text-sm font-bold text-gray-900 mb-3">Video</p>
-            <div className="w-full aspect-video bg-gray-950 rounded-xl overflow-hidden flex items-center justify-center group cursor-pointer relative">
-              <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6 text-white/60"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
+            <div className="">
+              {filmView ? (
+                <div>
+                  <div className="flex flex-row justify-between pb-2">
+                    <p className="text-[16px] font-bold text-gray-900 mb-3">
+                      Video
+                    </p>
+                    <button
+                      onClick={handleToTestsVideo}
+                      className="p-2 bg-(--purple-default) hover:bg-(--purple-hover) hover:cursor-pointer text-white rounded-full font-bold text-[12px] shadow-lg shadow-purple-200 transition-all"
+                    >
+                      Continue to tests
+                    </button>
+                  </div>
+
+                  <VideoPlayer src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" />
+                </div>
+              ) : (
+                <div>
+                  <div>
+                    <div className="flex flex-row justify-between pb-2">
+                      <p className="text-[16px] font-bold text-gray-900 mb-3">
+                        Tests
+                      </p>
+                      <div>
+                        <button
+                          onClick={handleToTestsVideo}
+                          className="p-2 m-1 bg-(--purple-default) hover:bg-(--purple-hover) hover:cursor-pointer text-white rounded-full font-bold text-[12px] shadow-lg shadow-purple-200 transition-all"
+                        >
+                          Return to video
+                        </button>
+                        <button className="p-2 bg-(--purple-default) hover:bg-(--purple-hover) hover:cursor-pointer text-white rounded-full font-bold text-[12px] shadow-lg shadow-purple-200 transition-all">
+                          Next test
+                        </button>
+                      </div>
+                    </div>
+
+                    <TestsArea />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -55,7 +97,6 @@ export default function FilmPage() {
         <div className="bg-white rounded-2xl shadow-sm p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-bold text-gray-900">Progress</p>
-            <span className="text-xs font-semibold text-violet-500">100%</span>
           </div>
           <div className="w-full flex flex-row gap-2">
             <ProgressbarContent isDone={true}>Video</ProgressbarContent>
