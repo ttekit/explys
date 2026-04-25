@@ -56,22 +56,29 @@ export default function RegistrationPreferences() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+
     const {
       confirmPassword,
+
       favoriteGenres,
       hatedGenres,
       hobbies,
       englishLevel,
       education,
       workField,
+      teacherGrades,
+      studentGrade,
       ...restData
     } = formData;
+
 
     const dataToSend = {
       ...restData,
       englishLevel: englishLevel === "choose" ? undefined : englishLevel,
       education: education === "choose" ? undefined : education,
       workField: workField === "choose" ? undefined : workField,
+      teacherGrades: teacherGrades === "choose" ? undefined : teacherGrades,
+      studentGrade: studentGrade === "choose" ? undefined : studentGrade,
       hobbies: hobbies,
       favoriteGenres: favoriteGenres,
       hatedGenres: hatedGenres,
@@ -93,10 +100,12 @@ export default function RegistrationPreferences() {
         navigate("/loginForm");
       } else {
         const errorData = await response.json();
-        console.error(errorData);
+        console.error("Registration error:", errorData);
+        alert(`Reg error: ${errorData.message || "Invalid data"}`);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Network error:", error);
+      alert("Network error. ");
     }
   };
 
@@ -139,7 +148,7 @@ export default function RegistrationPreferences() {
               )}
             />
           </div>
-          <div>
+          <div className="mt-4 flex gap-2">
             <Button type="submit">Register</Button>
             <Link to="/registrationDetails">
               <Button type="button">Back</Button>
