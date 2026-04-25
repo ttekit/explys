@@ -34,6 +34,32 @@ export class RegisterDto {
   })
   password: string;
 
+  @IsString()
+  @IsOptional()
+  role?: string;
+
+  @IsString()
+  @IsOptional()
+  teacherGrades?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  teacherTopics?: string[];
+
+  @IsString()
+  @IsOptional()
+  studentNames?: string;
+
+  @IsString()
+  @IsOptional()
+  studentGrade?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  studentProblemTopics?: string[];
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()

@@ -39,4 +39,4 @@ import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
     { provide: APP_GUARD, useClass: GlobalApiTokenGuard },
   ],
 })
-export class AppModule {}
+export class AppModule { }
