@@ -1,4 +1,5 @@
 import { config } from "dotenv";
+import cookieParser from "cookie-parser"
 
 config();
 
@@ -8,6 +9,7 @@ import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { join } from "path";
 import { AppModule } from "./app.module";
+import { ConfigService } from "@nestjs/config";
 
 function resolveCorsOrigin():
   | boolean
@@ -37,11 +39,21 @@ function resolveCorsOrigin():
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const config = app.get(ConfigService)
+
+  app.use(cookieParser(config.getOrThrow<string>('COOKIES_SECRET')))
+
+  
   // Dev helper: same-origin test UI for the placement/entrance test (e.g. /dev/entrance-test.html)
   app.useStaticAssets(join(process.cwd(), "public"), { prefix: "/dev/" });
 
   app.enableCors({
-    origin: resolveCorsOrigin(),
+    origin: (
+      resolveCorsOrigin(),
+      config.getOrThrow<string>('ALLOWED_ORIGIN')
+    ),
+    exposedHeaders: ['set-cookie'],
     credentials: true,
   });
 

@@ -8,18 +8,24 @@ datasource db {
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
-  name               String
-  email              String              @unique
-  password           String
-  role               String              @default("adult")
-  hasCompletedPlacement Boolean          @default(false) @map("has_completed_placement")
-  lastLogin          DateTime?
-  createdAt          DateTime            @default(now())
-  teacherId          Int?                @map("teacher_id")
-  teacher            User?               @relation("UserTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
-  students           User[]              @relation("UserTeacher")
-  settings           UserSettings?
+  id                    Int           @id @default(autoincrement())
+  name                  String
+  email                 String        @unique
+  password              String
+  role                  UserRole      @default(REGULAR)
+  hasCompletedPlacement Boolean       @default(false) @map("has_completed_placement")
+  lastLogin             DateTime?
+  createdAt             DateTime      @default(now()) @map("update_at")
+  teacherId             Int?          @map("teacher_id")
+  teacher               User?         @relation("UserTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  students              User[]        @relation("UserTeacher")
+  settings              UserSettings?
+
+  isVerified        Boolean    @default(false) @map("is_verified")
+  isTwoFactorEnable Boolean    @default(false) @map("is_two_factor_enable")
+  method            AuthMethod
+
+  accounts Account[]
 
   statistic          UserStatistic?
   languageData       UserLanguageData[]
@@ -33,19 +39,63 @@ model User {
   @@map("users")
 }
 
+model Account {
+  id Int @id @default(autoincrement())
+
+  type     String
+  provider String
+
+  refreshToken String? @map("refresh_token")
+  accessToken  String? @map("access_token")
+  expiresAt    Int     @map("expires_at")
+
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int   @map("user_id")
+}
+
+model Token {
+  id Int @id @default(autoincrement())
+
+  email     String    @unique
+  token     String    @unique
+  type      TokenType
+  expiresIn DateTime  @map("expiresIn")
+
+  @@map("tokens")
+}
+
+enum UserRole {
+  REGULAR
+  STUDENT
+  TEACHER
+  ADULT
+  ADMIN
+}
+
+enum AuthMethod {
+  CREDENTIALS
+  GOOGLE
+}
+
+enum TokenType {
+  VERIFICATION
+  TWO_FACTOR
+  PASSWORD_RESET
+}
+
 model AdditionalUserData {
-  id             Int      @id @default(autoincrement())
-  userId         Int      @unique
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  nativeLanguage String?
-  knownLanguages String[]
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nativeLanguage      String?
+  knownLanguages      String[]
   knownLanguageLevels Json?
-  job            String?
-  education      String?
-  englishLevel   String?
-  workField      String?
-  hobbies        String[]
-  interests      String[]
+  job                 String?
+  education           String?
+  englishLevel        String?
+  workField           String?
+  hobbies             String[]
+  interests           String[]
 
   teacherGrades        String?
   teacherTopics        String[]
@@ -54,10 +104,9 @@ model AdditionalUserData {
   studentGrade         String?
   studentProblemTopics String[]
 
-
-  selectedTopics Topic[]  @relation("SelectedTopics")
-  favoriteGenres Genre[]  @relation("FavoriteGenres")
-  hatedGenres    Genre[]  @relation("HatedGenres")
+  selectedTopics Topic[] @relation("SelectedTopics")
+  favoriteGenres Genre[] @relation("FavoriteGenres")
+  hatedGenres    Genre[] @relation("HatedGenres")
 
   @@map("additional_user_data")
 }
@@ -72,19 +121,19 @@ model Genre {
 }
 
 model Topic {
-  id           Int                  @id @default(autoincrement())
-  name         String
-  categoryId   Int
-  category     Category             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  complexity   Float
-  language     String
-  tags         Tag[]
-  contentStats ContentStats[]
-  selectedBy   AdditionalUserData[] @relation("SelectedTopics")
-  languageData UserLanguageData[]
+  id             Int                  @id @default(autoincrement())
+  name           String
+  categoryId     Int
+  category       Category             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  complexity     Float
+  language       String
+  tags           Tag[]
+  contentStats   ContentStats[]
+  selectedBy     AdditionalUserData[] @relation("SelectedTopics")
+  languageData   UserLanguageData[]
   userVocabulary UserVocabulary[]
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 
   @@map("topics")
 }
@@ -156,16 +205,16 @@ model UserFriend {
 }
 
 model UserVocabulary {
-  id       Int     @id @default(autoincrement())
-  userId   Int     @map("user_id")
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// Study language (matches DB `language_code`)
-  language String  @map("language_code")
-  term     String
-  source   String  @default("topic_tags")
-  topicId  Int?    @map("topic_id")
-  topic    Topic?  @relation(fields: [topicId], references: [id], onDelete: SetNull)
-  mastery  Float   @default(0)
+  language  String   @map("language_code")
+  term      String
+  source    String   @default("topic_tags")
+  topicId   Int?     @map("topic_id")
+  topic     Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  mastery   Float    @default(0)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 

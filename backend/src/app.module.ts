@@ -16,10 +16,12 @@ import { TopicsModule } from "./topics/topics.module";
 import { UsersModule } from "./users/users.module";
 import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
 import { PlacementTestModule } from "./placement-test/placement-test.module";
+import { IS_DEV_ENV } from "./common/utils/is-dev.utils";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      ignoreEnvFile: !IS_DEV_ENV,
       isGlobal: true,
     }),
     PrismaModule,
