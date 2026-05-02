@@ -1,0 +1,323 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { webVttToPlainText } from "src/contents/webvtt-to-plain-text.util";
+import { PrismaService } from "src/prisma.service";
+import {
+  countCorrect,
+  createGradingToken,
+  knowledgeDelta,
+  parseGradingToken,
+  type GradingItem,
+} from "./content-video-test-grade.util";
+import {
+  ContentVideoComprehensionTestsGeminiClient,
+  ComprehensionTestItem,
+  ComprehensionTestsGenerationContext,
+  fallbackComprehensionTests,
+} from "./content-video-comprehension-tests-gemini.client";
+
+const GRADING_TTL_MS = 2 * 60 * 60 * 1000;
+
+export type GenerateComprehensionTestsResult = {
+  contentVideoId: number;
+  videoName: string;
+  source: "gemini" | "fallback";
+  tests: ComprehensionTestItem[];
+  /** HMAC token (≈2h) to submit answers without re-running the model. */
+  gradingToken: string;
+  /** Profile English / CEFR when `userId` was sent and the user exists. */
+  learnerCefr: string | null;
+  /** Whether WebVTT was fetched and had enough text to ground questions. */
+  usedTranscript: boolean;
+  /** How many of the user’s saved vocabulary terms (study language) were available. */
+  vocabularyTermsUsed: number;
+};
+
+export type SubmitComprehensionTestResult = {
+  correct: number;
+  total: number;
+  percentage: number;
+  comprehension: { correct: number; total: number };
+  grammar: { correct: number; total: number };
+  knowledgeTopicsUpdated: number;
+  knowledgeUpdates: Array<{
+    topicId: number;
+    previousScore: number;
+    newScore: number;
+  }>;
+  message: string;
+};
+
+@Injectable()
+export class ContentVideoComprehensionTestsService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+    private readonly gemini: ContentVideoComprehensionTestsGeminiClient,
+  ) {}
+
+  async generate(
+    contentVideoId: number,
+    userId?: number | null,
+  ): Promise<GenerateComprehensionTestsResult> {
+    const video = await this.prisma.contentVideo.findUnique({
+      where: { id: contentVideoId },
+      include: { videoCaption: true },
+    });
+    if (!video) {
+      throw new NotFoundException(`ContentVideo ${contentVideoId} not found`);
+    }
+
+    const transcriptPlain = await this.fetchTranscriptPlain(
+      video.videoCaption?.subtitlesFileLink,
+    );
+    const usedTranscript = Boolean(
+      transcriptPlain && transcriptPlain.trim().length >= 40,
+    );
+
+    const { cefr, vocabularyTerms } = await this.loadLearnerContext(
+      userId ?? null,
+    );
+
+    const ctx: ComprehensionTestsGenerationContext = {
+      videoName: video.videoName,
+      videoDescription: video.videoDescription,
+      transcriptPlain,
+      learnerCefr: cefr,
+      vocabularyTerms,
+    };
+
+    const geminiTests = await this.gemini.generateTests(ctx);
+    const tests: ComprehensionTestItem[] = geminiTests?.length
+      ? geminiTests
+      : fallbackComprehensionTests({
+          videoName: video.videoName,
+          transcriptPlain,
+          learnerCefr: cefr,
+          vocabularyTerms,
+        });
+    const source: "gemini" | "fallback" = geminiTests?.length
+      ? "gemini"
+      : "fallback";
+
+    const secret = this.config.getOrThrow<string>("JWT_SECRET");
+    const exp = Date.now() + GRADING_TTL_MS;
+    const items: GradingItem[] = tests.map((t) => ({
+      id: t.id,
+      correctIndex: t.correctIndex,
+      category: t.category,
+    }));
+    const gradingToken = createGradingToken(
+      { contentVideoId, userId: userId ?? null, exp, items },
+      secret,
+    );
+
+    return {
+      contentVideoId,
+      videoName: video.videoName,
+      source,
+      tests,
+      gradingToken,
+      learnerCefr: cefr,
+      usedTranscript,
+      vocabularyTermsUsed: vocabularyTerms.length,
+    };
+  }
+
+  /**
+   * Grades a submitted attempt, updates `UserLanguageData` for topics linked to this
+   * video’s `ContentStats` when the signed token includes a `userId`.
+   */
+  async submit(
+    contentVideoId: number,
+    body: { token: string; answers: Record<string, number> },
+  ): Promise<SubmitComprehensionTestResult> {
+    const secret = this.config.getOrThrow<string>("JWT_SECRET");
+    const p = parseGradingToken((body?.token ?? "").trim(), secret);
+    if (!p || p.contentVideoId !== contentVideoId) {
+      throw new BadRequestException("Invalid or expired test token");
+    }
+    if (!body?.answers || typeof body.answers !== "object") {
+      throw new BadRequestException("Missing answers");
+    }
+    const stats = countCorrect(p.items, body.answers);
+    const total = stats.total;
+    const correct = stats.correct;
+    const pct = total > 0 ? correct / total : 0;
+    const delta = knowledgeDelta(pct);
+    const knowledgeUpdates: SubmitComprehensionTestResult["knowledgeUpdates"] =
+      [];
+    if (p.userId == null) {
+      return {
+        correct,
+        total,
+        percentage: Math.round(1000 * pct) / 10,
+        comprehension: {
+          correct: stats.comprehension.c,
+          total: stats.comprehension.t,
+        },
+        grammar: { correct: stats.grammar.c, total: stats.grammar.t },
+        knowledgeTopicsUpdated: 0,
+        knowledgeUpdates: [],
+        message:
+          "Add ?userId=YOUR_ID to the iframe URL and reload so your topic scores can be updated.",
+      };
+    }
+    const video = await this.prisma.contentVideo.findUnique({
+      where: { id: contentVideoId },
+      include: {
+        content: {
+          include: {
+            stats: {
+              include: { topics: { select: { id: true } } },
+            },
+          },
+        },
+      },
+    });
+    if (!video) {
+      throw new NotFoundException(`ContentVideo ${contentVideoId} not found`);
+    }
+    const topicIds =
+      video.content?.stats?.topics.map((t) => t.id) ?? [];
+    if (topicIds.length === 0) {
+      return {
+        correct,
+        total,
+        percentage: Math.round(1000 * pct) / 10,
+        comprehension: {
+          correct: stats.comprehension.c,
+          total: stats.comprehension.t,
+        },
+        grammar: { correct: stats.grammar.c, total: stats.grammar.t },
+        knowledgeTopicsUpdated: 0,
+        knowledgeUpdates: [],
+        message:
+          "This video is not linked to any topics yet, so per-topic knowledge was not updated.",
+      };
+    }
+    for (const topicId of topicIds) {
+      const row = await this.prisma.userLanguageData.findUnique({
+        where: { userId_topicId: { userId: p.userId, topicId } },
+      });
+      const previousScore = row?.score ?? 0.35;
+      const newScore = Math.min(1, Math.max(0, previousScore + delta));
+      if (row) {
+        await this.prisma.userLanguageData.update({
+          where: { id: row.id },
+          data: { score: newScore },
+        });
+      } else {
+        await this.prisma.userLanguageData.create({
+          data: {
+            userId: p.userId,
+            topicId,
+            score: newScore,
+            confidence: 0.2,
+            coverage: 0.1,
+            algorithmVersion: "v1",
+          },
+        });
+      }
+      knowledgeUpdates.push({
+        topicId,
+        previousScore,
+        newScore: Math.round(1000 * newScore) / 1000,
+      });
+    }
+    return {
+      correct,
+      total,
+      percentage: Math.round(1000 * pct) / 10,
+      comprehension: {
+        correct: stats.comprehension.c,
+        total: stats.comprehension.t,
+      },
+      grammar: { correct: stats.grammar.c, total: stats.grammar.t },
+      knowledgeTopicsUpdated: knowledgeUpdates.length,
+      knowledgeUpdates,
+      message: `Updated topic knowledge for ${knowledgeUpdates.length} topic(s) linked to this content.`,
+    };
+  }
+
+  private async loadLearnerContext(userId: number | null): Promise<{
+    cefr: string | null;
+    vocabularyTerms: string[];
+  }> {
+    if (userId == null) {
+      return { cefr: null, vocabularyTerms: [] };
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { additionalUserData: { select: { englishLevel: true } } },
+    });
+    if (!user) {
+      return { cefr: null, vocabularyTerms: [] };
+    }
+
+    const cefr = user.additionalUserData?.englishLevel?.trim() ?? null;
+    const lang = await this.resolveStudyingLanguageCode(userId);
+
+    const rows = await this.prisma.userVocabulary.findMany({
+      where: { userId, language: lang },
+      orderBy: { mastery: "desc" },
+      take: 50,
+      select: { term: true },
+    });
+    const vocabularyTerms = [
+      ...new Set(rows.map((r) => r.term.trim()).filter((t) => t.length > 0)),
+    ];
+
+    return { cefr, vocabularyTerms };
+  }
+
+  private async resolveStudyingLanguageCode(userId: number): Promise<string> {
+    const settings = await this.prisma.userSettings.findUnique({
+      where: { userId },
+    });
+    if (settings?.studyingLanguage?.trim()) {
+      return settings.studyingLanguage.trim().toLowerCase();
+    }
+    const first = await this.prisma.userLanguageData.findFirst({
+      where: { userId },
+      include: { topic: { select: { language: true } } },
+      orderBy: { topicId: "asc" },
+    });
+    if (first?.topic.language?.trim()) {
+      return first.topic.language.trim().toLowerCase();
+    }
+    return "en";
+  }
+
+  private async fetchTranscriptPlain(
+    subtitlesFileLink: string | null | undefined,
+  ): Promise<string | null> {
+    const url = subtitlesFileLink?.trim();
+    if (!url) {
+      return null;
+    }
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 20_000);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) {
+        return null;
+      }
+      const raw = await res.text();
+      const plain = webVttToPlainText(raw);
+      if (plain.length < 30) {
+        return null;
+      }
+      return plain.slice(0, 14_000);
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(t);
+    }
+  }
+}

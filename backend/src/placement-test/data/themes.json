@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "description": "Domain themes and grammar foci for dynamic placement tests. Questions should balance these areas with the user's knowledge tags.",
+  "themes": [
+    {
+      "id": "workplace",
+      "label": "Workplace and careers",
+      "vocabulary": ["meeting", "deadline", "colleague", "feedback", "promotion", "resignation"],
+      "scenarios": ["emails to managers", "interviews", "stand-up updates", "team conflict"]
+    },
+    {
+      "id": "education",
+      "label": "Education and study",
+      "vocabulary": ["assignment", "lecture", "curriculum", "thesis", "grade", "scholarship"],
+      "scenarios": ["group projects", "exam preparation", "asking clarifications in class"]
+    },
+    {
+      "id": "hobbies",
+      "label": "Hobbies and leisure",
+      "vocabulary": ["subscribers", "tournament", "rehearsal", "hiking", "exhibition", "workshop"],
+      "scenarios": ["planning a trip", "describing a hobby", "sports and rules"]
+    },
+    {
+      "id": "daily_life",
+      "label": "Everyday and social",
+      "vocabulary": ["appointment", "neighborhood", "grocery", "commute", "landlord", "insurance"],
+      "scenarios": ["making plans", "small talk", "complaints and requests"]
+    },
+    {
+      "id": "travel",
+      "label": "Travel and mobility",
+      "vocabulary": ["itinerary", "delay", "customs", "reservation", "transit", "luggage"],
+      "scenarios": ["airport problems", "asking directions", "booking accommodation"]
+    }
+  ],
+  "grammarFoci": [
+    {
+      "id": "tense_aspect",
+      "label": "Verb tenses, aspect, and time expressions",
+      "examples": ["present perfect vs past simple", "future forms", "conditionals (zero–third)"]
+    },
+    {
+      "id": "articles_determiners",
+      "label": "Articles, quantifiers, and determiners",
+      "examples": ["a/the/zero article", "much vs many", "definite use in context"]
+    },
+    {
+      "id": "connectors",
+      "label": "Connectors, clauses, and cohesion",
+      "examples": ["although vs however", "so that / such that", "relative clauses"]
+    },
+    {
+      "id": "word_formation",
+      "label": "Word formation, collocation, and phrasal verbs",
+      "examples": ["noun-verb collocation", "phrasal verbs in context", "prepositions with adjectives"]
+    }
+  ],
+  "vocabularyFoci": [
+    "phrasal verbs in professional contexts",
+    "collocations (make/do, strong collocations in news)",
+    "academic vs informal register",
+    "false friends and connotation (neutral–negative)"
+  ],
+  "targetQuestionCount": 12
+}

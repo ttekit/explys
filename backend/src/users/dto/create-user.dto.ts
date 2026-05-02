@@ -1,0 +1,72 @@
+import {
+  IsEmail,
+  IsString,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  Matches,
+  IsOptional,
+  IsArray,
+  IsNumber,
+  IsObject,
+} from "class-validator";
+
+export class CreateUserDto {
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  @MaxLength(72)
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message:
+      "Password must include at least one uppercase letter, one lowercase letter, and one number",
+  })
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  englishLevel?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  hobbies?: string[];
+
+  @IsOptional()
+  @IsString()
+  education?: string;
+
+  @IsOptional()
+  @IsString()
+  workField?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  favoriteGenres?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  hatedGenres?: number[];
+
+  @IsOptional()
+  @IsString()
+  nativeLanguage?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  knownLanguages?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsObject({ each: true })
+  knownLanguageLevels?: Array<{ language: string; level: string }>;
+}
