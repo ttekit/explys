@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { Prisma } from "@generated/prisma/client";
 import { webVttToPlainText } from "src/contents/webvtt-to-plain-text.util";
 import { PrismaService } from "src/prisma.service";
 import {
@@ -19,6 +20,11 @@ import {
   ComprehensionTestsGenerationContext,
   fallbackComprehensionTests,
 } from "./content-video-comprehension-tests-gemini.client";
+import {
+  ContentVideoSummaryRecommendationsGeminiClient,
+  fallbackSummaryRecommendations,
+} from "./content-video-summary-recommendations-gemini.client";
+import type { ComprehensionSummaryRecommendationsBodyDto } from "src/content/content-video/dto/summary-recommendations.dto";
 
 const GRADING_TTL_MS = 2 * 60 * 60 * 1000;
 
@@ -35,6 +41,8 @@ export type GenerateComprehensionTestsResult = {
   usedTranscript: boolean;
   /** How many of the user’s saved vocabulary terms (study language) were available. */
   vocabularyTermsUsed: number;
+  /** Up to 50 terms from the user’s list used for this test (empty if anonymous / none). */
+  vocabularyTerms: string[];
 };
 
 export type SubmitComprehensionTestResult = {
@@ -50,6 +58,14 @@ export type SubmitComprehensionTestResult = {
     newScore: number;
   }>;
   message: string;
+  learnerCefr: string | null;
+  /** Saved terms for this user’s study language (may be empty). */
+  vocabularyTerms: string[];
+};
+
+type ComprehensionTestsCachePayload = {
+  source: "gemini" | "fallback";
+  tests: ComprehensionTestItem[];
 };
 
 @Injectable()
@@ -58,14 +74,68 @@ export class ContentVideoComprehensionTestsService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly gemini: ContentVideoComprehensionTestsGeminiClient,
-  ) {}
+    private readonly summaryRecommendations: ContentVideoSummaryRecommendationsGeminiClient,
+  ) { }
 
+  /**
+   * Prefer loading `comprehensionTestsCache`; if the column is missing in DB (P2022), retry without it.
+   */
+  private async findContentVideoForTests(
+    contentVideoId: number,
+    args: { include: Prisma.ContentVideoInclude },
+  ) {
+    try {
+      return await this.prisma.contentVideo.findUnique({
+        where: { id: contentVideoId },
+        ...args,
+      });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === "P2022"
+      ) {
+        return await this.prisma.contentVideo.findUnique({
+          where: { id: contentVideoId },
+          ...args,
+          omit: { comprehensionTestsCache: true },
+        });
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Returns stored tests when present; otherwise runs generation and persists
+   * `comprehensionTestsCache` on the `ContentVideo` row. Always issues a new `gradingToken`.
+   */
+  async getOrLoadTests(
+    contentVideoId: number,
+    userId?: number | null,
+  ): Promise<GenerateComprehensionTestsResult> {
+    return this.loadOrRegenerateTests(contentVideoId, userId ?? null, {
+      forceRegenerate: false,
+    });
+  }
+
+  /**
+   * Always runs model/fallback, overwrites `comprehensionTestsCache` (same as the original
+   * `generate` used by the iframe before caching existed).
+   */
   async generate(
     contentVideoId: number,
     userId?: number | null,
   ): Promise<GenerateComprehensionTestsResult> {
-    const video = await this.prisma.contentVideo.findUnique({
-      where: { id: contentVideoId },
+    return this.loadOrRegenerateTests(contentVideoId, userId ?? null, {
+      forceRegenerate: true,
+    });
+  }
+
+  private async loadOrRegenerateTests(
+    contentVideoId: number,
+    userId: number | null,
+    options: { forceRegenerate: boolean },
+  ): Promise<GenerateComprehensionTestsResult> {
+    const video = await this.findContentVideoForTests(contentVideoId, {
       include: { videoCaption: true },
     });
     if (!video) {
@@ -79,52 +149,206 @@ export class ContentVideoComprehensionTestsService {
       transcriptPlain && transcriptPlain.trim().length >= 40,
     );
 
-    const { cefr, vocabularyTerms } = await this.loadLearnerContext(
-      userId ?? null,
+    const { cefr, vocabularyTerms } = await this.loadLearnerContext(userId);
+
+    const fromCache = !options.forceRegenerate
+      ? this.parseComprehensionTestsCache(
+        (video as { comprehensionTestsCache?: unknown })
+          .comprehensionTestsCache,
+      )
+      : null;
+
+    if (fromCache?.tests?.length) {
+      return this.assembleResult({
+        contentVideoId,
+        videoName: video.videoName,
+        source: fromCache.source,
+        tests: fromCache.tests,
+        usedTranscript,
+        cefr,
+        vocabularyTerms,
+        userId,
+      });
+    }
+
+    const { source, tests } = await this.buildFreshTests(
+      video.videoName,
+      video.videoDescription,
+      transcriptPlain,
+      cefr,
+      vocabularyTerms,
     );
 
-    const ctx: ComprehensionTestsGenerationContext = {
+    try {
+      await this.prisma.contentVideo.update({
+        where: { id: contentVideoId },
+        data: {
+          comprehensionTestsCache: {
+            source,
+            tests,
+          } satisfies ComprehensionTestsCachePayload,
+        },
+      });
+    } catch (e) {
+      if (
+        !(
+          e instanceof Prisma.PrismaClientKnownRequestError &&
+          e.code === "P2022"
+        )
+      ) {
+        throw e;
+      }
+    }
+
+    return this.assembleResult({
+      contentVideoId,
       videoName: video.videoName,
-      videoDescription: video.videoDescription,
+      source,
+      tests,
+      usedTranscript,
+      cefr,
+      vocabularyTerms,
+      userId,
+    });
+  }
+
+  async getSummaryRecommendations(
+    contentVideoId: number,
+    body: ComprehensionSummaryRecommendationsBodyDto,
+  ) {
+    const v = await this.prisma.contentVideo.findUnique({
+      where: { id: contentVideoId },
+      select: { id: true, videoName: true },
+    });
+    if (!v) {
+      throw new NotFoundException(`ContentVideo ${contentVideoId} not found`);
+    }
+    const input = {
+      videoName: (body.videoName || v.videoName).trim() || v.videoName,
+      learnerCefr: body.learnerCefr ?? null,
+      vocabularyTerms: Array.isArray(body.vocabularyTerms) ? body.vocabularyTerms : [],
+      correct: body.correct,
+      total: body.total,
+      percentage: body.percentage,
+      comprehension: body.comprehension,
+      grammar: body.grammar,
+    };
+    const fromGemini = await this.summaryRecommendations.generate(input);
+    return fromGemini ?? fallbackSummaryRecommendations(input);
+  }
+
+  private parseComprehensionTestsCache(
+    raw: unknown,
+  ): ComprehensionTestsCachePayload | null {
+    if (raw == null || typeof raw !== "object" || Array.isArray(raw)) {
+      return null;
+    }
+    const o = raw as Record<string, unknown>;
+    const source = o.source;
+    if (source !== "gemini" && source !== "fallback") {
+      return null;
+    }
+    if (!Array.isArray(o.tests) || o.tests.length === 0) {
+      return null;
+    }
+    const tests: ComprehensionTestItem[] = [];
+    for (const item of o.tests) {
+      if (item == null || typeof item !== "object" || Array.isArray(item)) {
+        return null;
+      }
+      const t = item as Record<string, unknown>;
+      if (typeof t.id !== "string" || !t.id) return null;
+      if (typeof t.question !== "string") return null;
+      if (!Array.isArray(t.options) || t.options.length < 2) return null;
+      for (const opt of t.options) {
+        if (typeof opt !== "string") return null;
+      }
+      const correctIndex = t.correctIndex;
+      if (
+        typeof correctIndex !== "number" ||
+        !Number.isInteger(correctIndex) ||
+        correctIndex < 0 ||
+        correctIndex >= t.options.length
+      ) {
+        return null;
+      }
+      if (t.category !== "comprehension" && t.category !== "grammar") {
+        return null;
+      }
+      tests.push({
+        id: t.id,
+        question: t.question,
+        options: t.options as string[],
+        correctIndex,
+        category: t.category,
+      });
+    }
+    return { source, tests };
+  }
+
+  private async buildFreshTests(
+    videoName: string,
+    videoDescription: string | null,
+    transcriptPlain: string | null,
+    cefr: string | null,
+    vocabularyTerms: string[],
+  ): Promise<{
+    source: "gemini" | "fallback";
+    tests: ComprehensionTestItem[];
+  }> {
+    const ctx: ComprehensionTestsGenerationContext = {
+      videoName,
+      videoDescription,
       transcriptPlain,
       learnerCefr: cefr,
       vocabularyTerms,
     };
-
     const geminiTests = await this.gemini.generateTests(ctx);
     const tests: ComprehensionTestItem[] = geminiTests?.length
       ? geminiTests
       : fallbackComprehensionTests({
-          videoName: video.videoName,
-          transcriptPlain,
-          learnerCefr: cefr,
-          vocabularyTerms,
-        });
+        videoName,
+        transcriptPlain,
+        learnerCefr: cefr,
+        vocabularyTerms,
+      });
     const source: "gemini" | "fallback" = geminiTests?.length
       ? "gemini"
       : "fallback";
+    return { source, tests };
+  }
 
+  private assembleResult(p: {
+    contentVideoId: number;
+    videoName: string;
+    source: "gemini" | "fallback";
+    tests: ComprehensionTestItem[];
+    usedTranscript: boolean;
+    cefr: string | null;
+    vocabularyTerms: string[];
+    userId: number | null;
+  }): GenerateComprehensionTestsResult {
     const secret = this.config.getOrThrow<string>("JWT_SECRET");
     const exp = Date.now() + GRADING_TTL_MS;
-    const items: GradingItem[] = tests.map((t) => ({
+    const items: GradingItem[] = p.tests.map((t) => ({
       id: t.id,
       correctIndex: t.correctIndex,
       category: t.category,
     }));
     const gradingToken = createGradingToken(
-      { contentVideoId, userId: userId ?? null, exp, items },
+      { contentVideoId: p.contentVideoId, userId: p.userId, exp, items },
       secret,
     );
-
     return {
-      contentVideoId,
-      videoName: video.videoName,
-      source,
-      tests,
+      contentVideoId: p.contentVideoId,
+      videoName: p.videoName,
+      source: p.source,
+      tests: p.tests,
       gradingToken,
-      learnerCefr: cefr,
-      usedTranscript,
-      vocabularyTermsUsed: vocabularyTerms.length,
+      learnerCefr: p.cefr,
+      usedTranscript: p.usedTranscript,
+      vocabularyTermsUsed: p.vocabularyTerms.length,
+      vocabularyTerms: p.vocabularyTerms.slice(0, 50),
     };
   }
 
@@ -149,6 +373,9 @@ export class ContentVideoComprehensionTestsService {
     const correct = stats.correct;
     const pct = total > 0 ? correct / total : 0;
     const delta = knowledgeDelta(pct);
+    const { cefr, vocabularyTerms: vocabSubmit } = await this.loadLearnerContext(
+      p.userId,
+    );
     const knowledgeUpdates: SubmitComprehensionTestResult["knowledgeUpdates"] =
       [];
     if (p.userId == null) {
@@ -165,10 +392,11 @@ export class ContentVideoComprehensionTestsService {
         knowledgeUpdates: [],
         message:
           "Add ?userId=YOUR_ID to the iframe URL and reload so your topic scores can be updated.",
+        learnerCefr: cefr,
+        vocabularyTerms: vocabSubmit,
       };
     }
-    const video = await this.prisma.contentVideo.findUnique({
-      where: { id: contentVideoId },
+    const video = await this.findContentVideoForTests(contentVideoId, {
       include: {
         content: {
           include: {
@@ -182,8 +410,13 @@ export class ContentVideoComprehensionTestsService {
     if (!video) {
       throw new NotFoundException(`ContentVideo ${contentVideoId} not found`);
     }
+    const contentWithStats = video as {
+      content?: {
+        stats?: { topics: { id: number }[] } | null;
+      } | null;
+    };
     const topicIds =
-      video.content?.stats?.topics.map((t) => t.id) ?? [];
+      contentWithStats.content?.stats?.topics.map((t) => t.id) ?? [];
     if (topicIds.length === 0) {
       return {
         correct,
@@ -198,6 +431,8 @@ export class ContentVideoComprehensionTestsService {
         knowledgeUpdates: [],
         message:
           "This video is not linked to any topics yet, so per-topic knowledge was not updated.",
+        learnerCefr: cefr,
+        vocabularyTerms: vocabSubmit,
       };
     }
     for (const topicId of topicIds) {
@@ -241,6 +476,8 @@ export class ContentVideoComprehensionTestsService {
       knowledgeTopicsUpdated: knowledgeUpdates.length,
       knowledgeUpdates,
       message: `Updated topic knowledge for ${knowledgeUpdates.length} topic(s) linked to this content.`,
+      learnerCefr: cefr,
+      vocabularyTerms: vocabSubmit,
     };
   }
 

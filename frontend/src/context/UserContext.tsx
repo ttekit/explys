@@ -5,7 +5,7 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { apiUrl } from "../lib/api";
+import { apiFetch } from "../lib/api";
 
 export interface UserData {
   id: string;
@@ -51,16 +51,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       try {
         setIsLoading(true);
 
-        const response = await fetch(apiUrl("/auth/profile"), {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await apiFetch("/auth/profile", { method: "GET" });
         if (response.ok) {
           const data = await response.json();
           setUser(data);
-          console.log(user);
         } else {
           setUser(null);
         }

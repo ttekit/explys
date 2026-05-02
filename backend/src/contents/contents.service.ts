@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
     DeleteObjectCommand,
@@ -43,7 +43,7 @@ export class ContentsService {
         );
         const videoUrl = publicS3ObjectUrl(this.bucket, this.region, key);
 
-        return await this.prisma.content.create({
+        const created = await this.prisma.content.create({
             data: {
                 name: dto.name,
                 description: dto.description,
@@ -59,7 +59,27 @@ export class ContentsService {
                     },
                 },
             },
+            include: {
+                category: {
+                    include: {
+                        ContentVideo: true,
+                    },
+                },
+            },
         });
+
+        const contentVideoId =
+            created.category[0]?.ContentVideo?.[0]?.id;
+        if (contentVideoId == null) {
+            throw new InternalServerErrorException(
+                "Created content is missing a ContentVideo id",
+            );
+        }
+
+        return {
+            ...created,
+            contentVideoId,
+        };
     }
 
     async updateContent(
@@ -82,6 +102,7 @@ export class ContentsService {
             if (contentMedia) {
                 const existingVideo = await this.prisma.contentVideo.findFirst({
                     where: { contentId: contentMedia.id },
+                    omit: { comprehensionTestsCache: true },
                 });
 
                 if (existingVideo?.videoLink) {

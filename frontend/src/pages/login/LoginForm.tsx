@@ -6,7 +6,7 @@ import { useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import { apiUrl, getResponseErrorMessage } from "../../lib/api";
+import { apiFetch, getResponseErrorMessage } from "../../lib/api";
 
 export default function LoginForm() {
   const [loginData, setLoginData] = useState({
@@ -31,11 +31,8 @@ export default function LoginForm() {
     if (!isEmpty) {
       setEmptyError(false);
       try {
-        const response = await fetch(apiUrl("/auth/login"), {
+        const response = await apiFetch("/auth/login", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify(loginData),
         });
 

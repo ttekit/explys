@@ -1,34 +1,73 @@
-export function getApiBaseUrl(): string {
-  const raw = import.meta.env.VITE_API_BASE_URL;
-  if (typeof raw !== "string" || !raw.trim()) {
-    return "";
+/**
+ * API client (aligned with `test-nextjs/lib/api.ts`): base URL, `x-api-token`, JSON error parsing, optional JWT.
+ */
+type FetchOpts = RequestInit & { token?: string | null };
+
+export function getApiBase(): string {
+  const u = import.meta.env.VITE_API_BASE_URL || "http://localhost:4200";
+  if (typeof u !== "string" || !u.trim()) {
+    return "http://localhost:4200";
   }
-  return raw.replace(/\/+$/, "");
+  return u.replace(/\/$/, "");
+}
+
+/** @deprecated use `getApiBase()` */
+export const getApiBaseUrl = getApiBase;
+
+function apiPath(path: string): string {
+  return getApiBase() + (path.startsWith("/") ? path : `/${path}`);
 }
 
 export function apiUrl(path: string): string {
-  const base = getApiBaseUrl();
-  if (!base) {
-    throw new Error(
-      "VITE_API_BASE_URL is not set. Add it to your .env file (e.g. VITE_API_BASE_URL=http://localhost:3000).",
-    );
-  }
-  const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${normalized}`;
+  return apiPath(path);
 }
 
-export async function getResponseErrorMessage(response: Response): Promise<string> {
+/** Parses Nest/JSON error bodies (same idea as `test-nextjs/lib/api.ts`). */
+export async function readApiErrorBody(res: Response): Promise<string> {
+  const t = await res.text();
+  if (!t) return `Request failed (${res.status})`;
   try {
-    const data: unknown = await response.json();
-    if (data && typeof data === "object" && "message" in data) {
-      const msg = (data as { message: unknown }).message;
-      if (typeof msg === "string") return msg;
-      if (Array.isArray(msg) && msg.every((m) => typeof m === "string")) {
-        return msg.join(", ");
-      }
+    const j = JSON.parse(t) as { message?: string | string[]; error?: string };
+    if (Array.isArray(j.message)) {
+      return j.message.join("; ");
+    }
+    if (typeof j.message === "string" && j.message) {
+      return j.message;
+    }
+    if (typeof j.error === "string" && j.error) {
+      return j.error;
     }
   } catch {
-    /* not JSON */
+    // not JSON
   }
-  return response.statusText || `Request failed (${response.status})`;
+  return t;
+}
+
+export async function getResponseErrorMessage(
+  response: Response,
+): Promise<string> {
+  return readApiErrorBody(response);
+}
+
+export async function apiFetch(
+  path: string,
+  init: FetchOpts = {},
+): Promise<Response> {
+  const { token, ...rest } = init;
+  const headers = new Headers(rest.headers);
+  if (
+    rest.body != null &&
+    typeof rest.body === "string" &&
+    !headers.has("Content-Type")
+  ) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  const key = import.meta.env.VITE_API_TOKEN;
+  if (key) {
+    headers.set("x-api-token", key);
+  }
+  return fetch(apiPath(path), { ...rest, headers });
 }

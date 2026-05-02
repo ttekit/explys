@@ -23,7 +23,7 @@ export class VideoTranscriptTagsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly geminiTranscriptTags: AlcorythmGeminiTranscriptTagClient,
-  ) {}
+  ) { }
 
   /**
    * WebVTT → plain text → Gemini: CEFR `systemTags`, theme `userTags`, `processingComplexity` 1–10 on ContentStats.
@@ -33,6 +33,7 @@ export class VideoTranscriptTagsService {
   ): Promise<VideoTranscriptTagsResult> {
     const video = await this.prisma.contentVideo.findUnique({
       where: { id: contentVideoId },
+      omit: { comprehensionTestsCache: true },
       include: { videoCaption: true },
     });
     if (!video) {

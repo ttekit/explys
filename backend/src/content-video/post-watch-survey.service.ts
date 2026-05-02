@@ -12,7 +12,7 @@ export class PostWatchSurveyService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gemini: PostWatchSurveyGeminiClient,
-  ) {}
+  ) { }
 
   private async incrementUsersWatched(contentMediaId: number): Promise<void> {
     await this.prisma.contentStats.upsert({
@@ -34,6 +34,7 @@ export class PostWatchSurveyService {
   }> {
     const video = await this.prisma.contentVideo.findUnique({
       where: { id: contentVideoId },
+      omit: { comprehensionTestsCache: true },
     });
     if (!video) {
       throw new NotFoundException(`ContentVideo ${contentVideoId} not found`);

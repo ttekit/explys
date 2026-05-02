@@ -14,9 +14,10 @@ export default function ProgressbarContent({
     <>
       <div className="flex flex-1 flex-col" {...props}>
         <div
-          className={`w-full h-2 ${isDone ? " bg-(--purple-default)" : " bg-gray-100"} rounded-full ease-in-out duration-500 overflow-hidden mb-1.5`}
+          className={`mb-1.5 h-2 w-full overflow-hidden rounded-full ease-in-out duration-500 ${isDone ? "bg-(--purple-default)" : "bg-zinc-700"
+            }`}
         ></div>
-        <span className="text-xs text-gray-400">{children}</span>
+        <span className="text-xs text-zinc-500">{children}</span>
       </div>
     </>
   );

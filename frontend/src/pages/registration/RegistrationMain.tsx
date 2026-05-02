@@ -18,12 +18,22 @@ export default function RegistrationMain() {
     useState<boolean>(false);
   const navigate = useNavigate();
 
+<<<<<<< HEAD
   const isValidPasswordRegex: RegExp =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+=======
+  /** At least 8 chars; must include upper, lower, digit, and one of @$!%*?& (any other chars allowed). */
+  const isValidPassword = (p: string) =>
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(p);
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
 
   const validateField = (
     value: string,
     type: "password" | "email" | "confirmPassword" | "other",
+<<<<<<< HEAD
+=======
+    passwordToCompare?: string,
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
   ) => {
     if (type === "password") {
       if (value.length < 8) {
@@ -43,13 +53,24 @@ export default function RegistrationMain() {
         return false;
       }
       if (!/[@$!%*?&]/.test(value)) {
+<<<<<<< HEAD
         setErrorText("Password must contain at least one special character.");
+=======
+        setErrorText(
+          "Password must contain at least one of: @ $ ! % * ? &",
+        );
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
         return false;
       }
     }
 
     if (type == "confirmPassword") {
+<<<<<<< HEAD
       if (value != formData.password) {
+=======
+      const pw = passwordToCompare ?? formData.password;
+      if (value != pw) {
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
         setErrorText("Passwords do not match.");
         return false;
       }
@@ -77,13 +98,29 @@ export default function RegistrationMain() {
     e: ChangeEvent<HTMLInputElement>,
     type: "password" | "email" | "confirmPassword" | "other",
   ) => {
+<<<<<<< HEAD
     validateField(e.target.value, type);
     const { name, value } = e.target;
     updateFormData({ [name]: value } as Record<string, string>);
+=======
+    const { name, value } = e.target;
+    updateFormData({ [name]: value } as Record<string, string>);
+
+    const passFromForm =
+      (e.currentTarget.form?.querySelector<HTMLInputElement>(
+        'input[name="password"]',
+      )?.value) ?? formData.password;
+    if (type === "confirmPassword") {
+      validateField(value, "confirmPassword", passFromForm);
+    } else {
+      validateField(value, type);
+    }
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
   };
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+<<<<<<< HEAD
     if (
       !formData.name ||
       !formData.email ||
@@ -96,6 +133,61 @@ export default function RegistrationMain() {
       return;
     }
     if (formData.password !== formData.confirmPassword) {
+=======
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const name = String(fd.get("name") ?? "").trim();
+    const email = String(fd.get("email") ?? "").trim();
+    const password = String(fd.get("password") ?? "");
+    const confirmPassword = String(fd.get("confirmPassword") ?? "");
+    updateFormData({ name, email, password, confirmPassword });
+
+    if (!name) {
+      setErrorText("Username is required.");
+      return;
+    }
+    if (!email) {
+      setErrorText("Email is required.");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setErrorText("Invalid email format.");
+      return;
+    }
+    if (!password) {
+      setErrorText("Password is required.");
+      return;
+    }
+    if (!isValidPassword(password)) {
+      if (password.length < 8) {
+        setErrorText("Password must be at least 8 characters.");
+        return;
+      }
+      if (!/[A-Z]/.test(password)) {
+        setErrorText("Password must contain at least one uppercase letter.");
+        return;
+      }
+      if (!/[a-z]/.test(password)) {
+        setErrorText("Password must contain at least one lowercase letter.");
+        return;
+      }
+      if (!/\d/.test(password)) {
+        setErrorText("Password must contain at least one number.");
+        return;
+      }
+      if (!/[@$!%*?&]/.test(password)) {
+        setErrorText("Password must contain at least one of: @ $ ! % * ? &");
+        return;
+      }
+      setErrorText("Password does not meet the requirements.");
+      return;
+    }
+    if (!confirmPassword) {
+      setErrorText("Please confirm your password.");
+      return;
+    }
+    if (password !== confirmPassword) {
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
       setErrorText("Passwords do not match.");
       return;
     }

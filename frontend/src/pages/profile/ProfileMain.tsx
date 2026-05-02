@@ -26,10 +26,10 @@ export default function ProfileMain() {
       <div className="m-4 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)]">
         <div className="flex flex-row justify-between">
           <div className="m-6 flex flex-row">
-            <Link to="/">
+            <Link to="/video-page">
               <img
                 src="/mainIcon.svg"
-                alt="logo"
+                alt="Back to home"
                 className="hover:cursor-pointer"
               />
             </Link>

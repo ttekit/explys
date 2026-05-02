@@ -13,18 +13,17 @@ export default function TestLabel({
   return (
     <>
       <div
-        className={`flex items-center justify-between m-1 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
-          isDone
-            ? "bg-violet-50 text-(--purple-default)"
-            : "bg-gray-50 text-gray-400 hover:bg-gray-100"
-        }`}
+        className={`m-1 flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${isDone
+            ? "border-violet-500/30 bg-violet-500/10 text-violet-300"
+            : "border-zinc-700/60 bg-zinc-800/60 text-zinc-500 hover:border-zinc-600 hover:bg-zinc-800/90 hover:text-zinc-300"
+          }`}
         {...props}
       >
         <span>{children}</span>
         {isDone ? (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4 text-(--purple-default)"
+            className="h-4 w-4 text-violet-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -37,7 +36,7 @@ export default function TestLabel({
             />
           </svg>
         ) : (
-          <div className="w-4 h-4 rounded-full border-2 border-gray-200" />
+          <div className="h-4 w-4 rounded-full border-2 border-zinc-600" />
         )}
       </div>
     </>
