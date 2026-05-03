@@ -1250,11 +1250,6 @@ export type UserFriendFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Skip the first `n` UserFriends.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of UserFriends.
-   */
   distinct?: Prisma.UserFriendScalarFieldEnum | Prisma.UserFriendScalarFieldEnum[]
 }
 

@@ -75,7 +75,7 @@ export class ContentVideoComprehensionTestsService {
     private readonly config: ConfigService,
     private readonly gemini: ContentVideoComprehensionTestsGeminiClient,
     private readonly summaryRecommendations: ContentVideoSummaryRecommendationsGeminiClient,
-  ) {}
+  ) { }
 
   /**
    * Prefer loading `comprehensionTestsCache`; if the column is missing in DB (P2022), retry without it.
@@ -153,9 +153,9 @@ export class ContentVideoComprehensionTestsService {
 
     const fromCache = !options.forceRegenerate
       ? this.parseComprehensionTestsCache(
-          (video as { comprehensionTestsCache?: unknown })
-            .comprehensionTestsCache,
-        )
+        (video as { comprehensionTestsCache?: unknown })
+          .comprehensionTestsCache,
+      )
       : null;
 
     if (fromCache?.tests?.length) {
@@ -307,11 +307,11 @@ export class ContentVideoComprehensionTestsService {
     const tests: ComprehensionTestItem[] = geminiTests?.length
       ? geminiTests
       : fallbackComprehensionTests({
-          videoName,
-          transcriptPlain,
-          learnerCefr: cefr,
-          vocabularyTerms,
-        });
+        videoName,
+        transcriptPlain,
+        learnerCefr: cefr,
+        vocabularyTerms,
+      });
     const source: "gemini" | "fallback" = geminiTests?.length
       ? "gemini"
       : "fallback";

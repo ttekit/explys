@@ -34,7 +34,7 @@ const CONTENT_VIDEO_MAX_FILE_BYTES = contentVideoMaxFileBytes();
 @ApiTags("contents")
 @Controller("contents")
 export class ContentsController {
-  constructor(private readonly contentsService: ContentsService) {}
+  constructor(private readonly contentsService: ContentsService) { }
 
   @Get("all")
   getContent() {

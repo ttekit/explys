@@ -18,14 +18,22 @@ export default function RegistrationMain() {
     useState<boolean>(false);
   const navigate = useNavigate();
 
+<<<<<<< HEAD
+  const isValidPasswordRegex: RegExp =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+=======
   /** At least 8 chars; must include upper, lower, digit, and one of @$!%*?& (any other chars allowed). */
   const isValidPassword = (p: string) =>
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(p);
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
 
   const validateField = (
     value: string,
     type: "password" | "email" | "confirmPassword" | "other",
+<<<<<<< HEAD
+=======
     passwordToCompare?: string,
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
   ) => {
     if (type === "password") {
       if (value.length < 8) {
@@ -45,16 +53,24 @@ export default function RegistrationMain() {
         return false;
       }
       if (!/[@$!%*?&]/.test(value)) {
+<<<<<<< HEAD
+        setErrorText("Password must contain at least one special character.");
+=======
         setErrorText(
           "Password must contain at least one of: @ $ ! % * ? &",
         );
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
         return false;
       }
     }
 
     if (type == "confirmPassword") {
+<<<<<<< HEAD
+      if (value != formData.password) {
+=======
       const pw = passwordToCompare ?? formData.password;
       if (value != pw) {
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
         setErrorText("Passwords do not match.");
         return false;
       }
@@ -82,6 +98,11 @@ export default function RegistrationMain() {
     e: ChangeEvent<HTMLInputElement>,
     type: "password" | "email" | "confirmPassword" | "other",
   ) => {
+<<<<<<< HEAD
+    validateField(e.target.value, type);
+    const { name, value } = e.target;
+    updateFormData({ [name]: value } as Record<string, string>);
+=======
     const { name, value } = e.target;
     updateFormData({ [name]: value } as Record<string, string>);
 
@@ -94,10 +115,25 @@ export default function RegistrationMain() {
     } else {
       validateField(value, type);
     }
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
   };
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+<<<<<<< HEAD
+    if (
+      !formData.name ||
+      !formData.email ||
+      !/^\S+@\S+\.\S+$/.test(formData.email) ||
+      !formData.password ||
+      !formData.confirmPassword ||
+      !isValidPasswordRegex.test(formData.password)
+    ) {
+      setErrorText("Please fill in all required fields correctly.");
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+=======
     const form = e.currentTarget;
     const fd = new FormData(form);
     const name = String(fd.get("name") ?? "").trim();
@@ -151,6 +187,7 @@ export default function RegistrationMain() {
       return;
     }
     if (password !== confirmPassword) {
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
       setErrorText("Passwords do not match.");
       return;
     }

@@ -12,7 +12,7 @@ export class PostWatchSurveyService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gemini: PostWatchSurveyGeminiClient,
-  ) {}
+  ) { }
 
   private async incrementUsersWatched(contentMediaId: number): Promise<void> {
     await this.prisma.contentStats.upsert({

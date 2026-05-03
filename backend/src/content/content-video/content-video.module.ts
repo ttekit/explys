@@ -18,4 +18,4 @@ import { ContentVideoService } from "./content-video.service";
     ContentVideoSummaryRecommendationsGeminiClient,
   ],
 })
-export class ContentVideoModule {}
+export class ContentVideoModule { }

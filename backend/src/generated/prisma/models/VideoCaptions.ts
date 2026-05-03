@@ -1117,11 +1117,6 @@ export type VideoCaptionsFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` VideoCaptions.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of VideoCaptions.
-   */
   distinct?: Prisma.VideoCaptionsScalarFieldEnum | Prisma.VideoCaptionsScalarFieldEnum[]
 }
 

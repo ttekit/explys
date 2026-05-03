@@ -1471,11 +1471,6 @@ export type UserVocabularyFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Skip the first `n` UserVocabularies.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of UserVocabularies.
-   */
   distinct?: Prisma.UserVocabularyScalarFieldEnum | Prisma.UserVocabularyScalarFieldEnum[]
 }
 

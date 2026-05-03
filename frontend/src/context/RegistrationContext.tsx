@@ -72,13 +72,13 @@ function mergeDraft(draft: unknown): FormData {
   const pupils = d.studentNames;
   const studentNames: FormData["studentNames"] =
     Array.isArray(pupils) &&
-    pupils.every(
-      (p) =>
-        p &&
-        typeof p === "object" &&
-        "name" in p &&
-        "surname" in p,
-    )
+      pupils.every(
+        (p) =>
+          p &&
+          typeof p === "object" &&
+          "name" in p &&
+          "surname" in p,
+      )
       ? (pupils as RegisterStudentNameRow[])
       : typeof d.studentNames === "string" || d.studentNames === undefined
         ? (d.studentNames as string) ?? defaultFormData.studentNames

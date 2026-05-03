@@ -6,7 +6,10 @@ import SelectRegister from "../../components/SelectRegister";
 import { useState, useContext, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "../../context/RegistrationContext";
 import MultiSelect from "../../components/MultiSelect";
+<<<<<<< HEAD
+=======
 import { getRegisterCredentialsError, registerUser } from "../../lib/registerUser";
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
 
 interface SelectOption {
   value: string;
@@ -24,8 +27,11 @@ export default function RegistrationDetails() {
 
   const { formData, updateFormData } = context;
   const [emptyError, setEmptyError] = useState(false);
+<<<<<<< HEAD
+=======
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
   const navigate = useNavigate();
 
   const roleOptions: SelectOption[] = [
@@ -88,14 +94,21 @@ export default function RegistrationDetails() {
     updateFormData({ studentNames: pupils.filter((_, i) => i !== index) } as any);
   };
 
+<<<<<<< HEAD
+  const handleNext = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+=======
   const handleNext = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError(null);
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
     if (formData.role === "choose") {
       setEmptyError(true);
       return;
     }
     setEmptyError(false);
+<<<<<<< HEAD
+=======
 
     const credsErr = getRegisterCredentialsError(formData);
     if (credsErr) {
@@ -121,6 +134,7 @@ export default function RegistrationDetails() {
       return;
     }
 
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
     navigate("/registrationPreferences");
   };
 
@@ -140,6 +154,9 @@ export default function RegistrationDetails() {
               <SelectRegister name="teacherGrades" value={formData.teacherGrades} onChange={handleChange} options={gradeOptions} />
 
               <LabelRegister isRequired={false}>Learning topics:</LabelRegister>
+<<<<<<< HEAD
+              <Select options={topicOptions} isMulti placeholder="Choose topics" onChange={handleMultiSelectChange("teacherTopics")} onMenuOpen={() => { }} onMenuClose={() => { }} />
+=======
               <MultiSelect
                 inputId="teacher-topics"
                 options={topicOptions}
@@ -150,6 +167,7 @@ export default function RegistrationDetails() {
                 )}
                 onChange={handleMultiSelectChange("teacherTopics")}
               />
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
 
               <div className="mt-4 border-t pt-4">
                 <div className="flex justify-between items-center mb-2">
@@ -192,12 +210,18 @@ export default function RegistrationDetails() {
         </div>
 
         {emptyError && <ValidateError>Please select a role.</ValidateError>}
+<<<<<<< HEAD
+
+        <div className="mt-4 flex gap-2">
+          <Button type="submit">Next</Button>
+=======
         {formError && <ValidateError>{formError}</ValidateError>}
 
         <div className="mt-4 flex gap-2">
           <Button type="submit" disabled={isSubmitting}>
             {formData.role === "teacher" ? "Register" : "Next"}
           </Button>
+>>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
           <Link to="/registrationMain"><Button type="button">Back</Button></Link>
         </div>
       </form>

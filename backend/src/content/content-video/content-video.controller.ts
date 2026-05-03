@@ -31,7 +31,7 @@ export class ContentVideoController {
     private readonly contentVideoService: ContentVideoService,
     private readonly postWatchSurveyService: PostWatchSurveyService,
     private readonly comprehensionTestsService: ContentVideoComprehensionTestsService,
-  ) {}
+  ) { }
 
   @Post()
   create(@Body() createContentVideoDto: CreateContentVideoDto) {

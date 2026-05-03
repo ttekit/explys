@@ -23,7 +23,7 @@ export class VideoTranscriptTagsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly geminiTranscriptTags: AlcorythmGeminiTranscriptTagClient,
-  ) {}
+  ) { }
 
   /**
    * WebVTT → plain text → Gemini: CEFR `systemTags`, theme `userTags`, `processingComplexity` 1–10 on ContentStats.
