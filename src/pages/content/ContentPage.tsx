@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import ProgressbarContent from "../../components/ProgressbarContent";
 import TestLabel from "../../components/TestLabel";
 import VideoPlayer from "../../components/VideoPlayer";
-import TestsArea from "../../components/TestsArea";
+import TestArea from "../../components/TestsArea";
 
 export default function ContentPage() {
   const { id } = useParams();
@@ -101,7 +101,7 @@ export default function ContentPage() {
                       </div>
                     </div>
 
-                    <TestsArea />
+                    <TestArea />
                   </div>
                 </div>
               )}
