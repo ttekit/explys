@@ -1,4 +1,5 @@
 import { SelectHTMLAttributes } from "react";
+import { cn } from "../lib/utils";
 
 interface Option {
   value: string;
@@ -9,8 +10,8 @@ interface SelectRegisterProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options: Option[];
 }
 
-const styleClass: string =
-  "w-full bg-(--white-background) border-1 border-gray-300 rounded-full px-4 py-2 shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-all duration-300 focus-within:outline-none focus-within:border-(--purple-default) focus-within:shadow-[0_0_15px_rgba(124,102,245,0.4)] flex items-center gap-2";
+const fieldClass =
+  "w-full cursor-pointer rounded-lg border border-border bg-input px-3 py-2.5 text-base text-foreground shadow-xs outline-none transition-colors focus:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-60";
 
 export default function SelectRegister({
   options,
@@ -18,17 +19,12 @@ export default function SelectRegister({
   ...props
 }: SelectRegisterProps) {
   return (
-    <>
-      <select
-        className={[styleClass, className].filter(Boolean).join(" ")}
-        {...props}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.text}
-          </option>
-        ))}
-      </select>
-    </>
+    <select className={cn(fieldClass, className)} {...props}>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.text}
+        </option>
+      ))}
+    </select>
   );
 }

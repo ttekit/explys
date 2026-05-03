@@ -6,7 +6,14 @@ import { useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import { apiFetch, getResponseErrorMessage } from "../../lib/api";
+import {
+  apiFetch,
+  getResponseErrorMessage,
+  setStoredAccessToken,
+} from "../../lib/api";
+import { useUser } from "../../context/UserContext";
+import { AuthSplitLayout } from "../../components/AuthSplitLayout";
+import { ChameleonMascot } from "../../components/ChameleonMascot";
 
 export default function LoginForm() {
   const [loginData, setLoginData] = useState({
@@ -16,6 +23,7 @@ export default function LoginForm() {
   const [emptyError, setEmptyError] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const navigate = useNavigate();
+  const { refreshProfile } = useUser();
 
   const isEmpty = [loginData.email, loginData.password].some(
     (value) => value.trim() === "",
@@ -37,8 +45,19 @@ export default function LoginForm() {
         });
 
         if (response.ok) {
-          toast.success("Signed in successfully.");
-          navigate("/");
+          const data = (await response.json()) as {
+            access_token?: string;
+          };
+          const token = data.access_token;
+          if (!token) {
+            toast.success("Signed in successfully.");
+            navigate("/catalog");
+          } else {
+            setStoredAccessToken(token);
+            await refreshProfile();
+            toast.success("Signed in successfully.");
+            navigate("/catalog");
+          }
         } else {
           const message = await getResponseErrorMessage(response);
           toast.error(message);
@@ -54,78 +73,89 @@ export default function LoginForm() {
   };
 
   return (
-    <>
-      <div className="min-h-screen flex items-center justify-center p-2">
-        <form
-          className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
-          onSubmit={handleLogin}
-          tabIndex={0}
-        >
-          <div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">
-              Welcome back
-            </p>
-            <div className="flex">
-              <p className="text-gray-500 mb-8">
-                Sign in to continue learning!
-              </p>
-            </div>
-          </div>
-          <div className="space-y-2 flex flex-col">
-            <div className="flex flex-row justify-end">
-              <LabelRegister isRequired={true}>Email</LabelRegister>
-            </div>
-            <InputText
-              name="email"
-              value={loginData.email}
-              onChange={handleChange}
-              type="email"
-              placeholder="Email"
-            />
-            <div className="flex flex-row justify-end">
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                aria-pressed={showPassword}
-                onClick={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? (
-                  <EyeOff className="opacity-60 w-6 h-6 pr-1" />
-                ) : (
-                  <Eye className="opacity-60 w-6 h-6 pr-1" />
-                )}
-              </button>
-              <LabelRegister isRequired={true}>Password</LabelRegister>
-            </div>
-            <div className="flex">
-              <InputText
-                name="password"
-                value={loginData.password}
-                onChange={handleChange}
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-              />
-            </div>
-            {emptyError && (
-              <ValidateError>Please fill in all required fields.</ValidateError>
-            )}
-          </div>
-          <div>
-            <Button type="submit">Login</Button>
-            <Link to="/">
-              <Button type="button">Back</Button>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center justify-center pt-2">
-            <p className="opacity-70">Don't have an account?</p>
-            <Link to="/registrationMain">
-              <p className="text-(--purple-default) font-semibold hover:text-(--purple-hover) transition duration-500 ease-in-out">
-                Create one
-              </p>
-            </Link>
-          </div>
-        </form>
+    <AuthSplitLayout
+      rightTitle="Ready to continue?"
+      rightSubtitle="Pick up right where you left off with your personalized learning path."
+      rightMascotMood="waving"
+    >
+      <div className="mb-2 flex items-center gap-3">
+        <ChameleonMascot size="sm" mood="happy" animate={false} />
+        <h1 className="font-display text-2xl font-bold">Welcome back</h1>
       </div>
-    </>
+      <p className="mb-8 text-muted-foreground">Continue your learning journey</p>
+
+      <form onSubmit={handleLogin} tabIndex={0} className="space-y-5">
+        <div className="space-y-2">
+          <LabelRegister isRequired={true}>Email</LabelRegister>
+          <InputText
+            name="email"
+            value={loginData.email}
+            onChange={handleChange}
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <LabelRegister isRequired={true}>Password</LabelRegister>
+            <Link
+              to="#"
+              className="text-sm text-primary hover:underline"
+              onClick={(e) => e.preventDefault()}
+            >
+              Forgot password?
+            </Link>
+          </div>
+          <div className="relative">
+            <InputText
+              name="password"
+              value={loginData.password}
+              onChange={handleChange}
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              className="pr-12"
+            />
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? (
+                <EyeOff className="size-5 opacity-70" />
+              ) : (
+                <Eye className="size-5 opacity-70" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {emptyError && (
+          <ValidateError>Please fill in all required fields.</ValidateError>
+        )}
+
+        <Button type="submit" className="py-6 text-base">
+          Log in
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Don&apos;t have an account?{" "}
+        <Link to="/registrationMain" className="font-medium text-primary hover:underline">
+          Sign up
+        </Link>
+      </p>
+
+      <Link
+        to="/"
+        className="mt-8 inline-block text-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        ← Back home
+      </Link>
+    </AuthSplitLayout>
   );
 }

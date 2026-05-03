@@ -13,17 +13,22 @@ import ProfileMain from "./pages/profile/ProfileMain";
 import { UserProvider } from "./context/UserContext";
 import VideoPage from "./pages/content/VideosPage";
 import RegisterSuccessPage from "./pages/registration/RegisterSuccessPage";
+import LandingPage from "./pages/landing/LandingPage";
+import LevelTestPage from "./pages/registration/LevelTestPage";
 
 const router = createBrowserRouter([
-  { path: "/", element: <Navigate to="/video-page" replace /> },
+  { path: "/", element: <LandingPage /> },
   { path: "/registrationMain", element: <RegistrationMain /> },
   { path: "/registrationDetails", element: <RegistrationDetails /> },
   { path: "/registrationPreferences", element: <RegistrationPreferences /> },
   { path: "/registrationSuccess", element: <RegisterSuccessPage /> },
+  { path: "/level-test", element: <LevelTestPage /> },
   { path: "/loginForm", element: <LoginForm /> },
+  { path: "/entrance-test", element: <Navigate to="/catalog" replace /> },
   { path: "/contentPage", element: <ContentPage /> },
   { path: "/profileMain", element: <ProfileMain /> },
-  { path: "/video-page", element: <VideoPage /> },
+  { path: "/catalog", element: <VideoPage /> },
+  { path: "/video-page", element: <Navigate to="/catalog" replace /> },
   { path: "/content/:id?", element: <ContentPage /> }
 ]);
 

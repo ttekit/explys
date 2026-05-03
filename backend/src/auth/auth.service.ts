@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { JwtService } from '@nestjs/jwt';
@@ -140,6 +141,8 @@ export class AuthService {
         email: true,
         name: true,
         password: true,
+        role: true,
+        hasCompletedPlacement: true,
       },
     });
 
@@ -161,7 +164,49 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
+        hasCompletedPlacement: user.hasCompletedPlacement,
       },
+    };
+  }
+
+  async getProfile(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        hasCompletedPlacement: true,
+        additionalUserData: {
+          select: {
+            englishLevel: true,
+            education: true,
+            workField: true,
+            hobbies: true,
+            favoriteGenres: { select: { id: true } },
+            hatedGenres: { select: { id: true } },
+          },
+        },
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const extra = user.additionalUserData;
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      hasCompletedPlacement: user.hasCompletedPlacement,
+      englishLevel: extra?.englishLevel ?? '',
+      education: extra?.education ?? '',
+      workField: extra?.workField ?? '',
+      hobbies: extra?.hobbies ?? [],
+      favoriteGenres: extra?.favoriteGenres?.map((g) => g.id) ?? [],
+      hatedGenres: extra?.hatedGenres?.map((g) => g.id) ?? [],
     };
   }
 }

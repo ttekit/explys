@@ -1,10 +1,17 @@
 import { HTMLAttributes, useRef, useState } from "react";
+import { cn } from "../lib/utils";
 
 interface VideoPlayerProps extends HTMLAttributes<HTMLDivElement> {
   src: string;
+  onEnded?: () => void;
 }
 
-export default function VideoPlayer({ src, ...props }: VideoPlayerProps) {
+export default function VideoPlayer({
+  src,
+  onEnded,
+  className,
+  ...rest
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -55,9 +62,12 @@ export default function VideoPlayer({ src, ...props }: VideoPlayerProps) {
 
   return (
     <div
-      className="w-full aspect-video bg-gray-950 rounded-xl overflow-hidden flex items-center justify-center group cursor-pointer relative"
+      className={cn(
+        "group relative flex aspect-video w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-gray-950",
+        className,
+      )}
       onClick={handleToggle}
-      {...props}
+      {...rest}
     >
       <video
         ref={videoRef}
@@ -65,7 +75,10 @@ export default function VideoPlayer({ src, ...props }: VideoPlayerProps) {
         className="absolute inset-0 w-full h-full object-cover"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={() => setPlaying(false)}
+        onEnded={() => {
+          setPlaying(false);
+          onEnded?.();
+        }}
       />
 
       <div

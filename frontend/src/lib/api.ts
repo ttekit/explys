@@ -1,6 +1,28 @@
 /**
  * API client (aligned with `test-nextjs/lib/api.ts`): base URL, `x-api-token`, JSON error parsing, optional JWT.
  */
+const ACCESS_TOKEN_KEY = "eng_curses_access_token";
+
+export function getStoredAccessToken(): string | null {
+  try {
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredAccessToken(token: string | null): void {
+  try {
+    if (token) {
+      localStorage.setItem(ACCESS_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 type FetchOpts = RequestInit & { token?: string | null };
 
 export function getApiBase(): string {
@@ -62,8 +84,14 @@ export async function apiFetch(
   ) {
     headers.set("Content-Type", "application/json");
   }
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+  let bearer: string | null | undefined;
+  if (token === undefined) {
+    bearer = getStoredAccessToken();
+  } else {
+    bearer = token ?? null;
+  }
+  if (bearer) {
+    headers.set("Authorization", `Bearer ${bearer}`);
   }
   const key = import.meta.env.VITE_API_TOKEN;
   if (key) {

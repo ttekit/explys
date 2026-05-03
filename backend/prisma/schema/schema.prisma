@@ -14,6 +14,8 @@ model User {
   password           String
   role               String              @default("adult")
   hasCompletedPlacement Boolean          @default(false) @map("has_completed_placement")
+  /// Serialized placement questionnaire (correct keys) until test is completed — must match iframe payload.
+  placementTestDraft Json?              @map("placement_test_draft")
   lastLogin          DateTime?
   createdAt          DateTime            @default(now())
   teacherId          Int?                @map("teacher_id")

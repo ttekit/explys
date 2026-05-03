@@ -2,14 +2,14 @@ import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
 import { useContext, FormEvent, useState, useEffect } from "react";
-import { RegistrationContext } from "../../context/RegistrationContext";
-<<<<<<< HEAD
-import Select from "react-select";
-=======
-import MultiSelect from "../../components/MultiSelect";
-import { registerUser } from "../../lib/registerUser";
-import { apiFetch } from "../../lib/api";
->>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
+import {
+  RegistrationContext,
+  type FormData,
+} from "../../context/RegistrationContext";
+import { ArrowLeft } from "lucide-react";
+import { AuthSplitLayout } from "../../components/AuthSplitLayout";
+import { ChameleonMascot } from "../../components/ChameleonMascot";
+import { cn } from "../../lib/utils";
 
 export default function RegistrationPreferences() {
   const context = useContext(RegistrationContext);
@@ -19,88 +19,83 @@ export default function RegistrationPreferences() {
   const navigate = useNavigate();
   const isTeacher = formData.role === "teacher";
 
-<<<<<<< HEAD
-  const [genreOptions, setGenreOptions] = useState<
-    { value: string; label: string }[]
-  >([]);
-
+  type GenreChip = { value: number; label: string };
+  const [genreOptions, setGenreOptions] = useState<GenreChip[]>([]);
   const [showLevelTestModal, setShowLevelTestModal] = useState(false);
-=======
+
   useEffect(() => {
     if (isTeacher) {
       navigate("/registrationDetails", { replace: true });
     }
   }, [isTeacher, navigate]);
 
-  const [genreOptions, setGenreOptions] = useState<
-    { value: number; label: string }[]
-  >([]);
->>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
-
   useEffect(() => {
     if (isTeacher) return;
 
     const fetchGenres = async () => {
       try {
-<<<<<<< HEAD
         const response = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/genres`,
         );
         if (response.ok) {
-          const data = await response.json();
-          setGenreOptions(data.map((g: any) => ({ value: g.id, label: g.name })));
-=======
-        const response = await apiFetch("/genres", { method: "GET" });
-        if (response.ok) {
-          const data = (await response.json()) as { id: number; name: string }[];
+          const data = (await response.json()) as {
+            id: number;
+            name: string;
+          }[];
           setGenreOptions(
             data.map((g) => ({ value: g.id, label: g.name })),
           );
->>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
         }
       } catch (error) {
         console.error("Error fetching genres:", error);
       }
     };
-<<<<<<< HEAD
     fetchGenres();
-  }, []);
-=======
-    void fetchGenres();
   }, [isTeacher]);
->>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
 
-  const handleFavoriteGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
-    updateFormData({ favoriteGenres: values } as any);
+  const favoriteIds = formData.favoriteGenres ?? [];
+  const hatedIds = formData.hatedGenres ?? [];
+
+  const toggleFavorite = (id: number) => {
+    if (hatedIds.includes(id)) return;
+    const next =
+      favoriteIds.includes(id)
+        ? favoriteIds.filter((x) => x !== id)
+        : [...favoriteIds, id];
+    updateFormData({
+      favoriteGenres: next,
+      hatedGenres: hatedIds.filter((h) => !next.includes(h)),
+    } as Partial<FormData>);
   };
 
-  const handleHatedGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
-    updateFormData({ hatedGenres: values } as any);
+  const toggleHated = (id: number) => {
+    if (favoriteIds.includes(id)) return;
+    const next =
+      hatedIds.includes(id)
+        ? hatedIds.filter((x) => x !== id)
+        : [...hatedIds, id];
+    updateFormData({
+      hatedGenres: next,
+      favoriteGenres: favoriteIds.filter((f) => !next.includes(f)),
+    } as Partial<FormData>);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-<<<<<<< HEAD
-    const { confirmPassword, studentNames, teacherGrades, teacherTopics, ...rawFormData } = formData as any;
+    const {
+      confirmPassword: _omitConfirm,
+      studentNames: _omitStudents,
+      teacherGrades: _omitGrades,
+      teacherTopics: _omitTopics,
+      ...payload
+    } = formData;
 
-    const dataToSend: any = {
-      ...rawFormData,
-      favoriteGenres: isTeacher ? [] : (formData.favoriteGenres ?? []),
-      hatedGenres: isTeacher ? [] : (formData.hatedGenres ?? []),
+    const dataToSend = {
+      ...payload,
+      favoriteGenres: formData.favoriteGenres ?? [],
+      hatedGenres: formData.hatedGenres ?? [],
     };
-
-    if (isTeacher) {
-      dataToSend.studentNames = studentNames ?? [];
-      dataToSend.teacherGrades = teacherGrades;
-      dataToSend.teacherTopics = teacherTopics;
-    }
 
     try {
       const response = await fetch(
@@ -111,7 +106,7 @@ export default function RegistrationPreferences() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(dataToSend),
-        }
+        },
       );
 
       if (response.ok) {
@@ -136,123 +131,152 @@ export default function RegistrationPreferences() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-2 relative">
-=======
-    const result = await registerUser(formData);
-    if (result.success) {
-      navigate("/registrationSuccess", {
-        state: { generatedStudents: result.generatedStudents },
-      });
-    } else {
-      alert(`Registration failed: ${result.message}`);
-    }
-  };
-
   if (isTeacher) {
     return null;
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-2">
->>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
-      <form
-        className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
-        onSubmit={handleSubmit}
+    <>
+      <AuthSplitLayout
+        progressStep={3}
+        progressTotal={3}
+        rightTitle="Almost there!"
+        rightSubtitle="A few preferences help us tune what you&apos;ll watch next."
+        rightMascotMood="excited"
       >
-        <div>
-          <p className="text-3xl font-bold text-gray-900 mb-1">
-            Create an account
-          </p>
-          <div className="flex text-gray-500 mb-8">
-            <p>Preferences</p>
-            <p className="ml-1">- Page 3</p>
+        <Link
+          to="/registrationDetails"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </Link>
+
+        <div className="mb-6 flex items-center gap-3">
+          <ChameleonMascot
+            size="sm"
+            mood="happy"
+            animate={false}
+          />
+          <div>
+            <h1 className="font-display text-2xl font-bold">
+              {formData.role === "student"
+                ? "Student preferences"
+                : "Your preferences"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Choose genres we should lean toward—and ones to hide.
+            </p>
           </div>
         </div>
 
-        <div className="mb-4 flex flex-col px-5">
-          <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
-<<<<<<< HEAD
-          <Select
-=======
-          <MultiSelect
-            inputId="favorite-genres"
->>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
-            options={genreOptions}
-            isMulti
-            name="favoriteGenres"
-            placeholder="Choose genres"
-            onChange={handleFavoriteGenreChange}
-<<<<<<< HEAD
-            value={genreOptions.filter((option: any) =>
-              (formData.favoriteGenres ?? []).includes(option.value),
-            )}
-            onMenuOpen={() => { }}
-            onMenuClose={() => { }}
-          />
+        <form className="space-y-8" onSubmit={handleSubmit}>
+          <div className="space-y-3">
+            <LabelRegister isRequired={false}>Genres you love</LabelRegister>
+            <p className="text-sm text-muted-foreground">
+              We&apos;ll recommend more from genres you pick here.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {genreOptions.map((genre) => {
+                const inactive = hatedIds.includes(genre.value);
+                const active = favoriteIds.includes(genre.value);
+                return (
+                  <button
+                    key={`f-${genre.value}`}
+                    type="button"
+                    disabled={inactive}
+                    onClick={() => toggleFavorite(genre.value)}
+                    className={cn(
+                      "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-45",
+                      active
+                        ? "bg-primary text-primary-foreground"
+                        : inactive
+                          ? "cursor-not-allowed bg-muted text-muted-foreground opacity-45"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80",
+                    )}
+                  >
+                    {genre.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-          <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
-          <Select
-=======
-            value={genreOptions.filter((option) =>
-              (formData.favoriteGenres ?? []).includes(option.value),
-            )}
-          />
+          <div className="space-y-3">
+            <LabelRegister isRequired={false}>Genres to avoid</LabelRegister>
+            <p className="text-sm text-muted-foreground">
+              We&apos;ll filter out selections from these buckets.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {genreOptions.map((genre) => {
+                const inactive = favoriteIds.includes(genre.value);
+                const active = hatedIds.includes(genre.value);
+                return (
+                  <button
+                    key={`h-${genre.value}`}
+                    type="button"
+                    disabled={inactive}
+                    onClick={() => toggleHated(genre.value)}
+                    className={cn(
+                      "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-45",
+                      active
+                        ? "bg-destructive text-destructive-foreground"
+                        : inactive
+                          ? "cursor-not-allowed bg-muted text-muted-foreground opacity-45"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80",
+                    )}
+                  >
+                    {genre.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-          <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
-          <MultiSelect
-            inputId="hated-genres"
->>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
-            options={genreOptions}
-            isMulti
-            name="hatedGenres"
-            placeholder="Choose genres"
-            onChange={handleHatedGenreChange}
-<<<<<<< HEAD
-            value={genreOptions.filter((option: any) =>
-              (formData.hatedGenres ?? []).includes(option.value),
-            )}
-            onMenuOpen={() => { }}
-            onMenuClose={() => { }}
-=======
-            value={genreOptions.filter((option) =>
-              (formData.hatedGenres ?? []).includes(option.value),
-            )}
->>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56
-          />
-        </div>
-
-        <div className="mt-4 flex flex-col">
-          <Button type="submit">Register</Button>
-          <Link to="/registrationDetails"><Button type="button">Back</Button></Link>
-        </div>
-      </form>
-<<<<<<< HEAD
+          <Button type="submit" className="py-6 text-base font-semibold">
+            Register
+          </Button>
+        </form>
+      </AuthSplitLayout>
 
       {showLevelTestModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-md w-full flex flex-col gap-2 shadow-2xl">
-            <div className="w-16 h-16 bg-blue-600/20 text-blue-500 rounded-2xl flex items-center justify-center mb-2">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        <div className="bg-background/85 fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+          <div className="border-border bg-card text-card-foreground w-full max-w-md rounded-3xl border p-8 shadow-2xl">
+            <div className="bg-primary/15 text-primary mb-3 flex size-16 items-center justify-center rounded-2xl">
+              <svg
+                className="size-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
-
-            <h2 className="text-2xl font-bold text-white">Determine your level</h2>
-            <p className="text-zinc-400 mb-4 leading-relaxed">
-              We noticed you are registering as a student or adult. Take a quick placement test so we can recommend the best videos for your current English level.
+            <h2 className="font-display mb-2 text-2xl font-bold">
+              Determine your level
+            </h2>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              You&apos;re almost done. Take a quick placement test so we can recommend
+              the best videos—or skip for now and start exploring.
             </p>
-
-            <div className="flex flex-col gap-3 mt-2">
+            <div className="flex flex-col gap-3">
               <button
-                onClick={() => navigate("/level-test")}
-                className="w-full py-3.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500 transition-colors active:scale-95"
+                type="button"
+                onClick={() => navigate("/catalog")}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-xl py-3.5 font-bold transition-colors active:scale-[0.98]"
               >
-                Take the Test
+                Take the test
               </button>
               <button
+                type="button"
                 onClick={() => navigate("/loginForm")}
-                className="w-full py-3.5 rounded-xl font-bold text-white bg-white/5 hover:bg-white/10 transition-colors active:scale-95"
+                className="border-border bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full rounded-xl border py-3.5 font-bold transition-colors active:scale-[0.98]"
               >
                 Skip for now
               </button>
@@ -260,11 +284,6 @@ export default function RegistrationPreferences() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
-=======
-    </div>
-  );
-}
->>>>>>> f297073fc2ecff765884d17e75ee35f6207fcf56

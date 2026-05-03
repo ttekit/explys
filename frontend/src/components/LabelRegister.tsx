@@ -1,24 +1,25 @@
 import { ReactNode } from "react";
+import { cn } from "../lib/utils";
 
 interface LabelRegisterProps {
   children: ReactNode;
   isRequired: boolean;
+  className?: string;
 }
 
 export default function LabelRegister({
   children,
   isRequired,
+  className,
 }: LabelRegisterProps) {
   return (
-    <>
-      <div>
-        <label className="text-gray-900 text-[16px] text-left w-full font-semibold">
-          {children}
-        </label>
+    <div className={cn(className)}>
+      <label className="w-full text-left text-base font-medium text-foreground">
+        {children}
         {isRequired && (
-          <label className="text-(--error-bright) p-1 font-bold">*</label>
+          <span className="p-1 font-bold text-destructive">*</span>
         )}
-      </div>
-    </>
+      </label>
+    </div>
   );
 }

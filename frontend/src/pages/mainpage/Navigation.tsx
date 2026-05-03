@@ -8,7 +8,7 @@ const Navigation: React.FC = () => {
       <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
 
         <Link
-          to="/video-page"
+          to="/catalog"
           className="text-white font-bold text-2xl tracking-tighter"
         >
           Cine<span className="text-blue-500">Lingo</span>

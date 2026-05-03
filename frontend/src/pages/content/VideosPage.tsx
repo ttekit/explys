@@ -1,7 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { apiFetch } from "../../lib/api";
-import Navigation from "../mainpage/Navigation";
+import { apiFetch, getApiBase, getStoredAccessToken } from "../../lib/api";
+import { useUser } from "../../context/UserContext";
+import PlacementPreferencesStep from "../../components/PlacementPreferencesStep";
+import { ChameleonMascot } from "../../components/ChameleonMascot";
+import { CatalogHero } from "../../components/catalog/CatalogHero";
+import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
+import { CatalogVideoRow } from "../../components/catalog/CatalogVideoRow";
+import type { CatalogCardVideo } from "../../components/catalog/CatalogVideoCard";
 
 interface ContentVideo {
     id: number;
@@ -16,10 +22,70 @@ interface ContentVideo {
     };
 }
 
+function toCardVideo(video: ContentVideo): CatalogCardVideo {
+    return {
+        id: video.id,
+        title: video.videoName,
+        categoryLabel: video.content.category.name,
+    };
+}
+
 export default function VideoPage() {
     const [videos, setVideos] = useState<ContentVideo[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState("All");
     const navigate = useNavigate();
+    const { user, isLoading: userLoading, refreshProfile } = useUser();
+    const placementCompleteHandled = useRef(false);
+    const [placementPhase, setPlacementPhase] = useState<
+        "preferences" | "test"
+    >("preferences");
+
+    const accessToken = getStoredAccessToken();
+    const needsPlacement =
+        !userLoading &&
+        !!accessToken &&
+        !!user &&
+        user.role !== "teacher" &&
+        !user.hasCompletedPlacement;
+
+    useEffect(() => {
+        if (!needsPlacement) {
+            setPlacementPhase("preferences");
+            return;
+        }
+        const hasPrefs =
+            (user.hobbies?.length ?? 0) > 0 &&
+            (user.favoriteGenres?.length ?? 0) > 0;
+        setPlacementPhase(hasPrefs ? "test" : "preferences");
+    }, [needsPlacement, user?.hobbies, user?.favoriteGenres]);
+
+    useEffect(() => {
+        if (!needsPlacement) {
+            placementCompleteHandled.current = false;
+            return;
+        }
+        const onMessage = (ev: MessageEvent) => {
+            if (ev.data?.type === "placement_exit") {
+                navigate("/");
+                return;
+            }
+            if (
+                ev.data?.type === "placement_test_complete" &&
+                !placementCompleteHandled.current
+            ) {
+                placementCompleteHandled.current = true;
+                void refreshProfile();
+            }
+        };
+        window.addEventListener("message", onMessage);
+        return () => window.removeEventListener("message", onMessage);
+    }, [needsPlacement, navigate, refreshProfile]);
+
+    const showPlacementPreferences =
+        needsPlacement && placementPhase === "preferences" && user;
+    const showPlacementTest =
+        needsPlacement && placementPhase === "test" && accessToken;
 
     useEffect(() => {
         const fetchVideos = async () => {
@@ -41,81 +107,198 @@ export default function VideoPage() {
         fetchVideos();
     }, []);
 
+    const categoryNames = useMemo(() => {
+        const names = videos.map((v) => v.content.category.name);
+        return [...new Set(names)];
+    }, [videos]);
+
+    const filteredVideos = useMemo(() => {
+        return videos.filter((v) => {
+            if (selectedCategory === "All") return true;
+            return v.content.category.name === selectedCategory;
+        });
+    }, [videos, selectedCategory]);
+
+    const featured = filteredVideos[0] ?? null;
+    const featuredHero = featured
+        ? {
+              id: featured.id,
+              title: featured.videoName,
+              description:
+                  featured.videoDescription ??
+                  featured.content.category.description ??
+                  "",
+              categoryName: featured.content.category.name,
+          }
+        : null;
+
+    const catalogRows = useMemo(() => {
+        if (filteredVideos.length === 0) return [];
+        if (selectedCategory !== "All") {
+            return [
+                {
+                    title: selectedCategory,
+                    description: undefined as string | undefined,
+                    videos: filteredVideos.map(toCardVideo),
+                },
+            ];
+        }
+        const byCategory = new Map<string, ContentVideo[]>();
+        for (const v of filteredVideos) {
+            const key = v.content.category.name;
+            const bucket = byCategory.get(key);
+            if (bucket) bucket.push(v);
+            else byCategory.set(key, [v]);
+        }
+        return [...byCategory.entries()]
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([title, list]) => ({
+                title,
+                description: undefined as string | undefined,
+                videos: list.map(toCardVideo),
+            }));
+    }, [filteredVideos, selectedCategory]);
+
     return (
-        <div className="min-h-screen bg-black text-white font-sans">
-            <Navigation />
+        <div className="min-h-screen bg-background text-foreground antialiased">
+            <div className="flex">
+                <CatalogSidebar
+                    categories={categoryNames}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={setSelectedCategory}
+                    welcomeName={
+                        user?.name ? user.name.split(" ")[0] : undefined
+                    }
+                    englishLevel={user?.englishLevel || undefined}
+                />
 
-            <main className="max-w-7xl mx-auto p-8">
-                <header className="mb-12">
-                    <h1 className="text-5xl font-extrabold tracking-tight">Video Library</h1>
-                    <p className="text-zinc-500 mt-3 text-lg">
-                        Master English by watching your favorite movies and series.
-                    </p>
-                </header>
+                <main className="ml-0 flex-1 lg:ml-64">
+                    <CatalogHero featured={featuredHero} />
 
-                {loading ? (
-                    <div className="flex flex-col justify-center items-center h-80 space-y-4">
-                        <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-blue-600 border-solid"></div>
-                        <p className="text-zinc-400 animate-pulse">Loading content...</p>
+                    <div
+                        id="catalog-library"
+                        className="space-y-10 px-4 pb-28 sm:px-6 lg:px-8 lg:pb-12"
+                    >
+                        {loading ? (
+                            <div className="flex h-80 flex-col items-center justify-center space-y-4">
+                                <div className="h-14 w-14 animate-spin rounded-full border-solid border-primary border-t-4 border-r-transparent border-b-transparent border-l-transparent" />
+                                <p className="animate-pulse text-muted-foreground">
+                                    Loading catalog…
+                                </p>
+                            </div>
+                        ) : filteredVideos.length === 0 ? (
+                            <div className="rounded-4xl border-2 border-dashed border-border bg-card/30 py-24 text-center">
+                                <div className="mb-4 text-6xl">🎬</div>
+                                <h2 className="font-display text-2xl font-bold">
+                                    Nothing here yet
+                                </h2>
+                                <p className="mt-2 text-muted-foreground">
+                                    {videos.length === 0
+                                        ? "Check back soon for new lessons."
+                                        : "Try clearing the category filter."}
+                                </p>
+                            </div>
+                        ) : (
+                            catalogRows.map((row) => (
+                                <CatalogVideoRow
+                                    key={row.title}
+                                    title={row.title}
+                                    description={row.description}
+                                    videos={row.videos}
+                                />
+                            ))
+                        )}
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {videos.map((video) => (
-                            <div
-                                key={video.id}
-                                className="group bg-zinc-900/50 border border-zinc-800 rounded-3xl overflow-hidden hover:border-blue-500/50 hover:bg-zinc-900 transition-all duration-300 flex flex-col shadow-lg"
-                            >
-                                {/* Preview Area */}
-                                <div className="relative aspect-video bg-zinc-800 overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60"></div>
+                </main>
+            </div>
 
-                                    {/* Category Name from DB */}
-                                    <div className="absolute top-4 left-4 z-10">
-                                        <span className="bg-blue-600/20 text-blue-400 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest backdrop-blur-md border border-blue-500/20">
-                                            {video.content.category.name}
+            {showPlacementPreferences ? (
+                <div className="fixed inset-0 z-[200] flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
+                    <header className="shrink-0 border-border border-b bg-background">
+                        <div className="mx-auto grid w-full max-w-4xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4">
+                            <div aria-hidden="true" />
+                            <div className="flex items-center gap-2">
+                                <ChameleonMascot
+                                    size="sm"
+                                    mood="thinking"
+                                    animate={false}
+                                    className="!h-10 !w-10"
+                                />
+                                <span className="font-display text-lg font-bold tracking-tight text-foreground">
+                                    CineLingo
+                                </span>
+                            </div>
+                            <span className="justify-self-end text-sm text-muted-foreground">
+                                1 / 2
+                            </span>
+                        </div>
+                    </header>
+                    <div className="mx-auto w-full max-w-4xl shrink-0 px-4 py-6">
+                        <div
+                            className="h-2 w-full overflow-hidden rounded-full bg-muted"
+                            role="progressbar"
+                            aria-valuenow={50}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label="Placement flow progress"
+                        >
+                            <div className="h-full w-1/2 rounded-full bg-primary transition-all" />
+                        </div>
+                    </div>
+                    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+                        <div className="mx-auto w-full max-w-md shrink-0 px-4 pt-2 pb-2">
+                            <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
+                                Before your entry test
+                            </h2>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                A few quick preferences — then your placement
+                                questionnaire.
+                            </p>
+                        </div>
+                        <div className="flex-1 pb-6">
+                            <PlacementPreferencesStep
+                                user={user}
+                                onSuccess={() => setPlacementPhase("test")}
+                            />
+                        </div>
+                        <footer className="shrink-0 border-border border-t bg-card">
+                            <div className="mx-auto flex max-w-4xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <div className="mb-3 flex items-center gap-2">
+                                        <ChameleonMascot
+                                            size="sm"
+                                            mood="happy"
+                                            animate={false}
+                                            className="!h-10 !w-10"
+                                        />
+                                        <span className="font-display text-lg font-bold tracking-tight text-foreground">
+                                            CineLingo
                                         </span>
                                     </div>
-
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-2xl">
-                                            <svg className="w-6 h-6 text-white translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M8 5v14l11-7z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Content Info */}
-                                <div className="p-6 flex-grow flex flex-col">
-                                    <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300 line-clamp-1 mb-2">
-                                        {video.videoName}
-                                    </h3>
-
-                                    <p className="text-zinc-500 text-sm line-clamp-2 leading-relaxed flex-grow">
-                                        {video.videoDescription || video.content.category.description}
+                                    <p className="max-w-xs text-sm text-muted-foreground">
+                                        Personalized English learning through
+                                        adaptive video content — learn at your
+                                        own pace.
                                     </p>
-
-                                    <button
-                                        onClick={() => navigate(`/content/${video.id}`)}
-                                        className="mt-6 w-full py-3 bg-white/5 hover:bg-blue-600 text-white rounded-2xl font-bold text-sm transition-all duration-300 border border-white/5 hover:border-blue-500 shadow-sm active:scale-95"
-                                    >
-                                        Watch Now
-                                    </button>
                                 </div>
+                                <p className="shrink-0 text-sm text-muted-foreground">
+                                    © {new Date().getFullYear()} CineLingo
+                                </p>
                             </div>
-                        ))}
+                        </footer>
                     </div>
-                )}
+                </div>
+            ) : null}
 
-                {/* Empty State */}
-                {!loading && videos.length === 0 && (
-                    <div className="text-center py-32 bg-zinc-900/30 rounded-[40px] border-2 border-dashed border-zinc-800/50">
-                        <div className="text-6xl mb-4">🎬</div>
-                        <h2 className="text-2xl font-bold text-white">No videos yet</h2>
-                        <p className="text-zinc-500 mt-2">Check back later for new content.</p>
-                    </div>
-                )}
-            </main>
+            {showPlacementTest ? (
+                <div className="fixed inset-0 z-[200] flex flex-col bg-background">
+                    <iframe
+                        title="Placement test"
+                        className="min-h-0 w-full flex-1 border-0 bg-background"
+                        src={`${getApiBase()}/placement-test/document?access_token=${encodeURIComponent(accessToken)}`}
+                    />
+                </div>
+            ) : null}
         </div>
     );
 }

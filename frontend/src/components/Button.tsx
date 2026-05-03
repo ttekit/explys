@@ -1,11 +1,12 @@
 import { ReactNode, ButtonHTMLAttributes } from "react";
+import { cn } from "../lib/utils";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
 }
 
-const styleClass: string =
-  "w-full py-2 mt-3 bg-(--purple-default) hover:bg-(--purple-hover) hover:cursor-pointer text-white rounded-full font-bold text-lg transition-all";
+const baseClass =
+  "mt-3 inline-flex w-full cursor-pointer items-center justify-center rounded-xl px-4 py-2.5 text-lg font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0";
 
 export default function Button({
   children,
@@ -13,13 +14,15 @@ export default function Button({
   ...props
 }: ButtonProps) {
   return (
-    <>
-      <button
-        {...props}
-        className={[styleClass, className].filter(Boolean).join(" ")}
-      >
-        {children}
-      </button>
-    </>
+    <button
+      {...props}
+      className={cn(
+        baseClass,
+        "bg-primary text-primary-foreground hover:bg-primary/90",
+        className,
+      )}
+    >
+      {children}
+    </button>
   );
 }

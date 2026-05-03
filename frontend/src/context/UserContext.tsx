@@ -4,13 +4,16 @@ import {
   useContext,
   ReactNode,
   useEffect,
+  useCallback,
 } from "react";
-import { apiFetch } from "../lib/api";
+import { apiFetch, setStoredAccessToken } from "../lib/api";
 
 export interface UserData {
   id: string;
   name: string;
   email: string;
+  role: string;
+  hasCompletedPlacement: boolean;
   englishLevel: string;
   hobbies: string[];
   education: string;
@@ -20,10 +23,34 @@ export interface UserData {
   avatarUrl?: string;
 }
 
+function normalizeProfile(raw: unknown): UserData | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  return {
+    id: String(r.id ?? ""),
+    name: String(r.name ?? ""),
+    email: String(r.email ?? ""),
+    role: String(r.role ?? "adult"),
+    hasCompletedPlacement: Boolean(r.hasCompletedPlacement),
+    englishLevel: String(r.englishLevel ?? ""),
+    education: String(r.education ?? ""),
+    workField: String(r.workField ?? ""),
+    hobbies: Array.isArray(r.hobbies) ? (r.hobbies as string[]) : [],
+    favoriteGenres: Array.isArray(r.favoriteGenres)
+      ? (r.favoriteGenres as number[])
+      : [],
+    hatedGenres: Array.isArray(r.hatedGenres)
+      ? (r.hatedGenres as number[])
+      : [],
+    avatarUrl: typeof r.avatarUrl === "string" ? r.avatarUrl : undefined,
+  };
+}
+
 interface UserContextType {
   user: UserData | null;
   login: (data: UserData) => void;
   logout: () => void;
+  refreshProfile: () => Promise<UserData | null>;
   isLoggedIn: boolean;
   isLoading: boolean;
 }
@@ -36,38 +63,42 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const refreshProfile = useCallback(async (): Promise<UserData | null> => {
+    const response = await apiFetch("/auth/profile", { method: "GET" });
+    if (!response.ok) {
+      setUser(null);
+      return null;
+    }
+    const data: unknown = await response.json();
+    const next = normalizeProfile(data);
+    setUser(next);
+    return next;
+  }, []);
+
   const login = (data: UserData) => {
     setUser(data);
-    localStorage.setItem("app_user", JSON.stringify(data));
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
-    localStorage.removeItem("app_user");
-  };
+    setStoredAccessToken(null);
+  }, []);
 
   useEffect(() => {
-    const getProfile = async () => {
+    const load = async () => {
       try {
         setIsLoading(true);
-
-        const response = await apiFetch("/auth/profile", { method: "GET" });
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data);
-        } else {
-          setUser(null);
-        }
+        await refreshProfile();
       } catch (error) {
-        console.error("Помилка завантаження профілю:", error);
+        console.error("Profile load failed:", error);
         setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    getProfile();
-  }, []);
+    void load();
+  }, [refreshProfile]);
 
   return (
     <UserContext.Provider
@@ -75,6 +106,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         user,
         login,
         logout,
+        refreshProfile,
         isLoggedIn: !!user,
         isLoading,
       }}
