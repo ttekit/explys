@@ -28,10 +28,12 @@ export type AggregateUser = {
 
 export type UserAvgAggregateOutputType = {
   id: number | null
+  teacherId: number | null
 }
 
 export type UserSumAggregateOutputType = {
   id: number | null
+  teacherId: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -43,6 +45,7 @@ export type UserMinAggregateOutputType = {
   hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
+  teacherId: number | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -54,6 +57,7 @@ export type UserMaxAggregateOutputType = {
   hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
+  teacherId: number | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -65,16 +69,19 @@ export type UserCountAggregateOutputType = {
   hasCompletedPlacement: number
   lastLogin: number
   createdAt: number
+  teacherId: number
   _all: number
 }
 
 
 export type UserAvgAggregateInputType = {
   id?: true
+  teacherId?: true
 }
 
 export type UserSumAggregateInputType = {
   id?: true
+  teacherId?: true
 }
 
 export type UserMinAggregateInputType = {
@@ -86,6 +93,7 @@ export type UserMinAggregateInputType = {
   hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
+  teacherId?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -97,6 +105,7 @@ export type UserMaxAggregateInputType = {
   hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
+  teacherId?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -108,6 +117,7 @@ export type UserCountAggregateInputType = {
   hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
+  teacherId?: true
   _all?: true
 }
 
@@ -206,6 +216,7 @@ export type UserGroupByOutputType = {
   hasCompletedPlacement: boolean
   lastLogin: Date | null
   createdAt: Date
+  teacherId: number | null
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -240,6 +251,9 @@ export type UserWhereInput = {
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  teacherId?: Prisma.IntNullableFilter<"User"> | number | null
+  teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  students?: Prisma.UserListRelationFilter
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
   statistic?: Prisma.XOR<Prisma.UserStatisticNullableScalarRelationFilter, Prisma.UserStatisticWhereInput> | null
   languageData?: Prisma.UserLanguageDataListRelationFilter
@@ -259,6 +273,9 @@ export type UserOrderByWithRelationInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
+  teacher?: Prisma.UserOrderByWithRelationInput
+  students?: Prisma.UserOrderByRelationAggregateInput
   settings?: Prisma.UserSettingsOrderByWithRelationInput
   statistic?: Prisma.UserStatisticOrderByWithRelationInput
   languageData?: Prisma.UserLanguageDataOrderByRelationAggregateInput
@@ -281,6 +298,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  teacherId?: Prisma.IntNullableFilter<"User"> | number | null
+  teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  students?: Prisma.UserListRelationFilter
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
   statistic?: Prisma.XOR<Prisma.UserStatisticNullableScalarRelationFilter, Prisma.UserStatisticWhereInput> | null
   languageData?: Prisma.UserLanguageDataListRelationFilter
@@ -300,6 +320,7 @@ export type UserOrderByWithAggregationInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -319,6 +340,7 @@ export type UserScalarWhereWithAggregatesInput = {
   hasCompletedPlacement?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
+  teacherId?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
 }
 
 export type UserCreateInput = {
@@ -329,6 +351,8 @@ export type UserCreateInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
@@ -348,6 +372,8 @@ export type UserUncheckedCreateInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
@@ -366,6 +392,8 @@ export type UserUpdateInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
@@ -385,6 +413,8 @@ export type UserUncheckedUpdateInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
@@ -404,6 +434,7 @@ export type UserCreateManyInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -425,11 +456,22 @@ export type UserUncheckedUpdateManyInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type UserNullableScalarRelationFilter = {
   is?: Prisma.UserWhereInput | null
   isNot?: Prisma.UserWhereInput | null
+}
+
+export type UserListRelationFilter = {
+  every?: Prisma.UserWhereInput
+  some?: Prisma.UserWhereInput
+  none?: Prisma.UserWhereInput
+}
+
+export type UserOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -441,10 +483,12 @@ export type UserCountOrderByAggregateInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -456,6 +500,7 @@ export type UserMaxOrderByAggregateInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -467,10 +512,12 @@ export type UserMinOrderByAggregateInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -494,8 +541,66 @@ export type UserUpdateOneWithoutPostWatchSurveysNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPostWatchSurveysInput, Prisma.UserUpdateWithoutPostWatchSurveysInput>, Prisma.UserUncheckedUpdateWithoutPostWatchSurveysInput>
 }
 
+export type UserCreateNestedOneWithoutStudentsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStudentsInput, Prisma.UserUncheckedCreateWithoutStudentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStudentsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedManyWithoutTeacherInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput> | Prisma.UserCreateWithoutTeacherInput[] | Prisma.UserUncheckedCreateWithoutTeacherInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeacherInput | Prisma.UserCreateOrConnectWithoutTeacherInput[]
+  createMany?: Prisma.UserCreateManyTeacherInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
+export type UserUncheckedCreateNestedManyWithoutTeacherInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput> | Prisma.UserCreateWithoutTeacherInput[] | Prisma.UserUncheckedCreateWithoutTeacherInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeacherInput | Prisma.UserCreateOrConnectWithoutTeacherInput[]
+  createMany?: Prisma.UserCreateManyTeacherInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type UserUpdateOneWithoutStudentsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStudentsInput, Prisma.UserUncheckedCreateWithoutStudentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStudentsInput
+  upsert?: Prisma.UserUpsertWithoutStudentsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutStudentsInput, Prisma.UserUpdateWithoutStudentsInput>, Prisma.UserUncheckedUpdateWithoutStudentsInput>
+}
+
+export type UserUpdateManyWithoutTeacherNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput> | Prisma.UserCreateWithoutTeacherInput[] | Prisma.UserUncheckedCreateWithoutTeacherInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeacherInput | Prisma.UserCreateOrConnectWithoutTeacherInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutTeacherInput | Prisma.UserUpsertWithWhereUniqueWithoutTeacherInput[]
+  createMany?: Prisma.UserCreateManyTeacherInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput | Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutTeacherInput | Prisma.UserUpdateManyWithWhereWithoutTeacherInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+}
+
+export type UserUncheckedUpdateManyWithoutTeacherNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput> | Prisma.UserCreateWithoutTeacherInput[] | Prisma.UserUncheckedCreateWithoutTeacherInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeacherInput | Prisma.UserCreateOrConnectWithoutTeacherInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutTeacherInput | Prisma.UserUpsertWithWhereUniqueWithoutTeacherInput[]
+  createMany?: Prisma.UserCreateManyTeacherInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput | Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutTeacherInput | Prisma.UserUpdateManyWithWhereWithoutTeacherInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
 export type UserCreateNestedOneWithoutAdditionalUserDataInput = {
@@ -604,6 +709,8 @@ export type UserCreateWithoutPostWatchSurveysInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
@@ -622,6 +729,8 @@ export type UserUncheckedCreateWithoutPostWatchSurveysInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
@@ -655,6 +764,8 @@ export type UserUpdateWithoutPostWatchSurveysInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
@@ -673,6 +784,8 @@ export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
@@ -680,6 +793,180 @@ export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutStudentsInput = {
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutStudentsInput = {
+  id?: number
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  teacherId?: number | null
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutStudentsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutStudentsInput, Prisma.UserUncheckedCreateWithoutStudentsInput>
+}
+
+export type UserCreateWithoutTeacherInput = {
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutTeacherInput = {
+  id?: number
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutTeacherInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput>
+}
+
+export type UserCreateManyTeacherInputEnvelope = {
+  data: Prisma.UserCreateManyTeacherInput | Prisma.UserCreateManyTeacherInput[]
+  skipDuplicates?: boolean
+}
+
+export type UserUpsertWithoutStudentsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutStudentsInput, Prisma.UserUncheckedUpdateWithoutStudentsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutStudentsInput, Prisma.UserUncheckedCreateWithoutStudentsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutStudentsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutStudentsInput, Prisma.UserUncheckedUpdateWithoutStudentsInput>
+}
+
+export type UserUpdateWithoutStudentsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutStudentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserUpsertWithWhereUniqueWithoutTeacherInput = {
+  where: Prisma.UserWhereUniqueInput
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTeacherInput, Prisma.UserUncheckedUpdateWithoutTeacherInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTeacherInput, Prisma.UserUncheckedCreateWithoutTeacherInput>
+}
+
+export type UserUpdateWithWhereUniqueWithoutTeacherInput = {
+  where: Prisma.UserWhereUniqueInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTeacherInput, Prisma.UserUncheckedUpdateWithoutTeacherInput>
+}
+
+export type UserUpdateManyWithWhereWithoutTeacherInput = {
+  where: Prisma.UserScalarWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateManyMutationInput, Prisma.UserUncheckedUpdateManyWithoutTeacherInput>
+}
+
+export type UserScalarWhereInput = {
+  AND?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+  OR?: Prisma.UserScalarWhereInput[]
+  NOT?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+  id?: Prisma.IntFilter<"User"> | number
+  name?: Prisma.StringFilter<"User"> | string
+  email?: Prisma.StringFilter<"User"> | string
+  password?: Prisma.StringFilter<"User"> | string
+  role?: Prisma.StringFilter<"User"> | string
+  hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
+  lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  teacherId?: Prisma.IntNullableFilter<"User"> | number | null
 }
 
 export type UserCreateWithoutAdditionalUserDataInput = {
@@ -690,6 +977,8 @@ export type UserCreateWithoutAdditionalUserDataInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
@@ -708,6 +997,8 @@ export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
@@ -741,6 +1032,8 @@ export type UserUpdateWithoutAdditionalUserDataInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
@@ -759,6 +1052,8 @@ export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
@@ -776,6 +1071,8 @@ export type UserCreateWithoutSettingsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -794,6 +1091,8 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -827,6 +1126,8 @@ export type UserUpdateWithoutSettingsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -845,6 +1146,8 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -862,6 +1165,8 @@ export type UserCreateWithoutStatisticInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -880,6 +1185,8 @@ export type UserUncheckedCreateWithoutStatisticInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -913,6 +1220,8 @@ export type UserUpdateWithoutStatisticInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -931,6 +1240,8 @@ export type UserUncheckedUpdateWithoutStatisticInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -948,6 +1259,8 @@ export type UserCreateWithoutLanguageDataInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -966,6 +1279,8 @@ export type UserUncheckedCreateWithoutLanguageDataInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -999,6 +1314,8 @@ export type UserUpdateWithoutLanguageDataInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -1017,6 +1334,8 @@ export type UserUncheckedUpdateWithoutLanguageDataInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -1034,6 +1353,8 @@ export type UserCreateWithoutFriendsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
@@ -1052,6 +1373,8 @@ export type UserUncheckedCreateWithoutFriendsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
@@ -1074,6 +1397,8 @@ export type UserCreateWithoutFriendOfInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
@@ -1092,6 +1417,8 @@ export type UserUncheckedCreateWithoutFriendOfInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
@@ -1125,6 +1452,8 @@ export type UserUpdateWithoutFriendsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
@@ -1143,6 +1472,8 @@ export type UserUncheckedUpdateWithoutFriendsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
@@ -1171,6 +1502,8 @@ export type UserUpdateWithoutFriendOfInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
@@ -1189,6 +1522,8 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
@@ -1206,6 +1541,8 @@ export type UserCreateWithoutUserVocabularyInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
@@ -1224,6 +1561,8 @@ export type UserUncheckedCreateWithoutUserVocabularyInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  teacherId?: number | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
@@ -1257,6 +1596,8 @@ export type UserUpdateWithoutUserVocabularyInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
@@ -1275,6 +1616,8 @@ export type UserUncheckedUpdateWithoutUserVocabularyInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
@@ -1284,12 +1627,74 @@ export type UserUncheckedUpdateWithoutUserVocabularyInput = {
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
 }
 
+export type UserCreateManyTeacherInput = {
+  id?: number
+  name: string
+  email: string
+  password: string
+  role?: string
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type UserUpdateWithoutTeacherInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTeacherInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateManyWithoutTeacherInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 
 /**
  * Count Type UserCountOutputType
  */
 
 export type UserCountOutputType = {
+  students: number
   languageData: number
   friends: number
   friendOf: number
@@ -1298,6 +1703,7 @@ export type UserCountOutputType = {
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  students?: boolean | UserCountOutputTypeCountStudentsArgs
   languageData?: boolean | UserCountOutputTypeCountLanguageDataArgs
   friends?: boolean | UserCountOutputTypeCountFriendsArgs
   friendOf?: boolean | UserCountOutputTypeCountFriendOfArgs
@@ -1313,6 +1719,13 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
    * Select specific fields to fetch from the UserCountOutputType
    */
   select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountStudentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserWhereInput
 }
 
 /**
@@ -1360,6 +1773,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  teacherId?: boolean
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
+  students?: boolean | Prisma.User$studentsArgs<ExtArgs>
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
   statistic?: boolean | Prisma.User$statisticArgs<ExtArgs>
   languageData?: boolean | Prisma.User$languageDataArgs<ExtArgs>
@@ -1380,6 +1796,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  teacherId?: boolean
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1391,6 +1809,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  teacherId?: boolean
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -1402,10 +1822,13 @@ export type UserSelectScalar = {
   hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  teacherId?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "lastLogin" | "createdAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "lastLogin" | "createdAt" | "teacherId", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
+  students?: boolean | Prisma.User$studentsArgs<ExtArgs>
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
   statistic?: boolean | Prisma.User$statisticArgs<ExtArgs>
   languageData?: boolean | Prisma.User$languageDataArgs<ExtArgs>
@@ -1416,12 +1839,18 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   userVocabulary?: boolean | Prisma.User$userVocabularyArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
+}
+export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
+}
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
   objects: {
+    teacher: Prisma.$UserPayload<ExtArgs> | null
+    students: Prisma.$UserPayload<ExtArgs>[]
     settings: Prisma.$UserSettingsPayload<ExtArgs> | null
     statistic: Prisma.$UserStatisticPayload<ExtArgs> | null
     languageData: Prisma.$UserLanguageDataPayload<ExtArgs>[]
@@ -1440,6 +1869,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     hasCompletedPlacement: boolean
     lastLogin: Date | null
     createdAt: Date
+    teacherId: number | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -1834,6 +2264,8 @@ readonly fields: UserFieldRefs;
  */
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  teacher<T extends Prisma.User$teacherArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$teacherArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  students<T extends Prisma.User$studentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   settings<T extends Prisma.User$settingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$settingsArgs<ExtArgs>>): Prisma.Prisma__UserSettingsClient<runtime.Types.Result.GetResult<Prisma.$UserSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   statistic<T extends Prisma.User$statisticArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$statisticArgs<ExtArgs>>): Prisma.Prisma__UserStatisticClient<runtime.Types.Result.GetResult<Prisma.$UserStatisticPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   languageData<T extends Prisma.User$languageDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$languageDataArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserLanguageDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1879,6 +2311,7 @@ export interface UserFieldRefs {
   readonly hasCompletedPlacement: Prisma.FieldRef<"User", 'Boolean'>
   readonly lastLogin: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly teacherId: Prisma.FieldRef<"User", 'Int'>
 }
     
 
@@ -2133,6 +2566,10 @@ export type UserCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    */
   data: Prisma.UserCreateManyInput | Prisma.UserCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -2203,6 +2640,10 @@ export type UserUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many Users to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -2269,6 +2710,49 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Limit how many Users to delete.
    */
   limit?: number
+}
+
+/**
+ * User.teacher
+ */
+export type User$teacherArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+}
+
+/**
+ * User.students
+ */
+export type User$studentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+  orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
+  cursor?: Prisma.UserWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
 }
 
 /**

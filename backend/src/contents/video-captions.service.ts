@@ -51,6 +51,7 @@ export class VideoCaptionsService {
 
     const video = await this.prisma.contentVideo.findUnique({
       where: { id: contentVideoId },
+      omit: { comprehensionTestsCache: true },
     });
     if (!video) {
       throw new NotFoundException(

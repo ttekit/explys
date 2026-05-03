@@ -7,6 +7,7 @@ import type {
   GenerateComprehensionTestsResponse,
   PostWatchSurveyStartResponse,
   SubmitComprehensionTestResponse,
+  SummaryRecommendationsResponse,
   UserProfile,
   VideoCaptions,
 } from "./types";
@@ -23,12 +24,16 @@ export function getApiBase(): string {
 export function comprehensionTestsIframeUrl(
   contentVideoId: number,
   userId?: number | null,
+  options?: { summaryBaseUrl?: string | null },
 ): string {
   const u = new URL(
     getApiBase() + `/content-video/${contentVideoId}/tests/iframe`,
   );
   if (userId != null && userId > 0) {
     u.searchParams.set("userId", String(userId));
+  }
+  if (options?.summaryBaseUrl?.trim()) {
+    u.searchParams.set("summaryBase", options.summaryBaseUrl.trim());
   }
   return u.toString();
 }
@@ -40,7 +45,7 @@ function apiUrl(path: string): string {
 type FetchOpts = RequestInit & { token?: string | null };
 
 /** Parses Nest/JSON error bodies so messages are readable in the UI. */
-async function readApiErrorBody(res: Response): Promise<string> {
+export async function readApiErrorBody(res: Response): Promise<string> {
   const t = await res.text();
   if (!t) return `Request failed (${res.status})`;
   try {
@@ -193,6 +198,25 @@ export async function apiGetContentVideo(id: number): Promise<ContentVideo> {
   return (await res.json()) as ContentVideo;
 }
 
+export async function apiListContentVideos(
+  token?: string | null,
+): Promise<ContentVideo[]> {
+  const res = await apiFetch("/content-video", {
+    method: "GET",
+    ...(token ? { token } : {}),
+  });
+  if (!res.ok) {
+    throw new Error(
+      (await readApiErrorBody(res)) || `GET /content-video failed (${res.status})`,
+    );
+  }
+  const data: unknown = await res.json();
+  if (!Array.isArray(data)) {
+    throw new Error("GET /content-video: expected a JSON array");
+  }
+  return data as ContentVideo[];
+}
+
 export async function apiGetContentVideoIframe(
   id: number,
 ): Promise<ContentVideoIframePayload> {
@@ -216,6 +240,30 @@ export async function apiGenerateContentVideoTags(id: number): Promise<unknown> 
   return res.json();
 }
 
+/**
+ * Load cached tests from the server, or run generation once and persist (GET /content-video/:id/tests).
+ */
+export async function apiGetComprehensionTests(
+  id: number,
+  userId?: number | null,
+): Promise<GenerateComprehensionTestsResponse> {
+  const q =
+    userId != null && userId > 0
+      ? `?userId=${encodeURIComponent(String(userId))}`
+      : "";
+  const res = await apiFetch(`/content-video/${id}/tests${q}`, {
+    method: "GET",
+  });
+  if (!res.ok) {
+    const t = await readApiErrorBody(res);
+    throw new Error(
+      t || `GET /content-video/${id}/tests failed (${res.status})`,
+    );
+  }
+  return (await res.json()) as GenerateComprehensionTestsResponse;
+}
+
+/** Force a new set of questions and overwrite server cache. */
 export async function apiGenerateComprehensionTests(
   id: number,
   userId?: number | null,
@@ -246,6 +294,35 @@ export async function apiSubmitComprehensionTest(
     throw new Error(t || `POST /content-video/${contentVideoId}/tests/submit failed`);
   }
   return (await res.json()) as SubmitComprehensionTestResponse;
+}
+
+export async function apiComprehensionSummaryRecommendations(
+  contentVideoId: number,
+  body: {
+    videoName: string;
+    learnerCefr: string | null;
+    vocabularyTerms: string[];
+    correct: number;
+    total: number;
+    percentage: number;
+    comprehension: { correct: number; total: number };
+    grammar: { correct: number; total: number };
+  },
+): Promise<SummaryRecommendationsResponse> {
+  const res = await apiFetch(
+    `/content-video/${contentVideoId}/summary-recommendations`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(
+      (await readApiErrorBody(res)) ||
+        `POST /content-video/${contentVideoId}/summary-recommendations failed (${res.status})`,
+    );
+  }
+  return (await res.json()) as SummaryRecommendationsResponse;
 }
 
 export async function apiRegenerateContentVideoCaptions(

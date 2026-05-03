@@ -26,7 +26,7 @@ export class ContentsController {
   constructor(private readonly contentsService: ContentsService) {}
 
   @Get("all")
-  getContent() {
+  async getContent() {
     return this.contentsService.getAllContent();
   }
 
@@ -42,7 +42,7 @@ export class ContentsController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 20 }),
           new FileTypeValidator({ fileType: "video/mp4" }),
         ],
       }),

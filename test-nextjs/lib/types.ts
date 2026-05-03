@@ -96,6 +96,11 @@ export type ContentVideo = {
   videoCaption?: VideoCaptions | null;
   content?: {
     name: string;
+    /** Present when the API includes category on list/detail responses. */
+    category?: {
+      name: string;
+      description?: string;
+    };
     stats?: {
       systemTags: string[];
       userTags: string[];
@@ -139,6 +144,8 @@ export type GenerateComprehensionTestsResponse = {
   learnerCefr: string | null;
   usedTranscript: boolean;
   vocabularyTermsUsed: number;
+  /** Terms from the learner’s saved list used for this test (up to 50). */
+  vocabularyTerms: string[];
 };
 
 /** POST /content-video/:id/tests/submit */
@@ -155,14 +162,32 @@ export type SubmitComprehensionTestResponse = {
     newScore: number;
   }>;
   message: string;
+  learnerCefr: string | null;
+  vocabularyTerms: string[];
 };
 
-/** Navigates Prisma nested create response from POST /contents/create. */
+/** POST /content-video/:id/summary-recommendations */
+export type SummaryRecommendationsResponse = {
+  headline: string;
+  summary: string;
+  focusWords: string[];
+  nextSteps: string[];
+  encouragement: string;
+};
+
+/**
+ * Resolves the new ContentVideo id from POST /contents/create.
+ * Prefer the explicit `contentVideoId` from the API; fall back to nested Prisma shape.
+ */
 export function contentVideoIdFromCreateContent(data: unknown): number | null {
   if (!data || typeof data !== "object") return null;
   const c = data as {
+    contentVideoId?: unknown;
     category?: Array<{ ContentVideo?: Array<{ id?: number }> }>;
   };
+  if (typeof c.contentVideoId === "number" && Number.isFinite(c.contentVideoId)) {
+    return c.contentVideoId;
+  }
   const id = c.category?.[0]?.ContentVideo?.[0]?.id;
   return typeof id === "number" ? id : null;
 }

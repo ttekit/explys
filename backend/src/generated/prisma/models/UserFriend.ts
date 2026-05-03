@@ -42,21 +42,21 @@ export type UserFriendMinAggregateOutputType = {
   id: number | null
   userId: number | null
   friendId: number | null
-  createdAt: Date | null
+  friendshipCreatedDate: Date | null
 }
 
 export type UserFriendMaxAggregateOutputType = {
   id: number | null
   userId: number | null
   friendId: number | null
-  createdAt: Date | null
+  friendshipCreatedDate: Date | null
 }
 
 export type UserFriendCountAggregateOutputType = {
   id: number
   userId: number
   friendId: number
-  createdAt: number
+  friendshipCreatedDate: number
   _all: number
 }
 
@@ -77,21 +77,21 @@ export type UserFriendMinAggregateInputType = {
   id?: true
   userId?: true
   friendId?: true
-  createdAt?: true
+  friendshipCreatedDate?: true
 }
 
 export type UserFriendMaxAggregateInputType = {
   id?: true
   userId?: true
   friendId?: true
-  createdAt?: true
+  friendshipCreatedDate?: true
 }
 
 export type UserFriendCountAggregateInputType = {
   id?: true
   userId?: true
   friendId?: true
-  createdAt?: true
+  friendshipCreatedDate?: true
   _all?: true
 }
 
@@ -185,7 +185,7 @@ export type UserFriendGroupByOutputType = {
   id: number
   userId: number
   friendId: number
-  createdAt: Date
+  friendshipCreatedDate: Date
   _count: UserFriendCountAggregateOutputType | null
   _avg: UserFriendAvgAggregateOutputType | null
   _sum: UserFriendSumAggregateOutputType | null
@@ -215,7 +215,7 @@ export type UserFriendWhereInput = {
   id?: Prisma.IntFilter<"UserFriend"> | number
   userId?: Prisma.IntFilter<"UserFriend"> | number
   friendId?: Prisma.IntFilter<"UserFriend"> | number
-  createdAt?: Prisma.DateTimeFilter<"UserFriend"> | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFilter<"UserFriend"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   friend?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
@@ -224,29 +224,28 @@ export type UserFriendOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   friendId?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  friendshipCreatedDate?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   friend?: Prisma.UserOrderByWithRelationInput
 }
 
 export type UserFriendWhereUniqueInput = Prisma.AtLeast<{
   id?: number
-  userId_friendId?: Prisma.UserFriendUserIdFriendIdCompoundUniqueInput
   AND?: Prisma.UserFriendWhereInput | Prisma.UserFriendWhereInput[]
   OR?: Prisma.UserFriendWhereInput[]
   NOT?: Prisma.UserFriendWhereInput | Prisma.UserFriendWhereInput[]
   userId?: Prisma.IntFilter<"UserFriend"> | number
   friendId?: Prisma.IntFilter<"UserFriend"> | number
-  createdAt?: Prisma.DateTimeFilter<"UserFriend"> | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFilter<"UserFriend"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   friend?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "id" | "userId_friendId">
+}, "id">
 
 export type UserFriendOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   friendId?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  friendshipCreatedDate?: Prisma.SortOrder
   _count?: Prisma.UserFriendCountOrderByAggregateInput
   _avg?: Prisma.UserFriendAvgOrderByAggregateInput
   _max?: Prisma.UserFriendMaxOrderByAggregateInput
@@ -261,11 +260,11 @@ export type UserFriendScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"UserFriend"> | number
   userId?: Prisma.IntWithAggregatesFilter<"UserFriend"> | number
   friendId?: Prisma.IntWithAggregatesFilter<"UserFriend"> | number
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"UserFriend"> | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeWithAggregatesFilter<"UserFriend"> | Date | string
 }
 
 export type UserFriendCreateInput = {
-  createdAt?: Date | string
+  friendshipCreatedDate?: Date | string
   user: Prisma.UserCreateNestedOneWithoutFriendsInput
   friend: Prisma.UserCreateNestedOneWithoutFriendOfInput
 }
@@ -274,11 +273,11 @@ export type UserFriendUncheckedCreateInput = {
   id?: number
   userId: number
   friendId: number
-  createdAt?: Date | string
+  friendshipCreatedDate?: Date | string
 }
 
 export type UserFriendUpdateInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutFriendsNestedInput
   friend?: Prisma.UserUpdateOneRequiredWithoutFriendOfNestedInput
 }
@@ -287,25 +286,25 @@ export type UserFriendUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   friendId?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserFriendCreateManyInput = {
   id?: number
   userId: number
   friendId: number
-  createdAt?: Date | string
+  friendshipCreatedDate?: Date | string
 }
 
 export type UserFriendUpdateManyMutationInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserFriendUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   friendId?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserFriendListRelationFilter = {
@@ -318,16 +317,11 @@ export type UserFriendOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type UserFriendUserIdFriendIdCompoundUniqueInput = {
-  userId: number
-  friendId: number
-}
-
 export type UserFriendCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   friendId?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  friendshipCreatedDate?: Prisma.SortOrder
 }
 
 export type UserFriendAvgOrderByAggregateInput = {
@@ -340,14 +334,14 @@ export type UserFriendMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   friendId?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  friendshipCreatedDate?: Prisma.SortOrder
 }
 
 export type UserFriendMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   friendId?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  friendshipCreatedDate?: Prisma.SortOrder
 }
 
 export type UserFriendSumOrderByAggregateInput = {
@@ -441,14 +435,14 @@ export type UserFriendUncheckedUpdateManyWithoutFriendNestedInput = {
 }
 
 export type UserFriendCreateWithoutUserInput = {
-  createdAt?: Date | string
+  friendshipCreatedDate?: Date | string
   friend: Prisma.UserCreateNestedOneWithoutFriendOfInput
 }
 
 export type UserFriendUncheckedCreateWithoutUserInput = {
   id?: number
   friendId: number
-  createdAt?: Date | string
+  friendshipCreatedDate?: Date | string
 }
 
 export type UserFriendCreateOrConnectWithoutUserInput = {
@@ -462,14 +456,14 @@ export type UserFriendCreateManyUserInputEnvelope = {
 }
 
 export type UserFriendCreateWithoutFriendInput = {
-  createdAt?: Date | string
+  friendshipCreatedDate?: Date | string
   user: Prisma.UserCreateNestedOneWithoutFriendsInput
 }
 
 export type UserFriendUncheckedCreateWithoutFriendInput = {
   id?: number
   userId: number
-  createdAt?: Date | string
+  friendshipCreatedDate?: Date | string
 }
 
 export type UserFriendCreateOrConnectWithoutFriendInput = {
@@ -505,7 +499,7 @@ export type UserFriendScalarWhereInput = {
   id?: Prisma.IntFilter<"UserFriend"> | number
   userId?: Prisma.IntFilter<"UserFriend"> | number
   friendId?: Prisma.IntFilter<"UserFriend"> | number
-  createdAt?: Prisma.DateTimeFilter<"UserFriend"> | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFilter<"UserFriend"> | Date | string
 }
 
 export type UserFriendUpsertWithWhereUniqueWithoutFriendInput = {
@@ -527,47 +521,47 @@ export type UserFriendUpdateManyWithWhereWithoutFriendInput = {
 export type UserFriendCreateManyUserInput = {
   id?: number
   friendId: number
-  createdAt?: Date | string
+  friendshipCreatedDate?: Date | string
 }
 
 export type UserFriendCreateManyFriendInput = {
   id?: number
   userId: number
-  createdAt?: Date | string
+  friendshipCreatedDate?: Date | string
 }
 
 export type UserFriendUpdateWithoutUserInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   friend?: Prisma.UserUpdateOneRequiredWithoutFriendOfNestedInput
 }
 
 export type UserFriendUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   friendId?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserFriendUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   friendId?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserFriendUpdateWithoutFriendInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutFriendsNestedInput
 }
 
 export type UserFriendUncheckedUpdateWithoutFriendInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserFriendUncheckedUpdateManyWithoutFriendInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  friendshipCreatedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -576,7 +570,7 @@ export type UserFriendSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   id?: boolean
   userId?: boolean
   friendId?: boolean
-  createdAt?: boolean
+  friendshipCreatedDate?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   friend?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userFriend"]>
@@ -585,7 +579,7 @@ export type UserFriendSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   userId?: boolean
   friendId?: boolean
-  createdAt?: boolean
+  friendshipCreatedDate?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   friend?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userFriend"]>
@@ -594,7 +588,7 @@ export type UserFriendSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   userId?: boolean
   friendId?: boolean
-  createdAt?: boolean
+  friendshipCreatedDate?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   friend?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userFriend"]>
@@ -603,10 +597,10 @@ export type UserFriendSelectScalar = {
   id?: boolean
   userId?: boolean
   friendId?: boolean
-  createdAt?: boolean
+  friendshipCreatedDate?: boolean
 }
 
-export type UserFriendOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "friendId" | "createdAt", ExtArgs["result"]["userFriend"]>
+export type UserFriendOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "friendId" | "friendshipCreatedDate", ExtArgs["result"]["userFriend"]>
 export type UserFriendInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   friend?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -630,7 +624,7 @@ export type $UserFriendPayload<ExtArgs extends runtime.Types.Extensions.Internal
     id: number
     userId: number
     friendId: number
-    createdAt: Date
+    friendshipCreatedDate: Date
   }, ExtArgs["result"]["userFriend"]>
   composites: {}
 }
@@ -1059,7 +1053,7 @@ export interface UserFriendFieldRefs {
   readonly id: Prisma.FieldRef<"UserFriend", 'Int'>
   readonly userId: Prisma.FieldRef<"UserFriend", 'Int'>
   readonly friendId: Prisma.FieldRef<"UserFriend", 'Int'>
-  readonly createdAt: Prisma.FieldRef<"UserFriend", 'DateTime'>
+  readonly friendshipCreatedDate: Prisma.FieldRef<"UserFriend", 'DateTime'>
 }
     
 

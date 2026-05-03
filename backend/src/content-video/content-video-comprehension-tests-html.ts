@@ -8,7 +8,16 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function jsonEmbedConfig(obj: { token: string; submitPath: string }): string {
+type GradeIframeConfig = {
+  token: string;
+  submitPath: string;
+  contentVideoId: number;
+  videoName: string;
+  /** Full URL to the app’s summary page (e.g. Next origin + /test/comprehension-summary). */
+  summaryBase: string | null;
+};
+
+function jsonEmbedConfig(obj: GradeIframeConfig): string {
   return JSON.stringify(obj)
     .replace(/</g, "\\u003c")
     .replace(/\u2028/g, "\\u2028")
@@ -18,16 +27,33 @@ function jsonEmbedConfig(obj: { token: string; submitPath: string }): string {
 /**
  * Standalone HTML document for `<iframe src="…/content-video/:id/tests/iframe">`.
  * `apiOrigin` e.g. `https://api.example.com` (no trailing slash) for same-origin `fetch` to submit.
+ * @param options.summaryBase — e.g. `https://app.example.com/test/comprehension-summary` (add ?summaryBase=… to the iframe URL).
  */
 export function renderComprehensionTestsIframeHtml(
   result: GenerateComprehensionTestsResult,
   apiOrigin: string,
+  options?: { summaryBase: string | null },
 ): string {
   const origin = (apiOrigin || "").replace(/\/$/, "");
   const submitPath = `${origin}/content-video/${result.contentVideoId}/tests/submit`;
+  const rawSummary = options?.summaryBase?.trim();
+  let summaryBase: string | null = null;
+  if (rawSummary) {
+    try {
+      const u = new URL(rawSummary);
+      if (u.protocol === "http:" || u.protocol === "https:") {
+        summaryBase = u.toString().replace(/\/$/, "");
+      }
+    } catch {
+      summaryBase = null;
+    }
+  }
   const gradeConfigJson = jsonEmbedConfig({
     token: result.gradingToken,
     submitPath,
+    contentVideoId: result.contentVideoId,
+    videoName: result.videoName,
+    summaryBase,
   });
   const meta = [
     result.learnerCefr
@@ -230,6 +256,31 @@ export function renderComprehensionTestsIframeHtml(
       });
     })
     .then(function (d) {
+      if (cfg.summaryBase) {
+        try {
+          var dest = new URL(cfg.summaryBase);
+          dest.searchParams.set("contentVideoId", String(cfg.contentVideoId));
+          dest.searchParams.set("videoName", cfg.videoName);
+          dest.searchParams.set("correct", String(d.correct));
+          dest.searchParams.set("total", String(d.total));
+          dest.searchParams.set("percentage", String(d.percentage));
+          dest.searchParams.set("cc", String(d.comprehension.correct));
+          dest.searchParams.set("ct", String(d.comprehension.total));
+          dest.searchParams.set("gc", String(d.grammar.correct));
+          dest.searchParams.set("gt", String(d.grammar.total));
+          if (d.message) { dest.searchParams.set("msg", d.message); }
+          if (d.learnerCefr) { dest.searchParams.set("cefr", d.learnerCefr); }
+          if (d.vocabularyTerms && d.vocabularyTerms.length) {
+            dest.searchParams.set("vt", JSON.stringify(d.vocabularyTerms));
+          }
+          if (d.knowledgeUpdates && d.knowledgeUpdates.length) {
+            dest.searchParams.set("ku", JSON.stringify(d.knowledgeUpdates));
+          }
+          var top = window.top;
+          if (top) { top.location.assign(dest.toString()); }
+          else { window.location.assign(dest.toString()); }
+        } catch (e) { /* stay on page; show inline result */ }
+      }
       var panel = document.getElementById("resultPanel");
       panel.className = "on";
       document.getElementById("resultScore").textContent = d.correct + " / " + d.total + " (" + d.percentage + "%)";

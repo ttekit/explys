@@ -33,6 +33,7 @@ export class VideoTranscriptTagsService {
   ): Promise<VideoTranscriptTagsResult> {
     const video = await this.prisma.contentVideo.findUnique({
       where: { id: contentVideoId },
+      omit: { comprehensionTestsCache: true },
       include: { videoCaption: true },
     });
     if (!video) {

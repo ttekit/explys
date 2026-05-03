@@ -20,6 +20,7 @@ import { ContentVideoComprehensionTestsService } from "src/content-video/content
 import { PostWatchSurveyService } from "src/content-video/post-watch-survey.service";
 import { ContentVideoService } from "./content-video.service";
 import { CreateContentVideoDto } from "./dto/create-content-video.dto";
+import { ComprehensionSummaryRecommendationsBodyDto } from "./dto/summary-recommendations.dto";
 import { UpdateContentVideoDto } from "./dto/update-content-video.dto";
 
 @ApiTags("content-video")
@@ -80,6 +81,28 @@ export class ContentVideoController {
     );
   }
 
+  @Get(":id/tests")
+  @ApiOperation({
+    summary:
+      "Get comprehension/grammar tests (served from cache when present, otherwise generated and stored)",
+  })
+  @ApiQuery({
+    name: "userId",
+    required: false,
+    description: "Optional user for CEFR and saved vocabulary in metadata (same as POST /tests/generate).",
+  })
+  getComprehensionTests(
+    @Param("id", ParseIntPipe) id: number,
+    @Query("userId") userIdRaw: string | undefined,
+  ) {
+    const parsed =
+      userIdRaw != null && userIdRaw !== ""
+        ? Number.parseInt(userIdRaw, 10)
+        : Number.NaN;
+    const userId = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    return this.comprehensionTestsService.getOrLoadTests(id, userId);
+  }
+
   @Get(":id/tests/iframe")
   @ApiOperation({
     summary: "Comprehension + grammar test as a standalone HTML page (iframe src)",
@@ -94,12 +117,19 @@ export class ContentVideoController {
     required: false,
     description: "Optional user id to tailor CEFR and saved vocabulary (same as POST body).",
   })
+  @ApiQuery({
+    name: "summaryBase",
+    required: false,
+    description:
+      "After a successful submit, redirect the top window to this URL (e.g. https://app.example.com/test/comprehension-summary) with score query params.",
+  })
   @ApiProduces("text/html")
   @Header("Content-Type", "text/html; charset=utf-8")
   @Header("Cache-Control", "no-store")
   async comprehensionTestsIframe(
     @Param("id", ParseIntPipe) id: number,
     @Query("userId") userIdRaw: string | undefined,
+    @Query("summaryBase") summaryBase: string | undefined,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
@@ -114,9 +144,13 @@ export class ContentVideoController {
         ? Number.parseInt(userIdRaw, 10)
         : Number.NaN;
     const userId = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-    const result = await this.comprehensionTestsService.generate(id, userId);
+    const result = await this.comprehensionTestsService.getOrLoadTests(id, userId);
     const apiOrigin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
-    res.send(renderComprehensionTestsIframeHtml(result, apiOrigin));
+    res.send(
+      renderComprehensionTestsIframeHtml(result, apiOrigin, {
+        summaryBase: summaryBase?.trim() || null,
+      }),
+    );
   }
 
   @Post(":id/tests/submit")
@@ -128,6 +162,18 @@ export class ContentVideoController {
     @Body() body: { token: string; answers: Record<string, number> },
   ) {
     return this.comprehensionTestsService.submit(id, body);
+  }
+
+  @Post(":id/summary-recommendations")
+  @ApiOperation({
+    summary:
+      "Gemini: personalized summary, focus words, and next steps after a test (uses scores + vocabulary list)",
+  })
+  comprehensionSummaryRecommendations(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() body: ComprehensionSummaryRecommendationsBodyDto,
+  ) {
+    return this.comprehensionTestsService.getSummaryRecommendations(id, body);
   }
 
   @Get(":id")

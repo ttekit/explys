@@ -14,6 +14,7 @@ export class ContentVideoService {
 
   async findAll() {
     return this.prisma.contentVideo.findMany({
+      omit: { comprehensionTestsCache: true },
       include: {
         content: {
           include: {
@@ -27,6 +28,7 @@ export class ContentVideoService {
   async findOne(id: number) {
     const contentVideo = await this.prisma.contentVideo.findUnique({
       where: { id },
+      omit: { comprehensionTestsCache: true },
       include: {
         content: {
           include: {
@@ -53,6 +55,7 @@ export class ContentVideoService {
   async update(id: number, updateContentVideoDto: UpdateContentVideoDto) {
     const contentVideo = await this.prisma.contentVideo.findUnique({
       where: { id },
+      select: { id: true },
     });
     if (!contentVideo) {
       throw new NotFoundException(`ContentVideo with ID ${id} not found`);
@@ -66,6 +69,7 @@ export class ContentVideoService {
   async remove(id: number) {
     const contentVideo = await this.prisma.contentVideo.findUnique({
       where: { id },
+      select: { id: true },
     });
     if (!contentVideo) {
       throw new NotFoundException(`ContentVideo with ID ${id} not found`);
