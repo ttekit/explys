@@ -53,6 +53,16 @@ export type PostWatchSurvey = Prisma.PostWatchSurveyModel
  */
 export type User = Prisma.UserModel
 /**
+ * Model Account
+ * 
+ */
+export type Account = Prisma.AccountModel
+/**
+ * Model Token
+ * 
+ */
+export type Token = Prisma.TokenModel
+/**
  * Model AdditionalUserData
  * 
  */

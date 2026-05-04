@@ -10,13 +10,13 @@ import { ContentMediaModule } from "./content/content-media/content-media.module
 import { ContentStatsModule } from "./content/content-stats/content-stats.module";
 import { ContentVideoModule } from "./content/content-video/content-video.module";
 import { ContentsModule } from "./contents/contents.module";
-import { PrismaModule } from "./prisma.module";
 import { TagsModule } from "./tags/tags.module";
 import { TopicsModule } from "./topics/topics.module";
 import { UsersModule } from "./users/users.module";
 import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
 import { PlacementTestModule } from "./placement-test/placement-test.module";
 import { IS_DEV_ENV } from "./common/utils/is-dev.utils";
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [

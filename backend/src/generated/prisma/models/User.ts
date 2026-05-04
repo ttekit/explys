@@ -41,11 +41,14 @@ export type UserMinAggregateOutputType = {
   name: string | null
   email: string | null
   password: string | null
-  role: string | null
+  role: $Enums.UserRole | null
   hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
   teacherId: number | null
+  isVerified: boolean | null
+  isTwoFactorEnable: boolean | null
+  method: $Enums.AuthMethod | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -53,11 +56,14 @@ export type UserMaxAggregateOutputType = {
   name: string | null
   email: string | null
   password: string | null
-  role: string | null
+  role: $Enums.UserRole | null
   hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
   teacherId: number | null
+  isVerified: boolean | null
+  isTwoFactorEnable: boolean | null
+  method: $Enums.AuthMethod | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -70,6 +76,9 @@ export type UserCountAggregateOutputType = {
   lastLogin: number
   createdAt: number
   teacherId: number
+  isVerified: number
+  isTwoFactorEnable: number
+  method: number
   _all: number
 }
 
@@ -94,6 +103,9 @@ export type UserMinAggregateInputType = {
   lastLogin?: true
   createdAt?: true
   teacherId?: true
+  isVerified?: true
+  isTwoFactorEnable?: true
+  method?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -106,6 +118,9 @@ export type UserMaxAggregateInputType = {
   lastLogin?: true
   createdAt?: true
   teacherId?: true
+  isVerified?: true
+  isTwoFactorEnable?: true
+  method?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -118,6 +133,9 @@ export type UserCountAggregateInputType = {
   lastLogin?: true
   createdAt?: true
   teacherId?: true
+  isVerified?: true
+  isTwoFactorEnable?: true
+  method?: true
   _all?: true
 }
 
@@ -212,11 +230,14 @@ export type UserGroupByOutputType = {
   name: string
   email: string
   password: string
-  role: string
+  role: $Enums.UserRole
   hasCompletedPlacement: boolean
   lastLogin: Date | null
   createdAt: Date
   teacherId: number | null
+  isVerified: boolean
+  isTwoFactorEnable: boolean
+  method: $Enums.AuthMethod
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -247,14 +268,18 @@ export type UserWhereInput = {
   name?: Prisma.StringFilter<"User"> | string
   email?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
-  role?: Prisma.StringFilter<"User"> | string
+  role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   teacherId?: Prisma.IntNullableFilter<"User"> | number | null
+  isVerified?: Prisma.BoolFilter<"User"> | boolean
+  isTwoFactorEnable?: Prisma.BoolFilter<"User"> | boolean
+  method?: Prisma.EnumAuthMethodFilter<"User"> | $Enums.AuthMethod
   teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   students?: Prisma.UserListRelationFilter
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
+  accounts?: Prisma.AccountListRelationFilter
   statistic?: Prisma.XOR<Prisma.UserStatisticNullableScalarRelationFilter, Prisma.UserStatisticWhereInput> | null
   languageData?: Prisma.UserLanguageDataListRelationFilter
   additionalUserData?: Prisma.XOR<Prisma.AdditionalUserDataNullableScalarRelationFilter, Prisma.AdditionalUserDataWhereInput> | null
@@ -274,9 +299,13 @@ export type UserOrderByWithRelationInput = {
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  isTwoFactorEnable?: Prisma.SortOrder
+  method?: Prisma.SortOrder
   teacher?: Prisma.UserOrderByWithRelationInput
   students?: Prisma.UserOrderByRelationAggregateInput
   settings?: Prisma.UserSettingsOrderByWithRelationInput
+  accounts?: Prisma.AccountOrderByRelationAggregateInput
   statistic?: Prisma.UserStatisticOrderByWithRelationInput
   languageData?: Prisma.UserLanguageDataOrderByRelationAggregateInput
   additionalUserData?: Prisma.AdditionalUserDataOrderByWithRelationInput
@@ -294,14 +323,18 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   name?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
-  role?: Prisma.StringFilter<"User"> | string
+  role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   teacherId?: Prisma.IntNullableFilter<"User"> | number | null
+  isVerified?: Prisma.BoolFilter<"User"> | boolean
+  isTwoFactorEnable?: Prisma.BoolFilter<"User"> | boolean
+  method?: Prisma.EnumAuthMethodFilter<"User"> | $Enums.AuthMethod
   teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   students?: Prisma.UserListRelationFilter
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
+  accounts?: Prisma.AccountListRelationFilter
   statistic?: Prisma.XOR<Prisma.UserStatisticNullableScalarRelationFilter, Prisma.UserStatisticWhereInput> | null
   languageData?: Prisma.UserLanguageDataListRelationFilter
   additionalUserData?: Prisma.XOR<Prisma.AdditionalUserDataNullableScalarRelationFilter, Prisma.AdditionalUserDataWhereInput> | null
@@ -321,6 +354,9 @@ export type UserOrderByWithAggregationInput = {
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  isTwoFactorEnable?: Prisma.SortOrder
+  method?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -336,24 +372,31 @@ export type UserScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"User"> | string
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
-  role?: Prisma.StringWithAggregatesFilter<"User"> | string
+  role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   teacherId?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
+  isVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  isTwoFactorEnable?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  method?: Prisma.EnumAuthMethodWithAggregatesFilter<"User"> | $Enums.AuthMethod
 }
 
 export type UserCreateInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -368,13 +411,17 @@ export type UserUncheckedCreateInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -388,13 +435,17 @@ export type UserUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -409,13 +460,17 @@ export type UserUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -430,21 +485,27 @@ export type UserCreateManyInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
 }
 
 export type UserUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -452,11 +513,14 @@ export type UserUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -484,6 +548,9 @@ export type UserCountOrderByAggregateInput = {
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  isTwoFactorEnable?: Prisma.SortOrder
+  method?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
@@ -501,6 +568,9 @@ export type UserMaxOrderByAggregateInput = {
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  isTwoFactorEnable?: Prisma.SortOrder
+  method?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -513,6 +583,9 @@ export type UserMinOrderByAggregateInput = {
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  isTwoFactorEnable?: Prisma.SortOrder
+  method?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
@@ -561,8 +634,16 @@ export type UserUncheckedCreateNestedManyWithoutTeacherInput = {
   connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
 }
 
+export type EnumUserRoleFieldUpdateOperationsInput = {
+  set?: $Enums.UserRole
+}
+
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type EnumAuthMethodFieldUpdateOperationsInput = {
+  set?: $Enums.AuthMethod
 }
 
 export type UserUpdateOneWithoutStudentsNestedInput = {
@@ -601,6 +682,22 @@ export type UserUncheckedUpdateManyWithoutTeacherNestedInput = {
   update?: Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput | Prisma.UserUpdateWithWhereUniqueWithoutTeacherInput[]
   updateMany?: Prisma.UserUpdateManyWithWhereWithoutTeacherInput | Prisma.UserUpdateManyWithWhereWithoutTeacherInput[]
   deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+}
+
+export type UserCreateNestedOneWithoutAccountsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAccountsInput, Prisma.UserUncheckedCreateWithoutAccountsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAccountsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutAccountsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAccountsInput, Prisma.UserUncheckedCreateWithoutAccountsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAccountsInput
+  upsert?: Prisma.UserUpsertWithoutAccountsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAccountsInput, Prisma.UserUpdateWithoutAccountsInput>, Prisma.UserUncheckedUpdateWithoutAccountsInput>
 }
 
 export type UserCreateNestedOneWithoutAdditionalUserDataInput = {
@@ -705,13 +802,17 @@ export type UserCreateWithoutPostWatchSurveysInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -725,13 +826,17 @@ export type UserUncheckedCreateWithoutPostWatchSurveysInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -760,13 +865,17 @@ export type UserUpdateWithoutPostWatchSurveysInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -780,13 +889,17 @@ export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -799,12 +912,16 @@ export type UserCreateWithoutStudentsInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -819,12 +936,16 @@ export type UserUncheckedCreateWithoutStudentsInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -843,12 +964,16 @@ export type UserCreateWithoutTeacherInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -863,12 +988,16 @@ export type UserUncheckedCreateWithoutTeacherInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -903,12 +1032,16 @@ export type UserUpdateWithoutStudentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -923,12 +1056,16 @@ export type UserUncheckedUpdateWithoutStudentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -962,24 +1099,141 @@ export type UserScalarWhereInput = {
   name?: Prisma.StringFilter<"User"> | string
   email?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
-  role?: Prisma.StringFilter<"User"> | string
+  role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   teacherId?: Prisma.IntNullableFilter<"User"> | number | null
+  isVerified?: Prisma.BoolFilter<"User"> | boolean
+  isTwoFactorEnable?: Prisma.BoolFilter<"User"> | boolean
+  method?: Prisma.EnumAuthMethodFilter<"User"> | $Enums.AuthMethod
+}
+
+export type UserCreateWithoutAccountsInput = {
+  name: string
+  email: string
+  password: string
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutAccountsInput = {
+  id?: number
+  name: string
+  email: string
+  password: string
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutAccountsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAccountsInput, Prisma.UserUncheckedCreateWithoutAccountsInput>
+}
+
+export type UserUpsertWithoutAccountsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAccountsInput, Prisma.UserUncheckedUpdateWithoutAccountsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAccountsInput, Prisma.UserUncheckedCreateWithoutAccountsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAccountsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAccountsInput, Prisma.UserUncheckedUpdateWithoutAccountsInput>
+}
+
+export type UserUpdateWithoutAccountsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAccountsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAdditionalUserDataInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
@@ -993,13 +1247,17 @@ export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
@@ -1028,13 +1286,17 @@ export type UserUpdateWithoutAdditionalUserDataInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
@@ -1048,13 +1310,17 @@ export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
@@ -1067,12 +1333,16 @@ export type UserCreateWithoutSettingsInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -1087,12 +1357,16 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -1122,12 +1396,16 @@ export type UserUpdateWithoutSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -1142,12 +1420,16 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -1161,13 +1443,17 @@ export type UserCreateWithoutStatisticInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
@@ -1181,13 +1467,17 @@ export type UserUncheckedCreateWithoutStatisticInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
@@ -1216,13 +1506,17 @@ export type UserUpdateWithoutStatisticInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
@@ -1236,13 +1530,17 @@ export type UserUncheckedUpdateWithoutStatisticInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
@@ -1255,13 +1553,17 @@ export type UserCreateWithoutLanguageDataInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
@@ -1275,13 +1577,17 @@ export type UserUncheckedCreateWithoutLanguageDataInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
@@ -1310,13 +1616,17 @@ export type UserUpdateWithoutLanguageDataInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
@@ -1330,13 +1640,17 @@ export type UserUncheckedUpdateWithoutLanguageDataInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
@@ -1349,13 +1663,17 @@ export type UserCreateWithoutFriendsInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -1369,13 +1687,17 @@ export type UserUncheckedCreateWithoutFriendsInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -1393,13 +1715,17 @@ export type UserCreateWithoutFriendOfInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -1413,13 +1739,17 @@ export type UserUncheckedCreateWithoutFriendOfInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -1448,13 +1778,17 @@ export type UserUpdateWithoutFriendsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -1468,13 +1802,17 @@ export type UserUncheckedUpdateWithoutFriendsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -1498,13 +1836,17 @@ export type UserUpdateWithoutFriendOfInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -1518,13 +1860,17 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -1537,13 +1883,17 @@ export type UserCreateWithoutUserVocabularyInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
@@ -1557,13 +1907,17 @@ export type UserUncheckedCreateWithoutUserVocabularyInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
   teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
@@ -1592,13 +1946,17 @@ export type UserUpdateWithoutUserVocabularyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -1612,13 +1970,17 @@ export type UserUncheckedUpdateWithoutUserVocabularyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -1632,22 +1994,29 @@ export type UserCreateManyTeacherInput = {
   name: string
   email: string
   password: string
-  role?: string
+  role?: $Enums.UserRole
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
 }
 
 export type UserUpdateWithoutTeacherInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
@@ -1662,12 +2031,16 @@ export type UserUncheckedUpdateWithoutTeacherInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
   additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
@@ -1682,10 +2055,13 @@ export type UserUncheckedUpdateManyWithoutTeacherInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
 }
 
 
@@ -1695,6 +2071,7 @@ export type UserUncheckedUpdateManyWithoutTeacherInput = {
 
 export type UserCountOutputType = {
   students: number
+  accounts: number
   languageData: number
   friends: number
   friendOf: number
@@ -1704,6 +2081,7 @@ export type UserCountOutputType = {
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   students?: boolean | UserCountOutputTypeCountStudentsArgs
+  accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   languageData?: boolean | UserCountOutputTypeCountLanguageDataArgs
   friends?: boolean | UserCountOutputTypeCountFriendsArgs
   friendOf?: boolean | UserCountOutputTypeCountFriendOfArgs
@@ -1726,6 +2104,13 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
  */
 export type UserCountOutputTypeCountStudentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AccountWhereInput
 }
 
 /**
@@ -1774,9 +2159,13 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   lastLogin?: boolean
   createdAt?: boolean
   teacherId?: boolean
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method?: boolean
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
   students?: boolean | Prisma.User$studentsArgs<ExtArgs>
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
+  accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   statistic?: boolean | Prisma.User$statisticArgs<ExtArgs>
   languageData?: boolean | Prisma.User$languageDataArgs<ExtArgs>
   additionalUserData?: boolean | Prisma.User$additionalUserDataArgs<ExtArgs>
@@ -1797,6 +2186,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lastLogin?: boolean
   createdAt?: boolean
   teacherId?: boolean
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method?: boolean
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1810,6 +2202,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lastLogin?: boolean
   createdAt?: boolean
   teacherId?: boolean
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method?: boolean
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1823,13 +2218,17 @@ export type UserSelectScalar = {
   lastLogin?: boolean
   createdAt?: boolean
   teacherId?: boolean
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "lastLogin" | "createdAt" | "teacherId", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "lastLogin" | "createdAt" | "teacherId" | "isVerified" | "isTwoFactorEnable" | "method", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
   students?: boolean | Prisma.User$studentsArgs<ExtArgs>
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
+  accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   statistic?: boolean | Prisma.User$statisticArgs<ExtArgs>
   languageData?: boolean | Prisma.User$languageDataArgs<ExtArgs>
   additionalUserData?: boolean | Prisma.User$additionalUserDataArgs<ExtArgs>
@@ -1852,6 +2251,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     teacher: Prisma.$UserPayload<ExtArgs> | null
     students: Prisma.$UserPayload<ExtArgs>[]
     settings: Prisma.$UserSettingsPayload<ExtArgs> | null
+    accounts: Prisma.$AccountPayload<ExtArgs>[]
     statistic: Prisma.$UserStatisticPayload<ExtArgs> | null
     languageData: Prisma.$UserLanguageDataPayload<ExtArgs>[]
     additionalUserData: Prisma.$AdditionalUserDataPayload<ExtArgs> | null
@@ -1865,11 +2265,14 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     name: string
     email: string
     password: string
-    role: string
+    role: $Enums.UserRole
     hasCompletedPlacement: boolean
     lastLogin: Date | null
     createdAt: Date
     teacherId: number | null
+    isVerified: boolean
+    isTwoFactorEnable: boolean
+    method: $Enums.AuthMethod
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -2267,6 +2670,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   teacher<T extends Prisma.User$teacherArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$teacherArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   students<T extends Prisma.User$studentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   settings<T extends Prisma.User$settingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$settingsArgs<ExtArgs>>): Prisma.Prisma__UserSettingsClient<runtime.Types.Result.GetResult<Prisma.$UserSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   statistic<T extends Prisma.User$statisticArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$statisticArgs<ExtArgs>>): Prisma.Prisma__UserStatisticClient<runtime.Types.Result.GetResult<Prisma.$UserStatisticPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   languageData<T extends Prisma.User$languageDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$languageDataArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserLanguageDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   additionalUserData<T extends Prisma.User$additionalUserDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$additionalUserDataArgs<ExtArgs>>): Prisma.Prisma__AdditionalUserDataClient<runtime.Types.Result.GetResult<Prisma.$AdditionalUserDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2307,11 +2711,14 @@ export interface UserFieldRefs {
   readonly name: Prisma.FieldRef<"User", 'String'>
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly password: Prisma.FieldRef<"User", 'String'>
-  readonly role: Prisma.FieldRef<"User", 'String'>
+  readonly role: Prisma.FieldRef<"User", 'UserRole'>
   readonly hasCompletedPlacement: Prisma.FieldRef<"User", 'Boolean'>
   readonly lastLogin: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly teacherId: Prisma.FieldRef<"User", 'Int'>
+  readonly isVerified: Prisma.FieldRef<"User", 'Boolean'>
+  readonly isTwoFactorEnable: Prisma.FieldRef<"User", 'Boolean'>
+  readonly method: Prisma.FieldRef<"User", 'AuthMethod'>
 }
     
 
@@ -2772,6 +3179,30 @@ export type User$settingsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.UserSettingsInclude<ExtArgs> | null
   where?: Prisma.UserSettingsWhereInput
+}
+
+/**
+ * User.accounts
+ */
+export type User$accountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Account
+   */
+  select?: Prisma.AccountSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Account
+   */
+  omit?: Prisma.AccountOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountInclude<ExtArgs> | null
+  where?: Prisma.AccountWhereInput
+  orderBy?: Prisma.AccountOrderByWithRelationInput | Prisma.AccountOrderByWithRelationInput[]
+  cursor?: Prisma.AccountWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AccountScalarFieldEnum | Prisma.AccountScalarFieldEnum[]
 }
 
 /**

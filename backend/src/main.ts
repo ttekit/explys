@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-import cookieParser from "cookie-parser"
+import cookieParser from "cookie-parser";
 
 config();
 
@@ -10,6 +10,11 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { join } from "path";
 import { AppModule } from "./app.module";
 import { ConfigService } from "@nestjs/config";
+import IORedis from "ioredis";
+import { RedisStore } from "connect-redis";
+import session from "express-session";
+import { ms, StringValue } from "./common/utils/ms.util";
+import { parseBoolean } from "./common/utils/parse-boolean.util";
 
 function resolveCorsOrigin():
   | boolean
@@ -40,20 +45,17 @@ function resolveCorsOrigin():
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  const config = app.get(ConfigService)
+  const config = app.get(ConfigService);
+  const redis = new IORedis(config.getOrThrow('REDIS_URI'))
 
-  app.use(cookieParser(config.getOrThrow<string>('COOKIES_SECRET')))
+  app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
 
-  
   // Dev helper: same-origin test UI for the placement/entrance test (e.g. /dev/entrance-test.html)
   app.useStaticAssets(join(process.cwd(), "public"), { prefix: "/dev/" });
 
   app.enableCors({
-    origin: (
-      resolveCorsOrigin(),
-      config.getOrThrow<string>('ALLOWED_ORIGIN')
-    ),
-    exposedHeaders: ['set-cookie'],
+    origin: (resolveCorsOrigin(), config.getOrThrow<string>("ALLOWED_ORIGIN")),
+    exposedHeaders: ["set-cookie"],
     credentials: true,
   });
 
@@ -61,6 +63,27 @@ async function bootstrap() {
     new ValidationPipe({
       transform: true,
       whitelist: true,
+    }),
+  );
+
+  app.use(
+    session({
+      secret: config.getOrThrow<string>("SESSION_SECRET"),
+      name: config.getOrThrow<string>("SESSION_NAME"),
+      resave: true,
+      saveUninitialized: false,
+      cookie: {
+        domain: config.getOrThrow<string>("SESSION_DOMAIN"),
+        maxAge: ms(config.getOrThrow<StringValue>("SESSION_MAX_AGE")),
+        httpOnly: parseBoolean(config.getOrThrow<string>("SESSION_HTTP_ONLY")),
+        secure: parseBoolean(config.getOrThrow<string>("SESSION_SECURE")),
+        sameSite: "lax",
+      },
+      store: new RedisStore({
+        client: redis,
+        prefix: config.getOrThrow<string>('SESSION_FOLDER')
+
+      })
     }),
   );
 

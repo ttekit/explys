@@ -58,6 +58,8 @@ export const ModelName = {
   VideoCaptions: 'VideoCaptions',
   PostWatchSurvey: 'PostWatchSurvey',
   User: 'User',
+  Account: 'Account',
+  Token: 'Token',
   AdditionalUserData: 'AdditionalUserData',
   Genre: 'Genre',
   Topic: 'Topic',
@@ -166,10 +168,37 @@ export const UserScalarFieldEnum = {
   hasCompletedPlacement: 'hasCompletedPlacement',
   lastLogin: 'lastLogin',
   createdAt: 'createdAt',
-  teacherId: 'teacherId'
+  teacherId: 'teacherId',
+  isVerified: 'isVerified',
+  isTwoFactorEnable: 'isTwoFactorEnable',
+  method: 'method'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const AccountScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  provider: 'provider',
+  refreshToken: 'refreshToken',
+  accessToken: 'accessToken',
+  expiresAt: 'expiresAt',
+  userId: 'userId'
+} as const
+
+export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
+
+
+export const TokenScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  token: 'token',
+  type: 'type',
+  expiresIn: 'expiresIn'
+} as const
+
+export type TokenScalarFieldEnum = (typeof TokenScalarFieldEnum)[keyof typeof TokenScalarFieldEnum]
 
 
 export const AdditionalUserDataScalarFieldEnum = {
