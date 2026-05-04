@@ -10,6 +10,19 @@ interface VideoVocabularyProps {
 export function VideoVocabulary({ vocabulary }: VideoVocabularyProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
+  if (vocabulary.length === 0) {
+    return (
+      <div className="space-y-3">
+        <h3 className="mb-4 text-lg font-semibold text-foreground">
+          Key vocabulary
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          No curated words yet — open this lesson after captions are generated, or sign in so we can personalize terms for your level.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <h3 className="mb-4 text-lg font-semibold text-foreground">

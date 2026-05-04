@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import {
+  blendedVideoTopicKnowledge,
   buildUserThemeTokens,
   cefrBandFit,
   processingComplexityFit,
@@ -17,6 +18,7 @@ export type UserRecommendationProfileDto = {
   cefrUnit: number;
   cefrSource: string | null;
   vocabularyStrength: number;
+  listeningStrength: number;
   targetProcessingComplexity: number;
   themeTokenSample: string[];
   topicRows: number;
@@ -87,17 +89,31 @@ export class ContentRecommendationsService {
     const englishLabel = profile?.englishLevel?.trim() ?? null;
     const userCefrUnit = userEnglishLevelToCefrUnit(englishLabel);
 
-    const topicScores = user.languageData.map((ld) => ld.score);
+    const vocabScores = user.languageData.map((ld) => ld.vocabularyScore);
+    const listenScores = user.languageData.map((ld) => ld.listeningScore);
     const vocabStrength = vocabularyStrengthFromTopicScores(
-      topicScores,
+      vocabScores,
       userCefrUnit,
     );
+    const listenStrength = vocabularyStrengthFromTopicScores(
+      listenScores,
+      userCefrUnit,
+    );
+    const loadStrength =
+      vocabScores.length || listenScores.length
+        ? 0.45 * vocabStrength + 0.55 * listenStrength
+        : vocabStrength;
 
-    const targetPc = targetProcessingComplexity(userCefrUnit, vocabStrength);
+    const targetPc = targetProcessingComplexity(userCefrUnit, loadStrength);
 
     const strongTopicTagNames: string[] = [];
     for (const ld of user.languageData) {
-      if (ld.score < 0.45) {
+      const peak = Math.max(
+        ld.listeningScore,
+        ld.vocabularyScore,
+        ld.grammarScore,
+      );
+      if (peak < 0.45) {
         continue;
       }
       for (const tag of ld.topic.tags) {
@@ -118,7 +134,14 @@ export class ContentRecommendationsService {
     });
 
     const topicIdToUserScore = new Map(
-      user.languageData.map((ld) => [ld.topicId, ld.score]),
+      user.languageData.map((ld) => [
+        ld.topicId,
+        blendedVideoTopicKnowledge(
+          ld.listeningScore,
+          ld.vocabularyScore,
+          ld.grammarScore,
+        ),
+      ]),
     );
 
     const videos = await this.prisma.contentVideo.findMany({
@@ -198,6 +221,7 @@ export class ContentRecommendationsService {
         cefrUnit: userCefrUnit,
         cefrSource: englishLabel,
         vocabularyStrength: vocabStrength,
+        listeningStrength: listenStrength,
         targetProcessingComplexity: targetPc,
         themeTokenSample: themeSample,
         topicRows: user.languageData.length,

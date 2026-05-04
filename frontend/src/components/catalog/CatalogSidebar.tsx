@@ -17,8 +17,8 @@ const sidebarLinks = [
   { icon: LayoutGrid, label: "Catalog", to: "/catalog" },
   { icon: Search, label: "Search", to: "/catalog" },
   { icon: BookOpen, label: "My Lessons", to: "/contentPage" },
-  { icon: Trophy, label: "Progress", to: "/profileMain" },
-  { icon: User, label: "Profile", to: "/profileMain" },
+  { icon: Trophy, label: "Progress", to: "/profile" },
+  { icon: User, label: "Profile", to: "/profile" },
 ] as const;
 
 interface CatalogSidebarProps {
@@ -81,7 +81,7 @@ export function CatalogSidebar({
                 {welcomeName?.trim() ? `Hi, ${welcomeName}` : "Welcome back!"}
               </p>
               <p className="text-sm text-muted-foreground">
-                {englishLevel?.trim() ? `Level ${englishLevel}` : "CineLingo"}
+                {englishLevel?.trim() ? `Level ${englishLevel}` : "Exply"}
               </p>
             </div>
           )}
@@ -135,7 +135,7 @@ export function CatalogSidebar({
 
         <div className="border-border border-t p-4">
           <Link
-            to="/profileMain"
+            to="/profile"
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
               collapsed && "justify-center px-2",

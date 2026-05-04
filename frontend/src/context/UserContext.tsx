@@ -7,6 +7,7 @@ import {
   useCallback,
 } from "react";
 import { apiFetch, setStoredAccessToken } from "../lib/api";
+import { identifyLearner, resetAnalytics } from "../lib/analytics";
 
 export interface UserData {
   id: string;
@@ -21,6 +22,10 @@ export interface UserData {
   favoriteGenres: number[];
   hatedGenres: number[];
   avatarUrl?: string;
+  /** From `UserSettings.playbackSpeed` */
+  playbackSpeed?: number | null;
+  /** From `UserSettings.currentResolution` (e.g. auto, 720p) */
+  videoQuality?: string;
 }
 
 function normalizeProfile(raw: unknown): UserData | null {
@@ -43,6 +48,14 @@ function normalizeProfile(raw: unknown): UserData | null {
       ? (r.hatedGenres as number[])
       : [],
     avatarUrl: typeof r.avatarUrl === "string" ? r.avatarUrl : undefined,
+    playbackSpeed: (() => {
+      const v = r.playbackSpeed;
+      if (v === null || v === undefined) return null;
+      const n = typeof v === "number" ? v : Number(v);
+      return Number.isFinite(n) ? n : null;
+    })(),
+    videoQuality:
+      typeof r.videoQuality === "string" ? r.videoQuality : "",
   };
 }
 
@@ -80,9 +93,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = useCallback(() => {
+    resetAnalytics();
     setUser(null);
     setStoredAccessToken(null);
   }, []);
+
+  useEffect(() => {
+    if (user?.id?.trim()) {
+      identifyLearner(user.id.trim(), {
+        role: user.role ?? "unknown",
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     const load = async () => {

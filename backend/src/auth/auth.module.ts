@@ -6,6 +6,7 @@ import { AuthController } from "./auth.controller";
 import { AuthGuard } from "./auth.guard";
 import { AuthService } from "./auth.service";
 import { ApiTokenOrJwtAuthGuard } from "./guards/api-token-or-jwt.guard";
+import { ApiTokenOnlyGuard } from "./guards/api-token-only.guard";
 import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
 
 @Module({
@@ -26,6 +27,7 @@ import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
     AuthService,
     AuthGuard,
     ApiTokenOrJwtAuthGuard,
+    ApiTokenOnlyGuard,
     UserSelfOrApiGuard,
   ],
   exports: [
@@ -33,6 +35,7 @@ import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
     AuthService,
     AuthGuard,
     ApiTokenOrJwtAuthGuard,
+    ApiTokenOnlyGuard,
     UserSelfOrApiGuard,
   ],
 })

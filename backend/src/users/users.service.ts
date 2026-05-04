@@ -21,6 +21,7 @@ export class UsersService {
         name: true,
         email: true,
         role: true,
+        isSuspended: true,
         hasCompletedPlacement: true,
         createdAt: true,
         additionalUserData: {
@@ -43,6 +44,12 @@ export class UsersService {
                 hatedGenres: true,
             },
         },
+        settings: {
+            select: {
+                playbackSpeed: true,
+                currentResolution: true,
+            },
+        },
     };
 
     async create(createUserDto: CreateUserDto) {
@@ -51,6 +58,7 @@ export class UsersService {
             email,
             password,
             name,
+            role: roleRaw,
             englishLevel,
             hobbies,
             education,
@@ -61,6 +69,11 @@ export class UsersService {
             knownLanguages,
             knownLanguageLevels,
         } = createUserDto;
+        const role =
+            roleRaw &&
+            ["adult", "student", "teacher"].includes(roleRaw)
+                ? roleRaw
+                : undefined;
         const additionalDataPayload: any = {
             englishLevel,
             nativeLanguage,
@@ -93,6 +106,7 @@ export class UsersService {
                     email,
                     password: hashedPassword,
                     name,
+                    ...(role ? { role } : {}),
                     additionalUserData: {
                         create: additionalDataPayload,
                     },
@@ -113,6 +127,7 @@ export class UsersService {
                         email,
                         password: hashedPassword,
                         name,
+                        ...(role ? { role } : {}),
                         additionalUserData: { create: additionalDataPayload },
                     },
                     select: this.userSelect,
@@ -126,7 +141,12 @@ export class UsersService {
             }
 
             created = await prisma.user.create({
-                data: { email, password: hashedPassword, name },
+                data: {
+                    email,
+                    password: hashedPassword,
+                    name,
+                    ...(role ? { role } : {}),
+                },
                 select: this.userSelect,
             });
         }
@@ -168,11 +188,22 @@ export class UsersService {
             nativeLanguage,
             knownLanguages,
             knownLanguageLevels,
+            playbackSpeed,
+            currentResolution,
             ...dataToUpdate
         } = updateUserDto as any;
 
-        if (dataToUpdate.password) {
-            dataToUpdate.password = await bcrypt.hash(dataToUpdate.password, 10);
+        if (
+            dataToUpdate.password !== undefined &&
+            dataToUpdate.password !== null &&
+            String(dataToUpdate.password).trim() !== ''
+        ) {
+            dataToUpdate.password = await bcrypt.hash(
+                String(dataToUpdate.password),
+                10,
+            );
+        } else {
+            delete dataToUpdate.password;
         }
 
         const hasProfileUpdate =
@@ -186,12 +217,50 @@ export class UsersService {
             favoriteGenres !== undefined ||
             hatedGenres !== undefined;
 
+        const hasSettingsRowUpdate =
+            playbackSpeed !== undefined || currentResolution !== undefined;
+
+        const settingsUpsert =
+            hasSettingsRowUpdate
+                ? {
+                      settings: {
+                          upsert: {
+                              create: {
+                                  playbackSpeed:
+                                      playbackSpeed === undefined
+                                          ? null
+                                          : Number(playbackSpeed),
+                                  currentResolution:
+                                      currentResolution === undefined
+                                          ? null
+                                          : String(currentResolution),
+                              },
+                              update: {
+                                  ...(playbackSpeed !== undefined
+                                      ? {
+                                            playbackSpeed:
+                                                Number(playbackSpeed),
+                                        }
+                                      : {}),
+                                  ...(currentResolution !== undefined
+                                      ? {
+                                            currentResolution:
+                                                String(currentResolution),
+                                        }
+                                      : {}),
+                              },
+                          },
+                      },
+                  }
+                : {};
+
         let updatedUser: any;
         try {
             updatedUser = await prisma.user.update({
                 where: { id },
                 data: {
                     ...dataToUpdate,
+                    ...settingsUpsert,
                     ...(hasProfileUpdate ? {
                         additionalUserData: {
                             upsert: {
@@ -240,6 +309,7 @@ export class UsersService {
                 where: { id },
                 data: {
                     ...dataToUpdate,
+                    ...settingsUpsert,
                 },
                 select: this.userSelect,
             });

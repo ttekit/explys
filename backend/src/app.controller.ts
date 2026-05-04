@@ -19,7 +19,7 @@ export class AppController {
   @ApiResponse({
     status: 200,
     description: 'Welcome message',
-    schema: { example: 'Welcome to Eng Curses API! Visit http://localhost:4200/api for Swagger documentation.' }
+    schema: { example: 'Welcome to Exply API! Visit http://localhost:4200/api for Swagger documentation.' }
   })
   getHello(): string {
     return this.appService.getHello();

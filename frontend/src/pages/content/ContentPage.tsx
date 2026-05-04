@@ -1,23 +1,82 @@
 import { Link, useParams } from "react-router";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ArrowLeft, BookOpen, FileText, HelpCircle } from "lucide-react";
 import { apiFetch } from "../../lib/api";
+import { captureEvent } from "../../lib/analytics";
 import { cn } from "../../lib/utils";
 import VideoPlayer from "../../components/VideoPlayer";
 import { ChameleonMascot } from "../../components/ChameleonMascot";
 import { VideoVocabulary } from "../../components/content-watch/VideoVocabulary";
 import { VideoTranscript } from "../../components/content-watch/VideoTranscript";
+import { useUser } from "../../context/UserContext";
 import {
   LessonCompleteBanner,
   VideoQuiz,
 } from "../../components/content-watch/VideoQuiz";
 import {
   defaultQuizQuestions,
-  defaultTranscript,
-  defaultVocabulary,
+  type QuizQuestion,
+  type TranscriptLine,
+  type VocabularyItem,
 } from "../../components/content-watch/defaultLessonSides";
+import { parseWebVttTranscriptLines } from "../../lib/parseWebVtt";
 
 const LESSON_XP = 150;
+
+/** GET /content-video/:id/tests (Gemini generates tests + keyVocabulary together). */
+type LessonSideBundle = {
+  keyVocabulary?: { word?: string; definition?: string; example?: string }[];
+  tests?: {
+    question: string;
+    options: string[];
+    correctIndex: number;
+  }[];
+};
+
+function mapApiTestsToQuiz(
+  tests: NonNullable<LessonSideBundle["tests"]>,
+): QuizQuestion[] {
+  return tests.map((t, idx) => {
+    const opts = [...(t.options ?? [])];
+    while (opts.length < 4) opts.push("—");
+    const options = opts.slice(0, 4);
+    let ci =
+      typeof t.correctIndex === "number" && Number.isFinite(t.correctIndex) ?
+        Math.floor(t.correctIndex)
+      : 0;
+    ci = Math.max(0, Math.min(options.length - 1, ci));
+    return {
+      id: idx + 1,
+      timestamp: "—",
+      question: t.question ?? "",
+      options,
+      correct: ci,
+    };
+  });
+}
+
+function normalizeLessonVocabulary(
+  raw: LessonSideBundle["keyVocabulary"],
+): VocabularyItem[] {
+  if (!Array.isArray(raw)) return [];
+  const out: VocabularyItem[] = [];
+  for (const row of raw) {
+    const word = typeof row.word === "string" ? row.word.trim() : "";
+    const definition =
+      typeof row.definition === "string" ? row.definition.trim() : "";
+    const example = typeof row.example === "string" ? row.example.trim() : "";
+    if (word.length < 2 || definition.length < 3) continue;
+    out.push({
+      word,
+      definition,
+      example:
+        example.length > 0
+          ? example
+          : `"${word}" — notice how it appears in the lesson audio.`,
+    });
+  }
+  return out.slice(0, 12);
+}
 
 type TabId = "vocabulary" | "transcript" | "quiz";
 
@@ -46,7 +105,7 @@ function ContentWatchHeader({
         <div className="flex min-w-0 items-center justify-center gap-2 justify-self-center">
           <ChameleonMascot size="sm" mood="happy" animate={false} />
           <span className="font-display truncate font-bold text-foreground">
-            CineLingo
+            Exply
           </span>
         </div>
 
@@ -145,22 +204,47 @@ function TabPanels({
   activeTab,
   isVideoComplete,
   onQuizComplete,
+  vocabulary,
+  quizQuestions,
+  sideLoading,
+  transcriptLines,
+  transcriptLoading,
+  playbackSec,
+  onSeekTranscript,
 }: {
   activeTab: TabId;
   isVideoComplete: boolean;
   onQuizComplete: () => void;
+  vocabulary: VocabularyItem[];
+  quizQuestions: QuizQuestion[];
+  sideLoading: boolean;
+  transcriptLines: TranscriptLine[];
+  transcriptLoading: boolean;
+  playbackSec: number;
+  onSeekTranscript: (seconds: number) => void;
 }) {
   return (
     <div className="py-6">
-      {activeTab === "vocabulary" ? (
-        <VideoVocabulary vocabulary={defaultVocabulary} />
-      ) : null}
-      {activeTab === "transcript" ? (
-        <VideoTranscript transcript={defaultTranscript} />
-      ) : null}
+      {activeTab === "vocabulary" ?
+        sideLoading ?
+          <p className="text-center text-sm text-muted-foreground">
+            Preparing personalised key vocabulary…
+          </p>
+        : <VideoVocabulary vocabulary={vocabulary} />
+      : null}
+      {activeTab === "transcript" ?
+        (
+          <VideoTranscript
+            transcript={transcriptLines}
+            loading={transcriptLoading}
+            playbackSec={playbackSec}
+            onSeek={onSeekTranscript}
+          />
+        )
+      : null}
       {activeTab === "quiz" ? (
         <VideoQuiz
-          questions={defaultQuizQuestions}
+          questions={quizQuestions}
           isVideoComplete={isVideoComplete}
           onComplete={onQuizComplete}
         />
@@ -170,7 +254,9 @@ function TabPanels({
 }
 
 export default function ContentPage() {
+  const videoElRef = useRef<HTMLVideoElement | null>(null);
   const { id } = useParams();
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState<TabId>("vocabulary");
   const [isVideoComplete, setIsVideoComplete] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
@@ -181,8 +267,43 @@ export default function ContentPage() {
     content: { category: { name: string; description: string } };
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lessonSideBundle, setLessonSideBundle] = useState<{
+    vocabulary: VocabularyItem[];
+    quizQuestions: QuizQuestion[];
+  } | null>(null);
+  const [sideBundleLoading, setSideBundleLoading] = useState(false);
+  const [transcriptLines, setTranscriptLines] = useState<TranscriptLine[]>(
+    [],
+  );
+  const [transcriptLoading, setTranscriptLoading] = useState(false);
+  const [playbackSec, setPlaybackSec] = useState(0);
 
-  const handleVideoEnded = useCallback(() => setIsVideoComplete(true), []);
+  const seekToCue = useCallback((seconds: number) => {
+    const el = videoElRef.current;
+    if (!el || !Number.isFinite(seconds)) return;
+    try {
+      el.currentTime = Math.max(0, seconds);
+    } catch {
+      /* ignore invalid seek */
+    }
+  }, []);
+
+  const handleVideoEnded = useCallback(async () => {
+    setIsVideoComplete(true);
+    if (!id) return;
+    const vid = Number.parseInt(String(id), 10);
+    if (!Number.isFinite(vid) || vid <= 0) return;
+    try {
+      const res = await apiFetch(`/content-video/${vid}/watch-complete`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        captureEvent("video_watch_complete", { content_video_id: vid });
+      }
+    } catch {
+      /* non-blocking */
+    }
+  }, [id]);
 
   useEffect(() => {
     if (!id) {
@@ -193,6 +314,7 @@ export default function ContentPage() {
     const fetchVideo = async () => {
       try {
         setLoading(true);
+        setVideoData(null);
         const response = await apiFetch(`/content-video/${id}`, {
           method: "GET",
         });
@@ -214,9 +336,75 @@ export default function ContentPage() {
   }, [id]);
 
   useEffect(() => {
+    if (!id || !videoData) return;
+    const vid = Number.parseInt(String(id), 10);
+    if (!Number.isFinite(vid) || vid <= 0) return;
+    let cancelled = false;
+    setSideBundleLoading(true);
+    const qs =
+      user?.id != null ? `?userId=${encodeURIComponent(String(user.id))}` : "";
+    void apiFetch(`/content-video/${vid}/tests${qs}`)
+      .then(async (r) => {
+        if (cancelled) return;
+        if (!r.ok) {
+          setLessonSideBundle(null);
+          return;
+        }
+        const bundle = (await r.json()) as LessonSideBundle;
+        const vocabulary = normalizeLessonVocabulary(bundle.keyVocabulary);
+        const quizQuestions =
+          Array.isArray(bundle.tests) && bundle.tests.length > 0 ?
+            mapApiTestsToQuiz(bundle.tests)
+          : defaultQuizQuestions;
+        setLessonSideBundle({ vocabulary, quizQuestions });
+      })
+      .catch(() => {
+        if (!cancelled) setLessonSideBundle(null);
+      })
+      .finally(() => {
+        if (!cancelled) setSideBundleLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, videoData, user?.id]);
+
+  useEffect(() => {
+    if (!id || !videoData) return;
+    const vid = Number.parseInt(String(id), 10);
+    if (!Number.isFinite(vid) || vid <= 0) return;
+    let cancelled = false;
+    setTranscriptLoading(true);
+    setTranscriptLines([]);
+    void apiFetch(`/content-video/${vid}/captions`)
+      .then(async (r) => {
+        if (cancelled) return;
+        if (!r.ok) {
+          setTranscriptLines([]);
+          return;
+        }
+        const raw = await r.text();
+        setTranscriptLines(parseWebVttTranscriptLines(raw));
+      })
+      .catch(() => {
+        if (!cancelled) setTranscriptLines([]);
+      })
+      .finally(() => {
+        if (!cancelled) setTranscriptLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, videoData]);
+
+  useEffect(() => {
     setIsVideoComplete(false);
     setQuizCompleted(false);
     setActiveTab("vocabulary");
+    setLessonSideBundle(null);
+    setTranscriptLines([]);
+    setPlaybackSec(0);
+    setTranscriptLoading(false);
   }, [id]);
 
   const headerRight = quizCompleted
@@ -254,6 +442,9 @@ export default function ContentPage() {
     videoData.content.category.description?.trim() ||
     "Practice listening and speaking with curated clips from your catalog.";
 
+  const vocabForUi = lessonSideBundle?.vocabulary ?? [];
+  const quizForUi = lessonSideBundle?.quizQuestions ?? defaultQuizQuestions;
+
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <ContentWatchHeader rightLabel={headerRight} />
@@ -266,6 +457,10 @@ export default function ContentPage() {
                 <VideoPlayer
                   src={videoData.videoLink}
                   onEnded={handleVideoEnded}
+                  onPlaybackTime={(t) => setPlaybackSec(t)}
+                  onVideoMount={(el) => {
+                    videoElRef.current = el;
+                  }}
                   className="rounded-none border-0"
                 />
               </div>
@@ -297,6 +492,13 @@ export default function ContentPage() {
                   activeTab={activeTab}
                   isVideoComplete={isVideoComplete}
                   onQuizComplete={() => setQuizCompleted(true)}
+                  vocabulary={vocabForUi}
+                  quizQuestions={quizForUi}
+                  sideLoading={sideBundleLoading}
+                  transcriptLines={transcriptLines}
+                  transcriptLoading={transcriptLoading}
+                  playbackSec={playbackSec}
+                  onSeekTranscript={seekToCue}
                 />
               </div>
             </div>
@@ -304,15 +506,26 @@ export default function ContentPage() {
             <div className="hidden lg:block">
               <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
               <div className="mt-0 max-h-[min(600px,70vh)] overflow-y-auto rounded-xl border border-border bg-card p-4">
-                {activeTab === "vocabulary" ? (
-                  <VideoVocabulary vocabulary={defaultVocabulary} />
-                ) : null}
-                {activeTab === "transcript" ? (
-                  <VideoTranscript transcript={defaultTranscript} />
-                ) : null}
+                {activeTab === "vocabulary" ?
+                  sideBundleLoading ?
+                    <p className="text-center text-sm text-muted-foreground">
+                      Preparing personalised key vocabulary…
+                    </p>
+                  : <VideoVocabulary vocabulary={vocabForUi} />
+                : null}
+                {activeTab === "transcript" ?
+                  (
+                    <VideoTranscript
+                      transcript={transcriptLines}
+                      loading={transcriptLoading}
+                      playbackSec={playbackSec}
+                      onSeek={seekToCue}
+                    />
+                  )
+                : null}
                 {activeTab === "quiz" ? (
                   <VideoQuiz
-                    questions={defaultQuizQuestions}
+                    questions={quizForUi}
                     isVideoComplete={isVideoComplete}
                     onComplete={() => setQuizCompleted(true)}
                   />

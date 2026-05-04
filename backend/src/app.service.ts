@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class AppService {
   getHello(): string {
-    return 'Welcome to Eng Curses API! Visit http://localhost:4200/api for Swagger documentation.';
+    return 'Welcome to Exply API! Visit http://localhost:4200/api for Swagger documentation.';
   }
 
   getStatus(): object {

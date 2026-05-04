@@ -65,7 +65,49 @@ model ContentVideo {
   /// Shape: { source: "gemini"|"fallback", tests: ComprehensionTestItem[] }
   comprehensionTestsCache Json? @map("comprehension_tests_cache")
 
+  watchSessions             WatchSession[]
+  comprehensionTestAttempts ComprehensionTestAttempt[]
+
   @@map("content_videos")
+}
+
+/// Deduped per user/video/calendar day (UTC); updated on subsequent watch-complete same day.
+model WatchSession {
+  id             Int       @id @default(autoincrement())
+  userId         Int       @map("user_id")
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentVideoId Int       @map("content_video_id")
+  contentVideo   ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
+  /// Calendar date (UTC) for idempotent completion counting.
+  completionDate DateTime  @db.Date @map("completion_date")
+  startedAt      DateTime? @map("started_at")
+  endedAt        DateTime  @default(now()) @map("ended_at")
+  secondsWatched Int       @default(0) @map("seconds_watched")
+  completed      Boolean   @default(true)
+
+  @@unique([userId, contentVideoId, completionDate])
+  @@index([userId, contentVideoId, endedAt])
+  @@index([endedAt])
+  @@map("watch_sessions")
+}
+
+model ComprehensionTestAttempt {
+  id             Int       @id @default(autoincrement())
+  userId         Int       @map("user_id")
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentVideoId Int       @map("content_video_id")
+  contentVideo   ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
+  correct        Int
+  total          Int
+  scorePct       Float     @map("score_pct")
+  passed         Boolean
+  details        Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, contentVideoId, createdAt])
+  @@index([createdAt])
+  @@map("comprehension_test_attempts")
 }
 
 model VideoCaptions {

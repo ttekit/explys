@@ -179,13 +179,13 @@ export default function RegistrationMain() {
     <AuthSplitLayout
       progressStep={1}
       progressTotal={3}
-      rightTitle="Welcome to CineLingo!"
+      rightTitle="Welcome to Exply!"
       rightSubtitle="Join thousands of learners improving their English through personalized video content."
       rightMascotMood="waving"
     >
       <div className="mb-2 flex items-center gap-3">
         <ChameleonMascot size="sm" mood="waving" animate={false} />
-        <h1 className="font-display text-2xl font-bold">Join CineLingo</h1>
+        <h1 className="font-display text-2xl font-bold">Join Exply</h1>
       </div>
       <p className="mb-8 text-muted-foreground">
         Create your account and start your personalized learning journey

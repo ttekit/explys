@@ -22,7 +22,7 @@ export function LandingHeader() {
         >
           <ChameleonMascot size="sm" mood="happy" animate={false} />
           <span className="font-display text-xl font-bold text-foreground transition-colors group-hover:text-primary">
-            CineLingo
+            Exply
           </span>
         </Link>
 

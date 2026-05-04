@@ -54,7 +54,7 @@ export function FeaturesSection() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
           <h2 className="font-display mb-4 text-balance text-3xl font-bold sm:text-4xl">
-            Why Choose <span className="text-primary">CineLingo</span>?
+            Why Choose <span className="text-primary">Exply</span>?
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
             Our adaptive learning platform combines the best of entertainment

@@ -4,15 +4,26 @@ import { cn } from "../lib/utils";
 interface VideoPlayerProps extends HTMLAttributes<HTMLDivElement> {
   src: string;
   onEnded?: () => void;
+  /** Subscribe to playback time updates (for syncing transcript). */
+  onPlaybackTime?: (seconds: number) => void;
+  /** Access the `<video>` element for seeking from the sidebar. */
+  onVideoMount?: (el: HTMLVideoElement | null) => void;
 }
 
 export default function VideoPlayer({
   src,
   onEnded,
+  onPlaybackTime,
+  onVideoMount,
   className,
   ...rest
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  function setVideoNode(node: HTMLVideoElement | null) {
+    videoRef.current = node;
+    onVideoMount?.(node);
+  }
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -35,6 +46,7 @@ export default function VideoPlayer({
     const { currentTime, duration } = video;
     setCurrentTime(currentTime);
     setProgress(duration ? (currentTime / duration) * 100 : 0);
+    onPlaybackTime?.(currentTime);
   }
 
   function handleLoadedMetadata() {
@@ -70,7 +82,7 @@ export default function VideoPlayer({
       {...rest}
     >
       <video
-        ref={videoRef}
+        ref={setVideoNode}
         src={src}
         className="absolute inset-0 w-full h-full object-cover"
         onTimeUpdate={handleTimeUpdate}

@@ -7,10 +7,11 @@ import { ConfigService } from "@nestjs/config";
 import { Prisma } from "@generated/prisma/client";
 import { webVttToPlainText } from "src/contents/webvtt-to-plain-text.util";
 import { PrismaService } from "src/prisma.service";
+import { aggregateSkillScore, clamp } from "src/alcorythm/alcorythm-scoring.util";
 import {
   countCorrect,
   createGradingToken,
-  knowledgeDelta,
+  knowledgeDeltasFromComprehensionStats,
   parseGradingToken,
   type GradingItem,
 } from "./content-video-test-grade.util";
@@ -19,6 +20,9 @@ import {
   ComprehensionTestItem,
   ComprehensionTestsGenerationContext,
   fallbackComprehensionTests,
+  fallbackKeyVocabulary,
+  normalizeKeyVocabulary,
+  type KeyVocabularyItem,
 } from "./content-video-comprehension-tests-gemini.client";
 import {
   ContentVideoSummaryRecommendationsGeminiClient,
@@ -28,11 +32,16 @@ import type { ComprehensionSummaryRecommendationsBodyDto } from "src/content/con
 
 const GRADING_TTL_MS = 2 * 60 * 60 * 1000;
 
+/** Stored on each attempt row; aligns with coarse "passed" KPI in admin dashboards. */
+const COMPREHENSION_PASS_SCORE_PCT = 70;
+
 export type GenerateComprehensionTestsResult = {
   contentVideoId: number;
   videoName: string;
   source: "gemini" | "fallback";
   tests: ComprehensionTestItem[];
+  /** Same Gemini payload as comprehension tests — grounded in transcript, tuned to level + themes. */
+  keyVocabulary: KeyVocabularyItem[];
   /** HMAC token (≈2h) to submit answers without re-running the model. */
   gradingToken: string;
   /** Profile English / CEFR when `userId` was sent and the user exists. */
@@ -66,6 +75,7 @@ export type SubmitComprehensionTestResult = {
 type ComprehensionTestsCachePayload = {
   source: "gemini" | "fallback";
   tests: ComprehensionTestItem[];
+  keyVocabulary?: KeyVocabularyItem[];
 };
 
 @Injectable()
@@ -136,7 +146,14 @@ export class ContentVideoComprehensionTestsService {
     options: { forceRegenerate: boolean },
   ): Promise<GenerateComprehensionTestsResult> {
     const video = await this.findContentVideoForTests(contentVideoId, {
-      include: { videoCaption: true },
+      include: {
+        videoCaption: true,
+        content: {
+          include: {
+            stats: { select: { userTags: true } },
+          },
+        },
+      },
     });
     if (!video) {
       throw new NotFoundException(`ContentVideo ${contentVideoId} not found`);
@@ -149,7 +166,23 @@ export class ContentVideoComprehensionTestsService {
       transcriptPlain && transcriptPlain.trim().length >= 40,
     );
 
-    const { cefr, vocabularyTerms } = await this.loadLearnerContext(userId);
+    const { cefr, vocabularyTerms, learnerThemeKnowledge } =
+      await this.loadLearnerContext(userId);
+
+    const videoThemeTags = [
+      ...new Set(
+        (
+          (
+            video as {
+              content?: { stats?: { userTags?: string[] } | null } | null;
+            }
+          ).content?.stats?.userTags ??
+          ([] as string[])
+        )
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0),
+      ),
+    ];
 
     const fromCache = !options.forceRegenerate
       ? this.parseComprehensionTestsCache(
@@ -159,11 +192,23 @@ export class ContentVideoComprehensionTestsService {
       : null;
 
     if (fromCache?.tests?.length) {
+      const keyVocabulary =
+        fromCache.keyVocabulary != null &&
+        Array.isArray(fromCache.keyVocabulary) &&
+        fromCache.keyVocabulary.length >= 6
+          ? fromCache.keyVocabulary
+          : fallbackKeyVocabulary({
+              transcriptPlain,
+              videoName: video.videoName,
+              learnerCefr: cefr,
+              vocabularyTerms,
+            });
       return this.assembleResult({
         contentVideoId,
         videoName: video.videoName,
         source: fromCache.source,
         tests: fromCache.tests,
+        keyVocabulary,
         usedTranscript,
         cefr,
         vocabularyTerms,
@@ -171,12 +216,14 @@ export class ContentVideoComprehensionTestsService {
       });
     }
 
-    const { source, tests } = await this.buildFreshTests(
+    const { source, tests, keyVocabulary } = await this.buildFreshTests(
       video.videoName,
       video.videoDescription,
       transcriptPlain,
       cefr,
       vocabularyTerms,
+      videoThemeTags,
+      learnerThemeKnowledge,
     );
 
     try {
@@ -186,6 +233,7 @@ export class ContentVideoComprehensionTestsService {
           comprehensionTestsCache: {
             source,
             tests,
+            keyVocabulary,
           } satisfies ComprehensionTestsCachePayload,
         },
       });
@@ -205,6 +253,7 @@ export class ContentVideoComprehensionTestsService {
       videoName: video.videoName,
       source,
       tests,
+      keyVocabulary,
       usedTranscript,
       cefr,
       vocabularyTerms,
@@ -283,7 +332,14 @@ export class ContentVideoComprehensionTestsService {
         category: t.category,
       });
     }
-    return { source, tests };
+    let keyVocabulary: KeyVocabularyItem[] | undefined;
+    if (Array.isArray(o.keyVocabulary)) {
+      const nv = normalizeKeyVocabulary(o.keyVocabulary);
+      if (nv.length >= 6) {
+        keyVocabulary = nv;
+      }
+    }
+    return { source, tests, keyVocabulary };
   }
 
   private async buildFreshTests(
@@ -292,9 +348,12 @@ export class ContentVideoComprehensionTestsService {
     transcriptPlain: string | null,
     cefr: string | null,
     vocabularyTerms: string[],
+    videoThemeTags: string[],
+    learnerThemeKnowledge: string[],
   ): Promise<{
     source: "gemini" | "fallback";
     tests: ComprehensionTestItem[];
+    keyVocabulary: KeyVocabularyItem[];
   }> {
     const ctx: ComprehensionTestsGenerationContext = {
       videoName,
@@ -302,20 +361,32 @@ export class ContentVideoComprehensionTestsService {
       transcriptPlain,
       learnerCefr: cefr,
       vocabularyTerms,
+      videoThemeTags,
+      learnerThemeKnowledge,
     };
-    const geminiTests = await this.gemini.generateTests(ctx);
-    const tests: ComprehensionTestItem[] = geminiTests?.length
-      ? geminiTests
-      : fallbackComprehensionTests({
+    const geminiBundle = await this.gemini.generateTests(ctx);
+    if (geminiBundle?.tests.length) {
+      return {
+        source: "gemini",
+        tests: geminiBundle.tests,
+        keyVocabulary: geminiBundle.keyVocabulary,
+      };
+    }
+    return {
+      source: "fallback",
+      tests: fallbackComprehensionTests({
         videoName,
         transcriptPlain,
         learnerCefr: cefr,
         vocabularyTerms,
-      });
-    const source: "gemini" | "fallback" = geminiTests?.length
-      ? "gemini"
-      : "fallback";
-    return { source, tests };
+      }),
+      keyVocabulary: fallbackKeyVocabulary({
+        transcriptPlain,
+        videoName,
+        learnerCefr: cefr,
+        vocabularyTerms,
+      }),
+    };
   }
 
   private assembleResult(p: {
@@ -323,6 +394,7 @@ export class ContentVideoComprehensionTestsService {
     videoName: string;
     source: "gemini" | "fallback";
     tests: ComprehensionTestItem[];
+    keyVocabulary: KeyVocabularyItem[];
     usedTranscript: boolean;
     cefr: string | null;
     vocabularyTerms: string[];
@@ -344,6 +416,7 @@ export class ContentVideoComprehensionTestsService {
       videoName: p.videoName,
       source: p.source,
       tests: p.tests,
+      keyVocabulary: p.keyVocabulary,
       gradingToken,
       learnerCefr: p.cefr,
       usedTranscript: p.usedTranscript,
@@ -372,7 +445,7 @@ export class ContentVideoComprehensionTestsService {
     const total = stats.total;
     const correct = stats.correct;
     const pct = total > 0 ? correct / total : 0;
-    const delta = knowledgeDelta(pct);
+    const deltas = knowledgeDeltasFromComprehensionStats(stats);
     const { cefr, vocabularyTerms: vocabSubmit } = await this.loadLearnerContext(
       p.userId,
     );
@@ -418,6 +491,14 @@ export class ContentVideoComprehensionTestsService {
     const topicIds =
       contentWithStats.content?.stats?.topics.map((t) => t.id) ?? [];
     if (topicIds.length === 0) {
+      await this.persistComprehensionAttempt(
+        p.userId,
+        contentVideoId,
+        correct,
+        total,
+        pct,
+        stats,
+      );
       return {
         correct,
         total,
@@ -439,12 +520,28 @@ export class ContentVideoComprehensionTestsService {
       const row = await this.prisma.userLanguageData.findUnique({
         where: { userId_topicId: { userId: p.userId, topicId } },
       });
-      const previousScore = row?.score ?? 0.35;
-      const newScore = Math.min(1, Math.max(0, previousScore + delta));
+      const base = row?.score ?? 0.35;
+      const prevListening = row?.listeningScore ?? base;
+      const prevVocabulary = row?.vocabularyScore ?? base;
+      const prevGrammar = row?.grammarScore ?? base;
+      const newListening = clamp(prevListening + deltas.listening);
+      const newVocabulary = clamp(prevVocabulary + deltas.vocabulary);
+      const newGrammar = clamp(prevGrammar + deltas.grammar);
+      const newScore = aggregateSkillScore(
+        newListening,
+        newVocabulary,
+        newGrammar,
+      );
+      const previousScore = row?.score ?? base;
       if (row) {
         await this.prisma.userLanguageData.update({
           where: { id: row.id },
-          data: { score: newScore },
+          data: {
+            listeningScore: newListening,
+            vocabularyScore: newVocabulary,
+            grammarScore: newGrammar,
+            score: newScore,
+          },
         });
       } else {
         await this.prisma.userLanguageData.create({
@@ -452,9 +549,12 @@ export class ContentVideoComprehensionTestsService {
             userId: p.userId,
             topicId,
             score: newScore,
+            listeningScore: newListening,
+            vocabularyScore: newVocabulary,
+            grammarScore: newGrammar,
             confidence: 0.2,
             coverage: 0.1,
-            algorithmVersion: "v1",
+            algorithmVersion: "v2",
           },
         });
       }
@@ -464,6 +564,16 @@ export class ContentVideoComprehensionTestsService {
         newScore: Math.round(1000 * newScore) / 1000,
       });
     }
+
+    await this.persistComprehensionAttempt(
+      p.userId,
+      contentVideoId,
+      correct,
+      total,
+      pct,
+      stats,
+    );
+
     return {
       correct,
       total,
@@ -481,12 +591,46 @@ export class ContentVideoComprehensionTestsService {
     };
   }
 
+  private async persistComprehensionAttempt(
+    userId: number,
+    contentVideoId: number,
+    correct: number,
+    total: number,
+    pct: number,
+    stats: ReturnType<typeof countCorrect>,
+  ): Promise<void> {
+    const scorePct = Math.round(1000 * pct) / 10;
+    const passed = total > 0 && scorePct >= COMPREHENSION_PASS_SCORE_PCT;
+    await this.prisma.comprehensionTestAttempt.create({
+      data: {
+        userId,
+        contentVideoId,
+        correct,
+        total,
+        scorePct,
+        passed,
+        details: {
+          comprehension: {
+            correct: stats.comprehension.c,
+            total: stats.comprehension.t,
+          },
+          grammar: { correct: stats.grammar.c, total: stats.grammar.t },
+        } as unknown as Prisma.InputJsonValue,
+      },
+    });
+  }
+
   private async loadLearnerContext(userId: number | null): Promise<{
     cefr: string | null;
     vocabularyTerms: string[];
+    learnerThemeKnowledge: string[];
   }> {
     if (userId == null) {
-      return { cefr: null, vocabularyTerms: [] };
+      return {
+        cefr: null,
+        vocabularyTerms: [],
+        learnerThemeKnowledge: [],
+      };
     }
 
     const user = await this.prisma.user.findUnique({
@@ -494,7 +638,11 @@ export class ContentVideoComprehensionTestsService {
       include: { additionalUserData: { select: { englishLevel: true } } },
     });
     if (!user) {
-      return { cefr: null, vocabularyTerms: [] };
+      return {
+        cefr: null,
+        vocabularyTerms: [],
+        learnerThemeKnowledge: [],
+      };
     }
 
     const cefr = user.additionalUserData?.englishLevel?.trim() ?? null;
@@ -510,7 +658,26 @@ export class ContentVideoComprehensionTestsService {
       ...new Set(rows.map((r) => r.term.trim()).filter((t) => t.length > 0)),
     ];
 
-    return { cefr, vocabularyTerms };
+    const themeRows = await this.prisma.userLanguageData.findMany({
+      where: {
+        userId,
+        OR: [
+          { listeningScore: { gte: 0.42 } },
+          { vocabularyScore: { gte: 0.42 } },
+          { grammarScore: { gte: 0.42 } },
+        ],
+      },
+      orderBy: { score: "desc" },
+      take: 22,
+      select: { topic: { select: { name: true } } },
+    });
+    const learnerThemeKnowledge = [
+      ...new Set(
+        themeRows.map((r) => r.topic.name.trim()).filter((n) => n.length > 0),
+      ),
+    ];
+
+    return { cefr, vocabularyTerms, learnerThemeKnowledge };
   }
 
   private async resolveStudyingLanguageCode(userId: number): Promise<string> {

@@ -225,7 +225,7 @@ export default function VideoPage() {
                                     className="!h-10 !w-10"
                                 />
                                 <span className="font-display text-lg font-bold tracking-tight text-foreground">
-                                    CineLingo
+                                    Exply
                                 </span>
                             </div>
                             <span className="justify-self-end text-sm text-muted-foreground">
@@ -272,7 +272,7 @@ export default function VideoPage() {
                                             className="!h-10 !w-10"
                                         />
                                         <span className="font-display text-lg font-bold tracking-tight text-foreground">
-                                            CineLingo
+                                            Exply
                                         </span>
                                     </div>
                                     <p className="max-w-xs text-sm text-muted-foreground">
@@ -282,7 +282,7 @@ export default function VideoPage() {
                                     </p>
                                 </div>
                                 <p className="shrink-0 text-sm text-muted-foreground">
-                                    © {new Date().getFullYear()} CineLingo
+                                    © {new Date().getFullYear()} Exply
                                 </p>
                             </div>
                         </footer>

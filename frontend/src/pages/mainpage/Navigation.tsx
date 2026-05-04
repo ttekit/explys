@@ -11,7 +11,7 @@ const Navigation: React.FC = () => {
           to="/catalog"
           className="text-white font-bold text-2xl tracking-tighter"
         >
-          Cine<span className="text-blue-500">Lingo</span>
+          Ex<span className="text-blue-500">ply</span>
         </Link>
 
         <div className="flex items-center gap-6">

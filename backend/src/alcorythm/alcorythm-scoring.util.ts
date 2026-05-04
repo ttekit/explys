@@ -1,6 +1,83 @@
 import { UserProfileContext } from './alcorythm.types';
 
-export const AI_ALGORITHM_VERSION = 'v1';
+export const AI_ALGORITHM_VERSION = 'v2';
+
+export function aggregateSkillScore(
+  listening: number,
+  vocabulary: number,
+  grammar: number,
+): number {
+  return clamp((listening + vocabulary + grammar) / 3);
+}
+
+/**
+ * Split a blended per-topic strength [0,1] into listening / vocabulary / grammar using
+ * topic tags, name, profile match strengths, and light profile signals.
+ */
+export function splitTopicSkillScores(params: {
+  blended: number;
+  topicName: string;
+  tagNames: string[];
+  primaryStrength: number;
+  secondaryStrength: number;
+  normalizedComplexity: number;
+  profile: UserProfileContext;
+}): { listening: number; vocabulary: number; grammar: number } {
+  const hay = `${params.topicName} ${params.tagNames.join(' ')}`.toLowerCase();
+
+  let listeningAdj = 0;
+  if (
+    /\b(listen|listening|podcast|audio|pronunciation|accent|conversation|dialogue|dialog)\b/.test(
+      hay,
+    )
+  ) {
+    listeningAdj += 0.07;
+  }
+  if (params.normalizedComplexity >= 0.55) {
+    listeningAdj += 0.03;
+  }
+  const listenHobby = params.profile.hobbies.some((h) =>
+    /\b(podcast|film|movie|series|youtube|music|radio|audiobook)\b/i.test(h),
+  );
+  if (listenHobby) {
+    listeningAdj += 0.04;
+  }
+
+  let vocabularyAdj = 0;
+  if (
+    /\b(vocab|vocabulary|word|idiom|phrase|lexis|collocation|expression|phrasal)\b/.test(
+      hay,
+    )
+  ) {
+    vocabularyAdj += 0.07;
+  }
+  vocabularyAdj += 0.06 * params.primaryStrength + 0.04 * params.secondaryStrength;
+
+  let grammarAdj = 0;
+  if (
+    /\b(grammar|tense|clause|syntax|structure|article|preposition|modal)\b/.test(hay)
+  ) {
+    grammarAdj += 0.07;
+  }
+  const formal =
+    Boolean(params.profile.education?.trim()) ||
+    Boolean(params.profile.workField?.trim()) ||
+    Boolean(params.profile.job?.trim());
+  if (formal) {
+    grammarAdj += 0.03;
+  }
+
+  const meanAdj = (listeningAdj + vocabularyAdj + grammarAdj) / 3;
+  listeningAdj -= meanAdj;
+  vocabularyAdj -= meanAdj;
+  grammarAdj -= meanAdj;
+
+  return {
+    listening: clamp(params.blended + listeningAdj),
+    vocabulary: clamp(params.blended + vocabularyAdj),
+    grammar: clamp(params.blended + grammarAdj),
+  };
+}
 
 export function clamp(value: number, min = 0, max = 1): number {
   return Math.max(min, Math.min(max, value));

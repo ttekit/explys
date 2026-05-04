@@ -1,7 +1,7 @@
 /**
  * API client (aligned with `test-nextjs/lib/api.ts`): base URL, `x-api-token`, JSON error parsing, optional JWT.
  */
-const ACCESS_TOKEN_KEY = "eng_curses_access_token";
+const ACCESS_TOKEN_KEY = "exply_access_token";
 
 export function getStoredAccessToken(): string | null {
   try {
@@ -98,4 +98,12 @@ export async function apiFetch(
     headers.set("x-api-token", key);
   }
   return fetch(apiPath(path), { ...rest, headers });
+}
+
+/** Admin analytics: do not send learner `Authorization` — use `VITE_API_TOKEN` only. */
+export async function adminApiFetch(
+  path: string,
+  init: FetchOpts = {},
+): Promise<Response> {
+  return apiFetch(path, { ...init, token: null });
 }

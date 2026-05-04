@@ -10,6 +10,9 @@ export interface TranscriptLine {
   time: string;
   speaker: string;
   text: string;
+  /** For sync with playback; set when sourced from captions. */
+  startSec?: number;
+  endSec?: number;
 }
 
 export interface QuizQuestion {

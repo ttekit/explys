@@ -6,15 +6,22 @@ import { ConfigService } from "@nestjs/config";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { PrismaService } from "src/prisma.service";
+import {
+  aggregateSkillScore,
+  clamp,
+} from "src/alcorythm/alcorythm-scoring.util";
+import { knowledgeDelta } from "src/content-video/content-video-test-grade.util";
 import { AlcorythmService } from "../alcorythm/alcorythm.service";
 import {
   parsePlacementDraft,
   PLACEMENT_DRAFT_VERSION,
+  type PlacementStoredDraftQuestion,
 } from "./placement-draft.types";
 import {
   inferPlacementBandFromProfile,
   placementBandFromScore,
   scoreAgainstDraft,
+  scorePlacementBySkill,
 } from "./placement-level.util";
 import type { CompletePlacementDto } from "./dto/complete-placement.dto";
 import type { PlacementCompleteResponseDto } from "./dto/placement-complete-response.dto";
@@ -141,6 +148,7 @@ export class PlacementTestService {
           questions: questions.map((q) => ({
             id: q.id,
             correctIndex: q.correctIndex,
+            type: q.type,
           })),
         },
       },
@@ -215,6 +223,26 @@ export class PlacementTestService {
       .analyzeUserLevel(userId)
       .catch(() => undefined);
 
+    if (draft?.questions.length) {
+      await this.applyPlacementSkillNudge(userId, draft.questions, answers).catch(
+        () => undefined,
+      );
+    }
+
+    const scorePct =
+      scored.total > 0
+        ? Math.round((1000 * scored.score) / scored.total) / 10
+        : 0;
+    await this.prisma.placementAttempt.create({
+      data: {
+        userId,
+        scoreCorrect: scored.score,
+        scoreTotal: scored.total,
+        scorePct,
+        englishLevel: band.code,
+      },
+    });
+
     const pct =
       scored.total > 0 ? Math.round((scored.score / scored.total) * 100) : 0;
 
@@ -226,6 +254,57 @@ export class PlacementTestService {
       totalQuestions: scored.total,
       percentage: pct,
     };
+  }
+
+  /** Light touch on skill columns from typed placement items (+ legacy untyped). */
+  private async applyPlacementSkillNudge(
+    userId: number,
+    draftQuestions: readonly PlacementStoredDraftQuestion[],
+    answers: Record<string, number>,
+  ): Promise<void> {
+    const skill = scorePlacementBySkill(draftQuestions, answers);
+    const rows = await this.prisma.userLanguageData.findMany({
+      where: { userId },
+    });
+    if (!rows.length) {
+      return;
+    }
+
+    const anyTyped = skill.grammar.t > 0 || skill.vocabulary.t > 0;
+    const scale = 0.2;
+    let dL = 0;
+    let dV = 0;
+    let dG = 0;
+
+    if (skill.grammar.t > 0) {
+      dG += knowledgeDelta(skill.grammar.c / skill.grammar.t) * scale;
+    }
+    if (skill.vocabulary.t > 0) {
+      dV += knowledgeDelta(skill.vocabulary.c / skill.vocabulary.t) * scale;
+    }
+    if (skill.untyped.t > 0) {
+      const uPct = skill.untyped.c / skill.untyped.t;
+      const d =
+        knowledgeDelta(uPct) * scale * (anyTyped ? 0.45 : 0.85);
+      dL += d * 0.45;
+      dV += d * 0.35;
+      dG += d * 0.2;
+    }
+
+    for (const row of rows) {
+      const nl = clamp(row.listeningScore + dL);
+      const nv = clamp(row.vocabularyScore + dV);
+      const ng = clamp(row.grammarScore + dG);
+      await this.prisma.userLanguageData.update({
+        where: { id: row.id },
+        data: {
+          listeningScore: nl,
+          vocabularyScore: nv,
+          grammarScore: ng,
+          score: aggregateSkillScore(nl, nv, ng),
+        },
+      });
+    }
   }
 
   private coerceAnswers(raw: CompletePlacementDto["answers"]): Record<
