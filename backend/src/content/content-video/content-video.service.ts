@@ -16,9 +16,13 @@ export class ContentVideoService {
     return this.prisma.contentVideo.findMany({
       omit: { comprehensionTestsCache: true },
       include: {
+        videoCaption: {
+          select: { subtitlesFileLink: true },
+        },
         content: {
           include: {
             category: true,
+            stats: true,
           },
         },
       },
@@ -30,9 +34,13 @@ export class ContentVideoService {
       where: { id },
       omit: { comprehensionTestsCache: true },
       include: {
+        videoCaption: {
+          select: { subtitlesFileLink: true },
+        },
         content: {
           include: {
             category: true,
+            stats: true,
           },
         },
       },

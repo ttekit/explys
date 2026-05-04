@@ -45,4 +45,30 @@ export class AuthController {
     const userId = Number(req.user.sub);
     return this.authService.getProfile(userId);
   }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Get('profile/learning-stats')
+  @ApiOperation({
+    summary:
+      'Learning dashboard stats (watch time, quizzes, Mon–Sun weekly activity UTC)',
+  })
+  @ApiResponse({ status: 200, description: 'Stats retrieved.' })
+  getLearningStats(@Request() req: any) {
+    const userId = Number(req.user.sub);
+    return this.authService.getLearningStats(userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Get('profile/knowledge-tags')
+  @ApiOperation({
+    summary:
+      'Topic-tag knowledge (listening / vocabulary / grammar means from UserLanguageData)',
+  })
+  @ApiResponse({ status: 200, description: 'Tag aggregates returned.' })
+  getKnowledgeTags(@Request() req: any) {
+    const userId = Number(req.user.sub);
+    return this.authService.getKnowledgeTagProgress(userId);
+  }
 }

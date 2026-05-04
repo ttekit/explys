@@ -483,7 +483,7 @@ export function renderPlacementHtml(
         </button>
         <div class="hdr-brand">
           ${MASCOT_SVG_HEADER}
-          <span class="brand-name">CineLingo</span>
+          <span class="brand-name">Exply</span>
         </div>
         <span class="step-count" id="stepLabel">1 / 1</span>
       </div>
@@ -507,14 +507,14 @@ export function renderPlacementHtml(
       <div class="quiz-footer-inner">
         <div class="quiz-footer-brand">
           ${MASCOT_SVG_HEADER.replace("hdr-mascot", "quiz-footer-logo")}
-          <span class="quiz-footer-title">CineLingo</span>
+          <span class="quiz-footer-title">Exply</span>
         </div>
         <p class="quiz-footer-tagline">
           Personalized English learning through adaptive video content — learn at your own pace.
         </p>
         <div class="quiz-footer-meta">
           <span class="quiz-footer-hint">One-time placement — answers personalize your catalogue.</span>
-          <span>© 2026 CineLingo</span>
+          <span>© 2026 Exply</span>
         </div>
       </div>
     </footer>

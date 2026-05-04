@@ -1,4 +1,4 @@
-const KEY = "eng_curses_registration_draft";
+const KEY = "exply_registration_draft";
 
 export function readRegistrationDraft(): unknown {
   try {

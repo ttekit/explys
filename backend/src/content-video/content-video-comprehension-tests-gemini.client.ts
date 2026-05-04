@@ -1,5 +1,11 @@
 import { Injectable } from "@nestjs/common";
 
+export type KeyVocabularyItem = {
+  word: string;
+  definition: string;
+  example: string;
+};
+
 export type ComprehensionTestItem = {
   id: string;
   question: string;
@@ -18,13 +24,20 @@ export type ComprehensionTestsGenerationContext = {
   learnerCefr: string | null;
   /** User's known terms (same study language as transcript); use for difficulty + overlap. */
   vocabularyTerms: string[];
+  /** From ContentStats.userTags for this lesson. */
+  videoThemeTags: string[];
+  /** Topic names where the learner has moderately strong Topic scores (theme knowledge). */
+  learnerThemeKnowledge: string[];
 };
 
 @Injectable()
 export class ContentVideoComprehensionTestsGeminiClient {
   async generateTests(
     input: ComprehensionTestsGenerationContext,
-  ): Promise<ComprehensionTestItem[] | null> {
+  ): Promise<{
+    tests: ComprehensionTestItem[];
+    keyVocabulary: KeyVocabularyItem[];
+  } | null> {
     const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
     const apiUrl =
       process.env.GEMINI_API_URL ||
@@ -44,6 +57,16 @@ export class ContentVideoComprehensionTestsGeminiClient {
         ? input.vocabularyTerms.slice(0, 50).join(", ")
         : "(no saved vocabulary for this user — infer level only from CEFR and transcript.)";
 
+    const videoThemes =
+      input.videoThemeTags.length > 0
+        ? input.videoThemeTags.slice(0, 12).join(", ")
+        : "(no theme labels for this lesson yet.)";
+
+    const themeStrength =
+      input.learnerThemeKnowledge.length > 0
+        ? input.learnerThemeKnowledge.slice(0, 15).join(", ")
+        : "(no learner topic-strength hints — tailor only from CEFR and vocabulary list.)";
+
     const transcriptBlock = hasTranscript
       ? [
           "VIDEO TRANSCRIPT (ground truth; every fact and quoted word must come from here):",
@@ -52,9 +75,12 @@ export class ContentVideoComprehensionTestsGeminiClient {
       : "No transcript is available. Use only the title and description; keep questions general and do not invent specific facts.";
 
     const prompt = [
-      "You create multiple-choice tests for someone learning English from a video: comprehension AND grammar.",
-      "Return ONLY valid JSON: { \"tests\": [ ... ] } with exactly 9 items.",
-      'Each item: {"id":"t1","category":"comprehension"|"grammar","question":"...","options":["A","B","C","D"],"correctIndex":0}',
+      "You create multiple-choice tests AND a key vocabulary list for someone learning English from a video: comprehension AND grammar.",
+      "Return ONLY valid JSON with this exact top-level shape (no extra keys):",
+      '{ "tests": [ ... 9 items ... ], "keyVocabulary": [ ... 8 items ... ] }',
+      "",
+      "=== tests (9 items) ===",
+      'Each test item: {"id":"t1","category":"comprehension"|"grammar","question":"...","options":["A","B","C","D"],"correctIndex":0}',
       "Field \"category\" is required: use \"comprehension\" for meaning, main idea, or detail; use \"grammar\" for tense, articles (a/the), prepositions, word form, subject–verb agreement, or choosing the only grammatically correct sentence among four short options. Grammar items must be grounded in ideas or paraphrases from the transcript (or title/description if no transcript) — not random unrelated grammar.",
       "correctIndex is 0-based. Four options; one clear best answer; plausible wrong answers at the same difficulty.",
       "",
@@ -68,13 +94,27 @@ export class ContentVideoComprehensionTestsGeminiClient {
         : "- 1 comprehension about why the main topic matters for learners.",
       "- Remaining comprehension items: detail or inference; still use category \"comprehension\".",
       "",
-      "DIFFICULTY: Match the learner CEFR / level below. Vocabulary: prefer words that appear in BOTH the transcript and the learner's word list when it makes sense; otherwise pick fair words from the transcript.",
+      "=== keyVocabulary (8 items) ===",
+      'Each: {"word":"...","definition":"...","example":"..."}',
+      "- Words or short multi-word expressions that actually appear in the transcript (or in title/description if no transcript).",
+      "- Prioritize items that are useful at the learner’s CEFR: not too trivial, not impossibly rare unless central to the clip.",
+      "- When VIDEO_THEME_TAGS match LEARNER_TOPIC_STRENGTHS, you may pick slightly richer or subtler senses (they know the broader theme — push precise usage from the transcript).",
+      "- When overlaps exist between transcript and LEARNER_SAVED_VOCABULARY, favour teaching adjacent / collocation-heavy items rather repeating the exact same glossary word unless it is pedagogically crucial.",
+      "- Definitions MUST be learner-friendly English glosses at roughly the learner level; examples MUST be coherent with the lesson theme.",
+      "",
+      "DIFFICULTY: Match the learner CEFR / level below. Vocabulary in tests: prefer words that appear in BOTH the transcript and the learner's word list when it makes sense; otherwise pick fair words from the transcript.",
       "",
       "LEARNER ENGLISH LEVEL (adjust sentence length in questions and option wording):",
       level,
       "",
       "LEARNER'S SAVED VOCABULARY (for overlap and pitch):",
       vocabList,
+      "",
+      "VIDEO_THEME_TAGS (lesson topic labels):",
+      videoThemes,
+      "",
+      "LEARNER_TOPIC_STRENGTHS (practice areas showing solid progress — adjust depth of vocabulary explanations):",
+      themeStrength,
       "",
       transcriptBlock,
       "",
@@ -107,12 +147,28 @@ export class ContentVideoComprehensionTestsGeminiClient {
       if (typeof text !== "string") {
         return null;
       }
-      const parsed = JSON.parse(text) as { tests?: unknown };
+      const parsed = JSON.parse(text) as {
+        tests?: unknown;
+        keyVocabulary?: unknown;
+      };
       if (!parsed?.tests || !Array.isArray(parsed.tests)) {
         return null;
       }
       const tests = normalizeTests(parsed.tests);
-      return tests.length > 0 ? tests : null;
+      if (tests.length === 0) {
+        return null;
+      }
+      const keyVocabularyRaw = normalizeKeyVocabulary(parsed.keyVocabulary);
+      const keyVocabulary =
+        keyVocabularyRaw.length >= 6
+          ? keyVocabularyRaw
+          : fallbackKeyVocabulary({
+              transcriptPlain: input.transcriptPlain,
+              videoName: input.videoName,
+              learnerCefr: input.learnerCefr,
+              vocabularyTerms: input.vocabularyTerms,
+            });
+      return { tests, keyVocabulary };
     } catch {
       return null;
     }
@@ -149,6 +205,74 @@ function normalizeTests(raw: unknown[]): ComprehensionTestItem[] {
     out.push({ id, question, options, correctIndex, category: cat });
   }
   return out;
+}
+
+export function normalizeKeyVocabulary(raw: unknown): KeyVocabularyItem[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const out: KeyVocabularyItem[] = [];
+  for (const item of raw) {
+    if (typeof item !== "object" || item === null) {
+      continue;
+    }
+    const o = item as Record<string, unknown>;
+    const word = typeof o.word === "string" ? o.word.trim().slice(0, 96) : "";
+    const definition =
+      typeof o.definition === "string" ? o.definition.trim().slice(0, 400) : "";
+    const example =
+      typeof o.example === "string" ? o.example.trim().slice(0, 320) : "";
+    if (word.length < 2 || definition.length < 4) {
+      continue;
+    }
+    out.push({
+      word,
+      definition,
+      example:
+        example.length > 0
+          ? example
+          : `Notice how "${word}" fits the speaker's message in this clip.`,
+    });
+  }
+  return out.slice(0, 12);
+}
+
+/** When Gemini is off or omitted `keyVocabulary` in JSON. */
+export function fallbackKeyVocabulary(ctx: {
+  transcriptPlain: string | null;
+  videoName: string;
+  learnerCefr: string | null;
+  vocabularyTerms: string[];
+}): KeyVocabularyItem[] {
+  const plain = ctx.transcriptPlain?.trim() ?? "";
+  const seeds: string[] = [];
+  if (plain.length >= 40) {
+    seeds.push(...pickTranscriptContentWords(plain, 10));
+  }
+  for (const t of ctx.vocabularyTerms) {
+    const s = t.trim();
+    if (
+      s.length >= 3 &&
+      seeds.length < 14 &&
+      !seeds.some((x) => x.toLowerCase() === s.toLowerCase())
+    ) {
+      seeds.push(s);
+    }
+  }
+  const label = ctx.videoName.slice(0, 72) || "this lesson";
+  const level = ctx.learnerCefr?.trim() || "intermediate";
+  const out: KeyVocabularyItem[] = [];
+  for (const w of seeds) {
+    if (out.length >= 8) {
+      break;
+    }
+    out.push({
+      word: w,
+      definition: `A useful chunk from "${label}", matched to roughly ${level} listening level.`,
+      example: `"${w}" occurs in connected speech — copy stress and grouping from the narrator.`,
+    });
+  }
+  return out.slice(0, 8);
 }
 
 const STOP = new Set(

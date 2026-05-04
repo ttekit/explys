@@ -37,7 +37,7 @@ export function HowItWorksSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
           <h2 className="font-display mb-4 text-balance text-3xl font-bold sm:text-4xl">
-            How <span className="text-primary">CineLingo</span> Works
+            How <span className="text-primary">Exply</span> Works
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
             Get started in minutes and begin your personalized learning journey

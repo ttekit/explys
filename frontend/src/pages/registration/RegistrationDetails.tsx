@@ -219,7 +219,7 @@ export default function RegistrationDetails() {
       <form className="flex flex-col gap-8" onSubmit={handleNext}>
         <section>
           <h1 className="font-display text-2xl font-bold mb-2">
-            How will you use CineLingo?
+            How will you use Exply?
           </h1>
           <p className="mb-6 text-muted-foreground">
             Pick the option that fits you best—we&apos;ll tailor the setup.
@@ -352,7 +352,7 @@ export default function RegistrationDetails() {
         )}
 
         {emptyError && (
-          <ValidateError>Please select how you&apos;ll use CineLingo.</ValidateError>
+          <ValidateError>Please select how you&apos;ll use Exply.</ValidateError>
         )}
         {formError && <ValidateError>{formError}</ValidateError>}
 

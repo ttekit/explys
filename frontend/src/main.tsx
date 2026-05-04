@@ -15,21 +15,55 @@ import VideoPage from "./pages/content/VideosPage";
 import RegisterSuccessPage from "./pages/registration/RegisterSuccessPage";
 import LandingPage from "./pages/landing/LandingPage";
 import LevelTestPage from "./pages/registration/LevelTestPage";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminVideosPage from "./pages/admin/AdminVideosPage";
+import AdminTestsPage from "./pages/admin/AdminTestsPage";
+import AdminTeachersPage from "./pages/admin/AdminTeachersPage";
+import AdminTopicsPage from "./pages/admin/AdminTopicsPage";
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+
+import AnalyticsLayout from "./components/AnalyticsLayout";
 
 const router = createBrowserRouter([
-  { path: "/", element: <LandingPage /> },
-  { path: "/registrationMain", element: <RegistrationMain /> },
-  { path: "/registrationDetails", element: <RegistrationDetails /> },
-  { path: "/registrationPreferences", element: <RegistrationPreferences /> },
-  { path: "/registrationSuccess", element: <RegisterSuccessPage /> },
-  { path: "/level-test", element: <LevelTestPage /> },
-  { path: "/loginForm", element: <LoginForm /> },
-  { path: "/entrance-test", element: <Navigate to="/catalog" replace /> },
-  { path: "/contentPage", element: <ContentPage /> },
-  { path: "/profileMain", element: <ProfileMain /> },
-  { path: "/catalog", element: <VideoPage /> },
-  { path: "/video-page", element: <Navigate to="/catalog" replace /> },
-  { path: "/content/:id?", element: <ContentPage /> }
+  {
+    element: <AnalyticsLayout />,
+    children: [
+      {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminDashboardPage /> },
+          { path: "users", element: <AdminUsersPage /> },
+          { path: "videos", element: <AdminVideosPage /> },
+          { path: "tests", element: <AdminTestsPage /> },
+          { path: "teachers", element: <AdminTeachersPage /> },
+          { path: "topics", element: <AdminTopicsPage /> },
+          { path: "analytics", element: <AdminAnalyticsPage /> },
+          { path: "settings", element: <AdminSettingsPage /> },
+        ],
+      },
+      { path: "/", element: <LandingPage /> },
+      { path: "/registrationMain", element: <RegistrationMain /> },
+      { path: "/registrationDetails", element: <RegistrationDetails /> },
+      {
+        path: "/registrationPreferences",
+        element: <RegistrationPreferences />,
+      },
+      { path: "/registrationSuccess", element: <RegisterSuccessPage /> },
+      { path: "/level-test", element: <LevelTestPage /> },
+      { path: "/loginForm", element: <LoginForm /> },
+      { path: "/entrance-test", element: <Navigate to="/catalog" replace /> },
+      { path: "/contentPage", element: <ContentPage /> },
+      { path: "/profileMain", element: <ProfileMain /> },
+      { path: "/profile", element: <ProfileMain /> },
+      { path: "/catalog", element: <VideoPage /> },
+      { path: "/video-page", element: <Navigate to="/catalog" replace /> },
+      { path: "/content/:id?", element: <ContentPage /> },
+    ],
+  },
 ]);
 
 createRoot(document.getElementById("root")!).render(

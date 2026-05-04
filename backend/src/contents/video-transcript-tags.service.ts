@@ -3,10 +3,10 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-} from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
-import { AlcorythmGeminiTranscriptTagClient } from 'src/alcorythm/alcorythm-gemini-transcript-tags.client';
-import { webVttToPlainText } from './webvtt-to-plain-text.util';
+} from "@nestjs/common";
+import { PrismaService } from "src/prisma.service";
+import { AlcorythmGeminiTranscriptTagClient } from "src/alcorythm/alcorythm-gemini-transcript-tags.client";
+import { webVttToPlainText } from "./webvtt-to-plain-text.util";
 
 export type VideoTranscriptTagsResult = {
   contentStatsId: number;
@@ -15,6 +15,9 @@ export type VideoTranscriptTagsResult = {
   processingComplexity: number | null;
   geminiFailed: boolean;
 };
+
+/** `all` replaces both tag lists + complexity; partial scopes only update the matching fields. */
+export type VideoTagRegenerationScope = "all" | "userTags" | "systemTags";
 
 @Injectable()
 export class VideoTranscriptTagsService {
@@ -31,6 +34,13 @@ export class VideoTranscriptTagsService {
   async generateAndAppendTagsForContentVideo(
     contentVideoId: number,
   ): Promise<VideoTranscriptTagsResult> {
+    return this.regenerateTagsForContentVideo(contentVideoId, "all");
+  }
+
+  async regenerateTagsForContentVideo(
+    contentVideoId: number,
+    scope: VideoTagRegenerationScope,
+  ): Promise<VideoTranscriptTagsResult> {
     const video = await this.prisma.contentVideo.findUnique({
       where: { id: contentVideoId },
       omit: { comprehensionTestsCache: true },
@@ -42,7 +52,7 @@ export class VideoTranscriptTagsService {
     const vttUrl = video.videoCaption?.subtitlesFileLink;
     if (!vttUrl?.trim()) {
       throw new BadRequestException(
-        'No captions for this video yet. Generate captions first.',
+        "No captions for this video yet. Generate captions first.",
       );
     }
 
@@ -55,12 +65,12 @@ export class VideoTranscriptTagsService {
       vtt = await r.text();
     } catch (e) {
       this.logger.warn(`Failed to fetch VTT for tag generation: ${String(e)}`);
-      throw new BadRequestException('Could not load caption file for tagging.');
+      throw new BadRequestException("Could not load caption file for tagging.");
     }
 
     const plain = webVttToPlainText(vtt);
     if (plain.length < 20) {
-      throw new BadRequestException('Caption text is too short to infer tags.');
+      throw new BadRequestException("Caption text is too short to infer tags.");
     }
 
     const contentMediaId = video.contentId;
@@ -71,7 +81,7 @@ export class VideoTranscriptTagsService {
     });
 
     if (metadata === null) {
-      this.logger.warn('GEMINI_API_KEY missing or metadata call failed; ContentStats not updated');
+      this.logger.warn("GEMINI_API_KEY missing or metadata call failed; ContentStats not updated");
       const existing = await this.prisma.contentStats.findUnique({
         where: { contentMediaId },
       });
@@ -96,19 +106,46 @@ export class VideoTranscriptTagsService {
       };
     }
 
+    const updatePayload =
+      scope === "userTags"
+        ? { userTags: metadata.userTags }
+        : scope === "systemTags"
+          ? {
+              systemTags: metadata.systemTags,
+              processingComplexity: metadata.complexity,
+            }
+          : {
+              systemTags: metadata.systemTags,
+              userTags: metadata.userTags,
+              processingComplexity: metadata.complexity,
+            };
+
+    const createPayload =
+      scope === "userTags"
+        ? {
+            contentMediaId,
+            userTags: metadata.userTags,
+            systemTags: [] as string[],
+            processingComplexity: null as number | null,
+          }
+        : scope === "systemTags"
+          ? {
+              contentMediaId,
+              systemTags: metadata.systemTags,
+              processingComplexity: metadata.complexity,
+              userTags: [] as string[],
+            }
+          : {
+              contentMediaId,
+              systemTags: metadata.systemTags,
+              userTags: metadata.userTags,
+              processingComplexity: metadata.complexity,
+            };
+
     const updated = await this.prisma.contentStats.upsert({
       where: { contentMediaId },
-      create: {
-        contentMediaId,
-        systemTags: metadata.systemTags,
-        userTags: metadata.userTags,
-        processingComplexity: metadata.complexity,
-      },
-      update: {
-        systemTags: metadata.systemTags,
-        userTags: metadata.userTags,
-        processingComplexity: metadata.complexity,
-      },
+      create: createPayload,
+      update: updatePayload,
     });
 
     return {

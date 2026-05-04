@@ -1,6 +1,10 @@
 export type TopicKnowledgeItem = {
   topicId: number;
+  /** Mean of listening, vocabulary, and grammar. */
   score: number;
+  listeningScore: number;
+  vocabularyScore: number;
+  grammarScore: number;
   confidence: number;
   coverage: number;
   algorithmVersion: string;

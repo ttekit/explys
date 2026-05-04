@@ -9,6 +9,7 @@ import {
   IsArray,
   IsNumber,
   IsObject,
+  IsIn,
 } from "class-validator";
 
 export class CreateUserDto {
@@ -28,6 +29,11 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(["adult", "student", "teacher"])
+  role?: string;
 
   @IsOptional()
   @IsString()

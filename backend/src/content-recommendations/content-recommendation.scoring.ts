@@ -58,6 +58,21 @@ export function vocabularyStrengthFromTopicScores(
   );
 }
 
+/**
+ * Listening-heavy blend per topic when ranking video content.
+ */
+export function blendedVideoTopicKnowledge(
+  listening: number,
+  vocabulary: number,
+  grammar: number,
+): number {
+  return clamp(
+    0.52 * listening + 0.28 * vocabulary + 0.2 * grammar,
+    0,
+    1,
+  );
+}
+
 function tokenSet(tokens: string[]): Set<string> {
   const s = new Set<string>();
   for (const t of tokens) {

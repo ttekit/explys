@@ -117,3 +117,23 @@ export function countCorrect(
 export function knowledgeDelta(pct: number): number {
   return 0.12 * (pct - 0.5);
 }
+
+/**
+ * Maps post-video test results to per-skill deltas. Comprehension items → listening + vocabulary;
+ * grammar items → grammar only.
+ */
+export function knowledgeDeltasFromComprehensionStats(stats: {
+  comprehension: { c: number; t: number };
+  grammar: { c: number; t: number };
+}): { listening: number; vocabulary: number; grammar: number } {
+  const compPct =
+    stats.comprehension.t > 0 ? stats.comprehension.c / stats.comprehension.t : null;
+  const gramPct = stats.grammar.t > 0 ? stats.grammar.c / stats.grammar.t : null;
+  const compDelta = compPct != null ? knowledgeDelta(compPct) : 0;
+  const gramDelta = gramPct != null ? knowledgeDelta(gramPct) : 0;
+  return {
+    listening: compDelta * 0.55,
+    vocabulary: compDelta * 0.45,
+    grammar: gramDelta,
+  };
+}

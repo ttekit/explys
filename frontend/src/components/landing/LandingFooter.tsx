@@ -22,7 +22,7 @@ export function LandingFooter() {
             <Link to="/" className="mb-4 flex items-center gap-2">
               <ChameleonMascot size="sm" mood="happy" animate={false} />
               <span className="font-display text-xl font-bold text-foreground">
-                CineLingo
+                Exply
               </span>
             </Link>
             <p className="max-w-xs text-sm text-muted-foreground">
@@ -52,7 +52,7 @@ export function LandingFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-border border-t pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} CineLingo. All rights reserved.
+            © {new Date().getFullYear()} Exply. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <a

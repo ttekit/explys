@@ -29,7 +29,7 @@ export class UserVocabularyService {
 
   /**
    * Builds vocabulary from each `UserLanguageData` row: every tag on that topic becomes a term in
-   * that topic’s `language`, with `mastery` at least the user’s score for that topic.
+   * that topic’s `language`, with `mastery` at least the user’s vocabulary skill for that topic.
    */
   async syncFromUserLanguageData(
     userId: number,
@@ -56,11 +56,11 @@ export class UserVocabularyService {
           },
         });
         if (existing) {
-          if (row.score > existing.mastery) {
+          if (row.vocabularyScore > existing.mastery) {
             await this.prisma.userVocabulary.update({
               where: { id: existing.id },
               data: {
-                mastery: row.score,
+                mastery: row.vocabularyScore,
                 topicId: row.topicId,
                 source: 'topic_tags',
               },
@@ -73,7 +73,7 @@ export class UserVocabularyService {
               language: lang,
               term,
               topicId: row.topicId,
-              mastery: row.score,
+              mastery: row.vocabularyScore,
               source: 'topic_tags',
             },
           });

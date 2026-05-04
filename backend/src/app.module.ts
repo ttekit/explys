@@ -16,6 +16,9 @@ import { TopicsModule } from "./topics/topics.module";
 import { UsersModule } from "./users/users.module";
 import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
 import { PlacementTestModule } from "./placement-test/placement-test.module";
+import { AdminAnalyticsModule } from "./admin-analytics/admin-analytics.module";
+import { AdminUsersModule } from "./admin-users/admin-users.module";
+import { TeacherStudentsModule } from "./teacher-students/teacher-students.module";
 
 @Module({
   imports: [
@@ -34,6 +37,9 @@ import { PlacementTestModule } from "./placement-test/placement-test.module";
     CategoriesModule,
     TopicsModule,
     PlacementTestModule,
+    AdminAnalyticsModule,
+    AdminUsersModule,
+    TeacherStudentsModule,
   ],
   controllers: [AppController],
   providers: [

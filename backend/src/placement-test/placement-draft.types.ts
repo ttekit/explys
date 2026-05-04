@@ -1,10 +1,14 @@
 /** Stored on `User.placementTestDraft` while the entry test iframe is served. */
 
+import type { PlacementQuestionType } from "./placement-test.types";
+
 export const PLACEMENT_DRAFT_VERSION = 1 as const;
 
 export type PlacementStoredDraftQuestion = {
   id: string;
   correctIndex: 0 | 1 | 2 | 3;
+  /** Present for drafts issued after skill-aware placement; omit = unknown. */
+  type?: PlacementQuestionType;
 };
 
 export interface PlacementStoredDraft {
@@ -34,7 +38,14 @@ export function parsePlacementDraft(
           ? parseInt(String(r.correctIndex), 10)
           : NaN;
     if (!id || !Number.isFinite(ci) || ci < 0 || ci > 3) return null;
-    questions.push({ id, correctIndex: ci as 0 | 1 | 2 | 3 });
+    const qt = r.type;
+    const type: PlacementStoredDraftQuestion["type"] =
+      qt === "grammar" || qt === "vocabulary" ? qt : undefined;
+    questions.push({
+      id,
+      correctIndex: ci as 0 | 1 | 2 | 3,
+      ...(type ? { type } : {}),
+    });
   }
   if (!questions.length) return null;
   return { v: PLACEMENT_DRAFT_VERSION, issuedAt: x.issuedAt, questions };

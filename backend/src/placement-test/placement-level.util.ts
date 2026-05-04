@@ -1,5 +1,7 @@
 /** CEFR band from placement score — same thresholds as the placement-test iframe UI. */
 
+import type { PlacementStoredDraftQuestion } from "./placement-draft.types";
+
 export type PlacementLevelBand = {
   code: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   label: string;
@@ -32,6 +34,48 @@ export function scoreAgainstDraft(
     if (pick === row.correctIndex) score++;
   }
   return { score, total };
+}
+
+/** Per-skill correctness for drafts that store `type` on each question. */
+export function scorePlacementBySkill(
+  draftRows: readonly PlacementStoredDraftQuestion[],
+  answers: Record<string, number>,
+): {
+  grammar: { c: number; t: number };
+  vocabulary: { c: number; t: number };
+  untyped: { c: number; t: number };
+} {
+  let gC = 0,
+    gT = 0,
+    vC = 0,
+    vT = 0,
+    uC = 0,
+    uT = 0;
+  for (const row of draftRows) {
+    const pick = answers[row.id];
+    const ok = typeof pick === "number" && pick === row.correctIndex;
+    if (row.type === "grammar") {
+      gT++;
+      if (ok) {
+        gC++;
+      }
+    } else if (row.type === "vocabulary") {
+      vT++;
+      if (ok) {
+        vC++;
+      }
+    } else {
+      uT++;
+      if (ok) {
+        uC++;
+      }
+    }
+  }
+  return {
+    grammar: { c: gC, t: gT },
+    vocabulary: { c: vC, t: vT },
+    untyped: { c: uC, t: uT },
+  };
 }
 
 /** Best-effort parse of already-persisted `englishLevel` (self-report or prior completion). */

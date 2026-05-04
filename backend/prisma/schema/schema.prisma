@@ -18,6 +18,8 @@ model User {
   placementTestDraft Json?              @map("placement_test_draft")
   lastLogin          DateTime?
   createdAt          DateTime            @default(now())
+  /// When true, login and profile are blocked until an admin clears this flag.
+  isSuspended        Boolean             @default(false) @map("is_suspended")
   teacherId          Int?                @map("teacher_id")
   teacher            User?               @relation("UserTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
   students           User[]              @relation("UserTeacher")
@@ -30,6 +32,9 @@ model User {
   friendOf           UserFriend[]        @relation("UserFriendsReverse")
   postWatchSurveys   PostWatchSurvey[]
   userVocabulary     UserVocabulary[]
+  watchSessions                  WatchSession[]
+  comprehensionTestAttempts      ComprehensionTestAttempt[]
+  placementAttempts              PlacementAttempt[]
 
   @@index([teacherId], map: "users_teacher_id_idx")
   @@map("users")
@@ -136,10 +141,14 @@ model UserLanguageData {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   topicId          Int
   topic            Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  /// Mean of listening, vocabulary, and grammar (legacy aggregate for APIs and fits).
   score            Float
+  listeningScore   Float @default(0.35) @map("listening_score")
+  vocabularyScore  Float @default(0.35) @map("vocabulary_score")
+  grammarScore     Float    @default(0.35) @map("grammar_score")
   confidence       Float    @default(0)
   coverage         Float    @default(0)
-  algorithmVersion String   @default("v1")
+  algorithmVersion String   @default("v2")
   updatedAt        DateTime @updatedAt
 
   @@unique([userId, topicId])
@@ -174,4 +183,20 @@ model UserVocabulary {
   @@unique([userId, language, term])
   @@index([userId, language])
   @@map("user_vocabulary")
+}
+
+/// One-row-per-day idempotent completion signal for admin metrics (JWT watch-complete).
+model PlacementAttempt {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scoreCorrect Int      @map("score_correct")
+  scoreTotal   Int      @map("score_total")
+  scorePct     Float    @map("score_pct")
+  englishLevel String   @map("english_level")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("placement_attempts")
 }
