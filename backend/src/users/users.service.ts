@@ -141,7 +141,7 @@ export class UsersService {
         });
     }
 
-    async findOne(id: number) {
+    async findById(id: number) {
         const user = await this.prisma.user.findUnique({
             where: { id },
             select: this.userSelect,
@@ -167,7 +167,7 @@ export class UsersService {
 
     async update(id: number, updateUserDto: UpdateUserDto) {
         const prisma = this.prisma as any;
-        await this.findOne(id);
+        await this.findById(id);
 
         const {
             favoriteGenres,
@@ -264,7 +264,7 @@ export class UsersService {
     }
 
     async remove(id: number) {
-        await this.findOne(id);
+        await this.findById(id);
 
         return this.prisma.user.delete({
             where: { id },

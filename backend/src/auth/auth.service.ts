@@ -13,7 +13,8 @@ import { LoginDto } from "./dto/login.dto";
 import { AlcorythmService } from "../alcorythm/alcorythm.service";
 import { UsersService } from "src/users/users.service";
 import { User } from "@generated/prisma/client";
-import { Request } from "express";
+import { Request, Response } from "express";
+import { ConfigService } from "@nestjs/config";
 
 // Экспортируем интерфейс, чтобы контроллер мог его видеть
 export interface GeneratedStudent {
@@ -29,6 +30,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly alcorythmService: AlcorythmService,
     private readonly userService: UsersService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(req: Request, dto: RegisterDto) {
@@ -175,6 +177,19 @@ export class AuthService {
         name: user.name,
       },
     };
+  }
+
+  async logout(req: Request, res: Response): Promise<void> {
+    return new Promise((resolve, reject) => {
+      req.session.destroy((err) => {
+        if (err) {
+          return reject(new InternalServerErrorException(""));
+        }
+        res.clearCookie(this.configService.getOrThrow<string>("SESSION_NAME"));
+        
+        resolve()
+      });
+    });
   }
 
   private async saveSession(req: Request, user: User) {

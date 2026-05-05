@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -21,6 +23,8 @@ import { UserSelfOrApiGuard } from "../auth/guards/user-self-or-api.guard";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { UsersService } from "./users.service";
+import { Authorized } from "src/auth/decorators/authorized.decorator";
+import { Authorization } from "src/auth/decorators/auth.decorator";
 
 @ApiTags("users")
 @Controller("users")
@@ -62,7 +66,7 @@ export class UsersController {
   @ApiResponse({ status: 403, description: "Forbidden." })
   @ApiResponse({ status: 404, description: "User not found." })
   findOne(@Param("id", ParseIntPipe) id: number) {
-    return this.usersService.findOne(id);
+    return this.usersService.findById(id);
   }
 
   @Patch(":id")
@@ -90,5 +94,12 @@ export class UsersController {
   @ApiResponse({ status: 404, description: "User not found." })
   remove(@Param("id", ParseIntPipe) id: number) {
     return this.usersService.remove(id);
+  }
+
+  @Authorization()
+  @HttpCode(HttpStatus.OK)
+  @Get('profile')
+  public async findProfile(@Authorized('id') userId: number){
+    return this.usersService.findById(userId)
   }
 }

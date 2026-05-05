@@ -32,10 +32,10 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiBody({ type: LoginDto })
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto) {
+    return await this.authService.login(loginDto);
   }
-
+  
   @UseGuards(AuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Get('profile')
