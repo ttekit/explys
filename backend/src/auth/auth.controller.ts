@@ -1,9 +1,10 @@
-import { Controller, Post, Body, UseGuards, Get, Request, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, HttpCode, HttpStatus, Req, Request as ReqDecorator} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import type { Request } from 'express';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -20,8 +21,8 @@ export class AuthController {
       'Bad request or unable to register with the provided information.',
   })
   @ApiBody({ type: RegisterDto })
-  register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(@Req() req: Request, @Body() registerDto: RegisterDto) {
+    return await this.authService.register(req, registerDto);
   }
 
   @Post('login')
@@ -41,7 +42,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get user profile (requires authentication)' })
   @ApiResponse({ status: 200, description: 'User profile retrieved successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  getProfile(@Request() req: any) {
+  getProfile(@ReqDecorator() req: any) {
     return {
       message: 'Welcome',
       user: req.user,

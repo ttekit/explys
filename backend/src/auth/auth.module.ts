@@ -7,6 +7,7 @@ import { AuthGuard } from "./auth.guard";
 import { AuthService } from "./auth.service";
 import { ApiTokenOrJwtAuthGuard } from "./guards/api-token-or-jwt.guard";
 import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
+import { UsersService } from "src/users/users.service";
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
     AuthGuard,
     ApiTokenOrJwtAuthGuard,
     UserSelfOrApiGuard,
+    UsersService,
   ],
   exports: [
     JwtModule,

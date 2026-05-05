@@ -2,13 +2,18 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { AlcorythmService } from '../alcorythm/alcorythm.service';
+  ConflictException,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import { PrismaService } from "src/prisma.service";
+import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcrypt";
+import { RegisterDto } from "./dto/register.dto";
+import { LoginDto } from "./dto/login.dto";
+import { AlcorythmService } from "../alcorythm/alcorythm.service";
+import { UsersService } from "src/users/users.service";
+import { User } from "@generated/prisma/client";
+import { Request } from "express";
 
 // Экспортируем интерфейс, чтобы контроллер мог его видеть
 export interface GeneratedStudent {
@@ -23,20 +28,17 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly alcorythmService: AlcorythmService,
-  ) { }
+    private readonly userService: UsersService,
+  ) {}
 
-  async register(dto: RegisterDto) {
+  async register(req: Request, dto: RegisterDto) {
     const prisma = this.prisma as any;
 
-    // Проверка существования пользователя
-    const userExists = await prisma.user.findUnique({
-      where: { email: dto.email },
-      select: { id: true },
-    });
+    const userExists = await this.userService.FindByEmail(dto.email);
 
     if (userExists) {
-      throw new BadRequestException(
-        'Unable to register with the provided information',
+      throw new ConflictException(
+        "User with this email already exists. Please use another email or log in",
       );
     }
 
@@ -58,14 +60,16 @@ export class AuthService {
       studentNames: dto.studentNames, // Json массив из схемы [cite: 14]
 
       // Исправленная логика favoriteGenres
-      favoriteGenres: (dto.favoriteGenres && dto.favoriteGenres.length > 0)
-        ? { connect: dto.favoriteGenres.map(id => ({ id })) }
-        : undefined,
+      favoriteGenres:
+        dto.favoriteGenres && dto.favoriteGenres.length > 0
+          ? { connect: dto.favoriteGenres.map((id) => ({ id })) }
+          : undefined,
 
       // Исправленная логика hatedGenres
-      hatedGenres: (dto.hatedGenres && dto.hatedGenres.length > 0)
-        ? { connect: dto.hatedGenres.map(id => ({ id })) }
-        : undefined,
+      hatedGenres:
+        dto.hatedGenres && dto.hatedGenres.length > 0
+          ? { connect: dto.hatedGenres.map((id) => ({ id })) }
+          : undefined,
     };
 
     // 1. Создаем учителя (основного пользователя)
@@ -74,7 +78,8 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         name: dto.name,
-        role: dto.role || 'adult',
+        role: (dto.role?.toUpperCase() || "ADULT") as any,
+        method: "CREDENTIALS",
         additionalUserData: {
           create: additionalDataPayload,
         },
@@ -89,21 +94,25 @@ export class AuthService {
     const generatedStudents: GeneratedStudent[] = [];
 
     // 2. Генерация аккаунтов для учеников
-    if (dto.role === 'teacher' && Array.isArray(dto.studentNames)) {
+    if (dto.role === "teacher" && Array.isArray(dto.studentNames)) {
       for (const pupil of dto.studentNames) {
         // Генерация почты и временного пароля
         const randomId = Math.floor(1000 + Math.random() * 9000);
-        const studentEmail = `${pupil.name.toLowerCase()}.${pupil.surname.toLowerCase()}.${randomId}@alcorythm.com`;
+
+        const [name, surname] = pupil.split(" ");
+        const studentEmail = `${name?.toLowerCase()}.${surname?.toLowerCase()}.${randomId}@alcorythm.com`;
+        //const studentEmail = `${pupil.name.toLowerCase()}.${pupil.surname.toLowerCase()}.${randomId}@alcorythm.com`;
         const tempPassword = Math.random().toString(36).slice(-8);
         const hashedStudentPassword = await bcrypt.hash(tempPassword, 10);
 
-        // Создаем ученика и привязываем к учителю через teacherId 
+        // Создаем ученика и привязываем к учителю через teacherId
         const newStudent = await prisma.user.create({
           data: {
             email: studentEmail,
             password: hashedStudentPassword,
-            name: `${pupil.name} ${pupil.surname}`,
-            role: 'student',
+            name: pupil,
+            role: "STUDENT",
+            method: "CREDENTIALS",
             teacherId: mainUser.id,
           },
         });
@@ -120,6 +129,8 @@ export class AuthService {
 
     const payload = { sub: mainUser.id, email: mainUser.email };
 
+    await this.saveSession(req, mainUser);
+
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: {
@@ -128,7 +139,8 @@ export class AuthService {
         name: mainUser.name,
       },
       // Возвращаем данные учеников учителю
-      generatedStudents: generatedStudents.length > 0 ? generatedStudents : undefined,
+      generatedStudents:
+        generatedStudents.length > 0 ? generatedStudents : undefined,
     };
   }
 
@@ -144,13 +156,13 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     const payload = { sub: user.id, email: user.email };
@@ -163,5 +175,24 @@ export class AuthService {
         name: user.name,
       },
     };
+  }
+
+  private async saveSession(req: Request, user: User) {
+    return new Promise((resolve, reject) => {
+      req.session.userId = user.id.toString();
+
+      req.session.save((err) => {
+        if (err) {
+          return reject(
+            new InternalServerErrorException(
+              "Failed to save session. Please check if session parameters are configured correctly.",
+            ),
+          );
+        }
+        resolve({
+          user,
+        });
+      });
+    });
   }
 }

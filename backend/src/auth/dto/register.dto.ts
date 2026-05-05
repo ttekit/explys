@@ -1,12 +1,41 @@
-import { IsEmail, IsString, IsOptional, IsArray, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsOptional,
+  IsArray,
+  MinLength,
+  IsNotEmpty,
+  MaxLength,
+  Validate,
+} from "class-validator";
+import { IsPasswordsMatchingConstraint } from "src/common/decorators/is-password-matching-constraint.decorator";
 
 export class RegisterDto {
-  @IsEmail()
+  @IsString({ message: "Email must be a string" })
+  @IsEmail({}, { message: "Please provide a valid email address" })
+  @IsNotEmpty({ message: "Email is required" })
   email: string;
 
-  @IsString()
-  @MinLength(6)
+  @IsString({ message: "Password must be a string" })
+  @IsNotEmpty({ message: "Password is required" })
+  @MinLength(8, {
+    message: "Password is too short - minimum 8 characters required",
+  })
+  @MaxLength(20, {
+    message: "Password is too long - maximum 20 characters allowed",
+  })
   password: string;
+
+  @IsString({ message: "Password must be a string" })
+  @IsNotEmpty({ message: "Password is required" })
+  @MinLength(8, {
+    message: "Password is too short - minimum 8 characters required",
+  })
+  @MaxLength(20, {
+    message: "Password is too long - maximum 20 characters allowed",
+  })
+  @Validate(IsPasswordsMatchingConstraint, { message: "Password don`t match" })
+  passwordRepeat: string;
 
   @IsString()
   name: string;

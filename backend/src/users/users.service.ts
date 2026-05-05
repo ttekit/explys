@@ -161,8 +161,8 @@ export class UsersService {
             include: {
                 accounts: true,
             }
-
         })
+        return user
     }
 
     async update(id: number, updateUserDto: UpdateUserDto) {

@@ -46,7 +46,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const config = app.get(ConfigService);
-  const redis = new IORedis(config.getOrThrow('REDIS_URI'))
+  const redis = new IORedis("redis://localhost:6379");
+  //const redis = new IORedis(config.getOrThrow('REDIS_URL'))
 
   app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
 
@@ -54,7 +55,7 @@ async function bootstrap() {
   app.useStaticAssets(join(process.cwd(), "public"), { prefix: "/dev/" });
 
   app.enableCors({
-    origin: (resolveCorsOrigin(), config.getOrThrow<string>("ALLOWED_ORIGIN")),
+    origin: (/*resolveCorsOrigin(),*/ config.getOrThrow<string>("ALLOWED_ORIGIN")),
     exposedHeaders: ["set-cookie"],
     credentials: true,
   });
@@ -70,10 +71,10 @@ async function bootstrap() {
     session({
       secret: config.getOrThrow<string>("SESSION_SECRET"),
       name: config.getOrThrow<string>("SESSION_NAME"),
-      resave: true,
+      resave: false,
       saveUninitialized: false,
       cookie: {
-        domain: config.getOrThrow<string>("SESSION_DOMAIN"),
+        domain: config.getOrThrow<string>("SESSION_DOMAIN") || undefined,
         maxAge: ms(config.getOrThrow<StringValue>("SESSION_MAX_AGE")),
         httpOnly: parseBoolean(config.getOrThrow<string>("SESSION_HTTP_ONLY")),
         secure: parseBoolean(config.getOrThrow<string>("SESSION_SECURE")),
@@ -82,7 +83,6 @@ async function bootstrap() {
       store: new RedisStore({
         client: redis,
         prefix: config.getOrThrow<string>('SESSION_FOLDER')
-
       })
     }),
   );
