@@ -16,8 +16,8 @@ import {
 const sidebarLinks = [
   { icon: LayoutGrid, label: "Catalog", to: "/catalog" },
   { icon: Search, label: "Search", to: "/catalog" },
-  { icon: BookOpen, label: "My Lessons", to: "/contentPage" },
-  { icon: Trophy, label: "Progress", to: "/profile" },
+  { icon: BookOpen, label: "Watched Lessons", to: "/watched-lessons" },
+  { icon: Trophy, label: "Progress", to: "/profile?tab=progress" },
   { icon: User, label: "Profile", to: "/profile" },
 ] as const;
 
@@ -27,6 +27,8 @@ interface CatalogSidebarProps {
   onSelectCategory: (category: string) => void;
   welcomeName?: string;
   englishLevel?: string;
+  /** When false, hides category chips (e.g. on profile pages). Default true. */
+  showCategoryFilter?: boolean;
 }
 
 export function CatalogSidebar({
@@ -35,16 +37,27 @@ export function CatalogSidebar({
   onSelectCategory,
   welcomeName,
   englishLevel,
+  showCategoryFilter = true,
 }: CatalogSidebarProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const profileTab = new URLSearchParams(search).get("tab");
   const [collapsed, setCollapsed] = useState(false);
 
   const sortedCategories = ["All", ...categories.filter(Boolean).sort()];
 
+  const isProfilePath =
+    pathname === "/profile" || pathname === "/profileMain";
+
   const linkActive = (link: (typeof sidebarLinks)[number]) => {
     if (link.label === "Catalog") return pathname === "/catalog";
     if (link.label === "Search") return pathname.startsWith("/catalog/search");
-    return pathname === link.to;
+    if (link.label === "Progress") {
+      return isProfilePath && profileTab === "progress";
+    }
+    if (link.label === "Profile") {
+      return isProfilePath && profileTab !== "progress";
+    }
+    return pathname === link.to.split("?")[0];
   };
 
   return (
@@ -106,7 +119,7 @@ export function CatalogSidebar({
           ))}
         </nav>
 
-        {!collapsed && (
+        {!collapsed && showCategoryFilter ? (
           <div className="space-y-4 border-border border-t p-4">
             <div>
               <p className="mb-2 text-sm font-medium text-foreground">
@@ -131,7 +144,7 @@ export function CatalogSidebar({
               </div>
             </div>
           </div>
-        )}
+        ) : null}
 
         <div className="border-border border-t p-4">
           <Link

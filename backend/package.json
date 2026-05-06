@@ -48,6 +48,6 @@
     "build": "nest build",
     "test": "jest",
     "seed": "npx ts-node prisma/seed.ts",
-    "postbuild": "xcopy /E /I /Y src\\generated dist\\generated"
+    "postbuild": "node -e \"require('fs').cpSync('src/generated','dist/generated',{recursive:true,force:true})\""
   }
 }

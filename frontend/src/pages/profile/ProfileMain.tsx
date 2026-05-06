@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
-import { LandingHeader } from "../../components/landing/LandingHeader";
+import { Link, useSearchParams } from "react-router";
 import {
   BarChart3,
   BookOpen,
@@ -27,6 +26,7 @@ import { ProfileAchievements } from "../../components/profile/ProfileAchievement
 import { ProfileActivity } from "../../components/profile/ProfileActivity";
 import { ProfileSettings } from "../../components/profile/ProfileSettings";
 import { ProfileTeacherStudents } from "../../components/profile/ProfileTeacherStudents";
+import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
 
 const LEARNER_TABS = [
   { id: "overview" as const, label: "Overview", icon: BarChart3 },
@@ -39,6 +39,17 @@ const LEARNER_TABS = [
 type TabId =
   | (typeof LEARNER_TABS)[number]["id"]
   | "students";
+
+const LEARNER_TAB_IDS = new Set(LEARNER_TABS.map((t) => t.id));
+
+function tabFromSearchParam(raw: string | null, isTeacher: boolean): TabId {
+  if (!raw) return "overview";
+  if (raw === "students") return isTeacher ? "students" : "overview";
+  if (LEARNER_TAB_IDS.has(raw as (typeof LEARNER_TABS)[number]["id"])) {
+    return raw as TabId;
+  }
+  return "overview";
+}
 
 function normalizeRole(role: string): ProfileHeaderRole {
   if (role === "student" || role === "teacher") return role;
@@ -55,7 +66,15 @@ type LearningStatsPayload = {
 
 export default function ProfileMain() {
   const { user, isLoading, isLoggedIn, refreshProfile } = useUser();
-  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = useMemo(
+    () =>
+      tabFromSearchParam(
+        searchParams.get("tab"),
+        user?.role === "teacher",
+      ),
+    [searchParams, user?.role],
+  );
   const [joinMeta, setJoinMeta] = useState<{
     userId: string;
     label: string;
@@ -172,10 +191,10 @@ export default function ProfileMain() {
   }, [user?.role]);
 
   useEffect(() => {
-    if (user?.role !== "teacher" && activeTab === "students") {
-      setActiveTab("overview");
+    if (user?.role !== "teacher" && searchParams.get("tab") === "students") {
+      setSearchParams({}, { replace: true });
     }
-  }, [user?.role, activeTab]);
+  }, [user?.role, searchParams, setSearchParams]);
 
   if (isLoading) {
     return (
@@ -200,57 +219,82 @@ export default function ProfileMain() {
   }
 
   return (
-    <div className="min-h-dvh bg-background">
-      <LandingHeader />
+    <div className="min-h-screen bg-background text-foreground antialiased">
+      <div className="flex">
+        <CatalogSidebar
+          categories={[]}
+          selectedCategory="All"
+          onSelectCategory={() => {}}
+          showCategoryFilter={false}
+          welcomeName={
+            user.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined
+          }
+          englishLevel={user.englishLevel?.trim() || undefined}
+        />
 
-      <main className="pb-12 pt-20 sm:pt-24">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <ProfileHeader user={headerModel} />
+        <main className="ml-0 flex-1 pb-28 lg:ml-64 lg:pb-12">
+          <div className="space-y-6 px-4 pt-6 sm:px-6 lg:space-y-8 lg:px-8 lg:pt-8">
+            <ProfileHeader user={headerModel} />
 
-          <div
-            className="mt-8 flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1"
-            role="tablist"
-            aria-label="Profile sections"
-          >
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors sm:flex-none sm:justify-start",
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-                  )}
-                >
-                  <Icon className="size-4 shrink-0" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              );
-            })}
+            <div
+              className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1"
+              role="tablist"
+              aria-label="Profile sections"
+            >
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => {
+                      if (tab.id === "overview") {
+                        setSearchParams({}, { replace: true });
+                      } else {
+                        setSearchParams({ tab: tab.id }, { replace: true });
+                      }
+                    }}
+                    className={cn(
+                      "inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors sm:flex-none sm:justify-start",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mx-auto max-w-6xl lg:mx-0">
+              <div className="mt-2">
+                {activeTab === "overview" ? (
+                  <ProfileStats user={statsModel} />
+                ) : null}
+                {activeTab === "students" ? <ProfileTeacherStudents /> : null}
+                {activeTab === "progress" ? <ProfileProgress /> : null}
+                {activeTab === "achievements" ? (
+                  <ProfileAchievements />
+                ) : null}
+                {activeTab === "activity" ? <ProfileActivity /> : null}
+                {activeTab === "settings" ? (
+                  <ProfileSettings
+                    user={user}
+                    onSaved={async () => {
+                      await refreshProfile();
+                    }}
+                  />
+                ) : null}
+              </div>
+            </div>
           </div>
-
-          <div className="mt-6">
-            {activeTab === "overview" ? <ProfileStats user={statsModel} /> : null}
-            {activeTab === "students" ? <ProfileTeacherStudents /> : null}
-            {activeTab === "progress" ? <ProfileProgress /> : null}
-            {activeTab === "achievements" ? <ProfileAchievements /> : null}
-            {activeTab === "activity" ? <ProfileActivity /> : null}
-            {activeTab === "settings" ? (
-              <ProfileSettings
-                user={user}
-                onSaved={refreshProfile}
-              />
-            ) : null}
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

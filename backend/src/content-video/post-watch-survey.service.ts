@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { Prisma } from 'src/generated/prisma/client';
+import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import {
   aggregateSkillScore,
