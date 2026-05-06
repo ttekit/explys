@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Prisma } from "@generated/prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import { webVttToPlainText } from "src/contents/webvtt-to-plain-text.util";
 import { PrismaService } from "src/prisma.service";
 import { aggregateSkillScore, clamp } from "src/alcorythm/alcorythm-scoring.util";

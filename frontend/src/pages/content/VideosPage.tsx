@@ -3,6 +3,9 @@ import { useNavigate } from "react-router";
 import { apiFetch, getApiBase, getStoredAccessToken } from "../../lib/api";
 import { useUser } from "../../context/UserContext";
 import PlacementPreferencesStep from "../../components/PlacementPreferencesStep";
+import PlacementPreTestStep, {
+    adultNeedsPreTestProfile,
+} from "../../components/PlacementPreTestStep";
 import { ChameleonMascot } from "../../components/ChameleonMascot";
 import { CatalogHero } from "../../components/catalog/CatalogHero";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
@@ -38,7 +41,7 @@ export default function VideoPage() {
     const { user, isLoading: userLoading, refreshProfile } = useUser();
     const placementCompleteHandled = useRef(false);
     const [placementPhase, setPlacementPhase] = useState<
-        "preferences" | "test"
+        "preferences" | "preTestProfile" | "test"
     >("preferences");
 
     const accessToken = getStoredAccessToken();
@@ -50,15 +53,32 @@ export default function VideoPage() {
         !user.hasCompletedPlacement;
 
     useEffect(() => {
-        if (!needsPlacement) {
+        if (!needsPlacement || !user) {
             setPlacementPhase("preferences");
             return;
         }
         const hasPrefs =
             (user.hobbies?.length ?? 0) > 0 &&
             (user.favoriteGenres?.length ?? 0) > 0;
-        setPlacementPhase(hasPrefs ? "test" : "preferences");
-    }, [needsPlacement, user?.hobbies, user?.favoriteGenres]);
+        if (!hasPrefs) {
+            setPlacementPhase("preferences");
+            return;
+        }
+        if (adultNeedsPreTestProfile(user)) {
+            setPlacementPhase("preTestProfile");
+            return;
+        }
+        setPlacementPhase("test");
+    }, [
+        needsPlacement,
+        user,
+        user?.hobbies,
+        user?.favoriteGenres,
+        user?.workField,
+        user?.education,
+        user?.nativeLanguage,
+        user?.role,
+    ]);
 
     useEffect(() => {
         if (!needsPlacement) {
@@ -84,8 +104,14 @@ export default function VideoPage() {
 
     const showPlacementPreferences =
         needsPlacement && placementPhase === "preferences" && user;
+    const showPlacementPreTest =
+        needsPlacement && placementPhase === "preTestProfile" && user;
     const showPlacementTest =
         needsPlacement && placementPhase === "test" && accessToken;
+
+    const placementStepCount = user?.role === "adult" ? 3 : 2;
+    const preferencesStepIndex = 1;
+    const preTestStepIndex = 2;
 
     useEffect(() => {
         const fetchVideos = async () => {
@@ -229,7 +255,7 @@ export default function VideoPage() {
                                 </span>
                             </div>
                             <span className="justify-self-end text-sm text-muted-foreground">
-                                1 / 2
+                                {preferencesStepIndex} / {placementStepCount}
                             </span>
                         </div>
                     </header>
@@ -237,12 +263,24 @@ export default function VideoPage() {
                         <div
                             className="h-2 w-full overflow-hidden rounded-full bg-muted"
                             role="progressbar"
-                            aria-valuenow={50}
+                            aria-valuenow={Math.round(
+                                (preferencesStepIndex / placementStepCount) *
+                                    100,
+                            )}
                             aria-valuemin={0}
                             aria-valuemax={100}
                             aria-label="Placement flow progress"
                         >
-                            <div className="h-full w-1/2 rounded-full bg-primary transition-all" />
+                            <div
+                                className="h-full rounded-full bg-primary transition-all"
+                                style={{
+                                    width: `${
+                                        (preferencesStepIndex /
+                                            placementStepCount) *
+                                        100
+                                    }%`,
+                                }}
+                            />
                         </div>
                     </div>
                     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -258,7 +296,14 @@ export default function VideoPage() {
                         <div className="flex-1 pb-6">
                             <PlacementPreferencesStep
                                 user={user}
-                                onSuccess={() => setPlacementPhase("test")}
+                                onSuccess={(next) => {
+                                    const u = next ?? user;
+                                    setPlacementPhase(
+                                        adultNeedsPreTestProfile(u)
+                                            ? "preTestProfile"
+                                            : "test",
+                                    );
+                                }}
                             />
                         </div>
                         <footer className="shrink-0 border-border border-t bg-card">
@@ -286,6 +331,58 @@ export default function VideoPage() {
                                 </p>
                             </div>
                         </footer>
+                    </div>
+                </div>
+            ) : null}
+
+            {showPlacementPreTest ? (
+                <div className="fixed inset-0 z-[200] flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
+                    <header className="shrink-0 border-border border-b bg-background">
+                        <div className="mx-auto grid w-full max-w-4xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4">
+                            <div aria-hidden="true" />
+                            <div className="flex items-center gap-2">
+                                <ChameleonMascot
+                                    size="sm"
+                                    mood="thinking"
+                                    animate={false}
+                                    className="!h-10 !w-10"
+                                />
+                                <span className="font-display text-lg font-bold tracking-tight text-foreground">
+                                    Exply
+                                </span>
+                            </div>
+                            <span className="justify-self-end text-sm text-muted-foreground">
+                                {preTestStepIndex} / {placementStepCount}
+                            </span>
+                        </div>
+                    </header>
+                    <div className="mx-auto w-full max-w-4xl shrink-0 px-4 py-6">
+                        <div
+                            className="h-2 w-full overflow-hidden rounded-full bg-muted"
+                            role="progressbar"
+                            aria-valuenow={Math.round(
+                                (preTestStepIndex / placementStepCount) * 100,
+                            )}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label="Placement flow progress"
+                        >
+                            <div
+                                className="h-full rounded-full bg-primary transition-all"
+                                style={{
+                                    width: `${
+                                        (preTestStepIndex / placementStepCount) *
+                                        100
+                                    }%`,
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-6">
+                        <PlacementPreTestStep
+                            user={user}
+                            onSuccess={() => setPlacementPhase("test")}
+                        />
                     </div>
                 </div>
             ) : null}

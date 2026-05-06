@@ -92,7 +92,7 @@ export default function PlacementPreferencesStep({
   onSuccess,
 }: {
   user: UserData;
-  onSuccess: () => void;
+  onSuccess: (updatedProfile: UserData | null) => void;
 }) {
   const { refreshProfile } = useUser();
   const [genreOptions, setGenreOptions] = useState<GenreOption[]>([]);
@@ -155,8 +155,8 @@ export default function PlacementPreferencesStep({
         toast.error(await readApiErrorBody(res));
         return;
       }
-      await refreshProfile();
-      onSuccess();
+      const nextProfile = await refreshProfile();
+      onSuccess(nextProfile);
     } catch {
       toast.error("Could not save preferences.");
     } finally {

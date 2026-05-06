@@ -8,7 +8,7 @@ import { LandingFooter } from "../../components/landing/LandingFooter";
 export default function LandingPage() {
   return (
     <main className="min-h-screen">
-      <LandingHeader />
+      <LandingHeader variant="landing" />
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />

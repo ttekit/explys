@@ -168,8 +168,8 @@ export default function RegistrationMain() {
       confirmPassword: "",
       englishLevel: "choose",
       hobbies: [],
-      education: "choose",
-      workField: "choose",
+      education: "",
+      workField: "",
       favoriteGenres: [],
       hatedGenres: [],
     });

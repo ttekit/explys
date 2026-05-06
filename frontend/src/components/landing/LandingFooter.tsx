@@ -3,9 +3,9 @@ import { ChameleonMascot } from "../ChameleonMascot";
 
 const footerLinks = {
   Product: [
-    { label: "Features", to: "/#features" },
-    { label: "Catalog", to: "/catalog" },
-    { label: "Level Test", to: "/level-test" },
+    { label: "Why Choose Exply?", to: "/#why-exply" },
+    { label: "How Exply Works", to: "/#how-exply-works" },
+    { label: "Start Your Journey", to: "/#start-journey" },
   ],
   Account: [
     { label: "Log in", to: "/loginForm" },

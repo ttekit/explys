@@ -4,7 +4,10 @@ import { ArrowRight } from "lucide-react";
 
 export function CtaSection() {
   return (
-    <section className="relative overflow-hidden py-24">
+    <section
+      id="start-journey"
+      className="relative scroll-mt-24 overflow-hidden py-24"
+    >
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_oklch(0.65_0.25_295_/_0.2)_0%,_transparent_70%)]" />
 
       <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
