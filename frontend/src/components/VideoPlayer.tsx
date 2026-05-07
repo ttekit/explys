@@ -6,6 +6,8 @@ interface VideoPlayerProps extends HTMLAttributes<HTMLDivElement> {
   onEnded?: () => void;
   /** Subscribe to playback time updates (for syncing transcript). */
   onPlaybackTime?: (seconds: number) => void;
+  /** Fires each `timeupdate` with `currentTime / duration` in [0,1] when duration is known. */
+  onPlaybackFraction?: (fraction: number) => void;
   /** Access the `<video>` element for seeking from the sidebar. */
   onVideoMount?: (el: HTMLVideoElement | null) => void;
 }
@@ -14,6 +16,7 @@ export default function VideoPlayer({
   src,
   onEnded,
   onPlaybackTime,
+  onPlaybackFraction,
   onVideoMount,
   className,
   ...rest
@@ -45,8 +48,12 @@ export default function VideoPlayer({
 
     const { currentTime, duration } = video;
     setCurrentTime(currentTime);
-    setProgress(duration ? (currentTime / duration) * 100 : 0);
+    const dur =
+      duration && Number.isFinite(duration) && duration > 0 ? duration : 0;
+    const frac = dur > 0 ? currentTime / dur : 0;
+    setProgress(dur > 0 ? frac * 100 : 0);
     onPlaybackTime?.(currentTime);
+    if (dur > 0) onPlaybackFraction?.(Math.min(1, Math.max(0, frac)));
   }
 
   function handleLoadedMetadata() {
@@ -64,6 +71,10 @@ export default function VideoPlayer({
     videoRef.current.currentTime = newTime;
     setProgress(ratio * 100);
     setCurrentTime(newTime);
+    const dur = videoRef.current.duration;
+    if (dur && Number.isFinite(dur) && dur > 0) {
+      onPlaybackFraction?.(Math.min(1, Math.max(0, newTime / dur)));
+    }
   }
 
   function formatTime(secs: number) {

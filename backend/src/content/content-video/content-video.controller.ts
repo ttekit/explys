@@ -52,6 +52,18 @@ export class ContentVideoController {
     return this.contentVideoService.findAll();
   }
 
+  @Get("watched")
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: "Watched lessons for the signed-in learner",
+    description:
+      "Returns distinct catalog videos where the user has at least one `WatchSession`, newest first.",
+  })
+  findWatchedForLearner(@Req() req: Request & { user: unknown }) {
+    const userId = jwtSubToUserId(req.user);
+    return this.contentVideoService.findWatchedByUser(userId);
+  }
+
   @Post("surveys/:surveyId/submit")
   submitPostWatchSurvey(
     @Param("surveyId", ParseIntPipe) surveyId: number,

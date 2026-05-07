@@ -12,6 +12,7 @@ import ContentPage from "./pages/content/ContentPage";
 import ProfileMain from "./pages/profile/ProfileMain";
 import { UserProvider } from "./context/UserContext";
 import VideoPage from "./pages/content/VideosPage";
+import WatchedLessonsPage from "./pages/content/WatchedLessonsPage";
 import RegisterSuccessPage from "./pages/registration/RegisterSuccessPage";
 import LandingPage from "./pages/landing/LandingPage";
 import LevelTestPage from "./pages/registration/LevelTestPage";
@@ -26,25 +27,12 @@ import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 import AnalyticsLayout from "./components/AnalyticsLayout";
+import RequireAuth from "./components/RequireAuth";
 
 const router = createBrowserRouter([
   {
     element: <AnalyticsLayout />,
     children: [
-      {
-        path: "/admin",
-        element: <AdminLayout />,
-        children: [
-          { index: true, element: <AdminDashboardPage /> },
-          { path: "users", element: <AdminUsersPage /> },
-          { path: "videos", element: <AdminVideosPage /> },
-          { path: "tests", element: <AdminTestsPage /> },
-          { path: "teachers", element: <AdminTeachersPage /> },
-          { path: "topics", element: <AdminTopicsPage /> },
-          { path: "analytics", element: <AdminAnalyticsPage /> },
-          { path: "settings", element: <AdminSettingsPage /> },
-        ],
-      },
       { path: "/", element: <LandingPage /> },
       { path: "/registrationMain", element: <RegistrationMain /> },
       { path: "/registrationDetails", element: <RegistrationDetails /> },
@@ -53,15 +41,35 @@ const router = createBrowserRouter([
         element: <RegistrationPreferences />,
       },
       { path: "/registrationSuccess", element: <RegisterSuccessPage /> },
-      { path: "/level-test", element: <LevelTestPage /> },
       { path: "/loginForm", element: <LoginForm /> },
-      { path: "/entrance-test", element: <Navigate to="/catalog" replace /> },
-      { path: "/contentPage", element: <ContentPage /> },
-      { path: "/profileMain", element: <ProfileMain /> },
-      { path: "/profile", element: <ProfileMain /> },
-      { path: "/catalog", element: <VideoPage /> },
-      { path: "/video-page", element: <Navigate to="/catalog" replace /> },
-      { path: "/content/:id?", element: <ContentPage /> },
+      {
+        element: <RequireAuth />,
+        children: [
+          {
+            path: "/admin",
+            element: <AdminLayout />,
+            children: [
+              { index: true, element: <AdminDashboardPage /> },
+              { path: "users", element: <AdminUsersPage /> },
+              { path: "videos", element: <AdminVideosPage /> },
+              { path: "tests", element: <AdminTestsPage /> },
+              { path: "teachers", element: <AdminTeachersPage /> },
+              { path: "topics", element: <AdminTopicsPage /> },
+              { path: "analytics", element: <AdminAnalyticsPage /> },
+              { path: "settings", element: <AdminSettingsPage /> },
+            ],
+          },
+          { path: "/level-test", element: <LevelTestPage /> },
+          { path: "/entrance-test", element: <Navigate to="/catalog" replace /> },
+          { path: "/contentPage", element: <Navigate to="/watched-lessons" replace /> },
+          { path: "/watched-lessons", element: <WatchedLessonsPage /> },
+          { path: "/profileMain", element: <ProfileMain /> },
+          { path: "/profile", element: <ProfileMain /> },
+          { path: "/catalog", element: <VideoPage /> },
+          { path: "/video-page", element: <Navigate to="/catalog" replace /> },
+          { path: "/content/:id?", element: <ContentPage /> },
+        ],
+      },
     ],
   },
 ]);

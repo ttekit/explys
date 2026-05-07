@@ -3,7 +3,7 @@ import InputText from "../../components/InputText";
 import LabelRegister from "../../components/LabelRegister";
 import ValidateError from "../../components/ValidateError";
 import { useState, ChangeEvent, FormEvent } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -14,6 +14,15 @@ import {
 import { useUser } from "../../context/UserContext";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 
+function safeReturnPath(state: unknown): string | undefined {
+  if (!state || typeof state !== "object" || !("from" in state)) return undefined;
+  const raw = (state as { from?: unknown }).from;
+  if (typeof raw !== "string" || raw.length === 0) return undefined;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return undefined;
+  if (raw === "/loginForm" || raw.startsWith("/loginForm?")) return undefined;
+  return raw;
+}
+
 export default function LoginForm() {
   const [loginData, setLoginData] = useState({
     email: "",
@@ -22,6 +31,7 @@ export default function LoginForm() {
   const [emptyError, setEmptyError] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { refreshProfile } = useUser();
 
   const isEmpty = [loginData.email, loginData.password].some(
@@ -48,14 +58,16 @@ export default function LoginForm() {
             access_token?: string;
           };
           const token = data.access_token;
+          const next =
+            safeReturnPath(location.state) ?? "/catalog";
           if (!token) {
             toast.success("Signed in successfully.");
-            navigate("/catalog");
+            navigate(next);
           } else {
             setStoredAccessToken(token);
             await refreshProfile();
             toast.success("Signed in successfully.");
-            navigate("/catalog");
+            navigate(next);
           }
         } else {
           const message = await getResponseErrorMessage(response);

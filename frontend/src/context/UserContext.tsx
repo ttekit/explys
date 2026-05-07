@@ -19,6 +19,8 @@ export interface UserData {
   hobbies: string[];
   education: string;
   workField: string;
+  /** First language / L1 — used for personalization and placement context. */
+  nativeLanguage: string;
   favoriteGenres: number[];
   hatedGenres: number[];
   avatarUrl?: string;
@@ -26,6 +28,12 @@ export interface UserData {
   playbackSpeed?: number | null;
   /** From `UserSettings.currentResolution` (e.g. auto, 720p) */
   videoQuality?: string;
+}
+
+/** Registration used `"choose"` as a sentinel for unfilled selects; strip so UI shows blanks. */
+function stripChoosePlaceholder(raw: unknown): string {
+  const s = String(raw ?? "").trim();
+  return s.toLowerCase() === "choose" ? "" : s;
 }
 
 function normalizeProfile(raw: unknown): UserData | null {
@@ -38,8 +46,9 @@ function normalizeProfile(raw: unknown): UserData | null {
     role: String(r.role ?? "adult"),
     hasCompletedPlacement: Boolean(r.hasCompletedPlacement),
     englishLevel: String(r.englishLevel ?? ""),
-    education: String(r.education ?? ""),
-    workField: String(r.workField ?? ""),
+    education: stripChoosePlaceholder(r.education),
+    workField: stripChoosePlaceholder(r.workField),
+    nativeLanguage: stripChoosePlaceholder(r.nativeLanguage),
     hobbies: Array.isArray(r.hobbies) ? (r.hobbies as string[]) : [],
     favoriteGenres: Array.isArray(r.favoriteGenres)
       ? (r.favoriteGenres as number[])

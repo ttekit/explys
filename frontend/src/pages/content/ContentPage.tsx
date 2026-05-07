@@ -22,6 +22,8 @@ import {
 import { parseWebVttTranscriptLines } from "../../lib/parseWebVtt";
 
 const LESSON_XP = 150;
+/** Playback ratio at or above which the lesson counts as watched (quiz + backend watch-complete). */
+const WATCHED_COMPLETED_RATIO = 0.75;
 
 /** GET /content-video/:id/tests (Gemini generates tests + keyVocabulary together). */
 type LessonSideBundle = {
@@ -278,6 +280,11 @@ export default function ContentPage() {
   const [transcriptLoading, setTranscriptLoading] = useState(false);
   const [playbackSec, setPlaybackSec] = useState(0);
 
+  /** True once playback reaches threshold for this lesson (quiz + Watched label). */
+  const progressedToWatchedRef = useRef(false);
+  /** POST /watch-complete fire-once guard (survey + analytics). */
+  const watchCompletePostedRef = useRef(false);
+
   const seekToCue = useCallback((seconds: number) => {
     const el = videoElRef.current;
     if (!el || !Number.isFinite(seconds)) return;
@@ -288,22 +295,42 @@ export default function ContentPage() {
     }
   }, []);
 
-  const handleVideoEnded = useCallback(async () => {
-    setIsVideoComplete(true);
-    if (!id) return;
+  const postWatchCompleteOnce = useCallback(async () => {
+    if (watchCompletePostedRef.current || !id) return;
     const vid = Number.parseInt(String(id), 10);
     if (!Number.isFinite(vid) || vid <= 0) return;
+    watchCompletePostedRef.current = true;
     try {
       const res = await apiFetch(`/content-video/${vid}/watch-complete`, {
         method: "POST",
       });
       if (res.ok) {
         captureEvent("video_watch_complete", { content_video_id: vid });
+      } else {
+        watchCompletePostedRef.current = false;
       }
     } catch {
-      /* non-blocking */
+      watchCompletePostedRef.current = false;
     }
   }, [id]);
+
+  const ensureLessonWatched = useCallback(() => {
+    if (progressedToWatchedRef.current) return;
+    progressedToWatchedRef.current = true;
+    setIsVideoComplete(true);
+    void postWatchCompleteOnce();
+  }, [postWatchCompleteOnce]);
+
+  const handlePlaybackFraction = useCallback(
+    (fraction: number) => {
+      if (fraction >= WATCHED_COMPLETED_RATIO) ensureLessonWatched();
+    },
+    [ensureLessonWatched],
+  );
+
+  const handleVideoEnded = useCallback(() => {
+    ensureLessonWatched();
+  }, [ensureLessonWatched]);
 
   useEffect(() => {
     if (!id) {
@@ -405,6 +432,8 @@ export default function ContentPage() {
     setTranscriptLines([]);
     setPlaybackSec(0);
     setTranscriptLoading(false);
+    progressedToWatchedRef.current = false;
+    watchCompletePostedRef.current = false;
   }, [id]);
 
   const headerRight = quizCompleted
@@ -458,6 +487,7 @@ export default function ContentPage() {
                   src={videoData.videoLink}
                   onEnded={handleVideoEnded}
                   onPlaybackTime={(t) => setPlaybackSec(t)}
+                  onPlaybackFraction={handlePlaybackFraction}
                   onVideoMount={(el) => {
                     videoElRef.current = el;
                   }}
@@ -474,7 +504,8 @@ export default function ContentPage() {
                     <span className="text-sm text-accent">Watched</span>
                   ) : (
                     <span className="text-sm text-muted-foreground">
-                      Watch to unlock quiz
+                      Watch {Math.round(WATCHED_COMPLETED_RATIO * 100)}% to unlock
+                      quiz
                     </span>
                   )}
                 </div>

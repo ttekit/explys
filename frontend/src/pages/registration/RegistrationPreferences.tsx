@@ -9,6 +9,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import { cn } from "../../lib/utils";
+import { buildRegisterBody } from "../../lib/registerUser";
 
 export default function RegistrationPreferences() {
   const context = useContext(RegistrationContext);
@@ -78,20 +79,6 @@ export default function RegistrationPreferences() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const {
-      confirmPassword: _omitConfirm,
-      studentNames: _omitStudents,
-      teacherGrades: _omitGrades,
-      teacherTopics: _omitTopics,
-      ...payload
-    } = formData;
-
-    const dataToSend = {
-      ...payload,
-      favoriteGenres: formData.favoriteGenres ?? [],
-      hatedGenres: formData.hatedGenres ?? [],
-    };
-
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
@@ -100,7 +87,13 @@ export default function RegistrationPreferences() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(dataToSend),
+          body: JSON.stringify(
+            buildRegisterBody({
+              ...formData,
+              favoriteGenres: formData.favoriteGenres ?? [],
+              hatedGenres: formData.hatedGenres ?? [],
+            }),
+          ),
         },
       );
 
