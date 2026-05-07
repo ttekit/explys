@@ -1,10 +1,20 @@
 import { PlacementTestPayload } from "./placement-test.types";
+import { PLACEMENT_IFRAME_SCRIPT } from "./placement-iframe-inline.script";
 
 function embedJsonInScript(obj: unknown): string {
   return JSON.stringify(obj)
     .replace(/</g, "\\u003c")
     .replace(/\u2028/g, "\\u2028")
-    .replace(/\u2029/g, "\\u2029");
+    .replace(/\u2029/g, "\\u2029")
+    .replace(/<!--/g, "\\u003c!--");
+}
+
+function escapeAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 /** Inline SVG mascot (thinking mood), colors match ui-example / frontend theme */
@@ -54,16 +64,19 @@ export function renderPlacementHtml(
   payload: PlacementTestPayload,
   accessToken: string,
   xApiToken?: string | null,
+  apiPublicOrigin = "",
 ): string {
   const payloadOut: Record<string, unknown> = { ...payload, accessToken };
   if (xApiToken) {
     payloadOut.xApiToken = xApiToken;
   }
   const dataJson = embedJsonInScript(payloadOut);
+  const dataJsonHtml = escapeAttr(dataJson);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="explys-placement-api-origin" content="${escapeAttr(apiPublicOrigin)}" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeAttr(payload.title)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -221,6 +234,29 @@ export function renderPlacementHtml(
       margin: 0 auto;
       width: 100%;
       padding: 1.5rem 1rem 2rem;
+    }
+    .placement-load-error {
+      margin: 0 0 1.25rem;
+      padding: 1rem 1.15rem;
+      border-radius: 0.75rem;
+      border: 1px solid color-mix(in oklch, var(--danger) 45%, var(--border));
+      background: color-mix(in oklch, var(--danger) 12%, var(--card));
+      color: var(--foreground);
+      font-size: 0.9375rem;
+      line-height: 1.5;
+    }
+    .placement-load-error[hidden] { display: none !important; }
+    /* JSON blob: textarea avoids attribute-size / encoding issues vs data-payload */
+    textarea#placement-data {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
     .q-type-pill {
       display: inline-block;
@@ -414,6 +450,32 @@ export function renderPlacementHtml(
       margin-bottom: 1.65rem;
       line-height: 1.55;
     }
+    .summary-card {
+      background: color-mix(in oklch, var(--card) 92%, var(--primary) 8%);
+      border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--border));
+      border-radius: 1rem;
+      padding: 1.15rem 1.25rem;
+      margin-bottom: 1.35rem;
+      text-align: left;
+    }
+    .summary-card h3 {
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+      color: var(--foreground);
+    }
+    .summary-card p {
+      margin: 0 0 0.65rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--foreground);
+    }
+    .summary-card p:last-child { margin-bottom: 0; }
+    .summary-muted {
+      font-size: 0.85rem !important;
+      color: var(--muted-fg) !important;
+    }
     .btn-block { width: 100%; justify-content: center; padding: 1.1rem 1.25rem; font-size: 1rem; border-radius: 0.65rem; }
     /* ui-example Footer: card strip + meta row */
     .quiz-footer {
@@ -483,9 +545,9 @@ export function renderPlacementHtml(
         </button>
         <div class="hdr-brand">
           ${MASCOT_SVG_HEADER}
-          <span class="brand-name">Exply</span>
+          <span class="brand-name">Explys</span>
         </div>
-        <span class="step-count" id="stepLabel">1 / 1</span>
+        <span class="step-count" id="stepLabel">— / —</span>
       </div>
     </header>
     <div class="progress-wrap">
@@ -495,7 +557,8 @@ export function renderPlacementHtml(
     </div>
     <div class="tags-hint" id="tagRow" aria-label="Practice focus tags"></div>
     <main class="quiz-main" aria-live="polite">
-      <div class="q-type-pill" id="qKind">grammar</div>
+      <div class="placement-load-error" id="placementLoadError" hidden role="alert"></div>
+      <div class="q-type-pill" id="qKind"></div>
       <h2 class="q-prompt font-display" id="qText"></h2>
       <div class="opts" id="opts" role="radiogroup" aria-labelledby="qText"></div>
       <div class="nav-row">
@@ -507,14 +570,14 @@ export function renderPlacementHtml(
       <div class="quiz-footer-inner">
         <div class="quiz-footer-brand">
           ${MASCOT_SVG_HEADER.replace("hdr-mascot", "quiz-footer-logo")}
-          <span class="quiz-footer-title">Exply</span>
+          <span class="quiz-footer-title">Explys</span>
         </div>
         <p class="quiz-footer-tagline">
           Personalized English learning through adaptive video content — learn at your own pace.
         </p>
         <div class="quiz-footer-meta">
           <span class="quiz-footer-hint">One-time placement — answers personalize your catalogue.</span>
-          <span>© 2026 Exply</span>
+          <span>© 2026 Explys</span>
         </div>
       </div>
     </footer>
@@ -547,6 +610,12 @@ export function renderPlacementHtml(
           </div>
         </div>
       </div>
+      <div class="summary-card" id="summaryCard" hidden>
+        <h3>What you practiced</h3>
+        <p id="summaryVocab"></p>
+        <p id="summaryGrammar"></p>
+        <p class="summary-muted" id="summaryHint"></p>
+      </div>
       <p class="res-msg" id="lvlMsg"></p>
       <button type="button" class="btn btn-primary btn-block" id="btnContinue">
         Start learning →
@@ -555,208 +624,11 @@ export function renderPlacementHtml(
     </div>
   </section>
 
-  <script>window.__PLACEMENT = ${dataJson};</script>
+  <!-- Payload only in textarea (entities escape <script>-breaking sequences in JSON). No <template> + raw JSON (can confuse HTML tokenizer vs following <script>). -->
+  <textarea id="placement-data" class="placement-data-blob" readonly aria-hidden="true">${dataJsonHtml}</textarea>
   <script>
-(function () {
-  var d = window.__PLACEMENT;
-  if (!d || !d.questions || !d.questions.length) return;
-
-  function getLevel(score, total) {
-    var pct = (score / total) * 100;
-    if (pct >= 90) return { level: "C1", label: "Advanced" };
-    if (pct >= 70) return { level: "B2", label: "Upper intermediate" };
-    if (pct >= 50) return { level: "B1", label: "Intermediate" };
-    if (pct >= 30) return { level: "A2", label: "Elementary" };
-    return { level: "A1", label: "Beginner" };
-  }
-
-  function levelMessage(code) {
-    if (code === "A1" || code === "A2") {
-      return "We will personalize lessons to your beginner level and help you build strong foundations.";
-    }
-    if (code === "B1" || code === "B2") {
-      return "We will match content to your intermediate level and help you keep advancing.";
-    }
-    return "We will personalize with more challenging material for your advanced skills.";
-  }
-
-  var questions = d.questions;
-  var n = questions.length;
-  var answers = [];
-  var i = 0;
-  for (var z = 0; z < n; z++) { answers[z] = null; }
-
-  var tagRow = document.getElementById("tagRow");
-  (d.knowledgeTags || []).slice(0, 7).forEach(function (t) {
-    var s = document.createElement("span");
-    s.className = "tag";
-    s.textContent = t;
-    tagRow.appendChild(s);
-  });
-
-  var qKind = document.getElementById("qKind");
-  var qText = document.getElementById("qText");
-  var optsEl = document.getElementById("opts");
-  var stepLabel = document.getElementById("stepLabel");
-  var prog = document.getElementById("progressFill");
-  var bar = document.querySelector('[role="progressbar"]');
-  var btnPrev = document.getElementById("btnPrev");
-  var btnNext = document.getElementById("btnNext");
-
-  var btnExit = document.getElementById("btnExit");
-  if (btnExit) {
-    btnExit.addEventListener("click", function () {
-      try {
-        window.parent && window.parent.postMessage({ type: "placement_exit" }, "*");
-      } catch (e0) {}
-    });
-  }
-
-  function setProgress(idx) {
-    var p = Math.round(((idx + 1) / n) * 100);
-    prog.style.width = p + "%";
-    if (bar) { bar.setAttribute("aria-valuenow", String(p)); }
-    stepLabel.textContent = (idx + 1) + " / " + n;
-  }
-
-  function renderQuestion(idx) {
-    var q = questions[idx];
-    qKind.textContent = q.type;
-    qKind.className = "q-type-pill" + (q.type === "vocabulary" ? " vocab" : "");
-    qText.textContent = q.prompt;
-
-    optsEl.innerHTML = "";
-    var selected = answers[idx];
-    for (var j = 0; j < 4; j++) {
-      var opt = document.createElement("button");
-      opt.type = "button";
-      opt.className = "opt";
-      opt.setAttribute("role", "radio");
-      opt.setAttribute("aria-checked", selected === j ? "true" : "false");
-      opt.setAttribute("data-idx", String(j));
-
-      var L = document.createElement("span");
-      L.className = "opt-letter";
-      L.textContent = String.fromCharCode(65 + j);
-      var T = document.createElement("span");
-      T.className = "opt-text";
-      T.textContent = q.options[j];
-
-      opt.appendChild(L);
-      opt.appendChild(T);
-      opt.addEventListener("click", function (ev) {
-        var dj = parseInt(ev.currentTarget.getAttribute("data-idx"), 10);
-        answers[idx] = dj;
-        var buttons = optsEl.querySelectorAll(".opt");
-        for (var k = 0; k < buttons.length; k++) {
-          buttons[k].setAttribute("aria-checked", k === dj ? "true" : "false");
-        }
-        btnNext.disabled = answers[idx] === null;
-      });
-      optsEl.appendChild(opt);
-    }
-
-    setProgress(idx);
-    btnPrev.disabled = idx === 0;
-    var last = idx === n - 1;
-    btnNext.textContent = last ? "Finish test" : "Next";
-    btnNext.disabled = answers[idx] === null;
-  }
-
-  btnPrev.addEventListener("click", function () {
-    if (i <= 0) return;
-    i--;
-    renderQuestion(i);
-  });
-
-  btnNext.addEventListener("click", function () {
-    if (answers[i] === null) return;
-    if (i < n - 1) {
-      i++;
-      renderQuestion(i);
-      return;
-    }
-    showResult();
-  });
-
-  function computeScore() {
-    var score = 0;
-    for (var k = 0; k < n; k++) {
-      var q = questions[k];
-      if (answers[k] !== null && answers[k] === q.correctIndex) score++;
-    }
-    return score;
-  }
-
-  function showResult() {
-    document.getElementById("view-quiz").classList.add("is-off");
-    document.getElementById("view-quiz").setAttribute("aria-hidden", "true");
-    var res = document.getElementById("view-result");
-    res.style.display = "flex";
-    res.classList.add("is-on");
-    res.setAttribute("aria-hidden", "false");
-
-    var score = computeScore();
-    var level = getLevel(score, n);
-    var pct = Math.round((score / n) * 100);
-
-    document.getElementById("scoreFract").textContent = score + "/" + n;
-    document.getElementById("scorePct").textContent = pct + "% correct";
-    document.getElementById("lvlCode").textContent = level.level;
-    document.getElementById("lvlLabel").textContent = level.label;
-    document.getElementById("lvlMsg").textContent = levelMessage(level.level);
-  }
-
-  var btnContinue = document.getElementById("btnContinue");
-  var finishMsg = document.getElementById("finishMsg");
-
-  btnContinue.addEventListener("click", function () {
-    btnContinue.disabled = true;
-    finishMsg.textContent = "Saving…";
-    finishMsg.className = "msg-foot";
-
-    var payloadAnswers = {};
-    for (var k = 0; k < n; k++) {
-      var qi = questions[k];
-      if (answers[k] !== null && answers[k] !== undefined) {
-        payloadAnswers[qi.id] = answers[k];
-      }
-    }
-
-    var h = { "Content-Type": "application/json" };
-    if (d.xApiToken) h["x-api-token"] = d.xApiToken;
-
-    fetch("/placement-test/complete", {
-      method: "POST",
-      headers: h,
-      body: JSON.stringify({ access_token: d.accessToken, answers: payloadAnswers })
-    }).then(function (r) {
-      if (!r.ok) return r.text().then(function (t) { throw new Error(t || String(r.status)); });
-      return r.json();
-    }).then(function () {
-      finishMsg.className = "msg-foot ok";
-      finishMsg.textContent = "You are all set. Returning to your library.";
-      try {
-        window.parent && window.parent.postMessage({ type: "placement_test_complete" }, "*");
-      } catch (e) {}
-    }).catch(function (e) {
-      finishMsg.className = "msg-foot err";
-      finishMsg.textContent = (e && e.message) || "Could not save. Tap to retry.";
-      btnContinue.disabled = false;
-    });
-  });
-
-  renderQuestion(0);
-})();
+${PLACEMENT_IFRAME_SCRIPT}
   </script>
 </body>
 </html>`;
-}
-
-function escapeAttr(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
 }

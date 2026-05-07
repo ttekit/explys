@@ -21,7 +21,7 @@ export default function RegisterSuccessPage() {
         <ChameleonMascot size="lg" mood="excited" className="mb-6" />
         <h2 className="font-display text-2xl font-bold">Nice work!</h2>
         <p className="mt-3 text-muted-foreground">
-          You&apos;re ready to dive into Exply with your freshly minted roster.
+          You&apos;re ready to dive into Explys with your freshly minted roster.
         </p>
       </div>
 

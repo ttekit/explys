@@ -36,6 +36,16 @@ function stripChoosePlaceholder(raw: unknown): string {
   return s.toLowerCase() === "choose" ? "" : s;
 }
 
+function coerceHasCompletedPlacement(raw: unknown): boolean {
+  if (raw === true || raw === 1) return true;
+  if (raw === false || raw === 0 || raw == null) return false;
+  if (typeof raw === "string") {
+    const s = raw.trim().toLowerCase();
+    return s === "true" || s === "1";
+  }
+  return false;
+}
+
 function normalizeProfile(raw: unknown): UserData | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
@@ -44,7 +54,7 @@ function normalizeProfile(raw: unknown): UserData | null {
     name: String(r.name ?? ""),
     email: String(r.email ?? ""),
     role: String(r.role ?? "adult"),
-    hasCompletedPlacement: Boolean(r.hasCompletedPlacement),
+    hasCompletedPlacement: coerceHasCompletedPlacement(r.hasCompletedPlacement),
     englishLevel: String(r.englishLevel ?? ""),
     education: stripChoosePlaceholder(r.education),
     workField: stripChoosePlaceholder(r.workField),

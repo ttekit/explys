@@ -10,6 +10,8 @@ import { ArrowLeft } from "lucide-react";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import { cn } from "../../lib/utils";
 import { buildRegisterBody } from "../../lib/registerUser";
+import { setStoredAccessToken } from "../../lib/api";
+import { setPendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 
 export default function RegistrationPreferences() {
   const context = useContext(RegistrationContext);
@@ -21,7 +23,6 @@ export default function RegistrationPreferences() {
 
   type GenreChip = { value: number; label: string };
   const [genreOptions, setGenreOptions] = useState<GenreChip[]>([]);
-  const [showLevelTestModal, setShowLevelTestModal] = useState(false);
 
   useEffect(() => {
     if (isTeacher) {
@@ -98,8 +99,13 @@ export default function RegistrationPreferences() {
       );
 
       if (response.ok) {
+        setStoredAccessToken(null);
         if (formData.role === "student" || formData.role === "adult") {
-          setShowLevelTestModal(true);
+          setPendingRegistrationLoginWelcome();
+          navigate("/loginForm", {
+            replace: true,
+            state: { from: "/catalog", registrationComplete: true },
+          });
         } else {
           navigate("/loginForm");
         }
@@ -226,52 +232,6 @@ export default function RegistrationPreferences() {
           </Button>
         </form>
       </AuthSplitLayout>
-
-      {showLevelTestModal && (
-        <div className="bg-background/85 fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
-          <div className="border-border bg-card text-card-foreground w-full max-w-md rounded-3xl border p-8 shadow-2xl">
-            <div className="bg-primary/15 text-primary mb-3 flex size-16 items-center justify-center rounded-2xl">
-              <svg
-                className="size-8"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <h2 className="font-display mb-2 text-2xl font-bold">
-              Determine your level
-            </h2>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              You&apos;re almost done. Take a quick placement test so we can
-              recommend the best videos—or skip for now and start exploring.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/catalog")}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-xl py-3.5 font-bold transition-colors active:scale-[0.98]"
-              >
-                Take the test
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/loginForm")}
-                className="border-border bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full rounded-xl border py-3.5 font-bold transition-colors active:scale-[0.98]"
-              >
-                Skip for now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

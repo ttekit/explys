@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ArrowLeft, BookOpen, FileText, HelpCircle } from "lucide-react";
 import { apiFetch } from "../../lib/api";
@@ -9,10 +9,8 @@ import { ChameleonMascot } from "../../components/ChameleonMascot";
 import { VideoVocabulary } from "../../components/content-watch/VideoVocabulary";
 import { VideoTranscript } from "../../components/content-watch/VideoTranscript";
 import { useUser } from "../../context/UserContext";
-import {
-  LessonCompleteBanner,
-  VideoQuiz,
-} from "../../components/content-watch/VideoQuiz";
+import { VideoQuiz } from "../../components/content-watch/VideoQuiz";
+import type { LessonSummaryState } from "./LessonSummaryPage";
 import {
   defaultQuizQuestions,
   type QuizQuestion,
@@ -22,6 +20,7 @@ import {
 import { parseWebVttTranscriptLines } from "../../lib/parseWebVtt";
 
 const LESSON_XP = 150;
+const LESSON_SUMMARY_STORAGE = "lessonSummary:";
 /** Playback ratio at or above which the lesson counts as watched (quiz + backend watch-complete). */
 const WATCHED_COMPLETED_RATIO = 0.75;
 
@@ -107,7 +106,7 @@ function ContentWatchHeader({
         <div className="flex min-w-0 items-center justify-center gap-2 justify-self-center">
           <ChameleonMascot size="sm" mood="happy" animate={false} />
           <span className="font-display truncate font-bold text-foreground">
-            Exply
+            Explys
           </span>
         </div>
 
@@ -216,7 +215,7 @@ function TabPanels({
 }: {
   activeTab: TabId;
   isVideoComplete: boolean;
-  onQuizComplete: () => void;
+  onQuizComplete: (summary: { correctCount: number; totalQuestions: number }) => void;
   vocabulary: VocabularyItem[];
   quizQuestions: QuizQuestion[];
   sideLoading: boolean;
@@ -258,15 +257,22 @@ function TabPanels({
 export default function ContentPage() {
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState<TabId>("vocabulary");
   const [isVideoComplete, setIsVideoComplete] = useState(false);
-  const [quizCompleted, setQuizCompleted] = useState(false);
   const [videoData, setVideoData] = useState<{
     videoName: string;
     videoLink: string;
     videoDescription: string | null;
-    content: { category: { name: string; description: string } };
+    content: {
+      category: { name: string; description: string };
+      stats?: {
+        userTags?: string[];
+        systemTags?: string[];
+        topics?: { id: number; name: string }[];
+      } | null;
+    };
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [lessonSideBundle, setLessonSideBundle] = useState<{
@@ -426,7 +432,6 @@ export default function ContentPage() {
 
   useEffect(() => {
     setIsVideoComplete(false);
-    setQuizCompleted(false);
     setActiveTab("vocabulary");
     setLessonSideBundle(null);
     setTranscriptLines([]);
@@ -436,11 +441,48 @@ export default function ContentPage() {
     watchCompletePostedRef.current = false;
   }, [id]);
 
-  const headerRight = quizCompleted
-    ? `${LESSON_XP} XP`
-    : isVideoComplete
-      ? "Quiz unlocked"
-      : `${LESSON_XP} XP available`;
+  const headerRight = isVideoComplete
+    ? "Quiz unlocked"
+    : `${LESSON_XP} XP available`;
+
+  const handleQuizComplete = useCallback(
+    (summary: { correctCount: number; totalQuestions: number }) => {
+      if (!id || !videoData) return;
+      const stats = videoData.content.stats;
+      const lessonTopics = Array.isArray(stats?.topics)
+        ? stats!.topics!.map((t) => ({ id: t.id, name: t.name }))
+        : [];
+      const themeTags = Array.isArray(stats?.userTags) ? stats!.userTags! : [];
+      const levelTags = Array.isArray(stats?.systemTags)
+        ? stats!.systemTags!
+        : [];
+      const learnedWords = (lessonSideBundle?.vocabulary ?? [])
+        .map((v) => ({ word: v.word, definition: v.definition }))
+        .slice(0, 12);
+      const payload: LessonSummaryState = {
+        correctCount: summary.correctCount,
+        totalQuestions: summary.totalQuestions,
+        xpEarned: LESSON_XP,
+        videoName: videoData.videoName,
+        categoryName: videoData.content.category.name,
+        videoDescription: videoData.videoDescription,
+        learnedWords,
+        lessonTopics,
+        themeTags,
+        levelTags,
+      };
+      try {
+        sessionStorage.setItem(
+          `${LESSON_SUMMARY_STORAGE}${id}`,
+          JSON.stringify(payload),
+        );
+      } catch {
+        /* ignore quota / private mode */
+      }
+      void navigate(`/content/${id}/summary`, { state: payload });
+    },
+    [id, videoData, navigate, lessonSideBundle],
+  );
 
   if (loading) {
     return <LoadingView />;
@@ -522,7 +564,7 @@ export default function ContentPage() {
                 <TabPanels
                   activeTab={activeTab}
                   isVideoComplete={isVideoComplete}
-                  onQuizComplete={() => setQuizCompleted(true)}
+                  onQuizComplete={handleQuizComplete}
                   vocabulary={vocabForUi}
                   quizQuestions={quizForUi}
                   sideLoading={sideBundleLoading}
@@ -558,24 +600,12 @@ export default function ContentPage() {
                   <VideoQuiz
                     questions={quizForUi}
                     isVideoComplete={isVideoComplete}
-                    onComplete={() => setQuizCompleted(true)}
+                    onComplete={handleQuizComplete}
                   />
                 ) : null}
               </div>
-
-              {quizCompleted ? (
-                <div className="mt-6">
-                  <LessonCompleteBanner xpEarned={LESSON_XP} />
-                </div>
-              ) : null}
             </div>
           </div>
-
-          {quizCompleted ? (
-            <div className="mt-8 lg:hidden">
-              <LessonCompleteBanner xpEarned={LESSON_XP} />
-            </div>
-          ) : null}
         </div>
       </main>
     </div>

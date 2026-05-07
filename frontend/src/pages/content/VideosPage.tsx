@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { apiFetch, getApiBase, getStoredAccessToken } from "../../lib/api";
+import { apiFetch, getApiBase, getResponseErrorMessage, getStoredAccessToken } from "../../lib/api";
 import { useUser } from "../../context/UserContext";
 import PlacementPreferencesStep from "../../components/PlacementPreferencesStep";
+import PlacementPreTestStep, {
+  adultNeedsPlacementPrepFields,
+} from "../../components/PlacementPreTestStep";
 import { ChameleonMascot } from "../../components/ChameleonMascot";
 import { CatalogHero } from "../../components/catalog/CatalogHero";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
 import { CatalogVideoRow } from "../../components/catalog/CatalogVideoRow";
 import type { CatalogCardVideo } from "../../components/catalog/CatalogVideoCard";
-import ContentHeader from "../../components/catalog/ContentHeader";
 import { cn } from "../../lib/utils";
 import { Frown } from "lucide-react";
 
@@ -33,18 +35,26 @@ function toCardVideo(video: ContentVideo): CatalogCardVideo {
   };
 }
 
+/** Ensure API origin in srcDoc HTML matches the SPA client (avoids broken inline script / proxy host skew). */
+function placementPatchApiOrigin(html: string, apiOrigin: string): string {
+  const trimmed = apiOrigin.replace(/\/$/, "");
+  const esc = trimmed.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+  return html.replace(
+    /<meta\s+name="explys-placement-api-origin"\s+content="[^"]*"\s*\/?\s*>/i,
+    `<meta name="explys-placement-api-origin" content="${esc}" />`,
+  );
+}
+
 export default function VideoPage() {
   const [videos, setVideos] = useState<ContentVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [englishLevel, setEnglsihLevel] = useState("All");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true); // collapsed by default (icon-only mode)
+  const [placementDocHtml, setPlacementDocHtml] = useState<string | null>(null);
+  const [placementDocError, setPlacementDocError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user, isLoading: userLoading, refreshProfile } = useUser();
   const placementCompleteHandled = useRef(false);
-  const [placementPhase, setPlacementPhase] = useState<"preferences" | "test">(
-    "preferences",
-  );
 
   const accessToken = getStoredAccessToken();
   const needsPlacement =
@@ -54,15 +64,30 @@ export default function VideoPage() {
     user.role !== "teacher" &&
     !user.hasCompletedPlacement;
 
-  useEffect(() => {
-    if (!needsPlacement) {
-      setPlacementPhase("preferences");
-      return;
+  /** Derive phase synchronously so we never flash the wrong overlay (effect + stale initial state). */
+  const placementPhaseResolved = useMemo((): "preferences" | "test" | "off" => {
+    if (!needsPlacement || !user) return "off";
+    if (user.role === "adult") {
+      return adultNeedsPlacementPrepFields(user) ? "preferences" : "test";
     }
     const hasPrefs =
       (user.hobbies?.length ?? 0) > 0 && (user.favoriteGenres?.length ?? 0) > 0;
-    setPlacementPhase(hasPrefs ? "test" : "preferences");
-  }, [needsPlacement, user?.hobbies, user?.favoriteGenres]);
+    return hasPrefs ? "test" : "preferences";
+  }, [
+    needsPlacement,
+    user,
+    user?.hobbies,
+    user?.favoriteGenres,
+    user?.role,
+    user?.nativeLanguage,
+    user?.workField,
+    user?.education,
+  ]);
+
+  const showPlacementPrepOverlay =
+    placementPhaseResolved === "preferences" && !!user;
+  const showPlacementTest =
+    placementPhaseResolved === "test" && !!accessToken;
 
   useEffect(() => {
     if (!needsPlacement) {
@@ -70,6 +95,40 @@ export default function VideoPage() {
       return;
     }
     const onMessage = (ev: MessageEvent) => {
+      // #region agent log
+      if (ev.data?.type === "placement_diag") {
+        try {
+          if (typeof console !== "undefined" && console.log) {
+            console.log(
+              "[placement:parent]",
+              ev.data.step,
+              ev.data.data ?? {},
+            );
+          }
+        } catch {
+          /* */
+        }
+        fetch(
+          "http://127.0.0.1:7658/ingest/d719e046-fe6c-4322-a0e2-5351c6126712",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "0c8a48",
+            },
+            body: JSON.stringify({
+              sessionId: "0c8a48",
+              hypothesisId: "IFRAME",
+              location: "VideosPage.tsx:message",
+              message: String(ev.data?.step ?? "placement_diag"),
+              data: (ev.data?.data as object) ?? {},
+              timestamp: Date.now(),
+            }),
+          },
+        ).catch(() => {});
+        return;
+      }
+      // #endregion
       if (ev.data?.type === "placement_exit") {
         navigate("/");
         return;
@@ -85,6 +144,72 @@ export default function VideoPage() {
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, [needsPlacement, navigate, refreshProfile]);
+
+  useEffect(() => {
+    if (!showPlacementTest || !accessToken) {
+      setPlacementDocHtml(null);
+      setPlacementDocError(null);
+      return;
+    }
+    let cancelled = false;
+    setPlacementDocHtml(null);
+    setPlacementDocError(null);
+    void (async () => {
+      try {
+        const res = await apiFetch("/placement-test/document", {
+          method: "GET",
+        });
+        if (!res.ok) {
+          const msg = await getResponseErrorMessage(res);
+          if (!cancelled) setPlacementDocError(msg);
+          return;
+        }
+        const html = await res.text();
+        if (!cancelled) {
+          setPlacementDocHtml(
+            placementPatchApiOrigin(html, getApiBase().replace(/\/$/, "")),
+          );
+          setPlacementDocError(null);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setPlacementDocError(
+            e instanceof Error ? e.message : "Could not load placement test.",
+          );
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showPlacementTest, accessToken]);
+
+  useEffect(() => {
+    try {
+      if (typeof console !== "undefined" && console.log) {
+        console.log("[placement:parent]", "placement state", {
+          placementPhaseResolved,
+          showPlacementTest,
+          showPlacementPrepOverlay,
+          needsPlacement,
+          hasToken: !!accessToken,
+          hasUser: !!user,
+          userRole: user?.role,
+          hasCompletedPlacement: user?.hasCompletedPlacement,
+          apiBase: getApiBase(),
+        });
+      }
+    } catch {
+      /* */
+    }
+  }, [
+    placementPhaseResolved,
+    showPlacementTest,
+    showPlacementPrepOverlay,
+    needsPlacement,
+    accessToken,
+    user,
+  ]);
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -152,14 +277,8 @@ export default function VideoPage() {
       }));
   }, [filteredVideos, selectedCategory]);
 
-  const showPlacementPreferences =
-    needsPlacement && placementPhase === "preferences" && user;
-  const showPlacementTest =
-    needsPlacement && placementPhase === "test" && accessToken;
-
   return (
     <div className="min-h-screen bg-background text-foreground antialiased flex-col">
-      <ContentHeader />
       <div>
         <div className="flex">
           <CatalogSidebar
@@ -168,14 +287,13 @@ export default function VideoPage() {
             onSelectCategory={setSelectedCategory}
             welcomeName={user?.name ? user.name.split(" ")[0] : undefined}
             englishLevel={user?.englishLevel || undefined}
-            onSelectLevel={setEnglsihLevel}
             collapsed={sidebarCollapsed}
             onCollapsedChange={setSidebarCollapsed}
           />
 
           <main
             className={cn(
-              "flex-1 transition-all duration-600 font-display",
+              "flex-1 pb-24 transition-all duration-300 font-display lg:pb-8",
               sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
             )}
           >
@@ -213,16 +331,9 @@ export default function VideoPage() {
             </div>
           </main>
         </div>
-
-        {!sidebarCollapsed && (
-          <div
-            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[1px] lg:hidden"
-            onClick={() => setSidebarCollapsed(true)}
-          />
-        )}
       </div>
 
-      {showPlacementPreferences ? (
+      {showPlacementPrepOverlay ? (
         <div className="fixed inset-0 z-200 flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
           <header className="shrink-0 border-border border-b bg-background">
             <div className="mx-auto grid w-full max-w-4xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4">
@@ -235,7 +346,7 @@ export default function VideoPage() {
                   className="h-10! w-10!"
                 />
                 <span className="font-display text-lg font-bold tracking-tight text-foreground">
-                  Exply
+                  Explys
                 </span>
               </div>
               <span className="justify-self-end text-sm text-muted-foreground">
@@ -261,14 +372,23 @@ export default function VideoPage() {
                 Before your entry test
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                A few quick preferences — then your placement questionnaire.
+                {user?.role === "adult" ?
+                  "Enter your job, education, and native language — then your placement questionnaire starts."
+                : "A few quick preferences — then your placement questionnaire."}
               </p>
             </div>
             <div className="flex-1 pb-6">
-              <PlacementPreferencesStep
-                user={user}
-                onSuccess={() => setPlacementPhase("test")}
-              />
+              {user ?
+                user.role === "adult" ?
+                  <PlacementPreTestStep
+                    user={user}
+                    onSuccess={() => undefined}
+                  />
+                : <PlacementPreferencesStep
+                    user={user}
+                    onSuccess={() => undefined}
+                  />
+              : null}
             </div>
             <footer className="shrink-0 border-border border-t bg-card">
               <div className="mx-auto flex max-w-4xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
@@ -281,7 +401,7 @@ export default function VideoPage() {
                       className="h-10! w-10!"
                     />
                     <span className="font-display text-lg font-bold tracking-tight text-foreground">
-                      Exply
+                      Explys
                     </span>
                   </div>
                   <p className="max-w-xs text-sm text-muted-foreground">
@@ -290,7 +410,7 @@ export default function VideoPage() {
                   </p>
                 </div>
                 <p className="shrink-0 text-sm text-muted-foreground">
-                  © {new Date().getFullYear()} Exply
+                  © {new Date().getFullYear()} Explys
                 </p>
               </div>
             </footer>
@@ -300,11 +420,40 @@ export default function VideoPage() {
 
       {showPlacementTest ? (
         <div className="fixed inset-0 z-200 flex flex-col bg-background">
-          <iframe
-            title="Placement test"
-            className="min-h-0 w-full flex-1 border-0 bg-background"
-            src={`${getApiBase()}/placement-test/document?access_token=${encodeURIComponent(accessToken)}`}
-          />
+          {placementDocError ? (
+            <div
+              className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center"
+              role="alert"
+            >
+              <p className="text-destructive text-sm font-medium">
+                Could not load the placement test.
+              </p>
+              <p className="text-muted-foreground max-w-md text-sm">
+                {placementDocError}
+              </p>
+            </div>
+          ) : placementDocHtml ? (
+            <iframe
+              key="placement-entry-test"
+              title="Placement test"
+              className="min-h-0 w-full flex-1 border-0 bg-background"
+              srcDoc={placementDocHtml}
+              onLoad={() => {
+                try {
+                  if (typeof console !== "undefined" && console.log) {
+                    console.log("[placement:parent]", "iframe onLoad (srcDoc)");
+                  }
+                } catch {
+                  /* */
+                }
+              }}
+            />
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center gap-3">
+              <div className="h-10 w-10 animate-spin rounded-full border-solid border-primary border-t-4 border-r-transparent border-b-transparent border-l-transparent" />
+              <p className="text-muted-foreground text-sm">Loading placement test…</p>
+            </div>
+          )}
         </div>
       ) : null}
     </div>

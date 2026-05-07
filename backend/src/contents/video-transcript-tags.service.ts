@@ -29,7 +29,7 @@ export class VideoTranscriptTagsService {
   ) { }
 
   /**
-   * WebVTT → plain text → Gemini: CEFR `systemTags`, theme `userTags`, `processingComplexity` 1–10 on ContentStats.
+   * WebVTT → plain text → Gemini: CEFR `systemTags`, `userTags` (names from `genres` table only), `processingComplexity` 1–10 on ContentStats.
    */
   async generateAndAppendTagsForContentVideo(
     contentVideoId: number,
@@ -75,9 +75,16 @@ export class VideoTranscriptTagsService {
 
     const contentMediaId = video.contentId;
 
+    const genreRows = await this.prisma.genre.findMany({
+      select: { name: true },
+      orderBy: { name: "asc" },
+    });
+    const allowedGenreNames = genreRows.map((g) => g.name);
+
     const metadata = await this.geminiTranscriptTags.analyzeTranscriptMetadata({
       transcriptPlainText: plain,
       videoTitle: video.videoName,
+      allowedGenreNames,
     });
 
     if (metadata === null) {

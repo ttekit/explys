@@ -38,7 +38,10 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section className="bg-card/50 py-24 border-b border-t font-display border-border">
+    <section
+      id="how-explys-works"
+      className="bg-card/50 scroll-mt-24 border-b border-t border-border py-24 font-display"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
           <h2 className="font-display mb-4 text-balance text-3xl font-bold sm:text-4xl">

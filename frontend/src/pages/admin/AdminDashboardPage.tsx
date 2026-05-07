@@ -28,7 +28,10 @@ import {
   AdminCardTitle,
   AdminProgress,
 } from "../../components/admin/adminUi";
-import type { AdminAnalyticsOverviewDto } from "../../lib/adminAnalyticsApi";
+import type {
+  AdminAnalyticsOverviewDto,
+  RecentActivityItemDto,
+} from "../../lib/adminAnalyticsApi";
 import {
   defaultAnalyticsRange,
   fetchAdminOverview,

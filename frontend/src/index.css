@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Design tokens aligned with `/ui-example` (Exply reference) */
+/* Design tokens aligned with `/ui-example` (Explys reference) */
 
 :root {
   --background: oklch(0.12 0.02 285);

@@ -25,3 +25,26 @@ export function clearRegistrationDraft() {
     /* ignore */
   }
 }
+
+/** Set before redirect to login after register so the login page can show a one-time welcome toast. */
+const PENDING_LOGIN_WELCOME_KEY = "exply_pending_login_welcome";
+
+export function setPendingRegistrationLoginWelcome() {
+  try {
+    sessionStorage.setItem(PENDING_LOGIN_WELCOME_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+export function consumePendingRegistrationLoginWelcome(): boolean {
+  try {
+    if (sessionStorage.getItem(PENDING_LOGIN_WELCOME_KEY) !== "1") {
+      return false;
+    }
+    sessionStorage.removeItem(PENDING_LOGIN_WELCOME_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -112,8 +112,10 @@ export class AlcorythmService {
         topic.tags.map((tag) => tag.name),
         secondaryKeywords,
       );
-      boost += 0.2 * primaryStrength;
-      boost += 0.1 * secondaryStrength;
+      /** Work, education, and job — stronger lift for matching topics. */
+      boost += 0.32 * primaryStrength;
+      /** Hobbies — stronger secondary signal for leisure / interest alignment. */
+      boost += 0.18 * secondaryStrength;
       matchedSignals += primaryStrength + secondaryStrength;
 
       if (profileContext.selectedTopicIds.has(topic.id)) {

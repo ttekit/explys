@@ -109,7 +109,7 @@ export default function AdminVideosPage() {
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editSaving, setEditSaving] = useState(false);
-  const [regenBusy, setRegenBusy] = useState<false | "tags" | "genres" | "captions">(false);
+  const [regenBusy, setRegenBusy] = useState<false | "tags" | "cefr" | "captions">(false);
 
   const [deleteCandidate, setDeleteCandidate] =
     useState<AdminCatalogVideoRow | null>(null);
@@ -253,9 +253,9 @@ export default function AdminVideosPage() {
     try {
       const r = await regenerateAdminVideoThemeTags(vid);
       if (r.geminiFailed) {
-        toast.error("Gemini unavailable — theme tags unchanged");
+        toast.error("Gemini unavailable — catalog genres unchanged");
       } else {
-        toast.success("Theme tags regenerated");
+        toast.success("Catalog genres regenerated");
       }
       const rows = await loadVideos();
       const u = rows?.find((x) => x.id === vid);
@@ -274,13 +274,13 @@ export default function AdminVideosPage() {
   const handleRegenLevelTags = async () => {
     if (!editing) return;
     const vid = editing.id;
-    setRegenBusy("genres");
+    setRegenBusy("cefr");
     try {
       const r = await regenerateAdminVideoLevelTags(vid);
       if (r.geminiFailed) {
-        toast.error("Gemini unavailable — level tags unchanged");
+        toast.error("Gemini unavailable — CEFR bands unchanged");
       } else {
-        toast.success("Level / CEFR tags regenerated");
+        toast.success("CEFR bands regenerated");
       }
       const rows = await loadVideos();
       const u = rows?.find((x) => x.id === vid);
@@ -513,7 +513,7 @@ export default function AdminVideosPage() {
               <code className="text-[11px]">nova-3</code>;{" "}
               <code className="text-[11px]">DEEPGRAM_TRANSCRIBE_MODEL</code>) needs{" "}
               <code className="text-[11px]">DEEPGRAM_API_KEY</code> plus an audible soundtrack in the MP4.{" "}
-              <strong>Tags / genres</strong> use WebVTT + Gemini afterward.
+              <strong>Catalog genres</strong> and <strong>CEFR bands</strong> use WebVTT + Gemini afterward (genres must exist in the genres table).
             </p>
             <div className="flex flex-wrap gap-2">
               <AdminButton
@@ -536,7 +536,7 @@ export default function AdminVideosPage() {
                 onClick={() => void handleRegenThemeTags()}
               >
                 <Tags className="h-4 w-4" />
-                {regenBusy === "tags" ? "Working…" : "Regenerate tags"}
+                {regenBusy === "tags" ? "Working…" : "Regenerate genres"}
               </AdminButton>
               <AdminButton
                 type="button"
@@ -547,7 +547,7 @@ export default function AdminVideosPage() {
                 onClick={() => void handleRegenLevelTags()}
               >
                 <Layers className="h-4 w-4" />
-                {regenBusy === "genres" ? "Working…" : "Regenerate genres"}
+                {regenBusy === "cefr" ? "Working…" : "Regenerate CEFR"}
               </AdminButton>
             </div>
           </div>
@@ -615,7 +615,7 @@ export default function AdminVideosPage() {
                 }
               >
                 <Tags className="h-4 w-4" />
-                Tags
+                Genres
               </AdminButton>
               <AdminButton
                 type="button"
@@ -627,7 +627,7 @@ export default function AdminVideosPage() {
                 }
               >
                 <Layers className="h-4 w-4" />
-                Genres / level
+                CEFR level
               </AdminButton>
               <AdminButton
                 type="button"
@@ -646,11 +646,11 @@ export default function AdminVideosPage() {
             {inspectMeta.tab === "themes" ? (
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Theme tags
+                  Catalog genres (database allow-list)
                 </p>
                 <ChipList
                   tags={inspectMeta.video.content.stats?.userTags ?? []}
-                  emptyLabel='No theme tags yet. Edit this video → “Regenerate tags”.'
+                  emptyLabel='No genres yet. Edit this video → “Regenerate genres”.'
                 />
               </div>
             ) : null}
@@ -659,11 +659,11 @@ export default function AdminVideosPage() {
               <div className="space-y-3">
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Level / genres (system tags)
+                    CEFR bands (system tags)
                   </p>
                   <ChipList
                     tags={inspectMeta.video.content.stats?.systemTags ?? []}
-                    emptyLabel='No level bands yet. Edit → “Regenerate genres”.'
+                    emptyLabel='No CEFR bands yet. Edit → “Regenerate CEFR”.'
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -906,14 +906,14 @@ export default function AdminVideosPage() {
                               setInspectMeta({ video, tab: "themes" })
                             }
                           >
-                            <Tags className="h-4 w-4" /> Tags
+                            <Tags className="h-4 w-4" /> Genres
                           </AdminRowMenuItem>
                           <AdminRowMenuItem
                             onClick={() =>
                               setInspectMeta({ video, tab: "levels" })
                             }
                           >
-                            <Layers className="h-4 w-4" /> Genres / level
+                            <Layers className="h-4 w-4" /> CEFR level
                           </AdminRowMenuItem>
                           <AdminRowMenuItem
                             onClick={() =>

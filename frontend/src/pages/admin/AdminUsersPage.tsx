@@ -57,7 +57,7 @@ function roleKey(r: string): KnownRole | null {
 }
 
 function mailtoHref(email: string, name: string): string {
-  const subject = encodeURIComponent("Exply");
+  const subject = encodeURIComponent("Explys");
   const body = encodeURIComponent(`Hello ${name},\n\n`);
   return `mailto:${email}?subject=${subject}&body=${body}`;
 }

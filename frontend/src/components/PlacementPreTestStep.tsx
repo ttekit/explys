@@ -6,7 +6,8 @@ import LabelRegister from "./LabelRegister";
 import { apiFetch, readApiErrorBody } from "../lib/api";
 import { useUser, type UserData } from "../context/UserContext";
 
-export function adultNeedsPreTestProfile(user: UserData): boolean {
+/** Adults must fill job, education, and native language before the placement iframe. */
+export function adultNeedsPlacementPrepFields(user: UserData): boolean {
   if (user.role !== "adult") {
     return false;
   }
@@ -82,16 +83,6 @@ export default function PlacementPreTestStep({
       className="mx-auto flex w-full max-w-md flex-col gap-5 px-4 pt-2 [&_label]:text-foreground"
       onSubmit={(e) => void handleSubmit(e)}
     >
-      <div>
-        <h2 className="font-display text-lg font-semibold tracking-tight">
-          A bit about you
-        </h2>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          These details help us calibrate your placement and recommendations.
-          They are not part of the test itself.
-        </p>
-      </div>
-
       <div className="space-y-2">
         <LabelRegister isRequired={true}>Job</LabelRegister>
         <InputText

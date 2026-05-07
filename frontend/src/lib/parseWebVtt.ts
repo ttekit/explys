@@ -1,5 +1,16 @@
 import type { TranscriptLine } from "../components/content-watch/defaultLessonSides";
 
+/** Only merge into a completed sentence if cues are almost flush (split caption). */
+const MERGE_AFTER_SENTENCE_GAP_SEC = 0.48;
+/** Typical same-speaker subtitle continuation (mid-sentence). */
+const MERGE_MID_SENTENCE_GAP_SEC = 2.1;
+/** Slightly longer pause only when previous line clearly isn’t complete. */
+const MERGE_INCOMPLETE_GAP_SEC = 3.25;
+/** Stop glueing one giant paragraph: max span of a merged cue (seconds). */
+const MAX_MERGED_SPAN_SEC = 22;
+/** …and max characters per transcript row. */
+const MAX_MERGED_CHARS = 420;
+
 /** Parses `HH:MM:SS.mmm`, `MM:SS.mmm`, single numbers, etc. */
 export function parseVttTimestamp(ts: string): number {
   const t = ts.trim().split(/\s+/)[0]!;
@@ -86,6 +97,74 @@ function formatCueClock(sec: number): string {
   return `${mm}:${pad(ss)}`;
 }
 
+function endsWithSentenceTerminal(text: string): boolean {
+  const t = text.trimEnd();
+  if (!t) return false;
+  return /[.!?…][\s"'')\]]*$/.test(t) || /[。．][\s"'')\]]*$/.test(t);
+}
+
+function wouldExceedMergedLimits(
+  prev: TranscriptLine,
+  next: TranscriptLine,
+): boolean {
+  const start = prev.startSec ?? 0;
+  const nextEnd = next.endSec ?? next.startSec ?? start;
+  if (nextEnd - start > MAX_MERGED_SPAN_SEC) return true;
+  const combined =
+    prev.text.replace(/\s+$/, "").length +
+    next.text.replace(/^\s+/, "").length +
+    1;
+  return combined > MAX_MERGED_CHARS;
+}
+
+function shouldMergeTranscriptCues(
+  prev: TranscriptLine,
+  next: TranscriptLine,
+): boolean {
+  if (prev.speaker !== next.speaker) return false;
+  if (wouldExceedMergedLimits(prev, next)) return false;
+
+  const endPrev = prev.endSec ?? prev.startSec ?? 0;
+  const startNext = next.startSec ?? 0;
+  const gap = Math.max(0, startNext - endPrev);
+
+  if (endsWithSentenceTerminal(prev.text)) {
+    return gap <= MERGE_AFTER_SENTENCE_GAP_SEC;
+  }
+  if (gap <= MERGE_MID_SENTENCE_GAP_SEC) return true;
+  if (gap <= MERGE_INCOMPLETE_GAP_SEC && !endsWithSentenceTerminal(prev.text)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Joins consecutive WebVTT cues from the same speaker into one row (full sentences, fewer chips).
+ */
+export function mergeAdjacentTranscriptLines(
+  lines: TranscriptLine[],
+): TranscriptLine[] {
+  if (lines.length <= 1) return lines;
+  const out: TranscriptLine[] = [];
+  for (const line of lines) {
+    const prev = out[out.length - 1];
+    if (prev && shouldMergeTranscriptCues(prev, line)) {
+      prev.text =
+        `${prev.text.replace(/\s+$/, "")} ${line.text.replace(/^\s+/, "")}`.replace(
+          /\s+/g,
+          " ",
+        ).trim();
+      prev.endSec =
+        line.endSec != null ?
+          Math.max(line.endSec, prev.endSec ?? line.endSec)
+        : prev.endSec;
+    } else {
+      out.push({ ...line });
+    }
+  }
+  return out;
+}
+
 /**
  * Parses WebVTT → sidebar transcript cues ordered by `startSec`
  * (`startSec` / `endSec` track the embedded player timeline).
@@ -157,5 +236,5 @@ export function parseWebVttTranscriptLines(vttRaw: string): TranscriptLine[] {
   }
 
   out.sort((a, b) => (a.startSec ?? 0) - (b.startSec ?? 0));
-  return out;
+  return mergeAdjacentTranscriptLines(out);
 }

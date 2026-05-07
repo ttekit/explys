@@ -1,6 +1,6 @@
 import { UserProfileContext } from './alcorythm.types';
 
-export const AI_ALGORITHM_VERSION = 'v2';
+export const AI_ALGORITHM_VERSION = 'v3';
 
 export function aggregateSkillScore(
   listening: number,
@@ -37,10 +37,12 @@ export function splitTopicSkillScores(params: {
     listeningAdj += 0.03;
   }
   const listenHobby = params.profile.hobbies.some((h) =>
-    /\b(podcast|film|movie|series|youtube|music|radio|audiobook)\b/i.test(h),
+    /\b(podcast|film|movie|series|youtube|music|radio|audiobook|streaming|concert|gig)\b/i.test(
+      h,
+    ),
   );
   if (listenHobby) {
-    listeningAdj += 0.04;
+    listeningAdj += 0.065;
   }
 
   let vocabularyAdj = 0;
@@ -51,7 +53,18 @@ export function splitTopicSkillScores(params: {
   ) {
     vocabularyAdj += 0.07;
   }
-  vocabularyAdj += 0.06 * params.primaryStrength + 0.04 * params.secondaryStrength;
+
+  const readHobby = params.profile.hobbies.some((h) =>
+    /\b(read|reading|books|novel|literature|manga|comics|blogs?|writing|journal)\b/i.test(
+      h,
+    ),
+  );
+  if (readHobby) {
+    vocabularyAdj += 0.055;
+  }
+
+  vocabularyAdj +=
+    0.1 * params.primaryStrength + 0.075 * params.secondaryStrength;
 
   let grammarAdj = 0;
   if (
@@ -64,7 +77,7 @@ export function splitTopicSkillScores(params: {
     Boolean(params.profile.workField?.trim()) ||
     Boolean(params.profile.job?.trim());
   if (formal) {
-    grammarAdj += 0.03;
+    grammarAdj += 0.055;
   }
 
   const meanAdj = (listeningAdj + vocabularyAdj + grammarAdj) / 3;
@@ -167,10 +180,10 @@ export function calculateConfidence(params: {
     confidence += 0.1;
   }
   if (params.hasPrimarySignals) {
-    confidence += 0.2;
+    confidence += 0.24;
   }
   if (params.hasSecondarySignals) {
-    confidence += 0.15;
+    confidence += 0.2;
   }
   if (params.hasSelectedTopics) {
     confidence += 0.15;
@@ -210,10 +223,10 @@ export function getDeterministicTagScore(params: {
   const selectedMatch = params.tagTopicIds.some((topicId) => params.selectedTopicIds.has(topicId));
 
   if (primaryMatch) {
-    boost += 0.2;
+    boost += 0.3;
   }
   if (secondaryMatch) {
-    boost += 0.1;
+    boost += 0.17;
   }
   if (selectedMatch) {
     boost += 0.2;

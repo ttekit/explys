@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -25,6 +26,7 @@ import {
 } from "./placement-level.util";
 import type { CompletePlacementDto } from "./dto/complete-placement.dto";
 import type { PlacementCompleteResponseDto } from "./dto/placement-complete-response.dto";
+import { buildPlacementSummary } from "./placement-summary.util";
 import {
   PlacementQuestion,
   PlacementTestPayload,
@@ -34,6 +36,7 @@ import { renderPlacementHtml } from "./placement-html.template";
 
 @Injectable()
 export class PlacementTestService {
+  private readonly logger = new Logger(PlacementTestService.name);
   private themes: ThemesFile | null = null;
 
   constructor(
@@ -66,10 +69,18 @@ export class PlacementTestService {
   private getTargetQuestionCount(themes: ThemesFile | null): number {
     const minQ = 10;
     const maxQ = 15;
-    return Math.min(
-      maxQ,
-      Math.max(minQ, themes?.targetQuestionCount ?? 12),
-    );
+    const raw = themes?.targetQuestionCount ?? 12;
+    const n = typeof raw === "number" ? raw : Number(raw);
+    const coerced = Number.isFinite(n) ? Math.round(n) : 12;
+    return Math.min(maxQ, Math.max(minQ, coerced));
+  }
+
+  /** Safe slice bound: Array.slice(0, NaN) yields [] and breaks the test UI. */
+  private normalizeTargetQuestionCount(target: number): number {
+    const minQ = 10;
+    const maxQ = 15;
+    const t = Number.isFinite(target) ? Math.round(target) : minQ;
+    return Math.min(maxQ, Math.max(minQ, t));
   }
 
   getThemesSnapshot(): ThemesFile | null {
@@ -149,6 +160,8 @@ export class PlacementTestService {
             id: q.id,
             correctIndex: q.correctIndex,
             type: q.type,
+            promptShort: q.prompt.replace(/\s+/g, " ").trim().slice(0, 220),
+            answerText: q.options[q.correctIndex].replace(/\s+/g, " ").trim().slice(0, 220),
           })),
         },
       },
@@ -246,6 +259,11 @@ export class PlacementTestService {
     const pct =
       scored.total > 0 ? Math.round((scored.score / scored.total) * 100) : 0;
 
+    const summary =
+      draft?.questions.length && Object.keys(answers).length
+        ? buildPlacementSummary(draft.questions, answers)
+        : undefined;
+
     return {
       ok: true as const,
       englishLevel: band.code,
@@ -253,6 +271,7 @@ export class PlacementTestService {
       score: scored.score,
       totalQuestions: scored.total,
       percentage: pct,
+      summary,
     };
   }
 
@@ -359,7 +378,8 @@ export class PlacementTestService {
     themes: ThemesFile | null,
     target: number,
   ): Promise<PlacementQuestion[]> {
-    const fromGemini = await this.geminiGenerate(ctx, themes, target);
+    const safeTarget = this.normalizeTargetQuestionCount(target);
+    const fromGemini = await this.geminiGenerate(ctx, themes, safeTarget);
     const normalized = this.normalizeQuestions(fromGemini);
     let base: PlacementQuestion[];
     if (normalized.length >= 10) {
@@ -367,15 +387,187 @@ export class PlacementTestService {
     } else {
       base = this.normalizeQuestions(this.fallbackQuestions(ctx, themes));
     }
-    return this.sliceAndRenumberQuestions(base, target);
+    let out = this.sliceAndRenumberQuestions(base, safeTarget);
+    if (out.length === 0) {
+      this.logger.warn(
+        "placement: empty bank after primary build; retrying canned fallback",
+      );
+      base = this.normalizeQuestions(this.fallbackQuestions(ctx, themes));
+      out = this.sliceAndRenumberQuestions(base, safeTarget);
+    }
+    if (out.length === 0) {
+      this.logger.error(
+        "placement: fallback produced no items — using inline emergency set",
+      );
+      out = this.emergencyPlacementQuestionSet(safeTarget);
+    }
+    return out;
   }
 
   private sliceAndRenumberQuestions(
     questions: PlacementQuestion[],
     target: number,
   ): PlacementQuestion[] {
-    const slice = questions.slice(0, target);
+    const safe = this.normalizeTargetQuestionCount(target);
+    const slice = questions.slice(0, safe);
     return slice.map((q, idx) => ({ ...q, id: `q${idx + 1}` }));
+  }
+
+  /** Last resort so the iframe never receives questions: []. */
+  private emergencyPlacementQuestionSet(target: number): PlacementQuestion[] {
+    const safe = this.normalizeTargetQuestionCount(target);
+    const bank: PlacementQuestion[] = [
+      {
+        id: "e1",
+        type: "grammar",
+        themeId: "daily_life",
+        prompt:
+          "Choose the best completion: I have been studying English ____ three years.",
+        options: ["since", "for", "from", "during"],
+        correctIndex: 1,
+      },
+      {
+        id: "e2",
+        type: "grammar",
+        themeId: "workplace",
+        prompt:
+          "Choose the best phrase: The report ____ by Friday afternoon.",
+        options: [
+          "must be finished",
+          "must finished",
+          "must finishing",
+          "must be finishing",
+        ],
+        correctIndex: 0,
+      },
+      {
+        id: "e3",
+        type: "vocabulary",
+        themeId: "education",
+        prompt: "Closest meaning to postpone:",
+        options: ["cancel forever", "put off until later", "speed up", "delete"],
+        correctIndex: 1,
+      },
+      {
+        id: "e4",
+        type: "vocabulary",
+        themeId: "travel",
+        prompt: "Best word: Our flight was ____ because of heavy fog.",
+        options: ["delayed", "postponed", "advanced", "cancelled"],
+        correctIndex: 0,
+      },
+      {
+        id: "e5",
+        type: "grammar",
+        themeId: "hobbies",
+        prompt: "Sheʼs keen ____ improving her pronunciation.",
+        options: ["of", "on", "for", "by"],
+        correctIndex: 1,
+      },
+      {
+        id: "e6",
+        type: "grammar",
+        themeId: "daily_life",
+        prompt: "If I ____ the earlier train, I would have arrived on time.",
+        options: ["took", "had taken", "have taken", "will take"],
+        correctIndex: 1,
+      },
+      {
+        id: "e7",
+        type: "vocabulary",
+        themeId: "workplace",
+        prompt: "Polite critique: “I think the memo could read ____”.",
+        options: ["more stronger", "stronger a bit", "a bit clearer", "more clearer"],
+        correctIndex: 2,
+      },
+      {
+        id: "e8",
+        type: "grammar",
+        themeId: "education",
+        prompt: "Choose the best completion: By next month I ____ the prerequisites.",
+        options: [
+          "will have completed",
+          "complete",
+          "have been completing",
+          "completed",
+        ],
+        correctIndex: 0,
+      },
+      {
+        id: "e9",
+        type: "vocabulary",
+        themeId: "daily_life",
+        prompt: "“Reliable” in a gadget review implies:",
+        options: [
+          "trend-hopping",
+          "likely to glitch",
+          "consistently trustworthy",
+          "ultra pricey",
+        ],
+        correctIndex: 2,
+      },
+      {
+        id: "e10",
+        type: "grammar",
+        themeId: "workplace",
+        prompt: "____ setbacks, release stayed on schedule.",
+        options: ["Although", "However", "Despite", "Because"],
+        correctIndex: 2,
+      },
+      {
+        id: "e11",
+        type: "vocabulary",
+        themeId: "education",
+        prompt: "Best collocation: We need to make ____ before leaving.",
+        options: ["arrangements", "a homework", "many fun", "a damage"],
+        correctIndex: 0,
+      },
+      {
+        id: "e12",
+        type: "grammar",
+        themeId: "travel",
+        prompt: "Select the sentence with correct article use.",
+        options: [
+          "I led an important the meeting",
+          "I led an important meeting",
+          "I led important a meeting",
+          "I led the important an meeting",
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: "e13",
+        type: "vocabulary",
+        themeId: "hobbies",
+        prompt: "In casual English, “to pull off” most often means:",
+        options: [
+          "to cancel abruptly",
+          "to achieve something tricky successfully",
+          "to escalate an argument",
+          "to stop trying",
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: "e14",
+        type: "grammar",
+        themeId: "workplace",
+        prompt: "The director, ____ team shipped early, thanked everyone.",
+        options: ["which", "whose", "whom", "where"],
+        correctIndex: 1,
+      },
+      {
+        id: "e15",
+        type: "vocabulary",
+        themeId: "education",
+        prompt: "Best word: The lecture felt so ____ that half the class drifted.",
+        options: ["fascinated", "tedious", "tediously", "bored"],
+        correctIndex: 1,
+      },
+    ];
+    const normalized = this.normalizeQuestions(bank);
+    const slice = normalized.length ? normalized : bank;
+    return this.sliceAndRenumberQuestions(slice, safe);
   }
 
   private async geminiGenerate(
@@ -678,8 +870,9 @@ export class PlacementTestService {
   renderDocumentHtml(
     payload: PlacementTestPayload,
     accessToken: string,
+    apiPublicOrigin: string,
   ): string {
     const xApi = this.config.get<string>("API_TOKEN");
-    return renderPlacementHtml(payload, accessToken, xApi);
+    return renderPlacementHtml(payload, accessToken, xApi, apiPublicOrigin);
   }
 }

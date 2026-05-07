@@ -12,12 +12,6 @@ interface VideoTranscriptProps {
   onSeek?: (seconds: number) => void;
 }
 
-const speakerColors: Record<string, string> = {
-  Host: "text-primary",
-  Guide: "text-accent",
-  Lesson: "text-foreground",
-};
-
 function activeCueIndex(
   transcript: TranscriptLine[],
   t: number | undefined,
@@ -111,19 +105,9 @@ export function VideoTranscript({
               <span className="shrink-0 pt-0.5 font-mono text-xs tabular-nums text-muted-foreground">
                 {line.time}
               </span>
-              <div className="min-w-0">
-                <span className={cn(
-                    "text-sm font-medium",
-                    speakerColors[line.speaker] ??
-                      speakerColors.Lesson ??
-                      "text-foreground",
-                  )}>
-                  {line.speaker}:
-                </span>
-                <p className="text-sm leading-relaxed text-foreground">
-                  {line.text}
-                </p>
-              </div>
+              <p className="min-w-0 flex-1 text-sm leading-relaxed text-foreground">
+                {line.text}
+              </p>
             </button>
           );
         })}

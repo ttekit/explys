@@ -29,6 +29,9 @@ interface CatalogSidebarProps {
   englishLevel?: string;
   /** When false, hides category chips (e.g. on profile pages). Default true. */
   showCategoryFilter?: boolean;
+  /** Controlled collapse (desktop). When set, `onCollapsedChange` is called on toggle. */
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
 export function CatalogSidebar({
@@ -38,10 +41,19 @@ export function CatalogSidebar({
   welcomeName,
   englishLevel,
   showCategoryFilter = true,
+  collapsed: collapsedProp,
+  onCollapsedChange,
 }: CatalogSidebarProps) {
   const { pathname, search } = useLocation();
   const profileTab = new URLSearchParams(search).get("tab");
-  const [collapsed, setCollapsed] = useState(false);
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const collapsedControlled = collapsedProp !== undefined;
+  const collapsed = collapsedProp ?? internalCollapsed;
+
+  const setCollapsed = (next: boolean) => {
+    onCollapsedChange?.(next);
+    if (!collapsedControlled) setInternalCollapsed(next);
+  };
 
   const sortedCategories = ["All", ...categories.filter(Boolean).sort()];
 
@@ -94,7 +106,7 @@ export function CatalogSidebar({
                 {welcomeName?.trim() ? `Hi, ${welcomeName}` : "Welcome back!"}
               </p>
               <p className="text-sm text-muted-foreground">
-                {englishLevel?.trim() ? `Level ${englishLevel}` : "Exply"}
+                {englishLevel?.trim() ? `Level ${englishLevel}` : "Explys"}
               </p>
             </div>
           )}

@@ -25,13 +25,32 @@ export function normalizeSystemTags(raw: string[]): string[] {
   return out;
 }
 
-export function normalizeUserTags(raw: string[]): string[] {
+/**
+ * Keeps only values that match a `Genre.name` in the database (case-insensitive);
+ * returned strings use the canonical DB spelling.
+ */
+export function normalizeUserTagsToAllowedGenres(
+  raw: string[],
+  allowedGenreNames: readonly string[],
+): string[] {
+  if (!allowedGenreNames.length) {
+    return [];
+  }
+  const canonByLower = new Map<string, string>();
+  for (const n of allowedGenreNames) {
+    if (typeof n !== 'string') continue;
+    const t = n.trim();
+    if (!t) continue;
+    canonByLower.set(t.toLowerCase(), t);
+  }
   const out: string[] = [];
   for (const s of raw) {
     if (typeof s !== 'string') continue;
-    const t = s.trim().slice(0, 64);
-    if (t.length > 0 && !out.includes(t) && out.length < 20) {
-      out.push(t);
+    const key = s.trim().slice(0, 64).toLowerCase();
+    if (!key) continue;
+    const canon = canonByLower.get(key);
+    if (canon && !out.includes(canon) && out.length < 20) {
+      out.push(canon);
     }
   }
   return out;

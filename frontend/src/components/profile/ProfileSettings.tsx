@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   Bell,
+  LogOut,
   Palette,
   Plus,
   Save,
@@ -11,6 +12,8 @@ import {
 } from "lucide-react";
 import { apiFetch, getResponseErrorMessage } from "../../lib/api";
 import type { UserData } from "../../context/UserContext";
+import { useUser } from "../../context/UserContext";
+import { useNavigate } from "react-router";
 import InputText from "../InputText";
 import Button from "../Button";
 import { ProfileCard } from "./ProfileCard";
@@ -29,6 +32,8 @@ export function ProfileSettings({
   user: UserData;
   onSaved: () => Promise<void>;
 }) {
+  const { logout } = useUser();
+  const navigate = useNavigate();
   const [name, setName] = useState(user.name);
   const [email] = useState(user.email);
   const [job, setJob] = useState(user.workField);
@@ -555,6 +560,26 @@ export function ProfileSettings({
         className="border-destructive/30"
       >
         <div className="space-y-4">
+          <div className="flex flex-col gap-4 rounded-lg bg-destructive/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-medium text-foreground">Log out</p>
+              <p className="text-sm text-muted-foreground">
+                Sign out on this device. You can sign in again anytime.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-destructive px-4 py-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              onClick={() => {
+                logout();
+                toast.success("Signed out.");
+                void navigate("/loginForm", { replace: true });
+              }}
+            >
+              <LogOut className="size-4" />
+              Log out
+            </button>
+          </div>
           <div className="flex flex-col gap-4 rounded-lg bg-destructive/10 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium text-foreground">Reset progress</p>

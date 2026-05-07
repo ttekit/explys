@@ -86,14 +86,14 @@ export default function AdminSettingsPage() {
                 Platform profile
               </AdminCardTitle>
               <AdminCardDescription>
-                How Exply appears publicly in onboarding copy.
+                How Explys appears publicly in onboarding copy.
               </AdminCardDescription>
             </AdminCardHeader>
             <AdminCardContent className="space-y-4 p-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Name</label>
-                  <AdminInput defaultValue="Exply" />
+                  <AdminInput defaultValue="Explys" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">

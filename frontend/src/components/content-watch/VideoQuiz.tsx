@@ -11,10 +11,15 @@ import { cn } from "../../lib/utils";
 import { ChameleonMascot } from "../ChameleonMascot";
 import type { QuizQuestion } from "./defaultLessonSides";
 
+export type VideoQuizCompleteSummary = {
+  correctCount: number;
+  totalQuestions: number;
+};
+
 interface VideoQuizProps {
   questions: QuizQuestion[];
   isVideoComplete: boolean;
-  onComplete: () => void;
+  onComplete: (summary: VideoQuizCompleteSummary) => void;
 }
 
 export function VideoQuiz({
@@ -70,7 +75,12 @@ export function VideoQuiz({
 
         <button
           type="button"
-          onClick={onComplete}
+          onClick={() =>
+            onComplete({
+              correctCount,
+              totalQuestions: questions.length,
+            })
+          }
           className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
         >
           Complete lesson
