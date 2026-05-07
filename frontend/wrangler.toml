@@ -1,6 +1,7 @@
 # Cloudflare Workers (root directory = frontend):
-#   Build command:  npm ci && npm run build
-#   Deploy command: npx wrangler versions upload
+#   Build command:  pnpm install --frozen-lockfile && pnpm run build
+#   Deploy command: pnpm exec wrangler versions upload
+#   (CI often auto-runs install; build alone may be: pnpm run build)
 # Use root directory "frontend" (no leading slash). `name` must match the Worker in the dashboard.
 #
 # `[assets]` is required for `wrangler versions upload` (Workers static assets).
