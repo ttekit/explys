@@ -36,6 +36,11 @@ model User {
   comprehensionTestAttempts      ComprehensionTestAttempt[]
   placementAttempts              PlacementAttempt[]
 
+  stripeCustomerId     String?  @map("stripe_customer_id")
+  stripeSubscriptionId String?  @map("stripe_subscription_id")
+  subscriptionPlan     String?  @map("subscription_plan")
+  subscriptionStatus   String?  @map("subscription_status")
+
   @@index([teacherId], map: "users_teacher_id_idx")
   @@map("users")
 }
@@ -53,6 +58,11 @@ model AdditionalUserData {
   workField      String?
   hobbies        String[]
   interests      String[]
+
+  /// Adult learners: why they study (e.g. travel to the UK).
+  learningGoal   String?  @map("learning_goal")
+  /// Adult learners: target horizon as free text (e.g. 3m, 6 months).
+  timeToAchieve  String?  @map("time_to_achieve")
 
   teacherGrades        String?
   teacherTopics        String[]

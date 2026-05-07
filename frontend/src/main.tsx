@@ -17,6 +17,8 @@ import LessonSummaryPage from "./pages/content/LessonSummaryPage";
 import RegisterSuccessPage from "./pages/registration/RegisterSuccessPage";
 import LandingPage from "./pages/landing/LandingPage";
 import LevelTestPage from "./pages/registration/LevelTestPage";
+import LearningPlanPage from "./pages/learning/LearningPlanPage";
+import PricingPage from "./pages/pricing/PricingPage";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
@@ -43,6 +45,7 @@ const router = createBrowserRouter([
       },
       { path: "/registrationSuccess", element: <RegisterSuccessPage /> },
       { path: "/loginForm", element: <LoginForm /> },
+      { path: "/pricing", element: <PricingPage /> },
       {
         element: <RequireAuth />,
         children: [
@@ -67,6 +70,7 @@ const router = createBrowserRouter([
           { path: "/profileMain", element: <ProfileMain /> },
           { path: "/profile", element: <ProfileMain /> },
           { path: "/catalog", element: <VideoPage /> },
+          { path: "/learning-plan", element: <LearningPlanPage /> },
           { path: "/video-page", element: <Navigate to="/catalog" replace /> },
           { path: "/content/:id/summary", element: <LessonSummaryPage /> },
           { path: "/content/:id?", element: <ContentPage /> },

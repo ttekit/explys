@@ -40,6 +40,8 @@ export class UsersService {
                 studentNames: true,
                 studentGrade: true,
                 studentProblemTopics: true,
+                learningGoal: true,
+                timeToAchieve: true,
                 favoriteGenres: true,
                 hatedGenres: true,
             },
@@ -68,6 +70,8 @@ export class UsersService {
             nativeLanguage,
             knownLanguages,
             knownLanguageLevels,
+            learningGoal,
+            timeToAchieve,
         } = createUserDto;
         const role =
             roleRaw &&
@@ -82,6 +86,8 @@ export class UsersService {
             hobbies: hobbies || [],
             education,
             workField,
+            learningGoal,
+            timeToAchieve,
             favoriteGenres: favoriteGenres && favoriteGenres.length > 0 ? {
                 connect: favoriteGenres.map(id => ({ id }))
             } : undefined,
@@ -188,6 +194,8 @@ export class UsersService {
             nativeLanguage,
             knownLanguages,
             knownLanguageLevels,
+            learningGoal,
+            timeToAchieve,
             playbackSpeed,
             currentResolution,
             ...dataToUpdate
@@ -214,6 +222,8 @@ export class UsersService {
             nativeLanguage !== undefined ||
             knownLanguages !== undefined ||
             knownLanguageLevels !== undefined ||
+            learningGoal !== undefined ||
+            timeToAchieve !== undefined ||
             favoriteGenres !== undefined ||
             hatedGenres !== undefined;
 
@@ -272,6 +282,8 @@ export class UsersService {
                                     hobbies: hobbies || [],
                                     education,
                                     workField,
+                                    learningGoal,
+                                    timeToAchieve,
                                     favoriteGenres: favoriteGenres ? {
                                         connect: favoriteGenres.map((genreId: number) => ({ id: genreId }))
                                     } : undefined,
@@ -287,6 +299,8 @@ export class UsersService {
                                     hobbies,
                                     education,
                                     workField,
+                                    learningGoal,
+                                    timeToAchieve,
                                     favoriteGenres: favoriteGenres ? {
                                         set: favoriteGenres.map((genreId: number) => ({ id: genreId }))
                                     } : undefined,

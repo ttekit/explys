@@ -138,7 +138,10 @@ export default function VideoPage() {
         !placementCompleteHandled.current
       ) {
         placementCompleteHandled.current = true;
-        void refreshProfile();
+        void (async () => {
+          await refreshProfile();
+          navigate("/learning-plan", { replace: true });
+        })();
       }
     };
     window.addEventListener("message", onMessage);
@@ -373,7 +376,7 @@ export default function VideoPage() {
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {user?.role === "adult" ?
-                  "Enter your job, education, and native language — then your placement questionnaire starts."
+                  "Enter your job, education, hobbies, and native language — then your placement questionnaire starts."
                 : "A few quick preferences — then your placement questionnaire."}
               </p>
             </div>

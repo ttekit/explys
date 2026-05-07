@@ -1,0 +1,6 @@
+# Cloudflare Pages — use `npm run pages:deploy` or:
+#   npx wrangler pages deploy dist --project-name=<your-pages-project-name>
+# Set `name` to match the project name in the Cloudflare Pages dashboard.
+name = "explys"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-05-07"

@@ -4,6 +4,7 @@ const footerLinks = {
   Product: [
     { label: "Why Choose Explys", to: "/#why-choose-explys" },
     { label: "How Explys Works", to: "/#how-explys-works" },
+    { label: "Pricing", to: "/pricing" },
     { label: "Ready to Start", to: "/#ready-to-start" },
   ],
   Account: [
