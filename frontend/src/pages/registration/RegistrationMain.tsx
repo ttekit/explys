@@ -7,7 +7,6 @@ import { useContext, useState, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "../../context/RegistrationContext";
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
-import { ChameleonMascot } from "../../components/ChameleonMascot";
 
 export default function RegistrationMain() {
   const context = useContext(RegistrationContext);
@@ -46,9 +45,7 @@ export default function RegistrationMain() {
         return false;
       }
       if (!/[@$!%*?&]/.test(value)) {
-        setErrorText(
-          "Password must contain at least one of: @ $ ! % * ? &",
-        );
+        setErrorText("Password must contain at least one of: @ $ ! % * ? &");
         return false;
       }
     }
@@ -88,9 +85,9 @@ export default function RegistrationMain() {
     updateFormData({ [name]: value } as Record<string, string>);
 
     const passFromForm =
-      (e.currentTarget.form?.querySelector<HTMLInputElement>(
+      e.currentTarget.form?.querySelector<HTMLInputElement>(
         'input[name="password"]',
-      )?.value) ?? formData.password;
+      )?.value ?? formData.password;
     if (type === "confirmPassword") {
       validateField(value, "confirmPassword", passFromForm);
     } else {
@@ -179,13 +176,12 @@ export default function RegistrationMain() {
     <AuthSplitLayout
       progressStep={1}
       progressTotal={3}
-      rightTitle="Welcome to Exply!"
+      rightTitle="Welcome to Explys!"
       rightSubtitle="Join thousands of learners improving their English through personalized video content."
-      rightMascotMood="waving"
     >
-      <div className="mb-2 flex items-center gap-3">
-        <ChameleonMascot size="sm" mood="waving" animate={false} />
-        <h1 className="font-display text-2xl font-bold">Join Exply</h1>
+      <div className="mb-1 flex items-center gap-3">
+        <img src="/Icon.svg" className="w-15 h-18 mr-4" />
+        <h1 className="font-display text-2xl font-bold">Join Explys</h1>
       </div>
       <p className="mb-8 text-muted-foreground">
         Create your account and start your personalized learning journey
@@ -276,7 +272,10 @@ export default function RegistrationMain() {
 
         {errorText && <ValidateError>{errorText}</ValidateError>}
 
-        <Button type="submit" className="inline-flex gap-2 py-6 text-base">
+        <Button
+          type="submit"
+          className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+        >
           Continue
           <ArrowRight className="size-4" />
         </Button>
@@ -295,7 +294,10 @@ export default function RegistrationMain() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link to="/loginForm" className="font-medium text-primary hover:underline">
+        <Link
+          to="/loginForm"
+          className="font-medium text-primary hover:underline"
+        >
           Log in
         </Link>
       </p>

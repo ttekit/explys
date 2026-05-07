@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { LandingHeader } from "../../components/landing/LandingHeader";
 import {
   BarChart3,
   BookOpen,
@@ -27,6 +26,7 @@ import { ProfileAchievements } from "../../components/profile/ProfileAchievement
 import { ProfileActivity } from "../../components/profile/ProfileActivity";
 import { ProfileSettings } from "../../components/profile/ProfileSettings";
 import { ProfileTeacherStudents } from "../../components/profile/ProfileTeacherStudents";
+import ContentHeader from "../../components/catalog/ContentHeader";
 
 const LEARNER_TABS = [
   { id: "overview" as const, label: "Overview", icon: BarChart3 },
@@ -36,9 +36,7 @@ const LEARNER_TABS = [
   { id: "settings" as const, label: "Settings", icon: Settings },
 ];
 
-type TabId =
-  | (typeof LEARNER_TABS)[number]["id"]
-  | "students";
+type TabId = (typeof LEARNER_TABS)[number]["id"] | "students";
 
 function normalizeRole(role: string): ProfileHeaderRole {
   if (role === "student" || role === "teacher") return role;
@@ -201,7 +199,7 @@ export default function ProfileMain() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <LandingHeader />
+      <ContentHeader />
 
       <main className="pb-12 pt-20 sm:pt-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -237,16 +235,15 @@ export default function ProfileMain() {
           </div>
 
           <div className="mt-6">
-            {activeTab === "overview" ? <ProfileStats user={statsModel} /> : null}
+            {activeTab === "overview" ? (
+              <ProfileStats user={statsModel} />
+            ) : null}
             {activeTab === "students" ? <ProfileTeacherStudents /> : null}
             {activeTab === "progress" ? <ProfileProgress /> : null}
             {activeTab === "achievements" ? <ProfileAchievements /> : null}
             {activeTab === "activity" ? <ProfileActivity /> : null}
             {activeTab === "settings" ? (
-              <ProfileSettings
-                user={user}
-                onSaved={refreshProfile}
-              />
+              <ProfileSettings user={user} onSaved={refreshProfile} />
             ) : null}
           </div>
         </div>

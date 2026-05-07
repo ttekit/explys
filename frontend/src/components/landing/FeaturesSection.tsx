@@ -1,11 +1,4 @@
-import {
-  BarChart3,
-  Brain,
-  Target,
-  Trophy,
-  Users,
-  Video,
-} from "lucide-react";
+import { BarChart3, Brain, Target, Trophy, Users, Video } from "lucide-react";
 
 const features = [
   {
@@ -48,13 +41,13 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="relative scroll-mt-24 py-24">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_oklch(0.75_0.18_145_/_0.08)_0%,_transparent_50%)]" />
+    <section id="features" className="relative font-display scroll-mt-24 py-24">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,oklch(0.75_0.18_145/0.08)_0%,transparent_50%)]" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
           <h2 className="font-display mb-4 text-balance text-3xl font-bold sm:text-4xl">
-            Why Choose <span className="text-primary">Exply</span>?
+            Why Choose <span className="text-primary">Explys</span>?
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
             Our adaptive learning platform combines the best of entertainment

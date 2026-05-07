@@ -8,7 +8,6 @@ import {
 } from "../../context/RegistrationContext";
 import { ArrowLeft } from "lucide-react";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
-import { ChameleonMascot } from "../../components/ChameleonMascot";
 import { cn } from "../../lib/utils";
 
 export default function RegistrationPreferences() {
@@ -42,9 +41,7 @@ export default function RegistrationPreferences() {
             id: number;
             name: string;
           }[];
-          setGenreOptions(
-            data.map((g) => ({ value: g.id, label: g.name })),
-          );
+          setGenreOptions(data.map((g) => ({ value: g.id, label: g.name })));
         }
       } catch (error) {
         console.error("Error fetching genres:", error);
@@ -58,10 +55,9 @@ export default function RegistrationPreferences() {
 
   const toggleFavorite = (id: number) => {
     if (hatedIds.includes(id)) return;
-    const next =
-      favoriteIds.includes(id)
-        ? favoriteIds.filter((x) => x !== id)
-        : [...favoriteIds, id];
+    const next = favoriteIds.includes(id)
+      ? favoriteIds.filter((x) => x !== id)
+      : [...favoriteIds, id];
     updateFormData({
       favoriteGenres: next,
       hatedGenres: hatedIds.filter((h) => !next.includes(h)),
@@ -70,10 +66,9 @@ export default function RegistrationPreferences() {
 
   const toggleHated = (id: number) => {
     if (favoriteIds.includes(id)) return;
-    const next =
-      hatedIds.includes(id)
-        ? hatedIds.filter((x) => x !== id)
-        : [...hatedIds, id];
+    const next = hatedIds.includes(id)
+      ? hatedIds.filter((x) => x !== id)
+      : [...hatedIds, id];
     updateFormData({
       hatedGenres: next,
       favoriteGenres: favoriteIds.filter((f) => !next.includes(f)),
@@ -123,7 +118,9 @@ export default function RegistrationPreferences() {
           ? errorData.message.join(", ")
           : errorData.message;
 
-        alert(`Registration failed: ${errorMessage || "Internal Server Error"}`);
+        alert(
+          `Registration failed: ${errorMessage || "Internal Server Error"}`,
+        );
       }
     } catch (error) {
       console.error("Network or parsing error:", error);
@@ -141,8 +138,7 @@ export default function RegistrationPreferences() {
         progressStep={3}
         progressTotal={3}
         rightTitle="Almost there!"
-        rightSubtitle="A few preferences help us tune what you&apos;ll watch next."
-        rightMascotMood="excited"
+        rightSubtitle="A few preferences help us tune what you'll watch next."
       >
         <Link
           to="/registrationDetails"
@@ -153,11 +149,7 @@ export default function RegistrationPreferences() {
         </Link>
 
         <div className="mb-6 flex items-center gap-3">
-          <ChameleonMascot
-            size="sm"
-            mood="happy"
-            animate={false}
-          />
+          <img src="/Icon.svg" className="w-12 h-15" />
           <div>
             <h1 className="font-display text-2xl font-bold">
               {formData.role === "student"
@@ -233,7 +225,10 @@ export default function RegistrationPreferences() {
             </div>
           </div>
 
-          <Button type="submit" className="py-6 text-base font-semibold">
+          <Button
+            type="submit"
+            className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+          >
             Register
           </Button>
         </form>
@@ -262,8 +257,8 @@ export default function RegistrationPreferences() {
               Determine your level
             </h2>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              You&apos;re almost done. Take a quick placement test so we can recommend
-              the best videos—or skip for now and start exploring.
+              You&apos;re almost done. Take a quick placement test so we can
+              recommend the best videos—or skip for now and start exploring.
             </p>
             <div className="flex flex-col gap-3">
               <button
