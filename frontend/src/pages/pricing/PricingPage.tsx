@@ -4,11 +4,16 @@ import ContentHeader from "../../components/catalog/ContentHeader";
 import PricingCards from "../../components/pricing/PricingCards";
 import { useUser } from "../../context/UserContext";
 import { usePricingCheckout } from "../../hooks/usePricingCheckout";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 
 export default function PricingPage() {
   const [searchParams] = useSearchParams();
   const { isLoggedIn } = useUser();
   const { startCheckout, checkoutLoading } = usePricingCheckout();
+  const { messages, locale } = useLandingLocale();
+  const pricingMeta = messages.pricingPage;
 
   const checkoutOk = searchParams.get("checkout") === "success";
 
@@ -20,6 +25,13 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background font-display text-foreground antialiased">
+      <SEO
+        title={pricingMeta.title}
+        description={pricingMeta.description}
+        canonicalUrl={resolveCanonicalUrl("/pricing")}
+        ogLocale={locale === "uk" ? "uk_UA" : "en_US"}
+        ogLocaleAlternate={locale === "uk" ? "en_US" : "uk_UA"}
+      />
       <ContentHeader variant="landing" />
       <main className="mx-auto max-w-7xl px-4 pb-24 pt-28 sm:px-6 lg:px-8 lg:pt-32">
         <div className="mx-auto mb-14 max-w-3xl text-center">

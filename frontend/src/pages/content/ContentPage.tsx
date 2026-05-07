@@ -18,6 +18,8 @@ import {
   type VocabularyItem,
 } from "../../components/content-watch/defaultLessonSides";
 import { parseWebVttTranscriptLines } from "../../lib/parseWebVtt";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
 
 const LESSON_XP = 150;
 const LESSON_SUMMARY_STORAGE = "lessonSummary:";
@@ -485,26 +487,53 @@ export default function ContentPage() {
   );
 
   if (loading) {
-    return <LoadingView />;
+    return (
+      <>
+        <SEO
+          title="Урок"
+          description="Интерактивный видеоурок английского на платформе Explys."
+          canonicalUrl={resolveCanonicalUrl(
+            id ? `/content/${id}` : "/catalog",
+          )}
+        />
+        <LoadingView />
+      </>
+    );
   }
 
   if (!id) {
     return (
-      <EmptyState
+      <>
+        <SEO
+          title="Урок"
+          description="Выберите урок в каталоге Explys."
+          canonicalUrl={resolveCanonicalUrl("/catalog")}
+          noindex
+        />
+        <EmptyState
         title="No video selected"
         description="Pick a lesson from your catalog."
         cta={{ to: "/catalog", label: "Browse catalog" }}
       />
+      </>
     );
   }
 
   if (!videoData) {
     return (
-      <EmptyState
+      <>
+        <SEO
+          title="Урок не найден"
+          description="Этот урок недоступен или был удалён."
+          canonicalUrl={resolveCanonicalUrl(`/content/${id}`)}
+          noindex
+        />
+        <EmptyState
         title="Video not found"
         description="This clip may have been removed or the link is wrong."
         cta={{ to: "/catalog", label: "Back to catalog" }}
       />
+      </>
     );
   }
 
@@ -518,6 +547,11 @@ export default function ContentPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
+      <SEO
+        title={videoData.videoName}
+        description={descriptionBlurb}
+        canonicalUrl={resolveCanonicalUrl(`/content/${id}`)}
+      />
       <ContentWatchHeader rightLabel={headerRight} />
 
       <main className="pt-16">

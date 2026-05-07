@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import ContentHeader from "../../components/catalog/ContentHeader";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
 
 const questions = [
   {
@@ -59,6 +61,12 @@ export default function LevelTestPage() {
 
   return (
     <div className="relative min-h-screen font-display bg-background flex flex-col items-center justify-center p-5">
+      <SEO
+        title="English level test"
+        description="Determine your English level on Explys."
+        canonicalUrl={resolveCanonicalUrl("/level-test")}
+        noindex
+      />
       <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-background" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,oklch(0.59_0.16_165/_40%)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,oklch(0.65_0.25_295/_20%)_0%,transparent_50%)]" />

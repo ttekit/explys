@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Check } from "lucide-react";
 import { cn } from "../../lib/utils";
 import {
@@ -5,7 +6,9 @@ import {
   type PricingPlanId,
   PRICING_PLANS,
 } from "../../lib/pricingPlans";
+import type { LandingMessages } from "../../locales/landing";
 import { getSalesContactHref } from "../../lib/salesContact";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 
 export type PricingCardsProps = {
   onSelectConsumerPlan?: (
@@ -14,6 +17,21 @@ export type PricingCardsProps = {
   checkoutDisabled?: boolean;
   className?: string;
 };
+
+function overlayPlan(
+  base: PricingPlan,
+  pc: LandingMessages["pricingCards"],
+): PricingPlan {
+  const o = pc.plans[base.id];
+  return {
+    ...base,
+    name: o.name,
+    description: o.description,
+    billingNote: o.billingNote,
+    features: o.features.map((text) => ({ text })),
+    ctaLabel: o.ctaLabel,
+  };
+}
 
 function CtaButton({
   plan,
@@ -66,10 +84,14 @@ function CtaButton({
 
 function PricingCard({
   plan,
+  popularBadge,
+  teacherPriceTitle,
   onSelectConsumerPlan,
   checkoutDisabled,
 }: {
   plan: PricingPlan;
+  popularBadge: string;
+  teacherPriceTitle: string;
   onSelectConsumerPlan?: PricingCardsProps["onSelectConsumerPlan"];
   checkoutDisabled?: boolean;
 }) {
@@ -86,7 +108,7 @@ function PricingCard({
     >
       {popular ?
         <span className="absolute -top-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary-foreground shadow-md">
-          Most Popular
+          {popularBadge}
         </span>
       : null}
 
@@ -103,17 +125,20 @@ function PricingCard({
         {plan.isContactSales ?
           <div>
             <p className="font-display text-3xl font-bold tracking-tight text-foreground">
-              Custom / Enterprise
+              {teacherPriceTitle}
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">{plan.billingNote}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {plan.billingNote}
+            </p>
           </div>
         : <>
-            <div className="flex flex-wrap items-baseline gap-1">
+            <div className="flex flex-wrap items-baseline gap-x-1 gap-y-0">
               <span className="font-display text-4xl font-bold tracking-tight text-foreground">
                 {plan.priceLabel}
               </span>
               <span className="text-sm font-medium text-muted-foreground">
-                / month
+                {" "}
+                {plan.billingNote}
               </span>
             </div>
           </>
@@ -121,8 +146,11 @@ function PricingCard({
       </div>
 
       <ul className="mb-6 flex flex-1 flex-col gap-3">
-        {plan.features.map((f) => (
-          <li key={f.text} className="flex gap-3 text-sm text-foreground/90">
+        {plan.features.map((f, idx) => (
+          <li
+            key={`${plan.id}-${idx}`}
+            className="flex gap-3 text-sm text-foreground/90"
+          >
             <Check
               className="mt-0.5 size-4 shrink-0 text-emerald-500"
               strokeWidth={2.5}
@@ -147,6 +175,14 @@ export default function PricingCards({
   checkoutDisabled = false,
   className,
 }: PricingCardsProps) {
+  const { messages } = useLandingLocale();
+  const pc = messages.pricingCards;
+
+  const plans = useMemo(
+    () => PRICING_PLANS.map((p) => overlayPlan(p, pc)),
+    [pc],
+  );
+
   return (
     <div
       className={cn(
@@ -154,10 +190,12 @@ export default function PricingCards({
         className,
       )}
     >
-      {PRICING_PLANS.map((plan) => (
+      {plans.map((plan) => (
         <PricingCard
           key={plan.id}
           plan={plan}
+          popularBadge={pc.popularBadge}
+          teacherPriceTitle={pc.teacherPriceTitle}
           onSelectConsumerPlan={onSelectConsumerPlan}
           checkoutDisabled={checkoutDisabled}
         />

@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { ChameleonMascot } from "../ChameleonMascot";
+import { SEO } from "../SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
 
 const sidebarLinks = [
   { icon: LayoutDashboard, label: "Dashboard", to: "/admin", end: true },
@@ -50,6 +52,12 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEO
+        title="Admin"
+        description="Explys administration. Private area, not for search indexing."
+        canonicalUrl={resolveCanonicalUrl("/admin")}
+        noindex
+      />
       <button
         type="button"
         className="fixed top-4 left-4 z-50 flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card shadow-sm lg:hidden"

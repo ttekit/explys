@@ -31,6 +31,8 @@ import { ProfileTeacherStudents } from "../../components/profile/ProfileTeacherS
 import { ProfileStudyingPlan } from "../../components/profile/ProfileStudyingPlan";
 import { ProfileSubscriptions } from "../../components/profile/ProfileSubscriptions";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
 
 const LEARNER_TABS = [
   { id: "overview" as const, label: "Overview", icon: BarChart3 },
@@ -210,15 +212,30 @@ export default function ProfileMain() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-dvh items-center justify-center text-muted-foreground">
-        Loading profile…
-      </div>
+      <>
+        <SEO
+          title="Profile"
+          description="Your Explys learner or teacher profile."
+          canonicalUrl={resolveCanonicalUrl("/profileMain")}
+          noindex
+        />
+        <div className="flex min-h-dvh items-center justify-center text-muted-foreground">
+          Loading profile…
+        </div>
+      </>
     );
   }
 
   if (!isLoggedIn || !user || !headerModel || !statsModel) {
     return (
-      <div className="m-4 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-destructive">
+      <>
+        <SEO
+          title="Profile"
+          description="Your Explys learner or teacher profile."
+          canonicalUrl={resolveCanonicalUrl("/profileMain")}
+          noindex
+        />
+        <div className="m-4 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-destructive">
         <p className="font-medium">Please sign in to view your profile.</p>
         <Link
           to="/loginForm"
@@ -227,6 +244,7 @@ export default function ProfileMain() {
           Go to login
         </Link>
       </div>
+      </>
     );
   }
 
@@ -238,6 +256,12 @@ export default function ProfileMain() {
 
   return (
     <div className="min-h-dvh bg-background font-display antialiased">
+      <SEO
+        title="Profile"
+        description="Your Explys learner or teacher profile."
+        canonicalUrl={resolveCanonicalUrl("/profileMain")}
+        noindex
+      />
       <div className="flex">
         <CatalogSidebar
           categories={[]}

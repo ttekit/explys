@@ -1,8 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "react-hot-toast";
 import "./index.css";
+import { LandingLocaleProvider } from "./context/LandingLocaleContext";
 import RegistrationMain from "./pages/registration/RegistrationMain";
 import RegistrationDetails from "./pages/registration/RegistrationDetails";
 import RegistrationPreferences from "./pages/registration/RegistrationPreferences";
@@ -82,17 +84,21 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <UserProvider>
-      <RegistrationProvider>
-        <RouterProvider router={router} />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            className: "bg-zinc-900 text-zinc-100 border border-zinc-700",
-            style: { boxShadow: "0 8px 30px rgba(0,0,0,0.4)" },
-          }}
-        />
-      </RegistrationProvider>
-    </UserProvider>
+    <HelmetProvider>
+      <LandingLocaleProvider>
+        <UserProvider>
+          <RegistrationProvider>
+            <RouterProvider router={router} />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                className: "bg-zinc-900 text-zinc-100 border border-zinc-700",
+                style: { boxShadow: "0 8px 30px rgba(0,0,0,0.4)" },
+              }}
+            />
+          </RegistrationProvider>
+        </UserProvider>
+      </LandingLocaleProvider>
+    </HelmetProvider>
   </StrictMode>,
 );

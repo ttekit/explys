@@ -1,11 +1,15 @@
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { useUser } from "../../context/UserContext";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 
 export function CtaSection() {
   const { isLoggedIn } = useUser();
+  const { messages } = useLandingLocale();
+  const { cta } = messages;
   const primaryTo = isLoggedIn ? "/catalog" : "/registrationMain";
-  const primaryLabel = isLoggedIn ? "Catalog" : "Get Started Free";
+  const primaryLabel = isLoggedIn ? cta.catalog : cta.getStartedFree;
+
   return (
     <section
       id="ready-to-start"
@@ -15,17 +19,17 @@ export function CtaSection() {
 
       <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
         <div className="mb-8 flex justify-center">
-          <img src="/Icon.svg" className="w-38 h-46 animate-float" />
+          <img src="/Icon.svg" className="w-38 h-46 animate-float" alt="" />
         </div>
 
         <h2 className="font-display mb-6 text-balance text-3xl font-bold sm:text-4xl lg:text-5xl">
-          Ready to Start Your{" "}
-          <span className="text-primary">English Journey</span>?
+          {cta.titleBefore}{" "}
+          <span className="text-primary">{cta.titleAccent}</span>
+          {cta.titleAfter}
         </h2>
 
         <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-          Join thousands of learners who are already improving their English
-          skills with personalized video content tailored just for them.
+          {cta.subtitle}
         </p>
 
         <div className="flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center sm:justify-center">
@@ -42,13 +46,11 @@ export function CtaSection() {
             to={{ pathname: "/", hash: "#how-explys-works" }}
             className="flex w-full items-center justify-center rounded-[15px] border border-white/20 px-6 py-7 text-lg font-semibold text-foreground/85 backdrop-blur-sm transition-all hover:border-white/35 hover:bg-white/5 hover:text-white sm:w-auto"
           >
-            See how it works
+            {cta.howItWorks}
           </Link>
         </div>
 
-        <p className="mt-6 text-sm text-muted-foreground">
-          No credit card required. Start learning in under 2 minutes.
-        </p>
+        <p className="mt-6 text-sm text-muted-foreground">{cta.footnote}</p>
       </div>
     </section>
   );

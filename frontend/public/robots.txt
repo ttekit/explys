@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /catalog
+Allow: /content/
+Disallow: /admin/
+Disallow: /profileMain
+Disallow: /level-test
+Disallow: /registrationMain
+Sitemap: https://explys.com/sitemap.xml

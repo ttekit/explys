@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import PricingCards from "../pricing/PricingCards";
 import { useUser } from "../../context/UserContext";
 import { usePricingCheckout } from "../../hooks/usePricingCheckout";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 
 /**
  * Pricing grid for the marketing home page (same plans as /pricing).
@@ -9,6 +10,8 @@ import { usePricingCheckout } from "../../hooks/usePricingCheckout";
 export function LandingPricingSection() {
   const { isLoggedIn } = useUser();
   const { startCheckout, checkoutLoading } = usePricingCheckout();
+  const { messages } = useLandingLocale();
+  const { pricingSection } = messages;
 
   return (
     <section
@@ -18,17 +21,16 @@ export function LandingPricingSection() {
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Simple, transparent pricing
+            {pricingSection.title}
           </h2>
           <p className="mt-3 text-muted-foreground md:text-lg">
-            From essentials to adaptive AI and family plans — plus enterprise
-            for schools.
+            {pricingSection.subtitle}
           </p>
           <Link
             to="/pricing"
             className="mt-4 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
           >
-            Full pricing page
+            {pricingSection.fullPageLink}
           </Link>
         </div>
         <PricingCards

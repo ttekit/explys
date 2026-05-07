@@ -7,6 +7,8 @@ import { useContext, useState, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "../../context/RegistrationContext";
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
 
 export default function RegistrationMain() {
   const context = useContext(RegistrationContext);
@@ -175,7 +177,14 @@ export default function RegistrationMain() {
   };
 
   return (
-    <AuthSplitLayout
+    <>
+      <SEO
+        title="Create account"
+        description="Register for Explys to start learning English with personalized video lessons."
+        canonicalUrl={resolveCanonicalUrl("/registrationMain")}
+        noindex
+      />
+      <AuthSplitLayout
       progressStep={1}
       progressTotal={3}
       rightTitle="Welcome to Explys!"
@@ -304,5 +313,6 @@ export default function RegistrationMain() {
         </Link>
       </p>
     </AuthSplitLayout>
+    </>
   );
 }
