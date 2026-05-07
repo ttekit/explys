@@ -5,7 +5,7 @@
 #
 # `[assets]` is required for `wrangler versions upload` (Workers static assets).
 # `pages_build_output_dir` is for `wrangler pages deploy` only.
-name = "explys"
+name = 'expyls'
 compatibility_date = "2026-05-07"
 pages_build_output_dir = "dist"
 
