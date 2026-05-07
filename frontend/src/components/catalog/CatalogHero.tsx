@@ -16,9 +16,9 @@ export function CatalogHero({ featured }: CatalogHeroProps) {
   const navigate = useNavigate();
 
   return (
-    <section className="relative flex min-h-[500px] h-[70vh] items-end overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_oklch(0.65_0.25_295_/_0.3)_0%,_transparent_50%)]" />
+    <section className="relative flex min-h-125 h-[70vh] items-end overflow-hidden">
+      <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-background" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,oklch(0.65_0.25_295/0.3)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-card/60" />
 
       <div className="relative max-w-4xl px-4 pb-16 sm:px-6 lg:px-8">
@@ -39,10 +39,8 @@ export function CatalogHero({ featured }: CatalogHeroProps) {
           )}
         </div>
 
-        <h1 className="font-display mb-4 text-balance text-4xl font-bold sm:text-5xl lg:text-6xl">
-          {featured
-            ? featured.title
-            : "Your English catalog"}
+        <h1 className="font-lexend mb-4 text-balance text-4xl font-bold sm:text-5xl lg:text-6xl">
+          {featured ? featured.title : "Your English catalog"}
         </h1>
 
         <p className="mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground">
@@ -54,11 +52,11 @@ export function CatalogHero({ featured }: CatalogHeroProps) {
         <div className="mb-8 flex flex-wrap gap-4 text-sm text-muted-foreground">
           <span>Fresh picks</span>
           <span className="flex h-1 w-1 items-center justify-center">
-            <span className="h-1 w-1 rounded-full bg-muted-foreground" />
+            <span className="h-1 w-1 rounded-full bg-muted-foreground mt-4" />
           </span>
           <span>Video + quizzes</span>
           <span className="flex h-1 w-1 items-center justify-center">
-            <span className="h-1 w-1 rounded-full bg-muted-foreground" />
+            <span className="h-1 w-1 rounded-full bg-muted-foreground mt-4" />
           </span>
           <span>Levels for every learner</span>
         </div>
@@ -80,7 +78,7 @@ export function CatalogHero({ featured }: CatalogHeroProps) {
                 behavior: "smooth",
               });
             }}
-            className="inline-flex items-center gap-2 rounded-xl border border-border px-8 py-3 text-sm font-semibold transition-colors hover:bg-muted"
+            className="inline-flex hover:cursor-pointer items-center gap-2 rounded-xl border border-border px-8 py-3 text-sm font-semibold transition-colors hover:bg-muted"
           >
             <Info className="h-5 w-5" />
             Browse library

@@ -27,7 +27,6 @@ import {
 } from "../../lib/registerUser";
 import { ArrowLeft } from "lucide-react";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
-import { ChameleonMascot } from "../../components/ChameleonMascot";
 import {
   RegistrationRoleCards,
   type RegistrationRoleChoice,
@@ -206,7 +205,6 @@ export default function RegistrationDetails() {
       mainClassName="max-w-2xl"
       rightTitle="Who are you?"
       rightSubtitle="Tell us your role so we can customize your experience."
-      rightMascotMood="thinking"
     >
       <Link
         to="/registrationMain"
@@ -219,18 +217,21 @@ export default function RegistrationDetails() {
       <form className="flex flex-col gap-8" onSubmit={handleNext}>
         <section>
           <h1 className="font-display text-2xl font-bold mb-2">
-            How will you use Exply?
+            How will you use Explys?
           </h1>
           <p className="mb-6 text-muted-foreground">
             Pick the option that fits you best—we&apos;ll tailor the setup.
           </p>
-          <RegistrationRoleCards value={formData.role} onChange={handleRoleSelect} />
+          <RegistrationRoleCards
+            value={formData.role}
+            onChange={handleRoleSelect}
+          />
         </section>
 
         {formData.role === "teacher" && (
           <section className="space-y-4 border-border border-t pt-8">
             <div className="flex items-start gap-3">
-              <ChameleonMascot size="sm" mood="happy" animate={false} />
+              <img src="Icon.svg" className="w-12 h-15" />
               <div>
                 <h2 className="font-display text-xl font-semibold">
                   Teacher profile
@@ -274,7 +275,9 @@ export default function RegistrationDetails() {
                 }
               />
               {topicsLoadError && (
-                <p className="text-destructive mt-1 text-sm">{topicsLoadError}</p>
+                <p className="text-destructive mt-1 text-sm">
+                  {topicsLoadError}
+                </p>
               )}
             </div>
 
@@ -284,7 +287,7 @@ export default function RegistrationDetails() {
                 <button
                   type="button"
                   onClick={addPupil}
-                  className="rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="rounded-[15px] bg-primary px-6 py-2.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
                 >
                   + Add pupil
                 </button>
@@ -332,7 +335,7 @@ export default function RegistrationDetails() {
                             type="button"
                             aria-label={`Remove pupil ${index + 1}`}
                             onClick={() => removePupil(index)}
-                            className="text-destructive hover:text-destructive/90 px-2 font-bold transition-colors"
+                            className="text-destructive/70 hover:cursor-pointer hover:text-destructive px-2 pt-2 font-bold transition-colors"
                           >
                             ✕
                           </button>
@@ -352,18 +355,24 @@ export default function RegistrationDetails() {
         )}
 
         {emptyError && (
-          <ValidateError>Please select how you&apos;ll use Exply.</ValidateError>
+          <ValidateError>
+            Please select how you&apos;ll use Exply.
+          </ValidateError>
         )}
         {formError && <ValidateError>{formError}</ValidateError>}
 
         <div className="flex flex-col gap-3 sm:flex-row-reverse sm:items-stretch">
-          <Button type="submit" disabled={isSubmitting} className="py-6 sm:flex-1">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+          >
             {formData.role === "teacher" ? "Register" : "Next"}
           </Button>
           <Button
             type="button"
             onClick={() => navigate("/registrationMain")}
-            className="border-border hover:bg-muted sm:flex-1 border bg-transparent py-6 text-muted-foreground hover:text-foreground"
+            className="text-sm font-medium bg-transparent text-foreground/70 hover:text-white py-2.5 px-6 transition-all rounded-[15px] hover:bg-muted-foreground/10 hover:cursor-pointer"
           >
             Previous step
           </Button>

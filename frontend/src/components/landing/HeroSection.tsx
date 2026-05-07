@@ -1,11 +1,10 @@
 import { Link } from "react-router";
-import { ChameleonMascot } from "../ChameleonMascot";
 import { Play, Sparkles } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="relative flex min-h-screen items-center overflow-hidden pt-24 pb-16">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_oklch(0.65_0.25_295_/_0.15)_0%,_transparent_50%)]" />
+    <section className="relative border-b font-display border-border flex min-h-screen items-center overflow-hidden pt-24 pb-16">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(0.65_0.25_295/0.15)_0%,transparent_50%)]" />
       <div className="absolute top-1/4 right-0 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
       <div className="absolute bottom-1/4 left-0 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
 
@@ -20,26 +19,25 @@ export function HeroSection() {
             </div>
 
             <h1 className="font-display text-4xl leading-tight font-bold text-balance sm:text-5xl lg:text-6xl">
-              Learn English{" "}
-              <span className="text-primary">Your Way</span>
+              Learn English <span className="text-primary">Your Way</span>
             </h1>
 
             <p className="max-w-lg text-lg leading-relaxed text-muted-foreground sm:text-xl">
               Adaptive video lessons that match your interests, level, and
-              learning style. Just like a chameleon adapts to its environment, we
-              adapt to you.
+              learning style. Just like a chameleon adapts to its environment,
+              we adapt to you.
             </p>
 
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link
                 to="/registrationMain"
-                className="animate-glow inline-flex items-center justify-center rounded-xl bg-primary px-8 py-6 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                className="rounded-[15px] bg-primary px-6 py-5.5 text-lg items-center justify-center font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
               >
                 Start Learning Free
               </Link>
               <Link
                 to="/catalog"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-8 py-6 text-lg font-semibold transition-colors hover:bg-muted"
+                className="inline-flex text-foreground/70 hover:text-white rounded-[15px] px-3 items-center justify-center gap-2 rounded-xlpx-8 py-6 text-lg font-semibold transition-colors hover:bg-muted-foreground/10"
               >
                 <Play className="h-5 w-5" />
                 Browse Content
@@ -66,39 +64,8 @@ export function HeroSection() {
 
           <div className="relative flex justify-center lg:justify-end">
             <div className="relative">
-              <div
-                className="animate-float absolute -top-8 -left-8"
-                style={{ animationDelay: "0s" }}
-              >
-                <div className="rounded-xl border border-border bg-card p-3 shadow-lg">
-                  <p className="text-sm font-medium text-foreground">Hello! 👋</p>
-                </div>
-              </div>
-              <div
-                className="animate-float absolute top-1/4 -right-12"
-                style={{ animationDelay: "2s" }}
-              >
-                <div className="rounded-xl border border-primary/30 bg-primary/20 p-3 shadow-lg">
-                  <p className="text-sm font-medium text-primary">Level Up!</p>
-                </div>
-              </div>
-              <div
-                className="animate-float absolute -left-16 bottom-8"
-                style={{ animationDelay: "4s" }}
-              >
-                <div className="rounded-xl border border-accent/30 bg-accent/20 p-3 shadow-lg">
-                  <p className="text-sm font-medium text-accent">+500 XP</p>
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 scale-75 rounded-full bg-primary/20 blur-3xl" />
-                <ChameleonMascot
-                  size="xl"
-                  mood="excited"
-                  className="relative z-10 scale-150"
-                />
-              </div>
+              <div className="absolute inset-0 scale-100 rounded-full bg-primary/20 blur-3xl" />
+              <img src="/Icon.svg" className="w-54 h-62 animate-float" />
             </div>
           </div>
         </div>

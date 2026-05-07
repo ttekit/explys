@@ -13,7 +13,6 @@ import {
 } from "../../lib/api";
 import { useUser } from "../../context/UserContext";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
-import { ChameleonMascot } from "../../components/ChameleonMascot";
 
 function safeReturnPath(state: unknown): string | undefined {
   if (!state || typeof state !== "object" || !("from" in state)) return undefined;
@@ -88,13 +87,14 @@ export default function LoginForm() {
     <AuthSplitLayout
       rightTitle="Ready to continue?"
       rightSubtitle="Pick up right where you left off with your personalized learning path."
-      rightMascotMood="waving"
     >
       <div className="mb-2 flex items-center gap-3">
-        <ChameleonMascot size="sm" mood="happy" animate={false} />
+        <img src="/Icon.svg" className="w-12 h-15" />
         <h1 className="font-display text-2xl font-bold">Welcome back</h1>
       </div>
-      <p className="mb-8 text-muted-foreground">Continue your learning journey</p>
+      <p className="mb-8 text-muted-foreground">
+        Continue your learning journey
+      </p>
 
       <form onSubmit={handleLogin} tabIndex={0} className="space-y-5">
         <div className="space-y-2">
@@ -150,14 +150,20 @@ export default function LoginForm() {
           <ValidateError>Please fill in all required fields.</ValidateError>
         )}
 
-        <Button type="submit" className="py-6 text-base">
+        <Button
+          type="submit"
+          className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+        >
           Log in
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
-        <Link to="/registrationMain" className="font-medium text-primary hover:underline">
+        <Link
+          to="/registrationMain"
+          className="font-medium text-primary hover:underline"
+        >
           Sign up
         </Link>
       </p>
