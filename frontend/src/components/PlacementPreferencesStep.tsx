@@ -224,9 +224,6 @@ export default function PlacementPreferencesStep({
           }
           styles={selectDark}
         />
-        <p className="text-[11px] text-muted-foreground">
-          Add each hobby as a tag — like genres, but your own words.
-        </p>
       </div>
 
       <div className="flex flex-col gap-1">

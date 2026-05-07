@@ -2,7 +2,7 @@ import Button from "../../components/Button";
 import InputText from "../../components/InputText";
 import LabelRegister from "../../components/LabelRegister";
 import ValidateError from "../../components/ValidateError";
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
@@ -13,6 +13,7 @@ import {
 } from "../../lib/api";
 import { useUser } from "../../context/UserContext";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
+import { consumePendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 
 function safeReturnPath(state: unknown): string | undefined {
   if (!state || typeof state !== "object" || !("from" in state)) return undefined;
@@ -33,6 +34,23 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { refreshProfile } = useUser();
+
+  useEffect(() => {
+    const s = location.state as {
+      registrationComplete?: boolean;
+      from?: string;
+    } | null;
+    if (!s?.registrationComplete) {
+      return;
+    }
+    if (consumePendingRegistrationLoginWelcome()) {
+      toast.success("Account created. Sign in with your email and password.");
+    }
+    navigate("/loginForm", {
+      replace: true,
+      state: s.from ? { from: s.from } : undefined,
+    });
+  }, [location.state, navigate]);
 
   const isEmpty = [loginData.email, loginData.password].some(
     (value) => value.trim() === "",

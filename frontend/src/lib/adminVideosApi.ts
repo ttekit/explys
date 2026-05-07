@@ -124,7 +124,7 @@ export async function regenerateAdminVideoThemeTags(
   return (await res.json()) as RegenerateTagsResponse;
 }
 
-/** CEFR band / system tags (labeled “genres” in admin UI). */
+/** CEFR bands in `ContentStats.systemTags` (admin: “Regenerate CEFR”; route name is legacy `regenerate-genres`). */
 export async function regenerateAdminVideoLevelTags(
   contentVideoId: number,
 ): Promise<RegenerateTagsResponse> {

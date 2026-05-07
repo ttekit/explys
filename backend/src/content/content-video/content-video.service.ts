@@ -22,7 +22,11 @@ export class ContentVideoService {
         content: {
           include: {
             category: true,
-            stats: true,
+            stats: {
+              include: {
+                topics: { select: { id: true, name: true } },
+              },
+            },
           },
         },
       },
@@ -58,7 +62,11 @@ export class ContentVideoService {
         content: {
           include: {
             category: true,
-            stats: true,
+            stats: {
+              include: {
+                topics: { select: { id: true, name: true } },
+              },
+            },
           },
         },
       },
@@ -78,7 +86,11 @@ export class ContentVideoService {
         content: {
           include: {
             category: true,
-            stats: true,
+            stats: {
+              include: {
+                topics: { select: { id: true, name: true } },
+              },
+            },
           },
         },
       },

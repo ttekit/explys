@@ -41,7 +41,10 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="relative font-display scroll-mt-24 py-24">
+    <section
+      id="why-choose-explys"
+      className="relative font-display scroll-mt-24 py-24"
+    >
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,oklch(0.75_0.18_145/0.08)_0%,transparent_50%)]" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

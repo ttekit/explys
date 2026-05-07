@@ -8,7 +8,7 @@ import ContentHeader from "../../components/catalog/ContentHeader";
 export default function LandingPage() {
   return (
     <main className="min-h-screen">
-      <ContentHeader />
+      <ContentHeader variant="landing" />
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />

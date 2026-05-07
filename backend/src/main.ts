@@ -53,7 +53,7 @@ async function bootstrap() {
   );
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle("Exply API")
+    .setTitle("Explys API")
     .setDescription(
       [
         "Complete English Learning Platform API - Tags, Categories, Topics, Users, and Authentication Management.",

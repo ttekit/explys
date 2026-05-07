@@ -356,7 +356,7 @@ export default function RegistrationDetails() {
 
         {emptyError && (
           <ValidateError>
-            Please select how you&apos;ll use Exply.
+            Please select how you&apos;ll use Explys.
           </ValidateError>
         )}
         {formError && <ValidateError>{formError}</ValidateError>}

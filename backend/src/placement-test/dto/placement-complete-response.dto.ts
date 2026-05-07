@@ -1,5 +1,25 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
+export class PlacementSummaryDto {
+  @ApiProperty({
+    type: [String],
+    example: ["arrangements", "consistently trustworthy"],
+  })
+  vocabularyReinforced: string[];
+
+  @ApiProperty({ type: [String], example: ["put off later"] })
+  vocabularyToReview: string[];
+
+  @ApiProperty({
+    type: [String],
+    example: ["articles (a / an / the)", "relative clauses"],
+  })
+  grammarYouPracticed: string[];
+
+  @ApiProperty({ type: [String], example: ["perfect tenses"] })
+  grammarToRevisit: string[];
+}
+
 export class PlacementCompleteResponseDto {
   @ApiProperty({ example: true })
   ok: true;
@@ -27,4 +47,11 @@ export class PlacementCompleteResponseDto {
     description: "Rounded percentage correct.",
   })
   percentage?: number;
+
+  @ApiPropertyOptional({
+    type: PlacementSummaryDto,
+    description:
+      "Friendly recap of vocabulary and grammar addressed in this attempt.",
+  })
+  summary?: PlacementSummaryDto;
 }

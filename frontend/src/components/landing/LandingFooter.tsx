@@ -2,9 +2,9 @@ import { Link } from "react-router";
 
 const footerLinks = {
   Product: [
-    { label: "Why Choose Exply?", to: "/#why-exply" },
-    { label: "How Exply Works", to: "/#how-exply-works" },
-    { label: "Start Your Journey", to: "/#start-journey" },
+    { label: "Why Choose Explys", to: "/#why-choose-explys" },
+    { label: "How Explys Works", to: "/#how-explys-works" },
+    { label: "Ready to Start", to: "/#ready-to-start" },
   ],
   Account: [
     { label: "Log in", to: "/loginForm" },
@@ -21,7 +21,7 @@ export function LandingFooter() {
             <Link to="/" className="mb-4 flex items-center gap-2">
               <img src="/Icon.svg" className="w-12 h-14 pr-1" />
               <span className="font-display text-xl font-bold text-foreground">
-                Exply
+                Explys
               </span>
             </Link>
             <p className="max-w-xs text-sm text-muted-foreground">
@@ -51,7 +51,7 @@ export function LandingFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-border border-t pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Exply. All rights reserved.
+            © {new Date().getFullYear()} Explys. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <a

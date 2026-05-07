@@ -10,6 +10,7 @@ import { ProfileCard } from "./ProfileCard";
 import { cn } from "../../lib/utils";
 import { apiFetch } from "../../lib/api";
 import { useUser } from "../../context/UserContext";
+import { pct01, SkillBar } from "./KnowledgeMeters";
 
 type KnowledgeTagRow = {
   name: string;
@@ -19,13 +20,6 @@ type KnowledgeTagRow = {
   grammar: number;
   topicCount: number;
 };
-
-function pct01(value: number): number {
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.round(Math.min(1, Math.max(0, value)) * 100);
-}
 
 const learningPaths = [
   {
@@ -97,32 +91,6 @@ const vocabularyProgress = {
   mastered: 523,
   reviewing: 324,
 };
-
-function SkillBar({
-  label,
-  value,
-  barClass,
-}: {
-  label: string;
-  value: number;
-  barClass: string;
-}) {
-  const p = pct01(value);
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>{label}</span>
-        <span className="tabular-nums text-foreground">{p}%</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
-        <div
-          className={cn("h-full rounded-full transition-[width]", barClass)}
-          style={{ width: `${p}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 export function ProfileProgress() {
   const { user } = useUser();

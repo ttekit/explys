@@ -9,6 +9,10 @@ export type PlacementStoredDraftQuestion = {
   correctIndex: 0 | 1 | 2 | 3;
   /** Present for drafts issued after skill-aware placement; omit = unknown. */
   type?: PlacementQuestionType;
+  /** Prompt excerpt for grammar topic inference (optional; older drafts omit). */
+  promptShort?: string;
+  /** Correct option text for vocabulary highlights (optional). */
+  answerText?: string;
 };
 
 export interface PlacementStoredDraft {
@@ -41,10 +45,28 @@ export function parsePlacementDraft(
     const qt = r.type;
     const type: PlacementStoredDraftQuestion["type"] =
       qt === "grammar" || qt === "vocabulary" ? qt : undefined;
+
+    let promptShort: string | undefined;
+    if (typeof r.promptShort === "string") {
+      const s = r.promptShort.replace(/\s+/g, " ").trim().slice(0, 400);
+      if (s) {
+        promptShort = s;
+      }
+    }
+    let answerText: string | undefined;
+    if (typeof r.answerText === "string") {
+      const s = r.answerText.replace(/\s+/g, " ").trim().slice(0, 400);
+      if (s) {
+        answerText = s;
+      }
+    }
+
     questions.push({
       id,
       correctIndex: ci as 0 | 1 | 2 | 3,
       ...(type ? { type } : {}),
+      ...(promptShort ? { promptShort } : {}),
+      ...(answerText ? { answerText } : {}),
     });
   }
   if (!questions.length) return null;

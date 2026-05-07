@@ -22,6 +22,7 @@ import {
   ApiSecurity,
   ApiTags,
 } from "@nestjs/swagger";
+import { appendFileSync } from "node:fs";
 import { Request, Response } from "express";
 import { CompletePlacementDto } from "./dto/complete-placement.dto";
 import { PlacementCompleteResponseDto } from "./dto/placement-complete-response.dto";
@@ -30,6 +31,16 @@ import { PlacementJwtGuard } from "./placement-jwt.guard";
 import { PlacementTestService } from "./placement-test.service";
 
 type AuthedRequest = Request & { user: { sub: number; email: string } };
+
+function inferApiPublicOrigin(req: Request): string {
+  const xf = req.headers["x-forwarded-proto"];
+  const raw =
+    typeof xf === "string" ? xf.split(",")[0]?.trim() : undefined;
+  const proto = (raw || req.protocol || "http").replace(/:$/, "");
+  const host = req.get("host");
+  if (!host) return "";
+  return `${proto}://${host}`;
+}
 
 function getBearerOrQueryToken(req: Request): string {
   const authHeader = req.headers.authorization;
@@ -115,7 +126,32 @@ export class PlacementTestController {
       req.user.sub,
     );
     const token = getBearerOrQueryToken(req);
-    const html = this.placementTest.renderDocumentHtml(payload, token);
+    const html = this.placementTest.renderDocumentHtml(
+      payload,
+      token,
+      inferApiPublicOrigin(req),
+    );
+    // #region agent log
+    try {
+      appendFileSync(
+        "/Users/ttekit/code/eng_curses/.cursor/debug-0c8a48.log",
+        JSON.stringify({
+          sessionId: "0c8a48",
+          hypothesisId: "SRV",
+          location: "placement-test.controller.ts:document",
+          message: "placement html",
+          data: {
+            userId: req.user.sub,
+            q: payload.questions?.length ?? -1,
+            htmlLen: html.length,
+          },
+          timestamp: Date.now(),
+        }) + "\n",
+      );
+    } catch {
+      /* debug */
+    }
+    // #endregion
     res.send(html);
   }
 
