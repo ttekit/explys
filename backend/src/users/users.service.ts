@@ -84,19 +84,28 @@ export class UsersService {
             );
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        let hashedPassword = null;
+
+        if (password) {
+            hashedPassword = await bcrypt.hash(password, 10);
+        }
+
+        const userData: any = {
+            email,
+            name,
+            method: createUserDto.method,
+            additionalUserData: {
+                create: additionalDataPayload,
+            },
+        }
+        if(hashedPassword){
+            userData.password = hashedPassword;
+        }
 
         let created: any;
         try {
             created = await prisma.user.create({
-                data: {
-                    email,
-                    password: hashedPassword,
-                    name,
-                    additionalUserData: {
-                        create: additionalDataPayload,
-                    },
-                },
+                data: userData,
                 select: this.userSelect,
             });
         } catch (error: any) {
@@ -109,12 +118,7 @@ export class UsersService {
             }
             if (message.includes('Unknown argument `knownLanguages`') || message.includes('Unknown argument `knownLanguageLevels`')) {
                 created = await prisma.user.create({
-                    data: {
-                        email,
-                        password: hashedPassword,
-                        name,
-                        additionalUserData: { create: additionalDataPayload },
-                    },
+                    data: userData,
                     select: this.userSelect,
                 });
                 await this.alcorythmService.analyzeUserLevel(created.id);

@@ -1,3 +1,4 @@
+import { AuthMethod } from "@generated/prisma/enums";
 import {
   IsEmail,
   IsString,
@@ -16,7 +17,7 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
-  @IsNotEmpty()
+  //@IsNotEmpty()
   @MinLength(8)
   @MaxLength(72)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
@@ -24,6 +25,14 @@ export class CreateUserDto {
       "Password must include at least one uppercase letter, one lowercase letter, and one number",
   })
   password: string;
+
+  @IsOptional()
+  @IsString()
+  picture?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  method: AuthMethod;
 
   @IsString()
   @IsNotEmpty()

@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { AlcorythmModule } from "../alcorythm/alcorythm.module";
@@ -8,9 +8,18 @@ import { AuthService } from "./auth.service";
 import { ApiTokenOrJwtAuthGuard } from "./guards/api-token-or-jwt.guard";
 import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
 import { UsersService } from "src/users/users.service";
+import { ProviderModule } from "./provider/provider.module";
+import { getProvidersConfig } from "src/config/providers.config";
+import { EmailConfirmationModule } from "./email-confirmation/email-confirmation.module";
+import { MailService } from "src/common/mail/mail.service";
 
 @Module({
   imports: [
+    ProviderModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: getProvidersConfig,
+      inject: [ConfigService],
+    }),
     AlcorythmModule,
     JwtModule.registerAsync({
       global: true,
@@ -21,6 +30,7 @@ import { UsersService } from "src/users/users.service";
       }),
       inject: [ConfigService],
     }),
+    forwardRef(() => EmailConfirmationModule),
   ],
   controllers: [AuthController],
   providers: [
@@ -29,6 +39,7 @@ import { UsersService } from "src/users/users.service";
     ApiTokenOrJwtAuthGuard,
     UserSelfOrApiGuard,
     UsersService,
+    MailService,
   ],
   exports: [
     JwtModule,

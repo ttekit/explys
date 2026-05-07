@@ -43,6 +43,7 @@ function resolveCorsOrigin():
 }
 
 async function bootstrap() {
+  console.log('CLIENT SECRET:', process.env.GOOGLE_CLIENT_SECRET);
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const config = app.get(ConfigService);
@@ -77,8 +78,8 @@ async function bootstrap() {
         domain: config.getOrThrow<string>("SESSION_DOMAIN") || undefined,
         maxAge: ms(config.getOrThrow<StringValue>("SESSION_MAX_AGE")),
         httpOnly: parseBoolean(config.getOrThrow<string>("SESSION_HTTP_ONLY")),
-        secure: parseBoolean(config.getOrThrow<string>("SESSION_SECURE")),
-        sameSite: "lax",
+        secure: parseBoolean(config.getOrThrow<string>("SESSION_SECURE")) || false,
+        sameSite: 'lax',
       },
       store: new RedisStore({
         client: redis,

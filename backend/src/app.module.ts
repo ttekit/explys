@@ -17,12 +17,16 @@ import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
 import { PlacementTestModule } from "./placement-test/placement-test.module";
 import { IS_DEV_ENV } from "./common/utils/is-dev.utils";
 import { PrismaModule } from './prisma/prisma.module';
+import { ProviderModule } from './auth/provider/provider.module';
+import { MailModule } from './common/mail/mail.module';
+import { EmailConfirmationModule } from './auth/email-confirmation/email-confirmation.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      ignoreEnvFile: !IS_DEV_ENV,
+      //ignoreEnvFile: !IS_DEV_ENV,
       isGlobal: true,
+      envFilePath: '.env'
     }),
     PrismaModule,
     AuthModule,
@@ -36,6 +40,9 @@ import { PrismaModule } from './prisma/prisma.module';
     CategoriesModule,
     TopicsModule,
     PlacementTestModule,
+    ProviderModule,
+    MailModule,
+    EmailConfirmationModule,
   ],
   controllers: [AppController],
   providers: [

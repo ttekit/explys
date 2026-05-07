@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   ConflictException,
   InternalServerErrorException,
+  NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 import { JwtService } from "@nestjs/jwt";
@@ -12,9 +13,11 @@ import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { AlcorythmService } from "../alcorythm/alcorythm.service";
 import { UsersService } from "src/users/users.service";
-import { User } from "@generated/prisma/client";
+import { AuthMethod, User } from "@generated/prisma/client";
 import { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
+import { ProviderService } from "./provider/provider.service";
+import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
 
 // Экспортируем интерфейс, чтобы контроллер мог его видеть
 export interface GeneratedStudent {
@@ -31,6 +34,8 @@ export class AuthService {
     private readonly alcorythmService: AlcorythmService,
     private readonly userService: UsersService,
     private readonly configService: ConfigService,
+    private readonly providerService: ProviderService,
+    private readonly emailConfirmationService: EmailConfirmationService,
   ) {}
 
   async register(req: Request, dto: RegisterDto) {
@@ -133,6 +138,7 @@ export class AuthService {
 
     await this.saveSession(req, mainUser);
 
+    await this.emailConfirmationService.sendVerificationToken(mainUser);
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: {
@@ -143,6 +149,8 @@ export class AuthService {
       // Возвращаем данные учеников учителю
       generatedStudents:
         generatedStudents.length > 0 ? generatedStudents : undefined,
+      message:
+        "You have successfully registered. Please confirm your email. A message has been sent to your mailing address.",
     };
   }
 
@@ -154,10 +162,11 @@ export class AuthService {
         email: true,
         name: true,
         password: true,
+        isVerified: true,
       },
     });
 
-    if (!user) {
+    if (!user || !user.password) {
       throw new UnauthorizedException("Invalid credentials");
     }
 
@@ -165,6 +174,13 @@ export class AuthService {
 
     if (!isPasswordValid) {
       throw new UnauthorizedException("Invalid credentials");
+    }
+
+    if (!user.isVerified) {
+      await this.emailConfirmationService.sendVerificationToken(user as any);
+      throw new UnauthorizedException(
+        "Email not verified. Please check your mail to confirm your account.",
+      );
     }
 
     const payload = { sub: user.id, email: user.email };
@@ -179,21 +195,79 @@ export class AuthService {
     };
   }
 
-  async logout(req: Request, res: Response): Promise<void> {
+  public async extractProfileFromCode(
+    req: Request,
+    provider: string,
+    code: string,
+  ) {
+    const providerInstance = this.providerService.findByService(provider);
+
+    if (!providerInstance) {
+      throw new NotFoundException(`Provider ${provider} not found`);
+    }
+
+    const profile = await providerInstance.findUserByCode(code);
+
+    const account = await this.prisma.account.findFirst({
+      where: {
+        id: profile.id,
+        provider: profile.provider,
+      },
+    });
+
+    let user = account?.userId
+      ? await this.userService.findById(account.userId)
+      : null;
+
+    if (user) {
+      return this.saveSession(req, user);
+    }
+
+    user = await this.userService.create({
+      email: profile.email,
+      password: "",
+      name: profile.name,
+      picture: profile.picture,
+      method: AuthMethod[profile.provider.toUpperCase()],
+      //method: profile.provider.toUpperCase() as AuthMethod,
+    });
+
+    if (!account) {
+      await this.prisma.account.create({
+        data: {
+          userId: user?.id,
+          type: "oauth",
+          provider: profile.provider,
+          accessToken: profile.access_token,
+          refreshToken: profile.refresh_token,
+          expiresAt: profile.expires_at ?? 0,
+        },
+      });
+    }
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+    return this.saveSession(req, user);
+  }
+
+  public async logout(req: Request, res: Response): Promise<void> {
     return new Promise((resolve, reject) => {
       req.session.destroy((err) => {
         if (err) {
           return reject(new InternalServerErrorException(""));
         }
         res.clearCookie(this.configService.getOrThrow<string>("SESSION_NAME"));
-        
-        resolve()
+
+        resolve();
       });
     });
   }
 
-  private async saveSession(req: Request, user: User) {
+  public async saveSession(req: Request, user: Partial<User>) {
     return new Promise((resolve, reject) => {
+      if (!user || !user.id) {
+        throw new UnauthorizedException(" ");
+      }
       req.session.userId = user.id.toString();
 
       req.session.save((err) => {
