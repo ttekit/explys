@@ -1,6 +1,9 @@
-# Cloudflare Pages — use `npm run pages:deploy` or:
-#   npx wrangler pages deploy dist --project-name=<your-pages-project-name>
-# Set `name` to match the project name in the Cloudflare Pages dashboard.
+# `name` must match your Cloudflare Pages project or Worker name.
+# `[assets]` is required when CI runs `wrangler versions upload` (Workers static assets).
+# `pages_build_output_dir` is used by `wrangler pages deploy` without a path argument.
 name = "explys"
-pages_build_output_dir = "dist"
 compatibility_date = "2026-05-07"
+pages_build_output_dir = "dist"
+
+[assets]
+directory = "./dist"
