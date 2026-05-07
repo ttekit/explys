@@ -169,6 +169,8 @@ export default function RegistrationMain() {
       workField: "",
       favoriteGenres: [],
       hatedGenres: [],
+      learningGoal: "",
+      timeToAchieve: "",
     });
   };
 

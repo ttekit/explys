@@ -3,7 +3,9 @@ import { Link, useSearchParams } from "react-router";
 import {
   BarChart3,
   BookOpen,
+  ClipboardList,
   Clock,
+  CreditCard,
   GraduationCap,
   Settings,
   Trophy,
@@ -26,15 +28,19 @@ import { ProfileAchievements } from "../../components/profile/ProfileAchievement
 import { ProfileActivity } from "../../components/profile/ProfileActivity";
 import { ProfileSettings } from "../../components/profile/ProfileSettings";
 import { ProfileTeacherStudents } from "../../components/profile/ProfileTeacherStudents";
+import { ProfileStudyingPlan } from "../../components/profile/ProfileStudyingPlan";
+import { ProfileSubscriptions } from "../../components/profile/ProfileSubscriptions";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
 
 const LEARNER_TABS = [
   { id: "overview" as const, label: "Overview", icon: BarChart3 },
+  { id: "studying-plan" as const, label: "Studying plan", icon: ClipboardList },
+  { id: "subscriptions" as const, label: "Subscriptions", icon: CreditCard },
   { id: "progress" as const, label: "Progress", icon: BookOpen },
   { id: "achievements" as const, label: "Achievements", icon: Trophy },
   { id: "activity" as const, label: "Activity", icon: Clock },
   { id: "settings" as const, label: "Settings", icon: Settings },
-];
+] as const;
 
 type TabId = (typeof LEARNER_TABS)[number]["id"] | "students";
 
@@ -158,14 +164,15 @@ export default function ProfileMain() {
 
   const tabs = useMemo(() => {
     if (user?.role === "teacher") {
+      const withoutStudying = LEARNER_TABS.filter((t) => t.id !== "studying-plan");
       return [
-        LEARNER_TABS[0],
+        withoutStudying[0],
         {
           id: "students" as const,
           label: "Students",
           icon: GraduationCap,
         },
-        ...LEARNER_TABS.slice(1),
+        ...withoutStudying.slice(1),
       ];
     }
     return [...LEARNER_TABS];
@@ -179,11 +186,23 @@ export default function ProfileMain() {
       setActiveTab(t as TabId);
       return;
     }
+    if (t && !validIds.has(t)) {
+      setActiveTab("overview");
+      setSearchParams({}, { replace: true });
+      return;
+    }
     if (!t) setActiveTab("overview");
-  }, [user, searchParams, tabs]);
+  }, [user, searchParams, tabs, setSearchParams]);
 
   useEffect(() => {
     if (user?.role !== "teacher" && activeTab === "students") {
+      setActiveTab("overview");
+      setSearchParams({}, { replace: true });
+    }
+  }, [user?.role, activeTab, setSearchParams]);
+
+  useEffect(() => {
+    if (user?.role === "teacher" && activeTab === "studying-plan") {
       setActiveTab("overview");
       setSearchParams({}, { replace: true });
     }
@@ -274,6 +293,12 @@ export default function ProfileMain() {
             <div className="mt-6">
               {activeTab === "overview" ? (
                 <ProfileStats user={statsModel} />
+              ) : null}
+              {activeTab === "studying-plan" ? (
+                <ProfileStudyingPlan user={user} />
+              ) : null}
+              {activeTab === "subscriptions" ? (
+                <ProfileSubscriptions user={user} />
               ) : null}
               {activeTab === "students" ? <ProfileTeacherStudents /> : null}
               {activeTab === "progress" ? <ProfileProgress /> : null}

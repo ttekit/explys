@@ -18,11 +18,15 @@ export default function ContentHeader({
   variant = "app",
 }: ContentHeaderProps) {
   const { pathname, hash } = useLocation();
-  const { isLoggedIn } = useUser();
+  const { isLoggedIn, user } = useUser();
 
   const appNavLinks = [
     { label: "Home", to: "/" },
     { label: "Catalog", to: "/catalog" },
+    { label: "Pricing", to: "/pricing" },
+    ...(isLoggedIn && user?.hasCompletedPlacement ?
+      [{ label: "Learning plan", to: "/learning-plan" as const }]
+    : []),
     { label: "Level test", to: "/level-test" },
   ];
 
@@ -41,24 +45,37 @@ export default function ContentHeader({
           )}
         >
           {variant === "landing" ?
-            LANDING_NAV.map((link) => {
-              const active =
-                pathname === "/" && hash === `#${link.hash}`;
-              return (
-                <Link
-                  key={link.hash}
-                  to={{ pathname: "/", hash: link.hash }}
-                  className={cn(
-                    "whitespace-nowrap rounded-full px-2.5 py-2 text-xs transition-all sm:px-4 sm:text-sm lg:px-5 lg:text-base",
-                    active
-                      ? "text-accent hover:text-(--accent-hover)"
-                      : "text-foreground/70 hover:text-white",
-                  )}
-                >
-                  {link.label}
-                </Link>
-              );
-            })
+            <>
+              {LANDING_NAV.map((link) => {
+                const active =
+                  pathname === "/" && hash === `#${link.hash}`;
+                return (
+                  <Link
+                    key={link.hash}
+                    to={{ pathname: "/", hash: link.hash }}
+                    className={cn(
+                      "whitespace-nowrap rounded-full px-2.5 py-2 text-xs transition-all sm:px-4 sm:text-sm lg:px-5 lg:text-base",
+                      active
+                        ? "text-accent hover:text-(--accent-hover)"
+                        : "text-foreground/70 hover:text-white",
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+              <Link
+                to="/pricing"
+                className={cn(
+                  "whitespace-nowrap rounded-full px-2.5 py-2 text-xs transition-all sm:px-4 sm:text-sm lg:px-5 lg:text-base",
+                  pathname === "/pricing"
+                    ? "text-accent hover:text-(--accent-hover)"
+                    : "text-foreground/70 hover:text-white",
+                )}
+              >
+                Pricing
+              </Link>
+            </>
           : appNavLinks.map((link) => (
               <Link
                 key={link.to}

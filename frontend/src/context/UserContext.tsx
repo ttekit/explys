@@ -28,6 +28,14 @@ export interface UserData {
   playbackSpeed?: number | null;
   /** From `UserSettings.currentResolution` (e.g. auto, 720p) */
   videoQuality?: string;
+  /** Adult profile: motivation (e.g. travel). */
+  learningGoal?: string;
+  /** Adult profile: target horizon. */
+  timeToAchieve?: string;
+  /** Stripe: light | smart | family */
+  subscriptionPlan?: string;
+  subscriptionStatus?: string;
+  stripeSubscriptionId?: string;
 }
 
 /** Registration used `"choose"` as a sentinel for unfilled selects; strip so UI shows blanks. */
@@ -75,6 +83,16 @@ function normalizeProfile(raw: unknown): UserData | null {
     })(),
     videoQuality:
       typeof r.videoQuality === "string" ? r.videoQuality : "",
+    learningGoal:
+      typeof r.learningGoal === "string" ? r.learningGoal : "",
+    timeToAchieve:
+      typeof r.timeToAchieve === "string" ? r.timeToAchieve : "",
+    subscriptionPlan:
+      typeof r.subscriptionPlan === "string" ? r.subscriptionPlan : "",
+    subscriptionStatus:
+      typeof r.subscriptionStatus === "string" ? r.subscriptionStatus : "",
+    stripeSubscriptionId:
+      typeof r.stripeSubscriptionId === "string" ? r.stripeSubscriptionId : "",
   };
 }
 
