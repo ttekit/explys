@@ -1,6 +1,10 @@
-# `name` must match your Cloudflare Pages project or Worker name.
-# `[assets]` is required when CI runs `wrangler versions upload` (Workers static assets).
-# `pages_build_output_dir` is used by `wrangler pages deploy` without a path argument.
+# Cloudflare Workers (root directory = frontend):
+#   Build command:  npm ci && npm run build
+#   Deploy command: npx wrangler versions upload
+# Use root directory "frontend" (no leading slash). `name` must match the Worker in the dashboard.
+#
+# `[assets]` is required for `wrangler versions upload` (Workers static assets).
+# `pages_build_output_dir` is for `wrangler pages deploy` only.
 name = "explys"
 compatibility_date = "2026-05-07"
 pages_build_output_dir = "dist"
