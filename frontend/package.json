@@ -3,11 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "packageManager": "pnpm@10.11.1",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "pages:deploy": "pnpm run build && pnpm exec wrangler pages deploy dist",
+    "pages:deploy": "npm run build && npx wrangler pages deploy dist",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "type-check": "tsc --noEmit",
     "preview": "vite preview"
@@ -16,7 +15,6 @@
     "@tailwindcss/vite": "^4.2.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.7.0",
-    "pnpm": "^11.0.8",
     "posthog-js": "^1.372.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
