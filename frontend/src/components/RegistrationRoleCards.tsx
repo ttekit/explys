@@ -3,44 +3,38 @@ import { cn } from "../lib/utils";
 
 export type RegistrationRoleChoice = "teacher" | "student" | "adult";
 
+type RoleCopy = {
+  title: string;
+  description: string;
+};
+
 interface RegistrationRoleCardsProps {
   /** Current role from context; `'choose'` means none selected visually */
   value: string;
   onChange: (role: RegistrationRoleChoice) => void;
+  /** Labels per role (i18n). */
+  rolesCopy: Record<RegistrationRoleChoice, RoleCopy>;
 }
 
-const roles = [
-  {
-    id: "teacher" as const,
-    Icon: GraduationCap,
-    title: "Teacher",
-    description:
-      "Create and manage learning content for your students",
-  },
-  {
-    id: "student" as const,
-    Icon: User,
-    title: "Student",
-    description:
-      "Learn English through personalized video lessons",
-  },
-  {
-    id: "adult" as const,
-    Icon: Briefcase,
-    title: "Adult learner",
-    description:
-      "Improve your English for career or personal growth",
-  },
+const roleMeta: {
+  id: RegistrationRoleChoice;
+  Icon: typeof GraduationCap;
+}[] = [
+  { id: "teacher", Icon: GraduationCap },
+  { id: "student", Icon: User },
+  { id: "adult", Icon: Briefcase },
 ];
 
 export function RegistrationRoleCards({
   value,
   onChange,
+  rolesCopy,
 }: RegistrationRoleCardsProps) {
   return (
     <div className="space-y-4">
-      {roles.map((role) => {
+      {roleMeta.map((role) => {
         const Icon = role.Icon;
+        const copy = rolesCopy[role.id];
         const selected = value === role.id;
         return (
           <button
@@ -58,8 +52,8 @@ export function RegistrationRoleCards({
               <Icon className="size-6 text-primary" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-foreground">{role.title}</h3>
-              <p className="text-sm text-muted-foreground">{role.description}</p>
+              <h3 className="font-semibold text-foreground">{copy.title}</h3>
+              <p className="text-sm text-muted-foreground">{copy.description}</p>
             </div>
           </button>
         );

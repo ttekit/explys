@@ -13,16 +13,22 @@ export type RegisterResult =
   | { success: true; generatedStudents?: GeneratedStudentAccount[] }
   | { success: false; message: string };
 
+export type RegisterCredentialErrorMessages = {
+  credentialEmail: string;
+  credentialPassword: string;
+};
+
 /** Matches backend `@IsEmail` + `@MinLength(6)`; returns a user-facing error or `null`. */
 export function getRegisterCredentialsError(
   formData: FormData,
+  msgs: RegisterCredentialErrorMessages,
 ): string | null {
   const email = formData.email.trim();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return "Your email from step 1 is missing or invalid. Use Back, then re-enter your account email and password on page 1.";
+    return msgs.credentialEmail;
   }
   if (!formData.password || formData.password.length < 6) {
-    return "Your password from step 1 is missing or shorter than 6 characters. Use Back to set it on page 1.";
+    return msgs.credentialPassword;
   }
   return null;
 }
@@ -91,8 +97,12 @@ export function buildRegisterBody(formData: FormData): Record<string, unknown> {
   return body;
 }
 
-export async function registerUser(formData: FormData): Promise<RegisterResult> {
-  const creds = getRegisterCredentialsError(formData);
+export async function registerUser(
+  formData: FormData,
+  credentialMsgs: RegisterCredentialErrorMessages,
+  networkError: string,
+): Promise<RegisterResult> {
+  const creds = getRegisterCredentialsError(formData, credentialMsgs);
   if (creds) {
     return { success: false, message: creds };
   }
@@ -106,7 +116,7 @@ export async function registerUser(formData: FormData): Promise<RegisterResult> 
   } catch {
     return {
       success: false,
-      message: "Network error. Please check if your backend server is running.",
+      message: networkError,
     };
   }
 
