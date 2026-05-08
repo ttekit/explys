@@ -160,11 +160,15 @@ export class ContentVideoController {
   watchComplete(
     @Param("id", ParseIntPipe) id: number,
     @Req() req: Request & { user: unknown },
+    @Body() body: { secondsWatched?: number } // <--- Добавляем получение body
   ) {
     const userId = jwtSubToUserId(req.user);
+
+    // Передаем секунды третьим аргументом в сервис
     return this.postWatchSurveyService.recordWatchAndGenerateSurvey(
       id,
       userId,
+      body.secondsWatched
     );
   }
 

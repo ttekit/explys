@@ -186,6 +186,7 @@ export class AuthService {
         role: true,
         hasCompletedPlacement: true,
         isSuspended: true,
+        currentStreak: true,
         settings: {
           select: {
             playbackSpeed: true,
@@ -218,6 +219,7 @@ export class AuthService {
       email: user.email,
       role: user.role,
       hasCompletedPlacement: user.hasCompletedPlacement,
+      currentStreak: user.currentStreak ?? 0,
       englishLevel: extra?.englishLevel ?? '',
       education: extra?.education ?? '',
       workField: extra?.workField ?? '',
@@ -320,7 +322,7 @@ export class AuthService {
 
     const weeklyActivity = DAY_LABELS.map((day, i) => ({
       day,
-      minutes: Math.round(minutesMonSun[i]),
+      minutes: Math.ceil(minutesMonSun[i]),
     }));
 
     return {

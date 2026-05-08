@@ -1,7 +1,7 @@
 import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
+    Injectable,
+    NotFoundException,
+    BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from 'src/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -71,7 +71,7 @@ export class UsersService {
         } = createUserDto;
         const role =
             roleRaw &&
-            ["adult", "student", "teacher"].includes(roleRaw)
+                ["adult", "student", "teacher"].includes(roleRaw)
                 ? roleRaw
                 : undefined;
         const additionalDataPayload: any = {
@@ -223,35 +223,35 @@ export class UsersService {
         const settingsUpsert =
             hasSettingsRowUpdate
                 ? {
-                      settings: {
-                          upsert: {
-                              create: {
-                                  playbackSpeed:
-                                      playbackSpeed === undefined
-                                          ? null
-                                          : Number(playbackSpeed),
-                                  currentResolution:
-                                      currentResolution === undefined
-                                          ? null
-                                          : String(currentResolution),
-                              },
-                              update: {
-                                  ...(playbackSpeed !== undefined
-                                      ? {
-                                            playbackSpeed:
-                                                Number(playbackSpeed),
-                                        }
-                                      : {}),
-                                  ...(currentResolution !== undefined
-                                      ? {
-                                            currentResolution:
-                                                String(currentResolution),
-                                        }
-                                      : {}),
-                              },
-                          },
-                      },
-                  }
+                    settings: {
+                        upsert: {
+                            create: {
+                                playbackSpeed:
+                                    playbackSpeed === undefined
+                                        ? null
+                                        : Number(playbackSpeed),
+                                currentResolution:
+                                    currentResolution === undefined
+                                        ? null
+                                        : String(currentResolution),
+                            },
+                            update: {
+                                ...(playbackSpeed !== undefined
+                                    ? {
+                                        playbackSpeed:
+                                            Number(playbackSpeed),
+                                    }
+                                    : {}),
+                                ...(currentResolution !== undefined
+                                    ? {
+                                        currentResolution:
+                                            String(currentResolution),
+                                    }
+                                    : {}),
+                            },
+                        },
+                    },
+                }
                 : {};
 
         let updatedUser: any;
@@ -328,6 +328,57 @@ export class UsersService {
         return this.prisma.user.delete({
             where: { id },
             select: this.userSelect,
+        });
+    }
+
+
+    async updateActivityStreak(userId: number) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { currentStreak: true, lastActivityDate: true }
+        });
+
+        if (!user) return null;
+
+        const now = new Date();
+        // Приводимо сьогоднішню дату до півночі по UTC для точного порівняння
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+        let newStreak = user.currentStreak;
+
+        if (!user.lastActivityDate) {
+            // Перша активність в історії
+            newStreak = 1;
+        } else {
+            const lastActivity = new Date(user.lastActivityDate);
+            const lastActivityDay = new Date(Date.UTC(lastActivity.getUTCFullYear(), lastActivity.getUTCMonth(), lastActivity.getUTCDate()));
+
+            // Різниця в днях
+            const diffTime = today.getTime() - lastActivityDay.getTime();
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                // Вже вивчав сьогодні, стрік не міняємо, просто оновимо час останньої активності
+                return this.prisma.user.update({
+                    where: { id: userId },
+                    data: { lastActivityDate: now }
+                });
+            } else if (diffDays === 1) {
+                // Вивчав вчора, продовжуємо стрік
+                newStreak += 1;
+            } else {
+                // Пропустив день (або більше), стрік скидається
+                newStreak = 1;
+            }
+        }
+
+        // Оновлюємо базу
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                currentStreak: newStreak,
+                lastActivityDate: now,
+            }
         });
     }
 }
