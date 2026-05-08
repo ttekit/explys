@@ -7,6 +7,9 @@ import PlacementPreTestStep, {
   adultNeedsPlacementPrepFields,
 } from "../../components/PlacementPreTestStep";
 import { ChameleonMascot } from "../../components/ChameleonMascot";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 import { CatalogHero } from "../../components/catalog/CatalogHero";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
 import { CatalogVideoRow } from "../../components/catalog/CatalogVideoRow";
@@ -54,6 +57,8 @@ export default function VideoPage() {
   const [placementDocError, setPlacementDocError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user, isLoading: userLoading, refreshProfile } = useUser();
+  const { messages, locale } = useLandingLocale();
+  const catalogSeo = messages.catalogPage;
   const placementCompleteHandled = useRef(false);
 
   const accessToken = getStoredAccessToken();
@@ -138,7 +143,10 @@ export default function VideoPage() {
         !placementCompleteHandled.current
       ) {
         placementCompleteHandled.current = true;
-        void refreshProfile();
+        void (async () => {
+          await refreshProfile();
+          navigate("/learning-plan", { replace: true });
+        })();
       }
     };
     window.addEventListener("message", onMessage);
@@ -279,6 +287,13 @@ export default function VideoPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased flex-col">
+      <SEO
+        title={catalogSeo.title}
+        description={catalogSeo.description}
+        canonicalUrl={resolveCanonicalUrl("/catalog")}
+        ogLocale={locale === "uk" ? "uk_UA" : "en_US"}
+        ogLocaleAlternate={locale === "uk" ? "en_US" : "uk_UA"}
+      />
       <div>
         <div className="flex">
           <CatalogSidebar
@@ -373,7 +388,7 @@ export default function VideoPage() {
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {user?.role === "adult" ?
-                  "Enter your job, education, and native language — then your placement questionnaire starts."
+                  "Enter your job, education, hobbies, and native language — then your placement questionnaire starts."
                 : "A few quick preferences — then your placement questionnaire."}
               </p>
             </div>

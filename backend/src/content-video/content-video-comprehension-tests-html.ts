@@ -66,8 +66,31 @@ export function renderComprehensionTestsIframeHtml(
 
   const questionsHtml = result.tests
     .map((t, idx) => {
-      const cat = t.category === "grammar" ? "grammar" : "comprehension";
-      const catLabel = cat === "grammar" ? "Grammar" : "Comprehension";
+      if (t.questionType === "open") {
+        return `
+      <fieldset class="q open" data-kind="open" data-qid="${escapeHtml(t.id)}" data-explanation="${escapeHtml(t.explanation ?? "")}">
+        <legend class="qnum">
+          <span class="qix">Q${idx + 1}</span>
+          <span class="cat open">Summary</span>
+        </legend>
+        <p class="prompt">${escapeHtml(t.question)}</p>
+        <textarea class="open-answer" rows="5" placeholder="Write 2–3 sentences in English." aria-label="Your answer"></textarea>
+        <p class="ta-hint">Aim for at least ~40 characters and two sentences.</p>
+        <p class="feedback" hidden></p>
+      </fieldset>`;
+      }
+      const cat =
+        t.category === "grammar"
+          ? "grammar"
+          : t.category === "vocabulary"
+            ? "vocabulary"
+            : "comprehension";
+      const catLabel =
+        cat === "grammar"
+          ? "Grammar"
+          : cat === "vocabulary"
+            ? "Vocabulary"
+            : "Comprehension";
       const opts = t.options
         .map(
           (o, i) => `
@@ -78,7 +101,7 @@ export function renderComprehensionTestsIframeHtml(
         )
         .join("");
       return `
-      <fieldset class="q" data-correct="${t.correctIndex}" data-qid="${escapeHtml(t.id)}" data-cat="${cat}">
+      <fieldset class="q" data-kind="mcq" data-correct="${t.correctIndex}" data-qid="${escapeHtml(t.id)}" data-cat="${cat}" data-explanation="${escapeHtml(t.explanation ?? "")}">
         <legend class="qnum">
           <span class="qix">Q${idx + 1}</span>
           <span class="cat ${cat}">${catLabel}</span>
@@ -139,6 +162,14 @@ export function renderComprehensionTestsIframeHtml(
     .cat { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; padding: 0.1rem 0.45rem; border-radius: 4px; }
     .cat.grammar { background: rgba(167, 139, 250, 0.2); color: var(--grammar); }
     .cat.comprehension { background: rgba(56, 189, 248, 0.15); color: var(--comp); }
+    .cat.vocabulary { background: rgba(52, 211, 153, 0.14); color: #6ee7b7; }
+    .cat.open { background: rgba(226, 232, 240, 0.1); color: #cbd5e1; }
+    textarea.open-answer {
+      width: 100%; margin: 0.5rem 0 0; padding: 0.65rem 0.75rem; font: inherit; font-size: 0.9rem;
+      border-radius: 8px; border: 1px solid var(--border); background: #0c1219; color: var(--text); resize: vertical; min-height: 6rem;
+    }
+    textarea.open-answer:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .ta-hint { font-size: 0.72rem; color: var(--muted); margin: 0.35rem 0 0; }
     .prompt { margin: 0.5rem 0 0.75rem; font-size: 0.95rem; }
     .opts { display: flex; flex-direction: column; gap: 0.45rem; }
     .opt {
@@ -178,7 +209,7 @@ export function renderComprehensionTestsIframeHtml(
   <div class="wrap">
     <h1>${escapeHtml(result.videoName)}</h1>
     <p class="meta">${meta}</p>
-    <p class="hint">Includes comprehension and grammar. Mark answers, use <em>Check</em>, then <strong>Save results &amp; update my topic knowledge</strong> (requires user id in the iframe URL and topics linked to this content).</p>
+    <p class="hint">Includes grammar, vocabulary, comprehension, and one short written summary. Use <em>Check</em>, then <strong>Save results &amp; update my topic knowledge</strong> (add <code>?userId=…</code> to the iframe URL to update scores).</p>
     ${questionsHtml}
     <div class="bar">
       <button type="button" class="sec" id="checkBtn">Check answers</button>
@@ -199,24 +230,36 @@ export function renderComprehensionTestsIframeHtml(
   function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
   document.getElementById("checkBtn").addEventListener("click", function () {
     each("fieldset.q", function (fs) {
+      var feedback = fs.querySelector(".feedback");
+      fs.classList.remove("ok", "bad");
+      if (fs.getAttribute("data-kind") === "open") {
+        var ta = fs.querySelector("textarea.open-answer");
+        var text = ta ? ta.value.trim() : "";
+        if (!text) { feedback.textContent = "Please write your answer."; feedback.hidden = false; return; }
+        if (text.length < 40) { feedback.textContent = "Add a bit more detail (about two sentences)."; feedback.hidden = false; return; }
+        fs.classList.add("ok");
+        feedback.textContent = "Looks good to submit — final grading runs on the server.";
+        feedback.hidden = false;
+        return;
+      }
       var cor = parseInt(fs.getAttribute("data-correct"), 10);
       var qid = fs.getAttribute("data-qid");
       var inp = fs.querySelector('input[name="q_' + qid + '"]:checked');
-      var feedback = fs.querySelector(".feedback");
-      fs.classList.remove("ok", "bad");
       if (!inp) { feedback.textContent = "Select an option."; feedback.hidden = false; return; }
       var picked = parseInt(inp.value, 10);
       if (picked === cor) { fs.classList.add("ok"); feedback.textContent = "Correct."; }
       else {
         fs.classList.add("bad");
         var right = fs.querySelector('.opt[data-idx="' + cor + '"] span');
-        feedback.textContent = "Not quite. Correct: " + (right ? right.textContent : "");
+        var expl = fs.getAttribute("data-explanation") || "";
+        feedback.textContent = "Not quite. Correct: " + (right ? right.textContent : "") + (expl ? " — " + expl : "");
       }
       feedback.hidden = false;
     });
   });
   document.getElementById("revealBtn").addEventListener("click", function () {
     each("fieldset.q", function (fs) {
+      if (fs.getAttribute("data-kind") === "open") return;
       var cor = parseInt(fs.getAttribute("data-correct"), 10);
       var qid = fs.getAttribute("data-qid");
       var el = fs.querySelector('input[name="q_' + qid + '"][value="' + cor + '"]');
@@ -230,6 +273,12 @@ export function renderComprehensionTestsIframeHtml(
     var answers = {};
     each("fieldset.q", function (fs) {
       var qid = fs.getAttribute("data-qid");
+      if (fs.getAttribute("data-kind") === "open") {
+        var ta = fs.querySelector("textarea.open-answer");
+        var txt = ta && ta.value.trim();
+        if (txt) { answers[qid] = txt; }
+        return;
+      }
       var sel = fs.querySelector('input[name="q_' + qid + '"]:checked');
       if (sel) { answers[qid] = parseInt(sel.value, 10); }
     });
@@ -285,7 +334,9 @@ export function renderComprehensionTestsIframeHtml(
       panel.className = "on";
       document.getElementById("resultScore").textContent = d.correct + " / " + d.total + " (" + d.percentage + "%)";
       document.getElementById("resultBreakdown").textContent =
-        "Comprehension: " + d.comprehension.correct + "/" + d.comprehension.total + " — Grammar: " + d.grammar.correct + "/" + d.grammar.total;
+        "Comprehension: " + d.comprehension.correct + "/" + d.comprehension.total +
+        " — Grammar: " + d.grammar.correct + "/" + d.grammar.total +
+        (d.vocabulary && typeof d.vocabulary.correct === "number" ? (" — Vocabulary: " + d.vocabulary.correct + "/" + d.vocabulary.total) : "");
       document.getElementById("resultMessage").textContent = d.message || "";
       var ul = document.getElementById("resultTopics");
       ul.innerHTML = "";

@@ -1,7 +1,8 @@
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
+import InputText from "../../components/InputText";
 import { Link, useNavigate } from "react-router";
-import { useContext, FormEvent, useState, useEffect } from "react";
+import { useContext, FormEvent, useState, useEffect, ChangeEvent } from "react";
 import {
   RegistrationContext,
   type FormData,
@@ -20,6 +21,12 @@ export default function RegistrationPreferences() {
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
   const isTeacher = formData.role === "teacher";
+  const isAdult = formData.role === "adult";
+
+  const handleLearningFieldsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    updateFormData({ [name]: value } as Partial<FormData>);
+  };
 
   type GenreChip = { value: number; label: string };
   const [genreOptions, setGenreOptions] = useState<GenreChip[]>([]);
@@ -162,6 +169,49 @@ export default function RegistrationPreferences() {
         </div>
 
         <form className="space-y-8" onSubmit={handleSubmit}>
+          {isAdult && (
+            <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
+              <div>
+                <h2 className="font-display text-lg font-semibold">
+                  Your learning goal{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (optional)
+                  </span>
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Share what you&apos;re working toward if you like — you can skip
+                  this and continue.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <LabelRegister isRequired={false}>
+                  Point of learning
+                </LabelRegister>
+                <InputText
+                  name="learningGoal"
+                  value={formData.learningGoal ?? ""}
+                  onChange={handleLearningFieldsChange}
+                  type="text"
+                  placeholder="e.g. Travel to the UK"
+                  autoComplete="off"
+                />
+              </div>
+              <div className="space-y-2">
+                <LabelRegister isRequired={false}>
+                  Time to achieve
+                </LabelRegister>
+                <InputText
+                  name="timeToAchieve"
+                  value={formData.timeToAchieve ?? ""}
+                  onChange={handleLearningFieldsChange}
+                  type="text"
+                  placeholder="e.g. 3 months"
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3">
             <LabelRegister isRequired={false}>Genres you love</LabelRegister>
             <p className="text-sm text-muted-foreground">

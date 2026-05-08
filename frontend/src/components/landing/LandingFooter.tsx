@@ -1,40 +1,59 @@
 import { Link } from "react-router";
-
-const footerLinks = {
-  Product: [
-    { label: "Why Choose Explys", to: "/#why-choose-explys" },
-    { label: "How Explys Works", to: "/#how-explys-works" },
-    { label: "Ready to Start", to: "/#ready-to-start" },
-  ],
-  Account: [
-    { label: "Log in", to: "/loginForm" },
-    { label: "Register", to: "/registrationMain" },
-  ],
-} as const;
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 
 export function LandingFooter() {
+  const { messages } = useLandingLocale();
+  const { footer } = messages;
+
+  const footerSections: {
+    title: string;
+    links: { label: string; to: string }[];
+  }[] = [
+    {
+      title: footer.categories.product,
+      links: [
+        {
+          label: footer.links.launchCountdown,
+          to: "/#release-countdown",
+        },
+        { label: footer.links.whyChoose, to: "/#why-choose-explys" },
+        { label: footer.links.howWorks, to: "/#how-explys-works" },
+        { label: footer.links.pricing, to: "/pricing" },
+        { label: footer.links.readyToStart, to: "/#ready-to-start" },
+      ],
+    },
+    {
+      title: footer.categories.account,
+      links: [
+        { label: footer.links.logIn, to: "/loginForm" },
+        { label: footer.links.register, to: "/registrationMain" },
+      ],
+    },
+  ];
+
   return (
     <footer className="border-border border-t font-display bg-card">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2">
             <Link to="/" className="mb-4 flex items-center gap-2">
-              <img src="/Icon.svg" className="w-12 h-14 pr-1" />
+              <img src="/Icon.svg" className="w-12 h-14 pr-1" alt="" />
               <span className="font-display text-xl font-bold text-foreground">
                 Explys
               </span>
             </Link>
             <p className="max-w-xs text-sm text-muted-foreground">
-              Personalized English learning through adaptive video content.
-              Learn at your own pace, in your own way.
+              {footer.tagline}
             </p>
           </div>
 
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category}>
-              <h3 className="mb-4 font-semibold text-foreground">{category}</h3>
+          {footerSections.map((section) => (
+            <div key={section.title}>
+              <h3 className="mb-4 font-semibold text-foreground">
+                {section.title}
+              </h3>
               <ul className="space-y-2">
-                {links.map((item) => (
+                {section.links.map((item) => (
                   <li key={item.label}>
                     <Link
                       to={item.to}
@@ -51,7 +70,7 @@ export function LandingFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-border border-t pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Explys. All rights reserved.
+            © {new Date().getFullYear()} Explys. {footer.copyright}
           </p>
           <div className="flex items-center gap-6">
             <a
@@ -90,7 +109,7 @@ export function LandingFooter() {
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                 <path
                   fillRule="evenodd"
-                  d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 01-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 01-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 01 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z"
+                  d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 01-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 01-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 011.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z"
                   clipRule="evenodd"
                 />
               </svg>

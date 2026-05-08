@@ -61,14 +61,31 @@ model ContentVideo {
   videoCaption     VideoCaptions?
   postWatchSurveys PostWatchSurvey[]
 
-  /// Cached multiple-choice set from last generate; refreshed when absent or on forced regen.
-  /// Shape: { source: "gemini"|"fallback", tests: ComprehensionTestItem[] }
-  comprehensionTestsCache Json? @map("comprehension_tests_cache")
-
-  watchSessions             WatchSession[]
-  comprehensionTestAttempts ComprehensionTestAttempt[]
+  watchSessions                 WatchSession[]
+  comprehensionTestAttempts     ComprehensionTestAttempt[]
+  userComprehensionWeakSpots    UserComprehensionWeakSpot[]
 
   @@map("content_videos")
+}
+
+/// Per-user misses on a clip; used to bias future quiz generation toward similar skills.
+model UserComprehensionWeakSpot {
+  id               Int          @id @default(autoincrement())
+  userId           Int          @map("user_id")
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentVideoId   Int          @map("content_video_id")
+  contentVideo     ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
+
+  category         String       @map("category")
+  stemHash         String       @map("stem_hash") @db.VarChar(64)
+  stemSnippet      String       @map("stem_snippet") @db.VarChar(500)
+
+  missCount        Int          @default(1) @map("miss_count")
+  lastMissedAt     DateTime     @default(now()) @map("last_missed_at")
+
+  @@unique([userId, contentVideoId, stemHash])
+  @@index([userId, contentVideoId, lastMissedAt])
+  @@map("user_comprehension_weak_spots")
 }
 
 /// Deduped per user/video/calendar day (UTC); updated on subsequent watch-complete same day.

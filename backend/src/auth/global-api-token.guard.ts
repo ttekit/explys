@@ -6,7 +6,9 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { Reflector } from "@nestjs/core";
 import { Request } from "express";
+import { IS_PUBLIC_KEY } from "./decorators/public.decorator";
 
 /**
  * In production, every HTTP request must include a valid `x-api-token` header
@@ -15,9 +17,20 @@ import { Request } from "express";
  */
 @Injectable()
 export class GlobalApiTokenGuard implements CanActivate {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly reflector: Reflector,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
+
     const nodeEnv = this.configService.get<string>("NODE_ENV");
     if (nodeEnv !== "production") {
       return true;

@@ -27,6 +27,10 @@ export interface FormData {
   workField: string;
   favoriteGenres: number[];
   hatedGenres: number[];
+  /** Adult: motivation (e.g. travel to the UK). */
+  learningGoal: string;
+  /** Adult: target horizon (e.g. 3m). */
+  timeToAchieve: string;
 }
 
 const defaultFormData: FormData = {
@@ -40,12 +44,14 @@ const defaultFormData: FormData = {
   studentNames: "",
   studentGrade: "choose",
   studentProblemTopics: [],
-    englishLevel: "choose",
-    hobbies: [],
-    education: "",
-    workField: "",
+  englishLevel: "choose",
+  hobbies: [],
+  education: "",
+  workField: "",
   favoriteGenres: [],
   hatedGenres: [],
+  learningGoal: "",
+  timeToAchieve: "",
 };
 
 function isRecord(x: unknown): x is Record<string, unknown> {
@@ -116,6 +122,14 @@ function mergeDraft(draft: unknown): FormData {
       typeof d.workField === "string" ? d.workField : defaultFormData.workField,
     favoriteGenres: asNumberArray(d.favoriteGenres),
     hatedGenres: asNumberArray(d.hatedGenres),
+    learningGoal:
+      typeof d.learningGoal === "string"
+        ? d.learningGoal
+        : defaultFormData.learningGoal,
+    timeToAchieve:
+      typeof d.timeToAchieve === "string"
+        ? d.timeToAchieve
+        : defaultFormData.timeToAchieve,
   };
 }
 

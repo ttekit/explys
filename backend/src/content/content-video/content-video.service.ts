@@ -14,7 +14,6 @@ export class ContentVideoService {
 
   async findAll() {
     return this.prisma.contentVideo.findMany({
-      omit: { comprehensionTestsCache: true },
       include: {
         videoCaption: {
           select: { subtitlesFileLink: true },
@@ -54,7 +53,6 @@ export class ContentVideoService {
     }
     const videos = await this.prisma.contentVideo.findMany({
       where: { id: { in: orderedIds } },
-      omit: { comprehensionTestsCache: true },
       include: {
         videoCaption: {
           select: { subtitlesFileLink: true },
@@ -78,7 +76,6 @@ export class ContentVideoService {
   async findOne(id: number) {
     const contentVideo = await this.prisma.contentVideo.findUnique({
       where: { id },
-      omit: { comprehensionTestsCache: true },
       include: {
         videoCaption: {
           select: { subtitlesFileLink: true },

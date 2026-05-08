@@ -79,7 +79,6 @@ export class PostWatchSurveyService {
   }> {
     const video = await this.prisma.contentVideo.findUnique({
       where: { id: contentVideoId },
-      omit: { comprehensionTestsCache: true },
     });
     if (!video) {
       throw new NotFoundException(`ContentVideo ${contentVideoId} not found`);

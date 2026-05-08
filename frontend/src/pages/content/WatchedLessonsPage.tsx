@@ -8,6 +8,8 @@ import {
   type CatalogCardVideo,
 } from "../../components/catalog/CatalogVideoCard";
 import { ChameleonMascot } from "../../components/ChameleonMascot";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
 
 interface ContentVideo {
   id: number;
@@ -70,6 +72,12 @@ export default function WatchedLessonsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
+      <SEO
+        title="Watched lessons"
+        description="Your completed lessons on Explys."
+        canonicalUrl={resolveCanonicalUrl("/watched-lessons")}
+        noindex
+      />
       <div className="flex">
         <CatalogSidebar
           categories={[]}

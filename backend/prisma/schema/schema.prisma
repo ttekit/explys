@@ -34,9 +34,15 @@ model User {
   userVocabulary            UserVocabulary[]
   watchSessions             WatchSession[]
   comprehensionTestAttempts ComprehensionTestAttempt[]
+  comprehensionWeakSpots         UserComprehensionWeakSpot[]
   placementAttempts         PlacementAttempt[]
   currentStreak             Int                        @default(0)
   lastActivityDate          DateTime?
+
+  stripeCustomerId     String?  @map("stripe_customer_id")
+  stripeSubscriptionId String?  @map("stripe_subscription_id")
+  subscriptionPlan     String?  @map("subscription_plan")
+  subscriptionStatus   String?  @map("subscription_status")
 
   @@index([teacherId], map: "users_teacher_id_idx")
   @@map("users")
@@ -55,6 +61,11 @@ model AdditionalUserData {
   workField           String?
   hobbies             String[]
   interests           String[]
+
+  /// Adult learners: why they study (e.g. travel to the UK).
+  learningGoal   String?  @map("learning_goal")
+  /// Adult learners: target horizon as free text (e.g. 3m, 6 months).
+  timeToAchieve  String?  @map("time_to_achieve")
 
   teacherGrades        String?
   teacherTopics        String[]
@@ -178,6 +189,14 @@ model UserVocabulary {
   topicId   Int?     @map("topic_id")
   topic     Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
   mastery   Float    @default(0)
+  /// Gloss in the learner's native language (from profile at save/enrichment time).
+  nativeTranslation  String?  @map("native_translation")
+  /// English explanation tuned to the learner's CEFR band (not stretch vocabulary band).
+  learnerDescription String? @map("learner_description")
+  /// Normalized band (e.g. A1) when learnerDescription was produced.
+  descriptionCefrBand String? @map("description_cefr_band")
+  /// ISO 639-1 (or best-effort) for nativeTranslation when stored.
+  nativeLanguageCode String? @map("native_language_code")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 

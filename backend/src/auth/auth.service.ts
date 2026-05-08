@@ -44,6 +44,11 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+    const trimmedLearningGoal =
+      typeof dto.learningGoal === 'string' ? dto.learningGoal.trim() : '';
+    const trimmedTimeToAchieve =
+      typeof dto.timeToAchieve === 'string' ? dto.timeToAchieve.trim() : '';
+
     // ПОФИКШЕНО: Используем явную проверку && для сужения типа (Type Narrowing)
     const additionalDataPayload: any = {
       englishLevel: dto.englishLevel,
@@ -58,6 +63,9 @@ export class AuthService {
       studentGrade: dto.studentGrade,
       studentProblemTopics: dto.studentProblemTopics || [],
       studentNames: dto.studentNames, // Json массив из схемы [cite: 14]
+
+      learningGoal: trimmedLearningGoal || null,
+      timeToAchieve: trimmedTimeToAchieve || null,
 
       // Исправленная логика favoriteGenres
       favoriteGenres: (dto.favoriteGenres && dto.favoriteGenres.length > 0)
@@ -186,6 +194,9 @@ export class AuthService {
         role: true,
         hasCompletedPlacement: true,
         isSuspended: true,
+        subscriptionPlan: true,
+        subscriptionStatus: true,
+        stripeSubscriptionId: true,
         currentStreak: true,
         settings: {
           select: {
@@ -200,6 +211,8 @@ export class AuthService {
             workField: true,
             nativeLanguage: true,
             hobbies: true,
+            learningGoal: true,
+            timeToAchieve: true,
             favoriteGenres: { select: { id: true } },
             hatedGenres: { select: { id: true } },
           },
@@ -225,10 +238,15 @@ export class AuthService {
       workField: extra?.workField ?? '',
       nativeLanguage: extra?.nativeLanguage ?? '',
       hobbies: extra?.hobbies ?? [],
+      learningGoal: extra?.learningGoal ?? '',
+      timeToAchieve: extra?.timeToAchieve ?? '',
       favoriteGenres: extra?.favoriteGenres?.map((g) => g.id) ?? [],
       hatedGenres: extra?.hatedGenres?.map((g) => g.id) ?? [],
       playbackSpeed: user.settings?.playbackSpeed ?? null,
       videoQuality: user.settings?.currentResolution ?? '',
+      subscriptionPlan: user.subscriptionPlan ?? '',
+      subscriptionStatus: user.subscriptionStatus ?? '',
+      stripeSubscriptionId: user.stripeSubscriptionId ?? '',
     };
   }
 

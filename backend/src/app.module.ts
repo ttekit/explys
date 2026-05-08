@@ -19,6 +19,7 @@ import { PlacementTestModule } from "./placement-test/placement-test.module";
 import { AdminAnalyticsModule } from "./admin-analytics/admin-analytics.module";
 import { AdminUsersModule } from "./admin-users/admin-users.module";
 import { TeacherStudentsModule } from "./teacher-students/teacher-students.module";
+import { BillingModule } from "./billing/billing.module";
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { TeacherStudentsModule } from "./teacher-students/teacher-students.modul
     AdminAnalyticsModule,
     AdminUsersModule,
     TeacherStudentsModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [
