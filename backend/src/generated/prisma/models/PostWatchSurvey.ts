@@ -446,6 +446,10 @@ export type PostWatchSurveyUncheckedUpdateManyWithoutContentVideoNestedInput = {
   deleteMany?: Prisma.PostWatchSurveyScalarWhereInput | Prisma.PostWatchSurveyScalarWhereInput[]
 }
 
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
 export type PostWatchSurveyCreateNestedManyWithoutUserInput = {
   create?: Prisma.XOR<Prisma.PostWatchSurveyCreateWithoutUserInput, Prisma.PostWatchSurveyUncheckedCreateWithoutUserInput> | Prisma.PostWatchSurveyCreateWithoutUserInput[] | Prisma.PostWatchSurveyUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.PostWatchSurveyCreateOrConnectWithoutUserInput | Prisma.PostWatchSurveyCreateOrConnectWithoutUserInput[]

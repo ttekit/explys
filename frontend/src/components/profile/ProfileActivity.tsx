@@ -75,24 +75,17 @@ const activityHistory = [
   },
 ] as const;
 
-interface ProfileActivityProps {
-  weeklyActivity?: { day: string; minutes: number }[];
-}
+const streakCalendar = [
+  { date: "Mon", active: true },
+  { date: "Tue", active: true },
+  { date: "Wed", active: true },
+  { date: "Thu", active: false },
+  { date: "Fri", active: true },
+  { date: "Sat", active: true },
+  { date: "Sun", active: true },
+];
 
-export function ProfileActivity({ weeklyActivity = [] }: ProfileActivityProps) {
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-  const activityMap = new Map(
-    weeklyActivity.map((item) => [item.day.slice(0, 3), item.minutes > 0])
-  );
-
-  const streakCalendar = daysOfWeek.map((day) => ({
-    date: day,
-    active: activityMap.get(day) || false,
-  }));
-
-  const activeDaysCount = streakCalendar.filter((d) => d.active).length;
-
+export function ProfileActivity() {
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="lg:col-span-2">
@@ -110,13 +103,14 @@ export function ProfileActivity({ weeklyActivity = [] }: ProfileActivityProps) {
                     >
                       <div className="absolute left-2 flex size-5 items-center justify-center rounded-full border-2 border-border bg-card">
                         <div
-                          className={`size-2 rounded-full ${activity.type === "achievement" ||
+                          className={`size-2 rounded-full ${
+                            activity.type === "achievement" ||
                             activity.type === "level_up"
-                            ? "bg-primary"
-                            : activity.type === "streak"
-                              ? "bg-orange-500"
-                              : "bg-accent"
-                            }`}
+                              ? "bg-primary"
+                              : activity.type === "streak"
+                                ? "bg-orange-500"
+                                : "bg-accent"
+                          }`}
                         />
                       </div>
                       <div className="flex-1 rounded-xl bg-secondary/30 p-4 transition-colors hover:bg-secondary/50">
@@ -156,10 +150,11 @@ export function ProfileActivity({ weeklyActivity = [] }: ProfileActivityProps) {
             {streakCalendar.map((day) => (
               <div key={day.date} className="flex flex-col items-center gap-1">
                 <div
-                  className={`flex size-8 items-center justify-center rounded-lg ${day.active
-                    ? "bg-orange-500 text-white"
-                    : "bg-secondary text-muted-foreground"
-                    }`}
+                  className={`flex size-8 items-center justify-center rounded-lg ${
+                    day.active
+                      ? "bg-orange-500 text-white"
+                      : "bg-secondary text-muted-foreground"
+                  }`}
                 >
                   {day.active ? <Flame className="size-4" /> : null}
                 </div>
@@ -168,7 +163,7 @@ export function ProfileActivity({ weeklyActivity = [] }: ProfileActivityProps) {
             ))}
           </div>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            {activeDaysCount} out of 7 days this week
+            6 out of 7 days this week (sample)
           </p>
         </ProfileCard>
 

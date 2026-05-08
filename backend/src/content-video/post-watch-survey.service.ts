@@ -39,7 +39,6 @@ export class PostWatchSurveyService {
   private async upsertWatchSessionDaily(
     userId: number,
     contentVideoId: number,
-    secondsWatched?: number,
   ): Promise<void> {
     const now = new Date();
     const completionDate = this.utcCompletionDate(now);
@@ -56,11 +55,9 @@ export class PostWatchSurveyService {
         contentVideoId,
         completionDate,
         endedAt: now,
-        secondsWatched: secondsWatched || 0,
       },
       update: {
         endedAt: now,
-        secondsWatched: secondsWatched || 0,
       },
     });
   }
@@ -72,7 +69,6 @@ export class PostWatchSurveyService {
   async recordWatchAndGenerateSurvey(
     contentVideoId: number,
     userId: number | null,
-    secondsWatched?: number,
   ): Promise<{
     surveyId: number;
     questions: PostWatchSurveyQuestion[];
@@ -88,8 +84,7 @@ export class PostWatchSurveyService {
     await this.incrementUsersWatched(video.contentId);
 
     if (userId != null) {
-      await this.upsertWatchSessionDaily(userId, contentVideoId, secondsWatched);
-      await this.updateUserStreak(userId);
+      await this.upsertWatchSessionDaily(userId, contentVideoId);
       void this.bumpListeningForVideoTopics(userId, contentVideoId).catch(
         () => undefined,
       );
@@ -184,49 +179,5 @@ export class PostWatchSurveyService {
       },
     });
     return { ok: true, surveyId };
-  }
-
-  private async updateUserStreak(userId: number) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { currentStreak: true, lastActivityDate: true },
-    });
-
-    if (!user) return;
-
-    const now = new Date();
-    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-
-    let newStreak = user.currentStreak || 0;
-
-    if (!user.lastActivityDate) {
-      newStreak = 1;
-    } else {
-      const lastActivity = new Date(user.lastActivityDate);
-      const lastActivityDay = new Date(Date.UTC(lastActivity.getUTCFullYear(), lastActivity.getUTCMonth(), lastActivity.getUTCDate()));
-
-      const diffTime = today.getTime() - lastActivityDay.getTime();
-      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 0) {
-        await this.prisma.user.update({
-          where: { id: userId },
-          data: { lastActivityDate: now },
-        });
-        return;
-      } else if (diffDays === 1) {
-        newStreak += 1;
-      } else {
-        newStreak = 1;
-      }
-    }
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        currentStreak: newStreak,
-        lastActivityDate: now,
-      },
-    });
   }
 }

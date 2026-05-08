@@ -92,7 +92,7 @@ export default function ProfileMain() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id || (activeTab !== "overview" && activeTab !== "activity")) return;
+    if (!user?.id || activeTab !== "overview") return;
     let cancelled = false;
     void (async () => {
       const r = await apiFetch("/auth/profile/learning-stats", {
@@ -118,8 +118,6 @@ export default function ProfileMain() {
           ? (weekly as { day: string; minutes: number }[])
           : [...DEFAULT_WEEKLY_ACTIVITY],
       });
-
-      console.log("LEARNING STATS FROM BACKEND:", o);
     })();
     return () => {
       cancelled = true;
@@ -138,7 +136,7 @@ export default function ProfileMain() {
       role: normalizeRole(user.role),
       level: user.englishLevel?.trim() || "—",
       joinDateLabel,
-      streakDays: (user as any).currentStreak || 0,
+      streakDays: null,
     };
   }, [user, joinDateLabel]);
 
@@ -225,7 +223,7 @@ export default function ProfileMain() {
         <CatalogSidebar
           categories={[]}
           selectedCategory="All"
-          onSelectCategory={() => { }}
+          onSelectCategory={() => {}}
           showCategoryFilter={false}
           welcomeName={
             user?.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined
@@ -280,7 +278,7 @@ export default function ProfileMain() {
               {activeTab === "students" ? <ProfileTeacherStudents /> : null}
               {activeTab === "progress" ? <ProfileProgress /> : null}
               {activeTab === "achievements" ? <ProfileAchievements /> : null}
-              {activeTab === "activity" ? <ProfileActivity weeklyActivity={learningStats?.weeklyActivity} /> : null}
+              {activeTab === "activity" ? <ProfileActivity /> : null}
               {activeTab === "settings" ? (
                 <ProfileSettings user={user} onSaved={refreshProfile} />
               ) : null}

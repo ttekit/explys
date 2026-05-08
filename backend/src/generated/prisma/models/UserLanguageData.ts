@@ -31,9 +31,6 @@ export type UserLanguageDataAvgAggregateOutputType = {
   userId: number | null
   topicId: number | null
   score: number | null
-  listeningScore: number | null
-  vocabularyScore: number | null
-  grammarScore: number | null
   confidence: number | null
   coverage: number | null
 }
@@ -43,9 +40,6 @@ export type UserLanguageDataSumAggregateOutputType = {
   userId: number | null
   topicId: number | null
   score: number | null
-  listeningScore: number | null
-  vocabularyScore: number | null
-  grammarScore: number | null
   confidence: number | null
   coverage: number | null
 }
@@ -55,9 +49,6 @@ export type UserLanguageDataMinAggregateOutputType = {
   userId: number | null
   topicId: number | null
   score: number | null
-  listeningScore: number | null
-  vocabularyScore: number | null
-  grammarScore: number | null
   confidence: number | null
   coverage: number | null
   algorithmVersion: string | null
@@ -69,9 +60,6 @@ export type UserLanguageDataMaxAggregateOutputType = {
   userId: number | null
   topicId: number | null
   score: number | null
-  listeningScore: number | null
-  vocabularyScore: number | null
-  grammarScore: number | null
   confidence: number | null
   coverage: number | null
   algorithmVersion: string | null
@@ -83,9 +71,6 @@ export type UserLanguageDataCountAggregateOutputType = {
   userId: number
   topicId: number
   score: number
-  listeningScore: number
-  vocabularyScore: number
-  grammarScore: number
   confidence: number
   coverage: number
   algorithmVersion: number
@@ -99,9 +84,6 @@ export type UserLanguageDataAvgAggregateInputType = {
   userId?: true
   topicId?: true
   score?: true
-  listeningScore?: true
-  vocabularyScore?: true
-  grammarScore?: true
   confidence?: true
   coverage?: true
 }
@@ -111,9 +93,6 @@ export type UserLanguageDataSumAggregateInputType = {
   userId?: true
   topicId?: true
   score?: true
-  listeningScore?: true
-  vocabularyScore?: true
-  grammarScore?: true
   confidence?: true
   coverage?: true
 }
@@ -123,9 +102,6 @@ export type UserLanguageDataMinAggregateInputType = {
   userId?: true
   topicId?: true
   score?: true
-  listeningScore?: true
-  vocabularyScore?: true
-  grammarScore?: true
   confidence?: true
   coverage?: true
   algorithmVersion?: true
@@ -137,9 +113,6 @@ export type UserLanguageDataMaxAggregateInputType = {
   userId?: true
   topicId?: true
   score?: true
-  listeningScore?: true
-  vocabularyScore?: true
-  grammarScore?: true
   confidence?: true
   coverage?: true
   algorithmVersion?: true
@@ -151,9 +124,6 @@ export type UserLanguageDataCountAggregateInputType = {
   userId?: true
   topicId?: true
   score?: true
-  listeningScore?: true
-  vocabularyScore?: true
-  grammarScore?: true
   confidence?: true
   coverage?: true
   algorithmVersion?: true
@@ -252,9 +222,6 @@ export type UserLanguageDataGroupByOutputType = {
   userId: number
   topicId: number
   score: number
-  listeningScore: number
-  vocabularyScore: number
-  grammarScore: number
   confidence: number
   coverage: number
   algorithmVersion: string
@@ -289,9 +256,6 @@ export type UserLanguageDataWhereInput = {
   userId?: Prisma.IntFilter<"UserLanguageData"> | number
   topicId?: Prisma.IntFilter<"UserLanguageData"> | number
   score?: Prisma.FloatFilter<"UserLanguageData"> | number
-  listeningScore?: Prisma.FloatFilter<"UserLanguageData"> | number
-  vocabularyScore?: Prisma.FloatFilter<"UserLanguageData"> | number
-  grammarScore?: Prisma.FloatFilter<"UserLanguageData"> | number
   confidence?: Prisma.FloatFilter<"UserLanguageData"> | number
   coverage?: Prisma.FloatFilter<"UserLanguageData"> | number
   algorithmVersion?: Prisma.StringFilter<"UserLanguageData"> | string
@@ -305,9 +269,6 @@ export type UserLanguageDataOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
   score?: Prisma.SortOrder
-  listeningScore?: Prisma.SortOrder
-  vocabularyScore?: Prisma.SortOrder
-  grammarScore?: Prisma.SortOrder
   confidence?: Prisma.SortOrder
   coverage?: Prisma.SortOrder
   algorithmVersion?: Prisma.SortOrder
@@ -325,9 +286,6 @@ export type UserLanguageDataWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.IntFilter<"UserLanguageData"> | number
   topicId?: Prisma.IntFilter<"UserLanguageData"> | number
   score?: Prisma.FloatFilter<"UserLanguageData"> | number
-  listeningScore?: Prisma.FloatFilter<"UserLanguageData"> | number
-  vocabularyScore?: Prisma.FloatFilter<"UserLanguageData"> | number
-  grammarScore?: Prisma.FloatFilter<"UserLanguageData"> | number
   confidence?: Prisma.FloatFilter<"UserLanguageData"> | number
   coverage?: Prisma.FloatFilter<"UserLanguageData"> | number
   algorithmVersion?: Prisma.StringFilter<"UserLanguageData"> | string
@@ -341,9 +299,6 @@ export type UserLanguageDataOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
   score?: Prisma.SortOrder
-  listeningScore?: Prisma.SortOrder
-  vocabularyScore?: Prisma.SortOrder
-  grammarScore?: Prisma.SortOrder
   confidence?: Prisma.SortOrder
   coverage?: Prisma.SortOrder
   algorithmVersion?: Prisma.SortOrder
@@ -363,9 +318,6 @@ export type UserLanguageDataScalarWhereWithAggregatesInput = {
   userId?: Prisma.IntWithAggregatesFilter<"UserLanguageData"> | number
   topicId?: Prisma.IntWithAggregatesFilter<"UserLanguageData"> | number
   score?: Prisma.FloatWithAggregatesFilter<"UserLanguageData"> | number
-  listeningScore?: Prisma.FloatWithAggregatesFilter<"UserLanguageData"> | number
-  vocabularyScore?: Prisma.FloatWithAggregatesFilter<"UserLanguageData"> | number
-  grammarScore?: Prisma.FloatWithAggregatesFilter<"UserLanguageData"> | number
   confidence?: Prisma.FloatWithAggregatesFilter<"UserLanguageData"> | number
   coverage?: Prisma.FloatWithAggregatesFilter<"UserLanguageData"> | number
   algorithmVersion?: Prisma.StringWithAggregatesFilter<"UserLanguageData"> | string
@@ -374,9 +326,6 @@ export type UserLanguageDataScalarWhereWithAggregatesInput = {
 
 export type UserLanguageDataCreateInput = {
   score: number
-  listeningScore?: number
-  vocabularyScore?: number
-  grammarScore?: number
   confidence?: number
   coverage?: number
   algorithmVersion?: string
@@ -390,9 +339,6 @@ export type UserLanguageDataUncheckedCreateInput = {
   userId: number
   topicId: number
   score: number
-  listeningScore?: number
-  vocabularyScore?: number
-  grammarScore?: number
   confidence?: number
   coverage?: number
   algorithmVersion?: string
@@ -401,9 +347,6 @@ export type UserLanguageDataUncheckedCreateInput = {
 
 export type UserLanguageDataUpdateInput = {
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -417,9 +360,6 @@ export type UserLanguageDataUncheckedUpdateInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   topicId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -431,9 +371,6 @@ export type UserLanguageDataCreateManyInput = {
   userId: number
   topicId: number
   score: number
-  listeningScore?: number
-  vocabularyScore?: number
-  grammarScore?: number
   confidence?: number
   coverage?: number
   algorithmVersion?: string
@@ -442,9 +379,6 @@ export type UserLanguageDataCreateManyInput = {
 
 export type UserLanguageDataUpdateManyMutationInput = {
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -456,9 +390,6 @@ export type UserLanguageDataUncheckedUpdateManyInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   topicId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -485,9 +416,6 @@ export type UserLanguageDataCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
   score?: Prisma.SortOrder
-  listeningScore?: Prisma.SortOrder
-  vocabularyScore?: Prisma.SortOrder
-  grammarScore?: Prisma.SortOrder
   confidence?: Prisma.SortOrder
   coverage?: Prisma.SortOrder
   algorithmVersion?: Prisma.SortOrder
@@ -499,9 +427,6 @@ export type UserLanguageDataAvgOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
   score?: Prisma.SortOrder
-  listeningScore?: Prisma.SortOrder
-  vocabularyScore?: Prisma.SortOrder
-  grammarScore?: Prisma.SortOrder
   confidence?: Prisma.SortOrder
   coverage?: Prisma.SortOrder
 }
@@ -511,9 +436,6 @@ export type UserLanguageDataMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
   score?: Prisma.SortOrder
-  listeningScore?: Prisma.SortOrder
-  vocabularyScore?: Prisma.SortOrder
-  grammarScore?: Prisma.SortOrder
   confidence?: Prisma.SortOrder
   coverage?: Prisma.SortOrder
   algorithmVersion?: Prisma.SortOrder
@@ -525,9 +447,6 @@ export type UserLanguageDataMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
   score?: Prisma.SortOrder
-  listeningScore?: Prisma.SortOrder
-  vocabularyScore?: Prisma.SortOrder
-  grammarScore?: Prisma.SortOrder
   confidence?: Prisma.SortOrder
   coverage?: Prisma.SortOrder
   algorithmVersion?: Prisma.SortOrder
@@ -539,9 +458,6 @@ export type UserLanguageDataSumOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
   score?: Prisma.SortOrder
-  listeningScore?: Prisma.SortOrder
-  vocabularyScore?: Prisma.SortOrder
-  grammarScore?: Prisma.SortOrder
   confidence?: Prisma.SortOrder
   coverage?: Prisma.SortOrder
 }
@@ -632,9 +548,6 @@ export type UserLanguageDataUncheckedUpdateManyWithoutTopicNestedInput = {
 
 export type UserLanguageDataCreateWithoutUserInput = {
   score: number
-  listeningScore?: number
-  vocabularyScore?: number
-  grammarScore?: number
   confidence?: number
   coverage?: number
   algorithmVersion?: string
@@ -646,9 +559,6 @@ export type UserLanguageDataUncheckedCreateWithoutUserInput = {
   id?: number
   topicId: number
   score: number
-  listeningScore?: number
-  vocabularyScore?: number
-  grammarScore?: number
   confidence?: number
   coverage?: number
   algorithmVersion?: string
@@ -689,9 +599,6 @@ export type UserLanguageDataScalarWhereInput = {
   userId?: Prisma.IntFilter<"UserLanguageData"> | number
   topicId?: Prisma.IntFilter<"UserLanguageData"> | number
   score?: Prisma.FloatFilter<"UserLanguageData"> | number
-  listeningScore?: Prisma.FloatFilter<"UserLanguageData"> | number
-  vocabularyScore?: Prisma.FloatFilter<"UserLanguageData"> | number
-  grammarScore?: Prisma.FloatFilter<"UserLanguageData"> | number
   confidence?: Prisma.FloatFilter<"UserLanguageData"> | number
   coverage?: Prisma.FloatFilter<"UserLanguageData"> | number
   algorithmVersion?: Prisma.StringFilter<"UserLanguageData"> | string
@@ -700,9 +607,6 @@ export type UserLanguageDataScalarWhereInput = {
 
 export type UserLanguageDataCreateWithoutTopicInput = {
   score: number
-  listeningScore?: number
-  vocabularyScore?: number
-  grammarScore?: number
   confidence?: number
   coverage?: number
   algorithmVersion?: string
@@ -714,9 +618,6 @@ export type UserLanguageDataUncheckedCreateWithoutTopicInput = {
   id?: number
   userId: number
   score: number
-  listeningScore?: number
-  vocabularyScore?: number
-  grammarScore?: number
   confidence?: number
   coverage?: number
   algorithmVersion?: string
@@ -753,9 +654,6 @@ export type UserLanguageDataCreateManyUserInput = {
   id?: number
   topicId: number
   score: number
-  listeningScore?: number
-  vocabularyScore?: number
-  grammarScore?: number
   confidence?: number
   coverage?: number
   algorithmVersion?: string
@@ -764,9 +662,6 @@ export type UserLanguageDataCreateManyUserInput = {
 
 export type UserLanguageDataUpdateWithoutUserInput = {
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -778,9 +673,6 @@ export type UserLanguageDataUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   topicId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -791,9 +683,6 @@ export type UserLanguageDataUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   topicId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -804,9 +693,6 @@ export type UserLanguageDataCreateManyTopicInput = {
   id?: number
   userId: number
   score: number
-  listeningScore?: number
-  vocabularyScore?: number
-  grammarScore?: number
   confidence?: number
   coverage?: number
   algorithmVersion?: string
@@ -815,9 +701,6 @@ export type UserLanguageDataCreateManyTopicInput = {
 
 export type UserLanguageDataUpdateWithoutTopicInput = {
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -829,9 +712,6 @@ export type UserLanguageDataUncheckedUpdateWithoutTopicInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -842,9 +722,6 @@ export type UserLanguageDataUncheckedUpdateManyWithoutTopicInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   score?: Prisma.FloatFieldUpdateOperationsInput | number
-  listeningScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  vocabularyScore?: Prisma.FloatFieldUpdateOperationsInput | number
-  grammarScore?: Prisma.FloatFieldUpdateOperationsInput | number
   confidence?: Prisma.FloatFieldUpdateOperationsInput | number
   coverage?: Prisma.FloatFieldUpdateOperationsInput | number
   algorithmVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -858,9 +735,6 @@ export type UserLanguageDataSelect<ExtArgs extends runtime.Types.Extensions.Inte
   userId?: boolean
   topicId?: boolean
   score?: boolean
-  listeningScore?: boolean
-  vocabularyScore?: boolean
-  grammarScore?: boolean
   confidence?: boolean
   coverage?: boolean
   algorithmVersion?: boolean
@@ -874,9 +748,6 @@ export type UserLanguageDataSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   userId?: boolean
   topicId?: boolean
   score?: boolean
-  listeningScore?: boolean
-  vocabularyScore?: boolean
-  grammarScore?: boolean
   confidence?: boolean
   coverage?: boolean
   algorithmVersion?: boolean
@@ -890,9 +761,6 @@ export type UserLanguageDataSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   userId?: boolean
   topicId?: boolean
   score?: boolean
-  listeningScore?: boolean
-  vocabularyScore?: boolean
-  grammarScore?: boolean
   confidence?: boolean
   coverage?: boolean
   algorithmVersion?: boolean
@@ -906,16 +774,13 @@ export type UserLanguageDataSelectScalar = {
   userId?: boolean
   topicId?: boolean
   score?: boolean
-  listeningScore?: boolean
-  vocabularyScore?: boolean
-  grammarScore?: boolean
   confidence?: boolean
   coverage?: boolean
   algorithmVersion?: boolean
   updatedAt?: boolean
 }
 
-export type UserLanguageDataOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "topicId" | "score" | "listeningScore" | "vocabularyScore" | "grammarScore" | "confidence" | "coverage" | "algorithmVersion" | "updatedAt", ExtArgs["result"]["userLanguageData"]>
+export type UserLanguageDataOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "topicId" | "score" | "confidence" | "coverage" | "algorithmVersion" | "updatedAt", ExtArgs["result"]["userLanguageData"]>
 export type UserLanguageDataInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   topic?: boolean | Prisma.TopicDefaultArgs<ExtArgs>
@@ -939,13 +804,7 @@ export type $UserLanguageDataPayload<ExtArgs extends runtime.Types.Extensions.In
     id: number
     userId: number
     topicId: number
-    /**
-     * Mean of listening, vocabulary, and grammar (legacy aggregate for APIs and fits).
-     */
     score: number
-    listeningScore: number
-    vocabularyScore: number
-    grammarScore: number
     confidence: number
     coverage: number
     algorithmVersion: string
@@ -1379,9 +1238,6 @@ export interface UserLanguageDataFieldRefs {
   readonly userId: Prisma.FieldRef<"UserLanguageData", 'Int'>
   readonly topicId: Prisma.FieldRef<"UserLanguageData", 'Int'>
   readonly score: Prisma.FieldRef<"UserLanguageData", 'Float'>
-  readonly listeningScore: Prisma.FieldRef<"UserLanguageData", 'Float'>
-  readonly vocabularyScore: Prisma.FieldRef<"UserLanguageData", 'Float'>
-  readonly grammarScore: Prisma.FieldRef<"UserLanguageData", 'Float'>
   readonly confidence: Prisma.FieldRef<"UserLanguageData", 'Float'>
   readonly coverage: Prisma.FieldRef<"UserLanguageData", 'Float'>
   readonly algorithmVersion: Prisma.FieldRef<"UserLanguageData", 'String'>

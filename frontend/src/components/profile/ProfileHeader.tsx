@@ -88,7 +88,7 @@ export function ProfileHeader({ user }: { user: ProfileHeaderModel }) {
               <div className="flex items-center gap-1.5">
                 <Flame className="size-4 shrink-0 text-orange-500" />
                 <span className="font-medium text-foreground">
-                  {user.streakDays
+                  {user.streakDays != null
                     ? `${user.streakDays} day streak`
                     : "Streak — start watching today"}
                 </span>

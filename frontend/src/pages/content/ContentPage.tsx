@@ -44,7 +44,7 @@ function mapApiTestsToQuiz(
     let ci =
       typeof t.correctIndex === "number" && Number.isFinite(t.correctIndex) ?
         Math.floor(t.correctIndex)
-        : 0;
+      : 0;
     ci = Math.max(0, Math.min(options.length - 1, ci));
     return {
       id: idx + 1,
@@ -231,8 +231,8 @@ function TabPanels({
           <p className="text-center text-sm text-muted-foreground">
             Preparing personalised key vocabulary…
           </p>
-          : <VideoVocabulary vocabulary={vocabulary} />
-        : null}
+        : <VideoVocabulary vocabulary={vocabulary} />
+      : null}
       {activeTab === "transcript" ?
         (
           <VideoTranscript
@@ -242,7 +242,7 @@ function TabPanels({
             onSeek={onSeekTranscript}
           />
         )
-        : null}
+      : null}
       {activeTab === "quiz" ? (
         <VideoQuiz
           questions={quizQuestions}
@@ -306,20 +306,9 @@ export default function ContentPage() {
     const vid = Number.parseInt(String(id), 10);
     if (!Number.isFinite(vid) || vid <= 0) return;
     watchCompletePostedRef.current = true;
-
-
-    const currentSeconds = videoElRef.current?.currentTime || 0;
-
     try {
       const res = await apiFetch(`/content-video/${vid}/watch-complete`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          secondsWatched: Math.round(currentSeconds),
-        }),
       });
       if (res.ok) {
         captureEvent("video_watch_complete", { content_video_id: vid });
@@ -399,7 +388,7 @@ export default function ContentPage() {
         const quizQuestions =
           Array.isArray(bundle.tests) && bundle.tests.length > 0 ?
             mapApiTestsToQuiz(bundle.tests)
-            : defaultQuizQuestions;
+          : defaultQuizQuestions;
         setLessonSideBundle({ vocabulary, quizQuestions });
       })
       .catch(() => {
@@ -595,8 +584,8 @@ export default function ContentPage() {
                     <p className="text-center text-sm text-muted-foreground">
                       Preparing personalised key vocabulary…
                     </p>
-                    : <VideoVocabulary vocabulary={vocabForUi} />
-                  : null}
+                  : <VideoVocabulary vocabulary={vocabForUi} />
+                : null}
                 {activeTab === "transcript" ?
                   (
                     <VideoTranscript
@@ -606,7 +595,7 @@ export default function ContentPage() {
                       onSeek={seekToCue}
                     />
                   )
-                  : null}
+                : null}
                 {activeTab === "quiz" ? (
                   <VideoQuiz
                     questions={quizForUi}

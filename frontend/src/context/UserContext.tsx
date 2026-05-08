@@ -28,7 +28,6 @@ export interface UserData {
   playbackSpeed?: number | null;
   /** From `UserSettings.currentResolution` (e.g. auto, 720p) */
   videoQuality?: string;
-  currentStreak: number;
 }
 
 /** Registration used `"choose"` as a sentinel for unfilled selects; strip so UI shows blanks. */
@@ -76,7 +75,6 @@ function normalizeProfile(raw: unknown): UserData | null {
     })(),
     videoQuality:
       typeof r.videoQuality === "string" ? r.videoQuality : "",
-    currentStreak: Number(r.currentStreak) || 0,
   };
 }
 

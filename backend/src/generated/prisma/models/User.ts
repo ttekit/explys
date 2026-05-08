@@ -29,13 +29,11 @@ export type AggregateUser = {
 export type UserAvgAggregateOutputType = {
   id: number | null
   teacherId: number | null
-  currentStreak: number | null
 }
 
 export type UserSumAggregateOutputType = {
   id: number | null
   teacherId: number | null
-  currentStreak: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -47,10 +45,7 @@ export type UserMinAggregateOutputType = {
   hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
-  isSuspended: boolean | null
   teacherId: number | null
-  currentStreak: number | null
-  lastActivityDate: Date | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -62,10 +57,7 @@ export type UserMaxAggregateOutputType = {
   hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
-  isSuspended: boolean | null
   teacherId: number | null
-  currentStreak: number | null
-  lastActivityDate: Date | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -75,13 +67,9 @@ export type UserCountAggregateOutputType = {
   password: number
   role: number
   hasCompletedPlacement: number
-  placementTestDraft: number
   lastLogin: number
   createdAt: number
-  isSuspended: number
   teacherId: number
-  currentStreak: number
-  lastActivityDate: number
   _all: number
 }
 
@@ -89,13 +77,11 @@ export type UserCountAggregateOutputType = {
 export type UserAvgAggregateInputType = {
   id?: true
   teacherId?: true
-  currentStreak?: true
 }
 
 export type UserSumAggregateInputType = {
   id?: true
   teacherId?: true
-  currentStreak?: true
 }
 
 export type UserMinAggregateInputType = {
@@ -107,10 +93,7 @@ export type UserMinAggregateInputType = {
   hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
-  isSuspended?: true
   teacherId?: true
-  currentStreak?: true
-  lastActivityDate?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -122,10 +105,7 @@ export type UserMaxAggregateInputType = {
   hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
-  isSuspended?: true
   teacherId?: true
-  currentStreak?: true
-  lastActivityDate?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -135,13 +115,9 @@ export type UserCountAggregateInputType = {
   password?: true
   role?: true
   hasCompletedPlacement?: true
-  placementTestDraft?: true
   lastLogin?: true
   createdAt?: true
-  isSuspended?: true
   teacherId?: true
-  currentStreak?: true
-  lastActivityDate?: true
   _all?: true
 }
 
@@ -238,13 +214,9 @@ export type UserGroupByOutputType = {
   password: string
   role: string
   hasCompletedPlacement: boolean
-  placementTestDraft: runtime.JsonValue | null
   lastLogin: Date | null
   createdAt: Date
-  isSuspended: boolean
   teacherId: number | null
-  currentStreak: number
-  lastActivityDate: Date | null
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -277,13 +249,9 @@ export type UserWhereInput = {
   password?: Prisma.StringFilter<"User"> | string
   role?: Prisma.StringFilter<"User"> | string
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
-  placementTestDraft?: Prisma.JsonNullableFilter<"User">
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  isSuspended?: Prisma.BoolFilter<"User"> | boolean
   teacherId?: Prisma.IntNullableFilter<"User"> | number | null
-  currentStreak?: Prisma.IntFilter<"User"> | number
-  lastActivityDate?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   students?: Prisma.UserListRelationFilter
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
@@ -294,9 +262,6 @@ export type UserWhereInput = {
   friendOf?: Prisma.UserFriendListRelationFilter
   postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
   userVocabulary?: Prisma.UserVocabularyListRelationFilter
-  watchSessions?: Prisma.WatchSessionListRelationFilter
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptListRelationFilter
-  placementAttempts?: Prisma.PlacementAttemptListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -306,13 +271,9 @@ export type UserOrderByWithRelationInput = {
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
   hasCompletedPlacement?: Prisma.SortOrder
-  placementTestDraft?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
-  currentStreak?: Prisma.SortOrder
-  lastActivityDate?: Prisma.SortOrderInput | Prisma.SortOrder
   teacher?: Prisma.UserOrderByWithRelationInput
   students?: Prisma.UserOrderByRelationAggregateInput
   settings?: Prisma.UserSettingsOrderByWithRelationInput
@@ -323,9 +284,6 @@ export type UserOrderByWithRelationInput = {
   friendOf?: Prisma.UserFriendOrderByRelationAggregateInput
   postWatchSurveys?: Prisma.PostWatchSurveyOrderByRelationAggregateInput
   userVocabulary?: Prisma.UserVocabularyOrderByRelationAggregateInput
-  watchSessions?: Prisma.WatchSessionOrderByRelationAggregateInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptOrderByRelationAggregateInput
-  placementAttempts?: Prisma.PlacementAttemptOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -338,13 +296,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   password?: Prisma.StringFilter<"User"> | string
   role?: Prisma.StringFilter<"User"> | string
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
-  placementTestDraft?: Prisma.JsonNullableFilter<"User">
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  isSuspended?: Prisma.BoolFilter<"User"> | boolean
   teacherId?: Prisma.IntNullableFilter<"User"> | number | null
-  currentStreak?: Prisma.IntFilter<"User"> | number
-  lastActivityDate?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   students?: Prisma.UserListRelationFilter
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
@@ -355,9 +309,6 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   friendOf?: Prisma.UserFriendListRelationFilter
   postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
   userVocabulary?: Prisma.UserVocabularyListRelationFilter
-  watchSessions?: Prisma.WatchSessionListRelationFilter
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptListRelationFilter
-  placementAttempts?: Prisma.PlacementAttemptListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -367,13 +318,9 @@ export type UserOrderByWithAggregationInput = {
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
   hasCompletedPlacement?: Prisma.SortOrder
-  placementTestDraft?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
-  currentStreak?: Prisma.SortOrder
-  lastActivityDate?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -391,13 +338,9 @@ export type UserScalarWhereWithAggregatesInput = {
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
   role?: Prisma.StringWithAggregatesFilter<"User"> | string
   hasCompletedPlacement?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
-  placementTestDraft?: Prisma.JsonNullableWithAggregatesFilter<"User">
   lastLogin?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
-  isSuspended?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   teacherId?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
-  currentStreak?: Prisma.IntWithAggregatesFilter<"User"> | number
-  lastActivityDate?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
 }
 
 export type UserCreateInput = {
@@ -406,12 +349,8 @@ export type UserCreateInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -422,9 +361,6 @@ export type UserCreateInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -434,13 +370,9 @@ export type UserUncheckedCreateInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -450,9 +382,6 @@ export type UserUncheckedCreateInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -461,12 +390,8 @@ export type UserUpdateInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -477,9 +402,6 @@ export type UserUpdateInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -489,13 +411,9 @@ export type UserUncheckedUpdateInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -505,9 +423,6 @@ export type UserUncheckedUpdateInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -517,13 +432,9 @@ export type UserCreateManyInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -532,12 +443,8 @@ export type UserUpdateManyMutationInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -547,18 +454,9 @@ export type UserUncheckedUpdateManyInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-}
-
-export type UserScalarRelationFilter = {
-  is?: Prisma.UserWhereInput
-  isNot?: Prisma.UserWhereInput
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -583,19 +481,14 @@ export type UserCountOrderByAggregateInput = {
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
   hasCompletedPlacement?: Prisma.SortOrder
-  placementTestDraft?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
-  currentStreak?: Prisma.SortOrder
-  lastActivityDate?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
-  currentStreak?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -607,10 +500,7 @@ export type UserMaxOrderByAggregateInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
-  currentStreak?: Prisma.SortOrder
-  lastActivityDate?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -622,44 +512,17 @@ export type UserMinOrderByAggregateInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
-  currentStreak?: Prisma.SortOrder
-  lastActivityDate?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
-  currentStreak?: Prisma.SortOrder
 }
 
-export type UserCreateNestedOneWithoutWatchSessionsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutWatchSessionsInput, Prisma.UserUncheckedCreateWithoutWatchSessionsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWatchSessionsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutWatchSessionsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutWatchSessionsInput, Prisma.UserUncheckedCreateWithoutWatchSessionsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWatchSessionsInput
-  upsert?: Prisma.UserUpsertWithoutWatchSessionsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWatchSessionsInput, Prisma.UserUpdateWithoutWatchSessionsInput>, Prisma.UserUncheckedUpdateWithoutWatchSessionsInput>
-}
-
-export type UserCreateNestedOneWithoutComprehensionTestAttemptsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedCreateWithoutComprehensionTestAttemptsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutComprehensionTestAttemptsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutComprehensionTestAttemptsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedCreateWithoutComprehensionTestAttemptsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutComprehensionTestAttemptsInput
-  upsert?: Prisma.UserUpsertWithoutComprehensionTestAttemptsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutComprehensionTestAttemptsInput, Prisma.UserUpdateWithoutComprehensionTestAttemptsInput>, Prisma.UserUncheckedUpdateWithoutComprehensionTestAttemptsInput>
+export type UserScalarRelationFilter = {
+  is?: Prisma.UserWhereInput
+  isNot?: Prisma.UserWhereInput
 }
 
 export type UserCreateNestedOneWithoutPostWatchSurveysInput = {
@@ -696,6 +559,10 @@ export type UserUncheckedCreateNestedManyWithoutTeacherInput = {
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeacherInput | Prisma.UserCreateOrConnectWithoutTeacherInput[]
   createMany?: Prisma.UserCreateManyTeacherInputEnvelope
   connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type UserUpdateOneWithoutStudentsNestedInput = {
@@ -834,276 +701,14 @@ export type UserUpdateOneRequiredWithoutUserVocabularyNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutUserVocabularyInput, Prisma.UserUpdateWithoutUserVocabularyInput>, Prisma.UserUncheckedUpdateWithoutUserVocabularyInput>
 }
 
-export type UserCreateNestedOneWithoutPlacementAttemptsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutPlacementAttemptsInput, Prisma.UserUncheckedCreateWithoutPlacementAttemptsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlacementAttemptsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutPlacementAttemptsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutPlacementAttemptsInput, Prisma.UserUncheckedCreateWithoutPlacementAttemptsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlacementAttemptsInput
-  upsert?: Prisma.UserUpsertWithoutPlacementAttemptsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPlacementAttemptsInput, Prisma.UserUpdateWithoutPlacementAttemptsInput>, Prisma.UserUncheckedUpdateWithoutPlacementAttemptsInput>
-}
-
-export type UserCreateWithoutWatchSessionsInput = {
-  name: string
-  email: string
-  password: string
-  role?: string
-  hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Date | string | null
-  createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
-  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
-  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
-  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
-  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
-  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
-  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
-  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
-  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
-  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
-  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
-}
-
-export type UserUncheckedCreateWithoutWatchSessionsInput = {
-  id?: number
-  name: string
-  email: string
-  password: string
-  role?: string
-  hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Date | string | null
-  createdAt?: Date | string
-  isSuspended?: boolean
-  teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
-  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
-  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
-  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
-  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
-  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
-  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
-  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
-  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
-  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
-}
-
-export type UserCreateOrConnectWithoutWatchSessionsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutWatchSessionsInput, Prisma.UserUncheckedCreateWithoutWatchSessionsInput>
-}
-
-export type UserUpsertWithoutWatchSessionsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutWatchSessionsInput, Prisma.UserUncheckedUpdateWithoutWatchSessionsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutWatchSessionsInput, Prisma.UserUncheckedCreateWithoutWatchSessionsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutWatchSessionsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutWatchSessionsInput, Prisma.UserUncheckedUpdateWithoutWatchSessionsInput>
-}
-
-export type UserUpdateWithoutWatchSessionsInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
-  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
-  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
-  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
-  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
-  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
-  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
-  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
-  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
-  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
-}
-
-export type UserUncheckedUpdateWithoutWatchSessionsInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
-  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
-  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
-  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
-  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
-  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
-  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
-  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
-  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
-}
-
-export type UserCreateWithoutComprehensionTestAttemptsInput = {
-  name: string
-  email: string
-  password: string
-  role?: string
-  hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Date | string | null
-  createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
-  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
-  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
-  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
-  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
-  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
-  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
-  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
-  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
-  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
-  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
-}
-
-export type UserUncheckedCreateWithoutComprehensionTestAttemptsInput = {
-  id?: number
-  name: string
-  email: string
-  password: string
-  role?: string
-  hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Date | string | null
-  createdAt?: Date | string
-  isSuspended?: boolean
-  teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
-  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
-  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
-  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
-  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
-  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
-  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
-  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
-  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
-  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
-}
-
-export type UserCreateOrConnectWithoutComprehensionTestAttemptsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedCreateWithoutComprehensionTestAttemptsInput>
-}
-
-export type UserUpsertWithoutComprehensionTestAttemptsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedUpdateWithoutComprehensionTestAttemptsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedCreateWithoutComprehensionTestAttemptsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutComprehensionTestAttemptsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedUpdateWithoutComprehensionTestAttemptsInput>
-}
-
-export type UserUpdateWithoutComprehensionTestAttemptsInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
-  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
-  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
-  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
-  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
-  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
-  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
-  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
-  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
-  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
-}
-
-export type UserUncheckedUpdateWithoutComprehensionTestAttemptsInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
-  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
-  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
-  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
-  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
-  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
-  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
-  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
-  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
-}
-
 export type UserCreateWithoutPostWatchSurveysInput = {
   name: string
   email: string
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1113,9 +718,6 @@ export type UserCreateWithoutPostWatchSurveysInput = {
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPostWatchSurveysInput = {
@@ -1125,13 +727,9 @@ export type UserUncheckedCreateWithoutPostWatchSurveysInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -1140,9 +738,6 @@ export type UserUncheckedCreateWithoutPostWatchSurveysInput = {
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPostWatchSurveysInput = {
@@ -1167,12 +762,8 @@ export type UserUpdateWithoutPostWatchSurveysInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1182,9 +773,6 @@ export type UserUpdateWithoutPostWatchSurveysInput = {
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
@@ -1194,13 +782,9 @@ export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -1209,9 +793,6 @@ export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutStudentsInput = {
@@ -1220,12 +801,8 @@ export type UserCreateWithoutStudentsInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
@@ -1235,9 +812,6 @@ export type UserCreateWithoutStudentsInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutStudentsInput = {
@@ -1247,13 +821,9 @@ export type UserUncheckedCreateWithoutStudentsInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
@@ -1262,9 +832,6 @@ export type UserUncheckedCreateWithoutStudentsInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutStudentsInput = {
@@ -1278,12 +845,8 @@ export type UserCreateWithoutTeacherInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
@@ -1293,9 +856,6 @@ export type UserCreateWithoutTeacherInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTeacherInput = {
@@ -1305,12 +865,8 @@ export type UserUncheckedCreateWithoutTeacherInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -1320,9 +876,6 @@ export type UserUncheckedCreateWithoutTeacherInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTeacherInput = {
@@ -1352,12 +905,8 @@ export type UserUpdateWithoutStudentsInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
@@ -1367,9 +916,6 @@ export type UserUpdateWithoutStudentsInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStudentsInput = {
@@ -1379,13 +925,9 @@ export type UserUncheckedUpdateWithoutStudentsInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
@@ -1394,9 +936,6 @@ export type UserUncheckedUpdateWithoutStudentsInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithWhereUniqueWithoutTeacherInput = {
@@ -1425,13 +964,9 @@ export type UserScalarWhereInput = {
   password?: Prisma.StringFilter<"User"> | string
   role?: Prisma.StringFilter<"User"> | string
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
-  placementTestDraft?: Prisma.JsonNullableFilter<"User">
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  isSuspended?: Prisma.BoolFilter<"User"> | boolean
   teacherId?: Prisma.IntNullableFilter<"User"> | number | null
-  currentStreak?: Prisma.IntFilter<"User"> | number
-  lastActivityDate?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
 }
 
 export type UserCreateWithoutAdditionalUserDataInput = {
@@ -1440,12 +975,8 @@ export type UserCreateWithoutAdditionalUserDataInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1455,9 +986,6 @@ export type UserCreateWithoutAdditionalUserDataInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
@@ -1467,13 +995,9 @@ export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -1482,9 +1006,6 @@ export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAdditionalUserDataInput = {
@@ -1509,12 +1030,8 @@ export type UserUpdateWithoutAdditionalUserDataInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1524,9 +1041,6 @@ export type UserUpdateWithoutAdditionalUserDataInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
@@ -1536,13 +1050,9 @@ export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -1551,9 +1061,6 @@ export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSettingsInput = {
@@ -1562,12 +1069,8 @@ export type UserCreateWithoutSettingsInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
@@ -1577,9 +1080,6 @@ export type UserCreateWithoutSettingsInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSettingsInput = {
@@ -1589,13 +1089,9 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
@@ -1604,9 +1100,6 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSettingsInput = {
@@ -1631,12 +1124,8 @@ export type UserUpdateWithoutSettingsInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
@@ -1646,9 +1135,6 @@ export type UserUpdateWithoutSettingsInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSettingsInput = {
@@ -1658,13 +1144,9 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
@@ -1673,9 +1155,6 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutStatisticInput = {
@@ -1684,12 +1163,8 @@ export type UserCreateWithoutStatisticInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1699,9 +1174,6 @@ export type UserCreateWithoutStatisticInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutStatisticInput = {
@@ -1711,13 +1183,9 @@ export type UserUncheckedCreateWithoutStatisticInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
@@ -1726,9 +1194,6 @@ export type UserUncheckedCreateWithoutStatisticInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutStatisticInput = {
@@ -1753,12 +1218,8 @@ export type UserUpdateWithoutStatisticInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1768,9 +1229,6 @@ export type UserUpdateWithoutStatisticInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStatisticInput = {
@@ -1780,13 +1238,9 @@ export type UserUncheckedUpdateWithoutStatisticInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
@@ -1795,9 +1249,6 @@ export type UserUncheckedUpdateWithoutStatisticInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutLanguageDataInput = {
@@ -1806,12 +1257,8 @@ export type UserCreateWithoutLanguageDataInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1821,9 +1268,6 @@ export type UserCreateWithoutLanguageDataInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutLanguageDataInput = {
@@ -1833,13 +1277,9 @@ export type UserUncheckedCreateWithoutLanguageDataInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -1848,9 +1288,6 @@ export type UserUncheckedCreateWithoutLanguageDataInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutLanguageDataInput = {
@@ -1875,12 +1312,8 @@ export type UserUpdateWithoutLanguageDataInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1890,9 +1323,6 @@ export type UserUpdateWithoutLanguageDataInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLanguageDataInput = {
@@ -1902,13 +1332,9 @@ export type UserUncheckedUpdateWithoutLanguageDataInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -1917,9 +1343,6 @@ export type UserUncheckedUpdateWithoutLanguageDataInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutFriendsInput = {
@@ -1928,12 +1351,8 @@ export type UserCreateWithoutFriendsInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1943,9 +1362,6 @@ export type UserCreateWithoutFriendsInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFriendsInput = {
@@ -1955,13 +1371,9 @@ export type UserUncheckedCreateWithoutFriendsInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -1970,9 +1382,6 @@ export type UserUncheckedCreateWithoutFriendsInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFriendsInput = {
@@ -1986,12 +1395,8 @@ export type UserCreateWithoutFriendOfInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -2001,9 +1406,6 @@ export type UserCreateWithoutFriendOfInput = {
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFriendOfInput = {
@@ -2013,13 +1415,9 @@ export type UserUncheckedCreateWithoutFriendOfInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -2028,9 +1426,6 @@ export type UserUncheckedCreateWithoutFriendOfInput = {
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFriendOfInput = {
@@ -2055,12 +1450,8 @@ export type UserUpdateWithoutFriendsInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -2070,9 +1461,6 @@ export type UserUpdateWithoutFriendsInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFriendsInput = {
@@ -2082,13 +1470,9 @@ export type UserUncheckedUpdateWithoutFriendsInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -2097,9 +1481,6 @@ export type UserUncheckedUpdateWithoutFriendsInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutFriendOfInput = {
@@ -2119,12 +1500,8 @@ export type UserUpdateWithoutFriendOfInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -2134,9 +1511,6 @@ export type UserUpdateWithoutFriendOfInput = {
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFriendOfInput = {
@@ -2146,13 +1520,9 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -2161,9 +1531,6 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutUserVocabularyInput = {
@@ -2172,12 +1539,8 @@ export type UserCreateWithoutUserVocabularyInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -2187,9 +1550,6 @@ export type UserCreateWithoutUserVocabularyInput = {
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUserVocabularyInput = {
@@ -2199,13 +1559,9 @@ export type UserUncheckedCreateWithoutUserVocabularyInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
   teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -2214,9 +1570,6 @@ export type UserUncheckedCreateWithoutUserVocabularyInput = {
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUserVocabularyInput = {
@@ -2241,12 +1594,8 @@ export type UserUpdateWithoutUserVocabularyInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -2256,9 +1605,6 @@ export type UserUpdateWithoutUserVocabularyInput = {
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUserVocabularyInput = {
@@ -2268,13 +1614,9 @@ export type UserUncheckedUpdateWithoutUserVocabularyInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -2283,131 +1625,6 @@ export type UserUncheckedUpdateWithoutUserVocabularyInput = {
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
-}
-
-export type UserCreateWithoutPlacementAttemptsInput = {
-  name: string
-  email: string
-  password: string
-  role?: string
-  hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Date | string | null
-  createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
-  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
-  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
-  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
-  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
-  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
-  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
-  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
-  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
-  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
-  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
-}
-
-export type UserUncheckedCreateWithoutPlacementAttemptsInput = {
-  id?: number
-  name: string
-  email: string
-  password: string
-  role?: string
-  hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Date | string | null
-  createdAt?: Date | string
-  isSuspended?: boolean
-  teacherId?: number | null
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
-  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
-  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
-  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
-  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
-  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
-  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
-  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
-  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
-  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
-  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
-}
-
-export type UserCreateOrConnectWithoutPlacementAttemptsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutPlacementAttemptsInput, Prisma.UserUncheckedCreateWithoutPlacementAttemptsInput>
-}
-
-export type UserUpsertWithoutPlacementAttemptsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutPlacementAttemptsInput, Prisma.UserUncheckedUpdateWithoutPlacementAttemptsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutPlacementAttemptsInput, Prisma.UserUncheckedCreateWithoutPlacementAttemptsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutPlacementAttemptsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutPlacementAttemptsInput, Prisma.UserUncheckedUpdateWithoutPlacementAttemptsInput>
-}
-
-export type UserUpdateWithoutPlacementAttemptsInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
-  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
-  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
-  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
-  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
-  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
-  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
-  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
-  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
-  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-}
-
-export type UserUncheckedUpdateWithoutPlacementAttemptsInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
-  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
-  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
-  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
-  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
-  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
-  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
-  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
-  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyTeacherInput = {
@@ -2417,12 +1634,8 @@ export type UserCreateManyTeacherInput = {
   password: string
   role?: string
   hasCompletedPlacement?: boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Date | string | null
   createdAt?: Date | string
-  isSuspended?: boolean
-  currentStreak?: number
-  lastActivityDate?: Date | string | null
 }
 
 export type UserUpdateWithoutTeacherInput = {
@@ -2431,12 +1644,8 @@ export type UserUpdateWithoutTeacherInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
@@ -2446,9 +1655,6 @@ export type UserUpdateWithoutTeacherInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTeacherInput = {
@@ -2458,12 +1664,8 @@ export type UserUncheckedUpdateWithoutTeacherInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -2473,9 +1675,6 @@ export type UserUncheckedUpdateWithoutTeacherInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
-  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
-  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
-  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutTeacherInput = {
@@ -2485,12 +1684,8 @@ export type UserUncheckedUpdateManyWithoutTeacherInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
-  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -2505,9 +1700,6 @@ export type UserCountOutputType = {
   friendOf: number
   postWatchSurveys: number
   userVocabulary: number
-  watchSessions: number
-  comprehensionTestAttempts: number
-  placementAttempts: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2517,9 +1709,6 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   friendOf?: boolean | UserCountOutputTypeCountFriendOfArgs
   postWatchSurveys?: boolean | UserCountOutputTypeCountPostWatchSurveysArgs
   userVocabulary?: boolean | UserCountOutputTypeCountUserVocabularyArgs
-  watchSessions?: boolean | UserCountOutputTypeCountWatchSessionsArgs
-  comprehensionTestAttempts?: boolean | UserCountOutputTypeCountComprehensionTestAttemptsArgs
-  placementAttempts?: boolean | UserCountOutputTypeCountPlacementAttemptsArgs
 }
 
 /**
@@ -2574,27 +1763,6 @@ export type UserCountOutputTypeCountUserVocabularyArgs<ExtArgs extends runtime.T
   where?: Prisma.UserVocabularyWhereInput
 }
 
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountWatchSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.WatchSessionWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountComprehensionTestAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ComprehensionTestAttemptWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountPlacementAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.PlacementAttemptWhereInput
-}
-
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2603,13 +1771,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   password?: boolean
   role?: boolean
   hasCompletedPlacement?: boolean
-  placementTestDraft?: boolean
   lastLogin?: boolean
   createdAt?: boolean
-  isSuspended?: boolean
   teacherId?: boolean
-  currentStreak?: boolean
-  lastActivityDate?: boolean
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
   students?: boolean | Prisma.User$studentsArgs<ExtArgs>
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
@@ -2620,9 +1784,6 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   friendOf?: boolean | Prisma.User$friendOfArgs<ExtArgs>
   postWatchSurveys?: boolean | Prisma.User$postWatchSurveysArgs<ExtArgs>
   userVocabulary?: boolean | Prisma.User$userVocabularyArgs<ExtArgs>
-  watchSessions?: boolean | Prisma.User$watchSessionsArgs<ExtArgs>
-  comprehensionTestAttempts?: boolean | Prisma.User$comprehensionTestAttemptsArgs<ExtArgs>
-  placementAttempts?: boolean | Prisma.User$placementAttemptsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2633,13 +1794,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   password?: boolean
   role?: boolean
   hasCompletedPlacement?: boolean
-  placementTestDraft?: boolean
   lastLogin?: boolean
   createdAt?: boolean
-  isSuspended?: boolean
   teacherId?: boolean
-  currentStreak?: boolean
-  lastActivityDate?: boolean
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2650,13 +1807,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   password?: boolean
   role?: boolean
   hasCompletedPlacement?: boolean
-  placementTestDraft?: boolean
   lastLogin?: boolean
   createdAt?: boolean
-  isSuspended?: boolean
   teacherId?: boolean
-  currentStreak?: boolean
-  lastActivityDate?: boolean
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2667,16 +1820,12 @@ export type UserSelectScalar = {
   password?: boolean
   role?: boolean
   hasCompletedPlacement?: boolean
-  placementTestDraft?: boolean
   lastLogin?: boolean
   createdAt?: boolean
-  isSuspended?: boolean
   teacherId?: boolean
-  currentStreak?: boolean
-  lastActivityDate?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "placementTestDraft" | "lastLogin" | "createdAt" | "isSuspended" | "teacherId" | "currentStreak" | "lastActivityDate", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "lastLogin" | "createdAt" | "teacherId", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
   students?: boolean | Prisma.User$studentsArgs<ExtArgs>
@@ -2688,9 +1837,6 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   friendOf?: boolean | Prisma.User$friendOfArgs<ExtArgs>
   postWatchSurveys?: boolean | Prisma.User$postWatchSurveysArgs<ExtArgs>
   userVocabulary?: boolean | Prisma.User$userVocabularyArgs<ExtArgs>
-  watchSessions?: boolean | Prisma.User$watchSessionsArgs<ExtArgs>
-  comprehensionTestAttempts?: boolean | Prisma.User$comprehensionTestAttemptsArgs<ExtArgs>
-  placementAttempts?: boolean | Prisma.User$placementAttemptsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2713,9 +1859,6 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     friendOf: Prisma.$UserFriendPayload<ExtArgs>[]
     postWatchSurveys: Prisma.$PostWatchSurveyPayload<ExtArgs>[]
     userVocabulary: Prisma.$UserVocabularyPayload<ExtArgs>[]
-    watchSessions: Prisma.$WatchSessionPayload<ExtArgs>[]
-    comprehensionTestAttempts: Prisma.$ComprehensionTestAttemptPayload<ExtArgs>[]
-    placementAttempts: Prisma.$PlacementAttemptPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -2724,19 +1867,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     password: string
     role: string
     hasCompletedPlacement: boolean
-    /**
-     * Serialized placement questionnaire (correct keys) until test is completed — must match iframe payload.
-     */
-    placementTestDraft: runtime.JsonValue | null
     lastLogin: Date | null
     createdAt: Date
-    /**
-     * When true, login and profile are blocked until an admin clears this flag.
-     */
-    isSuspended: boolean
     teacherId: number | null
-    currentStreak: number
-    lastActivityDate: Date | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -3141,9 +2274,6 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   friendOf<T extends Prisma.User$friendOfArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$friendOfArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserFriendPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   postWatchSurveys<T extends Prisma.User$postWatchSurveysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$postWatchSurveysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostWatchSurveyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   userVocabulary<T extends Prisma.User$userVocabularyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$userVocabularyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserVocabularyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  watchSessions<T extends Prisma.User$watchSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$watchSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WatchSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  comprehensionTestAttempts<T extends Prisma.User$comprehensionTestAttemptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$comprehensionTestAttemptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ComprehensionTestAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  placementAttempts<T extends Prisma.User$placementAttemptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$placementAttemptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlacementAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3179,13 +2309,9 @@ export interface UserFieldRefs {
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'String'>
   readonly hasCompletedPlacement: Prisma.FieldRef<"User", 'Boolean'>
-  readonly placementTestDraft: Prisma.FieldRef<"User", 'Json'>
   readonly lastLogin: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
-  readonly isSuspended: Prisma.FieldRef<"User", 'Boolean'>
   readonly teacherId: Prisma.FieldRef<"User", 'Int'>
-  readonly currentStreak: Prisma.FieldRef<"User", 'Int'>
-  readonly lastActivityDate: Prisma.FieldRef<"User", 'DateTime'>
 }
     
 
@@ -3799,78 +2925,6 @@ export type User$userVocabularyArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.UserVocabularyScalarFieldEnum | Prisma.UserVocabularyScalarFieldEnum[]
-}
-
-/**
- * User.watchSessions
- */
-export type User$watchSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the WatchSession
-   */
-  select?: Prisma.WatchSessionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the WatchSession
-   */
-  omit?: Prisma.WatchSessionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.WatchSessionInclude<ExtArgs> | null
-  where?: Prisma.WatchSessionWhereInput
-  orderBy?: Prisma.WatchSessionOrderByWithRelationInput | Prisma.WatchSessionOrderByWithRelationInput[]
-  cursor?: Prisma.WatchSessionWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.WatchSessionScalarFieldEnum | Prisma.WatchSessionScalarFieldEnum[]
-}
-
-/**
- * User.comprehensionTestAttempts
- */
-export type User$comprehensionTestAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ComprehensionTestAttempt
-   */
-  select?: Prisma.ComprehensionTestAttemptSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ComprehensionTestAttempt
-   */
-  omit?: Prisma.ComprehensionTestAttemptOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ComprehensionTestAttemptInclude<ExtArgs> | null
-  where?: Prisma.ComprehensionTestAttemptWhereInput
-  orderBy?: Prisma.ComprehensionTestAttemptOrderByWithRelationInput | Prisma.ComprehensionTestAttemptOrderByWithRelationInput[]
-  cursor?: Prisma.ComprehensionTestAttemptWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ComprehensionTestAttemptScalarFieldEnum | Prisma.ComprehensionTestAttemptScalarFieldEnum[]
-}
-
-/**
- * User.placementAttempts
- */
-export type User$placementAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the PlacementAttempt
-   */
-  select?: Prisma.PlacementAttemptSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the PlacementAttempt
-   */
-  omit?: Prisma.PlacementAttemptOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.PlacementAttemptInclude<ExtArgs> | null
-  where?: Prisma.PlacementAttemptWhereInput
-  orderBy?: Prisma.PlacementAttemptOrderByWithRelationInput | Prisma.PlacementAttemptOrderByWithRelationInput[]
-  cursor?: Prisma.PlacementAttemptWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.PlacementAttemptScalarFieldEnum | Prisma.PlacementAttemptScalarFieldEnum[]
 }
 
 /**
