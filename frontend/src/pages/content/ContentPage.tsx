@@ -77,7 +77,7 @@ function mapApiTestsToQuiz(
     let ci =
       typeof t.correctIndex === "number" && Number.isFinite(t.correctIndex) ?
         Math.floor(t.correctIndex)
-      : 0;
+        : 0;
     ci = Math.max(0, Math.min(options.length - 1, ci));
     const catRaw = t.category;
     const category =
@@ -484,6 +484,23 @@ function TabPanels({
           loading={transcriptLoading}
           playbackSec={playbackSec}
           onSeek={onSeekTranscript}
+        : <VideoVocabulary vocabulary={vocabulary} />
+        : null}
+      {activeTab === "transcript" ?
+        (
+          <VideoTranscript
+            transcript={transcriptLines}
+            loading={transcriptLoading}
+            playbackSec={playbackSec}
+            onSeek={onSeekTranscript}
+          />
+        )
+        : null}
+      {activeTab === "quiz" ? (
+        <VideoQuiz
+          questions={quizQuestions}
+          isVideoComplete={isVideoComplete}
+          onComplete={onQuizComplete}
         />
       </div>
       <div
@@ -564,9 +581,20 @@ export default function ContentPage() {
     const vid = Number.parseInt(String(id), 10);
     if (!Number.isFinite(vid) || vid <= 0) return;
     watchCompletePostedRef.current = true;
+
+
+    const currentSeconds = videoElRef.current?.currentTime || 0;
+
     try {
       const res = await apiFetch(`/content-video/${vid}/watch-complete`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          secondsWatched: Math.round(currentSeconds),
+        }),
       });
       if (res.ok) {
         captureEvent("video_watch_complete", { content_video_id: vid });
@@ -660,6 +688,10 @@ export default function ContentPage() {
           quizQuestions,
           gradingToken,
         });
+          Array.isArray(bundle.tests) && bundle.tests.length > 0 ?
+            mapApiTestsToQuiz(bundle.tests)
+            : defaultQuizQuestions;
+        setLessonSideBundle({ vocabulary, quizQuestions });
       })
       .catch(() => {
         if (!cancelled) setLessonSideBundle(null);
@@ -1207,6 +1239,33 @@ export default function ContentPage() {
                   </div>
                 </>
               ) : null}
+              <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+              <div className="mt-0 max-h-[min(600px,70vh)] overflow-y-auto rounded-xl border border-border bg-card p-4">
+                {activeTab === "vocabulary" ?
+                  sideBundleLoading ?
+                    <p className="text-center text-sm text-muted-foreground">
+                      Preparing personalised key vocabulary…
+                    </p>
+                    : <VideoVocabulary vocabulary={vocabForUi} />
+                  : null}
+                {activeTab === "transcript" ?
+                  (
+                    <VideoTranscript
+                      transcript={transcriptLines}
+                      loading={transcriptLoading}
+                      playbackSec={playbackSec}
+                      onSeek={seekToCue}
+                    />
+                  )
+                  : null}
+                {activeTab === "quiz" ? (
+                  <VideoQuiz
+                    questions={quizForUi}
+                    isVideoComplete={isVideoComplete}
+                    onComplete={handleQuizComplete}
+                  />
+                ) : null}
+              </div>
             </div>
           </div>
         </div>

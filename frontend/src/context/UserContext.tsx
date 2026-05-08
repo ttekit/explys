@@ -36,6 +36,7 @@ export interface UserData {
   subscriptionPlan?: string;
   subscriptionStatus?: string;
   stripeSubscriptionId?: string;
+  currentStreak: number;
 }
 
 /** Registration used `"choose"` as a sentinel for unfilled selects; strip so UI shows blanks. */
@@ -93,6 +94,7 @@ function normalizeProfile(raw: unknown): UserData | null {
       typeof r.subscriptionStatus === "string" ? r.subscriptionStatus : "",
     stripeSubscriptionId:
       typeof r.stripeSubscriptionId === "string" ? r.stripeSubscriptionId : "",
+    currentStreak: Number(r.currentStreak) || 0,
   };
 }
 
