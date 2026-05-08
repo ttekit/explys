@@ -15,6 +15,7 @@ import { TopicsModule } from "./topics/topics.module";
 import { UsersModule } from "./users/users.module";
 import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
 import { PlacementTestModule } from "./placement-test/placement-test.module";
+<<<<<<< HEAD
 import { IS_DEV_ENV } from "./common/utils/is-dev.utils";
 import { PrismaModule } from './prisma/prisma.module';
 import { ProviderModule } from './auth/provider/provider.module';
@@ -22,6 +23,12 @@ import { MailModule } from './common/mail/mail.module';
 import { EmailConfirmationModule } from './auth/email-confirmation/email-confirmation.module';
 import { PasswordRecoveryModule } from './auth/password-recovery/password-recovery.module';
 import { TwoFactorAuthModule } from './auth/two-factor-auth/two-factor-auth.module';
+=======
+import { AdminAnalyticsModule } from "./admin-analytics/admin-analytics.module";
+import { AdminUsersModule } from "./admin-users/admin-users.module";
+import { TeacherStudentsModule } from "./teacher-students/teacher-students.module";
+import { BillingModule } from "./billing/billing.module";
+>>>>>>> origin/main
 
 @Module({
   imports: [
@@ -42,11 +49,18 @@ import { TwoFactorAuthModule } from './auth/two-factor-auth/two-factor-auth.modu
     CategoriesModule,
     TopicsModule,
     PlacementTestModule,
+<<<<<<< HEAD
     ProviderModule,
     MailModule,
     EmailConfirmationModule,
     PasswordRecoveryModule,
     TwoFactorAuthModule,
+=======
+    AdminAnalyticsModule,
+    AdminUsersModule,
+    TeacherStudentsModule,
+    BillingModule,
+>>>>>>> origin/main
   ],
   controllers: [AppController],
   providers: [

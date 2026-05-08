@@ -1,11 +1,18 @@
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
+import InputText from "../../components/InputText";
 import { Link, useNavigate } from "react-router";
-import { useContext, FormEvent, useState, useEffect } from "react";
-import { RegistrationContext } from "../../context/RegistrationContext";
-import MultiSelect from "../../components/MultiSelect";
-import { registerUser } from "../../lib/registerUser";
-import { apiFetch } from "../../lib/api";
+import { useContext, FormEvent, useState, useEffect, ChangeEvent } from "react";
+import {
+  RegistrationContext,
+  type FormData,
+} from "../../context/RegistrationContext";
+import { ArrowLeft } from "lucide-react";
+import { AuthSplitLayout } from "../../components/AuthSplitLayout";
+import { cn } from "../../lib/utils";
+import { buildRegisterBody } from "../../lib/registerUser";
+import { setStoredAccessToken } from "../../lib/api";
+import { setPendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 
 export default function RegistrationPreferences() {
   const context = useContext(RegistrationContext);
@@ -14,6 +21,15 @@ export default function RegistrationPreferences() {
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
   const isTeacher = formData.role === "teacher";
+  const isAdult = formData.role === "adult";
+
+  const handleLearningFieldsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    updateFormData({ [name]: value } as Partial<FormData>);
+  };
+
+  type GenreChip = { value: number; label: string };
+  const [genreOptions, setGenreOptions] = useState<GenreChip[]>([]);
 
   useEffect(() => {
     if (isTeacher) {
@@ -21,53 +37,100 @@ export default function RegistrationPreferences() {
     }
   }, [isTeacher, navigate]);
 
-  const [genreOptions, setGenreOptions] = useState<
-    { value: number; label: string }[]
-  >([]);
-
   useEffect(() => {
     if (isTeacher) return;
 
     const fetchGenres = async () => {
       try {
-        const response = await apiFetch("/genres", { method: "GET" });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/genres`,
+        );
         if (response.ok) {
-          const data = (await response.json()) as { id: number; name: string }[];
-          setGenreOptions(
-            data.map((g) => ({ value: g.id, label: g.name })),
-          );
+          const data = (await response.json()) as {
+            id: number;
+            name: string;
+          }[];
+          setGenreOptions(data.map((g) => ({ value: g.id, label: g.name })));
         }
       } catch (error) {
         console.error("Error fetching genres:", error);
       }
     };
-    void fetchGenres();
+    fetchGenres();
   }, [isTeacher]);
 
-  const handleFavoriteGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
-    updateFormData({ favoriteGenres: values } as any);
+  const favoriteIds = formData.favoriteGenres ?? [];
+  const hatedIds = formData.hatedGenres ?? [];
+
+  const toggleFavorite = (id: number) => {
+    if (hatedIds.includes(id)) return;
+    const next = favoriteIds.includes(id)
+      ? favoriteIds.filter((x) => x !== id)
+      : [...favoriteIds, id];
+    updateFormData({
+      favoriteGenres: next,
+      hatedGenres: hatedIds.filter((h) => !next.includes(h)),
+    } as Partial<FormData>);
   };
 
-  const handleHatedGenreChange = (selectedOptions: any) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : [];
-    updateFormData({ hatedGenres: values } as any);
+  const toggleHated = (id: number) => {
+    if (favoriteIds.includes(id)) return;
+    const next = hatedIds.includes(id)
+      ? hatedIds.filter((x) => x !== id)
+      : [...hatedIds, id];
+    updateFormData({
+      hatedGenres: next,
+      favoriteGenres: favoriteIds.filter((f) => !next.includes(f)),
+    } as Partial<FormData>);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const result = await registerUser(formData);
-    if (result.success) {
-      navigate("/registrationSuccess", {
-        state: { generatedStudents: result.generatedStudents },
-      });
-    } else {
-      alert(`Registration failed: ${result.message}`);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(
+            buildRegisterBody({
+              ...formData,
+              favoriteGenres: formData.favoriteGenres ?? [],
+              hatedGenres: formData.hatedGenres ?? [],
+            }),
+          ),
+        },
+      );
+
+      if (response.ok) {
+        setStoredAccessToken(null);
+        if (formData.role === "student" || formData.role === "adult") {
+          setPendingRegistrationLoginWelcome();
+          navigate("/loginForm", {
+            replace: true,
+            state: { from: "/catalog", registrationComplete: true },
+          });
+        } else {
+          navigate("/loginForm");
+        }
+      } else {
+        const errorData = await response.json();
+        console.error("Registration Error Details:", errorData);
+
+        const errorMessage = Array.isArray(errorData.message)
+          ? errorData.message.join(", ")
+          : errorData.message;
+
+        alert(
+          `Registration failed: ${errorMessage || "Internal Server Error"}`,
+        );
+      }
+    } catch (error) {
+      console.error("Network or parsing error:", error);
+      alert("Network error. Please check if your backend server is running.");
     }
   };
 
@@ -76,54 +139,149 @@ export default function RegistrationPreferences() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-2">
-      <form
-        className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
-        onSubmit={handleSubmit}
+    <>
+      <AuthSplitLayout
+        progressStep={3}
+        progressTotal={3}
+        rightTitle="Almost there!"
+        rightSubtitle="A few preferences help us tune what you'll watch next."
       >
-        <div>
-          <p className="text-3xl font-bold text-gray-900 mb-1">
-            Create an account
-          </p>
-          <div className="flex text-gray-500 mb-8">
-            <p>Preferences</p>
-            <p className="ml-1">- Page 3</p>
+        <Link
+          to="/registrationDetails"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </Link>
+
+        <div className="mb-6 flex items-center gap-3">
+          <img src="/Icon.svg" className="w-12 h-15" />
+          <div>
+            <h1 className="font-display text-2xl font-bold">
+              {formData.role === "student"
+                ? "Student preferences"
+                : "Your preferences"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Choose genres we should lean toward—and ones to hide.
+            </p>
           </div>
         </div>
 
-        <div className="mb-4 flex flex-col px-5">
-          <LabelRegister isRequired={false}>Favorite genres:</LabelRegister>
-          <MultiSelect
-            inputId="favorite-genres"
-            options={genreOptions}
-            isMulti
-            name="favoriteGenres"
-            placeholder="Choose genres"
-            onChange={handleFavoriteGenreChange}
-            value={genreOptions.filter((option) =>
-              (formData.favoriteGenres ?? []).includes(option.value),
-            )}
-          />
+        <form className="space-y-8" onSubmit={handleSubmit}>
+          {isAdult && (
+            <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
+              <div>
+                <h2 className="font-display text-lg font-semibold">
+                  Your learning goal{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (optional)
+                  </span>
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Share what you&apos;re working toward if you like — you can skip
+                  this and continue.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <LabelRegister isRequired={false}>
+                  Point of learning
+                </LabelRegister>
+                <InputText
+                  name="learningGoal"
+                  value={formData.learningGoal ?? ""}
+                  onChange={handleLearningFieldsChange}
+                  type="text"
+                  placeholder="e.g. Travel to the UK"
+                  autoComplete="off"
+                />
+              </div>
+              <div className="space-y-2">
+                <LabelRegister isRequired={false}>
+                  Time to achieve
+                </LabelRegister>
+                <InputText
+                  name="timeToAchieve"
+                  value={formData.timeToAchieve ?? ""}
+                  onChange={handleLearningFieldsChange}
+                  type="text"
+                  placeholder="e.g. 3 months"
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+          )}
 
-          <LabelRegister isRequired={false}>Hated genres:</LabelRegister>
-          <MultiSelect
-            inputId="hated-genres"
-            options={genreOptions}
-            isMulti
-            name="hatedGenres"
-            placeholder="Choose genres"
-            onChange={handleHatedGenreChange}
-            value={genreOptions.filter((option) =>
-              (formData.hatedGenres ?? []).includes(option.value),
-            )}
-          />
-        </div>
+          <div className="space-y-3">
+            <LabelRegister isRequired={false}>Genres you love</LabelRegister>
+            <p className="text-sm text-muted-foreground">
+              We&apos;ll recommend more from genres you pick here.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {genreOptions.map((genre) => {
+                const inactive = hatedIds.includes(genre.value);
+                const active = favoriteIds.includes(genre.value);
+                return (
+                  <button
+                    key={`f-${genre.value}`}
+                    type="button"
+                    disabled={inactive}
+                    onClick={() => toggleFavorite(genre.value)}
+                    className={cn(
+                      "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-45",
+                      active
+                        ? "bg-primary text-primary-foreground"
+                        : inactive
+                          ? "cursor-not-allowed bg-muted text-muted-foreground opacity-45"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80",
+                    )}
+                  >
+                    {genre.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-        <div className="mt-4 flex flex-col">
-          <Button type="submit">Register</Button>
-          <Link to="/registrationDetails"><Button type="button">Back</Button></Link>
-        </div>
-      </form>
-    </div>
+          <div className="space-y-3">
+            <LabelRegister isRequired={false}>Genres to avoid</LabelRegister>
+            <p className="text-sm text-muted-foreground">
+              We&apos;ll filter out selections from these buckets.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {genreOptions.map((genre) => {
+                const inactive = favoriteIds.includes(genre.value);
+                const active = hatedIds.includes(genre.value);
+                return (
+                  <button
+                    key={`h-${genre.value}`}
+                    type="button"
+                    disabled={inactive}
+                    onClick={() => toggleHated(genre.value)}
+                    className={cn(
+                      "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-45",
+                      active
+                        ? "bg-destructive text-destructive-foreground"
+                        : inactive
+                          ? "cursor-not-allowed bg-muted text-muted-foreground opacity-45"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80",
+                    )}
+                  >
+                    {genre.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+          >
+            Register
+          </Button>
+        </form>
+      </AuthSplitLayout>
+    </>
   );
 }

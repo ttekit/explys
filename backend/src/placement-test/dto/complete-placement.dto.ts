@@ -13,7 +13,8 @@ export class CompletePlacementDto {
 
   @ApiProperty({
     required: false,
-    description: "Map of question id to selected option index 0..3 (optional, for future scoring).",
+    description:
+      "Map of question ids (q1…) to chosen index 0–3 — compared to the draft saved when GET /document rendered the test.",
   })
   @IsOptional()
   @IsObject()

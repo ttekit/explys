@@ -44,13 +44,16 @@ function resolveCorsOrigin():
 
 async function bootstrap() {
   console.log('CLIENT SECRET:', process.env.GOOGLE_CLIENT_SECRET);
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
   const config = app.get(ConfigService);
   const redis = new IORedis("redis://localhost:6379");
   //const redis = new IORedis(config.getOrThrow('REDIS_URL'))
 
   app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
+
 
   // Dev helper: same-origin test UI for the placement/entrance test (e.g. /dev/entrance-test.html)
   app.useStaticAssets(join(process.cwd(), "public"), { prefix: "/dev/" });
@@ -89,7 +92,7 @@ async function bootstrap() {
   );
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle("Eng Curses API")
+    .setTitle("Explys API")
     .setDescription(
       [
         "Complete English Learning Platform API - Tags, Categories, Topics, Users, and Authentication Management.",
@@ -111,6 +114,7 @@ async function bootstrap() {
     .addTag("content-video", "Content Video management endpoints")
     .addTag("content-stats", "Content Statistics management endpoints")
     .addTag("content-media", "Content Media management endpoints")
+    .addTag("billing", "Stripe Checkout and webhooks")
     .addBearerAuth(
       {
         type: "http",

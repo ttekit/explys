@@ -1,7 +1,7 @@
 import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
+    Injectable,
+    NotFoundException,
+    BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from 'src/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,6 +21,7 @@ export class UsersService {
         name: true,
         email: true,
         role: true,
+        isSuspended: true,
         hasCompletedPlacement: true,
         createdAt: true,
         additionalUserData: {
@@ -39,8 +40,16 @@ export class UsersService {
                 studentNames: true,
                 studentGrade: true,
                 studentProblemTopics: true,
+                learningGoal: true,
+                timeToAchieve: true,
                 favoriteGenres: true,
                 hatedGenres: true,
+            },
+        },
+        settings: {
+            select: {
+                playbackSpeed: true,
+                currentResolution: true,
             },
         },
     };
@@ -51,6 +60,7 @@ export class UsersService {
             email,
             password,
             name,
+            role: roleRaw,
             englishLevel,
             hobbies,
             education,
@@ -60,7 +70,14 @@ export class UsersService {
             nativeLanguage,
             knownLanguages,
             knownLanguageLevels,
+            learningGoal,
+            timeToAchieve,
         } = createUserDto;
+        const role =
+            roleRaw &&
+                ["adult", "student", "teacher"].includes(roleRaw)
+                ? roleRaw
+                : undefined;
         const additionalDataPayload: any = {
             englishLevel,
             nativeLanguage,
@@ -69,6 +86,8 @@ export class UsersService {
             hobbies: hobbies || [],
             education,
             workField,
+            learningGoal,
+            timeToAchieve,
             favoriteGenres: favoriteGenres && favoriteGenres.length > 0 ? {
                 connect: favoriteGenres.map(id => ({ id }))
             } : undefined,
@@ -105,7 +124,19 @@ export class UsersService {
         let created: any;
         try {
             created = await prisma.user.create({
+<<<<<<< HEAD
                 data: userData,
+=======
+                data: {
+                    email,
+                    password: hashedPassword,
+                    name,
+                    ...(role ? { role } : {}),
+                    additionalUserData: {
+                        create: additionalDataPayload,
+                    },
+                },
+>>>>>>> origin/main
                 select: this.userSelect,
             });
         } catch (error: any) {
@@ -118,7 +149,17 @@ export class UsersService {
             }
             if (message.includes('Unknown argument `knownLanguages`') || message.includes('Unknown argument `knownLanguageLevels`')) {
                 created = await prisma.user.create({
+<<<<<<< HEAD
                     data: userData,
+=======
+                    data: {
+                        email,
+                        password: hashedPassword,
+                        name,
+                        ...(role ? { role } : {}),
+                        additionalUserData: { create: additionalDataPayload },
+                    },
+>>>>>>> origin/main
                     select: this.userSelect,
                 });
                 await this.alcorythmService.analyzeUserLevel(created.id);
@@ -130,7 +171,12 @@ export class UsersService {
             }
 
             created = await prisma.user.create({
-                data: { email, password: hashedPassword, name },
+                data: {
+                    email,
+                    password: hashedPassword,
+                    name,
+                    ...(role ? { role } : {}),
+                },
                 select: this.userSelect,
             });
         }
@@ -183,11 +229,24 @@ export class UsersService {
             nativeLanguage,
             knownLanguages,
             knownLanguageLevels,
+            learningGoal,
+            timeToAchieve,
+            playbackSpeed,
+            currentResolution,
             ...dataToUpdate
         } = updateUserDto as any;
 
-        if (dataToUpdate.password) {
-            dataToUpdate.password = await bcrypt.hash(dataToUpdate.password, 10);
+        if (
+            dataToUpdate.password !== undefined &&
+            dataToUpdate.password !== null &&
+            String(dataToUpdate.password).trim() !== ''
+        ) {
+            dataToUpdate.password = await bcrypt.hash(
+                String(dataToUpdate.password),
+                10,
+            );
+        } else {
+            delete dataToUpdate.password;
         }
 
         const hasProfileUpdate =
@@ -198,8 +257,47 @@ export class UsersService {
             nativeLanguage !== undefined ||
             knownLanguages !== undefined ||
             knownLanguageLevels !== undefined ||
+            learningGoal !== undefined ||
+            timeToAchieve !== undefined ||
             favoriteGenres !== undefined ||
             hatedGenres !== undefined;
+
+        const hasSettingsRowUpdate =
+            playbackSpeed !== undefined || currentResolution !== undefined;
+
+        const settingsUpsert =
+            hasSettingsRowUpdate
+                ? {
+                    settings: {
+                        upsert: {
+                            create: {
+                                playbackSpeed:
+                                    playbackSpeed === undefined
+                                        ? null
+                                        : Number(playbackSpeed),
+                                currentResolution:
+                                    currentResolution === undefined
+                                        ? null
+                                        : String(currentResolution),
+                            },
+                            update: {
+                                ...(playbackSpeed !== undefined
+                                    ? {
+                                        playbackSpeed:
+                                            Number(playbackSpeed),
+                                    }
+                                    : {}),
+                                ...(currentResolution !== undefined
+                                    ? {
+                                        currentResolution:
+                                            String(currentResolution),
+                                    }
+                                    : {}),
+                            },
+                        },
+                    },
+                }
+                : {};
 
         let updatedUser: any;
         try {
@@ -207,6 +305,7 @@ export class UsersService {
                 where: { id },
                 data: {
                     ...dataToUpdate,
+                    ...settingsUpsert,
                     ...(hasProfileUpdate ? {
                         additionalUserData: {
                             upsert: {
@@ -218,6 +317,8 @@ export class UsersService {
                                     hobbies: hobbies || [],
                                     education,
                                     workField,
+                                    learningGoal,
+                                    timeToAchieve,
                                     favoriteGenres: favoriteGenres ? {
                                         connect: favoriteGenres.map((genreId: number) => ({ id: genreId }))
                                     } : undefined,
@@ -233,6 +334,8 @@ export class UsersService {
                                     hobbies,
                                     education,
                                     workField,
+                                    learningGoal,
+                                    timeToAchieve,
                                     favoriteGenres: favoriteGenres ? {
                                         set: favoriteGenres.map((genreId: number) => ({ id: genreId }))
                                     } : undefined,
@@ -255,6 +358,7 @@ export class UsersService {
                 where: { id },
                 data: {
                     ...dataToUpdate,
+                    ...settingsUpsert,
                 },
                 select: this.userSelect,
             });
@@ -273,6 +377,57 @@ export class UsersService {
         return this.prisma.user.delete({
             where: { id },
             select: this.userSelect,
+        });
+    }
+
+
+    async updateActivityStreak(userId: number) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { currentStreak: true, lastActivityDate: true }
+        });
+
+        if (!user) return null;
+
+        const now = new Date();
+        // Приводимо сьогоднішню дату до півночі по UTC для точного порівняння
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+        let newStreak = user.currentStreak;
+
+        if (!user.lastActivityDate) {
+            // Перша активність в історії
+            newStreak = 1;
+        } else {
+            const lastActivity = new Date(user.lastActivityDate);
+            const lastActivityDay = new Date(Date.UTC(lastActivity.getUTCFullYear(), lastActivity.getUTCMonth(), lastActivity.getUTCDate()));
+
+            // Різниця в днях
+            const diffTime = today.getTime() - lastActivityDay.getTime();
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                // Вже вивчав сьогодні, стрік не міняємо, просто оновимо час останньої активності
+                return this.prisma.user.update({
+                    where: { id: userId },
+                    data: { lastActivityDate: now }
+                });
+            } else if (diffDays === 1) {
+                // Вивчав вчора, продовжуємо стрік
+                newStreak += 1;
+            } else {
+                // Пропустив день (або більше), стрік скидається
+                newStreak = 1;
+            }
+        }
+
+        // Оновлюємо базу
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                currentStreak: newStreak,
+                lastActivityDate: now,
+            }
         });
     }
 }

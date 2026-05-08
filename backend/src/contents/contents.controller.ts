@@ -27,7 +27,7 @@ import { UpdateContentDto } from "./dto/update-content.dto";
 @ApiTags("contents")
 @Controller("contents")
 export class ContentsController {
-  constructor(private readonly contentsService: ContentsService) {}
+  constructor(private readonly contentsService: ContentsService) { }
 
   @Get("all")
   async getContent() {

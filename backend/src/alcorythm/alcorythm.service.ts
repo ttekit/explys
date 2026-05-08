@@ -4,6 +4,7 @@ import { AlcorythmGeminiTagScoreClient } from './alcorythm-gemini-tag-score.clie
 import { TagKnowledgeItem, TopicKnowledgeItem } from './alcorythm.types';
 import {
   AI_ALGORITHM_VERSION,
+  aggregateSkillScore,
   buildProfileContext,
   calculateConfidence,
   clamp,
@@ -12,6 +13,7 @@ import {
   getLanguageBackgroundBoost,
   keywordMatchStrength,
   normalizeKeywords,
+  splitTopicSkillScores,
 } from './alcorythm-scoring.util';
 
 @Injectable()
@@ -110,8 +112,10 @@ export class AlcorythmService {
         topic.tags.map((tag) => tag.name),
         secondaryKeywords,
       );
-      boost += 0.2 * primaryStrength;
-      boost += 0.1 * secondaryStrength;
+      /** Work, education, and job — stronger lift for matching topics. */
+      boost += 0.32 * primaryStrength;
+      /** Hobbies — stronger secondary signal for leisure / interest alignment. */
+      boost += 0.18 * secondaryStrength;
       matchedSignals += primaryStrength + secondaryStrength;
 
       if (profileContext.selectedTopicIds.has(topic.id)) {
@@ -123,12 +127,30 @@ export class AlcorythmService {
       const complexityFit = clamp(1 - Math.abs(base - normalizedComplexity));
       boost += 0.1 * complexityFit;
 
-      const score = clamp(base + boost);
+      const blended = clamp(base + boost);
+      const tagNames = topic.tags.map((tag: { name: string }) => tag.name);
+      const skills = splitTopicSkillScores({
+        blended,
+        topicName: topic.name,
+        tagNames,
+        primaryStrength,
+        secondaryStrength,
+        normalizedComplexity,
+        profile: profileContext,
+      });
+      const score = aggregateSkillScore(
+        skills.listening,
+        skills.vocabulary,
+        skills.grammar,
+      );
       const coverage = clamp(matchedSignals / totalSignals);
 
       return {
         topicId: topic.id,
         score,
+        listeningScore: skills.listening,
+        vocabularyScore: skills.vocabulary,
+        grammarScore: skills.grammar,
         confidence,
         coverage,
         algorithmVersion: AI_ALGORITHM_VERSION,
@@ -145,6 +167,9 @@ export class AlcorythmService {
           userId,
           topicId: item.topicId,
           score: item.score,
+          listeningScore: item.listeningScore,
+          vocabularyScore: item.vocabularyScore,
+          grammarScore: item.grammarScore,
           confidence: item.confidence,
           coverage: item.coverage,
           algorithmVersion: item.algorithmVersion,
@@ -157,6 +182,9 @@ export class AlcorythmService {
             userId,
             topicId: item.topicId,
             score: item.score,
+            listeningScore: item.listeningScore,
+            vocabularyScore: item.vocabularyScore,
+            grammarScore: item.grammarScore,
           })),
         });
       } catch (secondError: unknown) {

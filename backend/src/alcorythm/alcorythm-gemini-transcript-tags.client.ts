@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import {
   normalizeComplexity,
   normalizeSystemTags,
-  normalizeUserTags,
+  normalizeUserTagsToAllowedGenres,
   VIDEO_SYSTEM_TAG_LEVELS,
 } from 'src/contents/video-content-metadata.constants';
 
 export type TranscriptMetadataInput = {
   transcriptPlainText: string;
   videoTitle?: string | null;
+  /** Must match `genres.name` in the DB; `userTags` output is restricted to these labels. */
+  allowedGenreNames?: readonly string[];
 };
 
 export type TranscriptMetadataResult = {
@@ -18,7 +20,7 @@ export type TranscriptMetadataResult = {
 };
 
 /**
- * Gemini: CEFR system tags, free-form user/theme tags, and processing difficulty 1–10.
+ * Gemini: CEFR system tags, content genres (allow-listed from DB), and processing difficulty 1–10.
  */
 @Injectable()
 export class AlcorythmGeminiTranscriptTagClient {
@@ -36,15 +38,26 @@ export class AlcorythmGeminiTranscriptTagClient {
 
     const transcript = input.transcriptPlainText.slice(0, 14_000);
     const systemList = [...VIDEO_SYSTEM_TAG_LEVELS].join(', ');
+    const genres = (input.allowedGenreNames ?? []).map((g) => String(g).trim()).filter(Boolean);
+    const genreCatalogJson = JSON.stringify(genres);
+    const userTagRules =
+      genres.length === 0
+        ? [
+            '- userTags: MUST be [] (empty array). No free-form labels; the genre catalog is empty.',
+          ]
+        : [
+            '- userTags: 1 to 10 items. Each string MUST be copied exactly from the genre catalog JSON array below (same spelling and punctuation as one of the listed values). Pick genres that best fit the video (film/TV style or overall content). Do not output any label that is not in that catalog. No duplicates.',
+            `- Genre catalog (JSON string array, exhaustive allow-list): ${genreCatalogJson}`,
+          ];
     const prompt = [
       'You describe English learning video content from its transcript only.',
       'Return ONLY valid JSON with this exact shape (no extra keys):',
-      '{"systemTags":["B1"],"userTags":["Fitness","Nature"],"complexity":5}',
+      '{"systemTags":["B1"],"userTags":["Action","Comedy"],"complexity":5}',
       'Rules:',
       '- systemTags: 1 to 3 items. Each value MUST be copied exactly from this list (spelling, case): ' +
         systemList +
         '. Choose the CEFR level that best matches the language difficulty of what is SPOKEN (vocabulary, grammar, speed).',
-      '- userTags: 3 to 10 short human-readable theme/topic labels for learners (e.g. "Fitness", "Office", "History"). In English, Title Case when appropriate. No duplicates.',
+      ...userTagRules,
       '- complexity: integer 1 to 10 = how hard it is for a typical intermediate learner to *process* the video (density, speed, abstract ideas, accent). 1 = very easy, 10 = very demanding.',
       `Video title: ${input.videoTitle ?? 'unknown'}`,
       'Transcript:',
@@ -96,8 +109,9 @@ export class AlcorythmGeminiTranscriptTagClient {
           ? (parsed.systemTags as string[])
           : [],
       );
-      const userTags = normalizeUserTags(
+      const userTags = normalizeUserTagsToAllowedGenres(
         Array.isArray(parsed.userTags) ? (parsed.userTags as string[]) : [],
+        genres,
       );
       const complexity = normalizeComplexity(parsed.complexity) ?? 5;
 

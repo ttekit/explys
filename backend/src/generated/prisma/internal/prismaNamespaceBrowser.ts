@@ -55,6 +55,9 @@ export const ModelName = {
   ContentMedia: 'ContentMedia',
   ContentStats: 'ContentStats',
   ContentVideo: 'ContentVideo',
+  UserComprehensionWeakSpot: 'UserComprehensionWeakSpot',
+  WatchSession: 'WatchSession',
+  ComprehensionTestAttempt: 'ComprehensionTestAttempt',
   VideoCaptions: 'VideoCaptions',
   PostWatchSurvey: 'PostWatchSurvey',
   User: 'User',
@@ -69,7 +72,8 @@ export const ModelName = {
   UserStatistic: 'UserStatistic',
   UserLanguageData: 'UserLanguageData',
   UserFriend: 'UserFriend',
-  UserVocabulary: 'UserVocabulary'
+  UserVocabulary: 'UserVocabulary',
+  PlacementAttempt: 'PlacementAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -93,6 +97,7 @@ export const ContentScalarFieldEnum = {
   friendlyLink: 'friendlyLink',
   name: 'name',
   description: 'description',
+  previewUrl: 'previewUrl',
   createAt: 'createAt',
   updateAt: 'updateAt'
 } as const
@@ -128,11 +133,53 @@ export const ContentVideoScalarFieldEnum = {
   contentId: 'contentId',
   videoLink: 'videoLink',
   videoName: 'videoName',
-  videoDescription: 'videoDescription',
-  comprehensionTestsCache: 'comprehensionTestsCache'
+  videoDescription: 'videoDescription'
 } as const
 
 export type ContentVideoScalarFieldEnum = (typeof ContentVideoScalarFieldEnum)[keyof typeof ContentVideoScalarFieldEnum]
+
+
+export const UserComprehensionWeakSpotScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  contentVideoId: 'contentVideoId',
+  category: 'category',
+  stemHash: 'stemHash',
+  stemSnippet: 'stemSnippet',
+  missCount: 'missCount',
+  lastMissedAt: 'lastMissedAt'
+} as const
+
+export type UserComprehensionWeakSpotScalarFieldEnum = (typeof UserComprehensionWeakSpotScalarFieldEnum)[keyof typeof UserComprehensionWeakSpotScalarFieldEnum]
+
+
+export const WatchSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  contentVideoId: 'contentVideoId',
+  completionDate: 'completionDate',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  secondsWatched: 'secondsWatched',
+  completed: 'completed'
+} as const
+
+export type WatchSessionScalarFieldEnum = (typeof WatchSessionScalarFieldEnum)[keyof typeof WatchSessionScalarFieldEnum]
+
+
+export const ComprehensionTestAttemptScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  contentVideoId: 'contentVideoId',
+  correct: 'correct',
+  total: 'total',
+  scorePct: 'scorePct',
+  passed: 'passed',
+  details: 'details',
+  createdAt: 'createdAt'
+} as const
+
+export type ComprehensionTestAttemptScalarFieldEnum = (typeof ComprehensionTestAttemptScalarFieldEnum)[keyof typeof ComprehensionTestAttemptScalarFieldEnum]
 
 
 export const VideoCaptionsScalarFieldEnum = {
@@ -168,10 +215,18 @@ export const UserScalarFieldEnum = {
   hasCompletedPlacement: 'hasCompletedPlacement',
   lastLogin: 'lastLogin',
   createdAt: 'createdAt',
+  placementTestDraft: 'placementTestDraft',
+  isSuspended: 'isSuspended',
   teacherId: 'teacherId',
   isVerified: 'isVerified',
   isTwoFactorEnable: 'isTwoFactorEnable',
-  method: 'method'
+  method: 'method',
+  currentStreak: 'currentStreak',
+  lastActivityDate: 'lastActivityDate',
+  stripeCustomerId: 'stripeCustomerId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  subscriptionPlan: 'subscriptionPlan',
+  subscriptionStatus: 'subscriptionStatus'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -213,6 +268,8 @@ export const AdditionalUserDataScalarFieldEnum = {
   workField: 'workField',
   hobbies: 'hobbies',
   interests: 'interests',
+  learningGoal: 'learningGoal',
+  timeToAchieve: 'timeToAchieve',
   teacherGrades: 'teacherGrades',
   teacherTopics: 'teacherTopics',
   studentNames: 'studentNames',
@@ -288,6 +345,9 @@ export const UserLanguageDataScalarFieldEnum = {
   userId: 'userId',
   topicId: 'topicId',
   score: 'score',
+  listeningScore: 'listeningScore',
+  vocabularyScore: 'vocabularyScore',
+  grammarScore: 'grammarScore',
   confidence: 'confidence',
   coverage: 'coverage',
   algorithmVersion: 'algorithmVersion',
@@ -315,11 +375,28 @@ export const UserVocabularyScalarFieldEnum = {
   source: 'source',
   topicId: 'topicId',
   mastery: 'mastery',
+  nativeTranslation: 'nativeTranslation',
+  learnerDescription: 'learnerDescription',
+  descriptionCefrBand: 'descriptionCefrBand',
+  nativeLanguageCode: 'nativeLanguageCode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserVocabularyScalarFieldEnum = (typeof UserVocabularyScalarFieldEnum)[keyof typeof UserVocabularyScalarFieldEnum]
+
+
+export const PlacementAttemptScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  scoreCorrect: 'scoreCorrect',
+  scoreTotal: 'scoreTotal',
+  scorePct: 'scorePct',
+  englishLevel: 'englishLevel',
+  createdAt: 'createdAt'
+} as const
+
+export type PlacementAttemptScalarFieldEnum = (typeof PlacementAttemptScalarFieldEnum)[keyof typeof PlacementAttemptScalarFieldEnum]
 
 
 export const SortOrder = {

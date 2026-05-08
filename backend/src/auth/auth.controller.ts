@@ -25,10 +25,10 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from "@nestjs/swagger";
-import type { Request, Response } from "express";
 import { AuthProviderGuard } from "./guards/provider.guard";
 import { ProviderService } from "./provider/provider.service";
 import { ConfigService } from "@nestjs/config";
+import type { Request, Response } from 'express';
 
 @ApiTags("auth")
 @Controller("auth")
@@ -65,19 +65,40 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth("JWT-auth")
-  @Get("profile")
-  @ApiOperation({ summary: "Get user profile (requires authentication)" })
-  @ApiResponse({
-    status: 200,
-    description: "User profile retrieved successfully.",
+  @ApiBearerAuth('JWT-auth')
+  @Get('profile')
+  @ApiOperation({ summary: 'Get user profile (requires authentication)' })
+  @ApiResponse({ status: 200, description: 'User profile retrieved successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  getProfile(@Req() req: any) {
+    const userId = Number(req.user.sub);
+    return this.authService.getProfile(userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Get('profile/learning-stats')
+  @ApiOperation({
+    summary:
+      'Learning dashboard stats (watch time, quizzes, Mon–Sun weekly activity UTC)',
   })
-  @ApiResponse({ status: 401, description: "Unauthorized." })
-  getProfile(@ReqDecorator() req: any) {
-    return {
-      message: "Welcome",
-      user: req.user,
-    };
+  @ApiResponse({ status: 200, description: 'Stats retrieved.' })
+  getLearningStats(@Req() req: any) {
+    const userId = Number(req.user.sub);
+    return this.authService.getLearningStats(userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Get('profile/knowledge-tags')
+  @ApiOperation({
+    summary:
+      'Topic-tag knowledge (listening / vocabulary / grammar means from UserLanguageData)',
+  })
+  @ApiResponse({ status: 200, description: 'Tag aggregates returned.' })
+  getKnowledgeTags(@Req() req: any) {
+    const userId = Number(req.user.sub);
+    return this.authService.getKnowledgeTagProgress(userId);
   }
 
   @Get("/oauth/callback/:provider")

@@ -29,11 +29,13 @@ export type AggregateUser = {
 export type UserAvgAggregateOutputType = {
   id: number | null
   teacherId: number | null
+  currentStreak: number | null
 }
 
 export type UserSumAggregateOutputType = {
   id: number | null
   teacherId: number | null
+  currentStreak: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -45,10 +47,17 @@ export type UserMinAggregateOutputType = {
   hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
+  isSuspended: boolean | null
   teacherId: number | null
   isVerified: boolean | null
   isTwoFactorEnable: boolean | null
   method: $Enums.AuthMethod | null
+  currentStreak: number | null
+  lastActivityDate: Date | null
+  stripeCustomerId: string | null
+  stripeSubscriptionId: string | null
+  subscriptionPlan: string | null
+  subscriptionStatus: string | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -60,10 +69,17 @@ export type UserMaxAggregateOutputType = {
   hasCompletedPlacement: boolean | null
   lastLogin: Date | null
   createdAt: Date | null
+  isSuspended: boolean | null
   teacherId: number | null
   isVerified: boolean | null
   isTwoFactorEnable: boolean | null
   method: $Enums.AuthMethod | null
+  currentStreak: number | null
+  lastActivityDate: Date | null
+  stripeCustomerId: string | null
+  stripeSubscriptionId: string | null
+  subscriptionPlan: string | null
+  subscriptionStatus: string | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -75,10 +91,18 @@ export type UserCountAggregateOutputType = {
   hasCompletedPlacement: number
   lastLogin: number
   createdAt: number
+  placementTestDraft: number
+  isSuspended: number
   teacherId: number
   isVerified: number
   isTwoFactorEnable: number
   method: number
+  currentStreak: number
+  lastActivityDate: number
+  stripeCustomerId: number
+  stripeSubscriptionId: number
+  subscriptionPlan: number
+  subscriptionStatus: number
   _all: number
 }
 
@@ -86,11 +110,13 @@ export type UserCountAggregateOutputType = {
 export type UserAvgAggregateInputType = {
   id?: true
   teacherId?: true
+  currentStreak?: true
 }
 
 export type UserSumAggregateInputType = {
   id?: true
   teacherId?: true
+  currentStreak?: true
 }
 
 export type UserMinAggregateInputType = {
@@ -102,10 +128,17 @@ export type UserMinAggregateInputType = {
   hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
+  isSuspended?: true
   teacherId?: true
   isVerified?: true
   isTwoFactorEnable?: true
   method?: true
+  currentStreak?: true
+  lastActivityDate?: true
+  stripeCustomerId?: true
+  stripeSubscriptionId?: true
+  subscriptionPlan?: true
+  subscriptionStatus?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -117,10 +150,17 @@ export type UserMaxAggregateInputType = {
   hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
+  isSuspended?: true
   teacherId?: true
   isVerified?: true
   isTwoFactorEnable?: true
   method?: true
+  currentStreak?: true
+  lastActivityDate?: true
+  stripeCustomerId?: true
+  stripeSubscriptionId?: true
+  subscriptionPlan?: true
+  subscriptionStatus?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -132,10 +172,18 @@ export type UserCountAggregateInputType = {
   hasCompletedPlacement?: true
   lastLogin?: true
   createdAt?: true
+  placementTestDraft?: true
+  isSuspended?: true
   teacherId?: true
   isVerified?: true
   isTwoFactorEnable?: true
   method?: true
+  currentStreak?: true
+  lastActivityDate?: true
+  stripeCustomerId?: true
+  stripeSubscriptionId?: true
+  subscriptionPlan?: true
+  subscriptionStatus?: true
   _all?: true
 }
 
@@ -234,10 +282,18 @@ export type UserGroupByOutputType = {
   hasCompletedPlacement: boolean
   lastLogin: Date | null
   createdAt: Date
+  placementTestDraft: runtime.JsonValue | null
+  isSuspended: boolean
   teacherId: number | null
   isVerified: boolean
   isTwoFactorEnable: boolean
   method: $Enums.AuthMethod
+  currentStreak: number
+  lastActivityDate: Date | null
+  stripeCustomerId: string | null
+  stripeSubscriptionId: string | null
+  subscriptionPlan: string | null
+  subscriptionStatus: string | null
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -272,10 +328,18 @@ export type UserWhereInput = {
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  placementTestDraft?: Prisma.JsonNullableFilter<"User">
+  isSuspended?: Prisma.BoolFilter<"User"> | boolean
   teacherId?: Prisma.IntNullableFilter<"User"> | number | null
   isVerified?: Prisma.BoolFilter<"User"> | boolean
   isTwoFactorEnable?: Prisma.BoolFilter<"User"> | boolean
   method?: Prisma.EnumAuthMethodFilter<"User"> | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFilter<"User"> | number
+  lastActivityDate?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  stripeCustomerId?: Prisma.StringNullableFilter<"User"> | string | null
+  stripeSubscriptionId?: Prisma.StringNullableFilter<"User"> | string | null
+  subscriptionPlan?: Prisma.StringNullableFilter<"User"> | string | null
+  subscriptionStatus?: Prisma.StringNullableFilter<"User"> | string | null
   teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   students?: Prisma.UserListRelationFilter
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
@@ -287,6 +351,10 @@ export type UserWhereInput = {
   friendOf?: Prisma.UserFriendListRelationFilter
   postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
   userVocabulary?: Prisma.UserVocabularyListRelationFilter
+  watchSessions?: Prisma.WatchSessionListRelationFilter
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptListRelationFilter
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotListRelationFilter
+  placementAttempts?: Prisma.PlacementAttemptListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -298,10 +366,18 @@ export type UserOrderByWithRelationInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  placementTestDraft?: Prisma.SortOrderInput | Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isTwoFactorEnable?: Prisma.SortOrder
   method?: Prisma.SortOrder
+  currentStreak?: Prisma.SortOrder
+  lastActivityDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeSubscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   teacher?: Prisma.UserOrderByWithRelationInput
   students?: Prisma.UserOrderByRelationAggregateInput
   settings?: Prisma.UserSettingsOrderByWithRelationInput
@@ -313,6 +389,10 @@ export type UserOrderByWithRelationInput = {
   friendOf?: Prisma.UserFriendOrderByRelationAggregateInput
   postWatchSurveys?: Prisma.PostWatchSurveyOrderByRelationAggregateInput
   userVocabulary?: Prisma.UserVocabularyOrderByRelationAggregateInput
+  watchSessions?: Prisma.WatchSessionOrderByRelationAggregateInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptOrderByRelationAggregateInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotOrderByRelationAggregateInput
+  placementAttempts?: Prisma.PlacementAttemptOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -327,10 +407,18 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  placementTestDraft?: Prisma.JsonNullableFilter<"User">
+  isSuspended?: Prisma.BoolFilter<"User"> | boolean
   teacherId?: Prisma.IntNullableFilter<"User"> | number | null
   isVerified?: Prisma.BoolFilter<"User"> | boolean
   isTwoFactorEnable?: Prisma.BoolFilter<"User"> | boolean
   method?: Prisma.EnumAuthMethodFilter<"User"> | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFilter<"User"> | number
+  lastActivityDate?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  stripeCustomerId?: Prisma.StringNullableFilter<"User"> | string | null
+  stripeSubscriptionId?: Prisma.StringNullableFilter<"User"> | string | null
+  subscriptionPlan?: Prisma.StringNullableFilter<"User"> | string | null
+  subscriptionStatus?: Prisma.StringNullableFilter<"User"> | string | null
   teacher?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   students?: Prisma.UserListRelationFilter
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
@@ -342,6 +430,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   friendOf?: Prisma.UserFriendListRelationFilter
   postWatchSurveys?: Prisma.PostWatchSurveyListRelationFilter
   userVocabulary?: Prisma.UserVocabularyListRelationFilter
+  watchSessions?: Prisma.WatchSessionListRelationFilter
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptListRelationFilter
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotListRelationFilter
+  placementAttempts?: Prisma.PlacementAttemptListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -353,10 +445,18 @@ export type UserOrderByWithAggregationInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  placementTestDraft?: Prisma.SortOrderInput | Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isTwoFactorEnable?: Prisma.SortOrder
   method?: Prisma.SortOrder
+  currentStreak?: Prisma.SortOrder
+  lastActivityDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeSubscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -376,10 +476,18 @@ export type UserScalarWhereWithAggregatesInput = {
   hasCompletedPlacement?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
+  placementTestDraft?: Prisma.JsonNullableWithAggregatesFilter<"User">
+  isSuspended?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   teacherId?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
   isVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   isTwoFactorEnable?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   method?: Prisma.EnumAuthMethodWithAggregatesFilter<"User"> | $Enums.AuthMethod
+  currentStreak?: Prisma.IntWithAggregatesFilter<"User"> | number
+  lastActivityDate?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  stripeCustomerId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  stripeSubscriptionId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  subscriptionPlan?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  subscriptionStatus?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
 }
 
 export type UserCreateInput = {
@@ -390,9 +498,17 @@ export type UserCreateInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -404,6 +520,10 @@ export type UserCreateInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -415,10 +535,18 @@ export type UserUncheckedCreateInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -429,6 +557,10 @@ export type UserUncheckedCreateInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -439,9 +571,17 @@ export type UserUpdateInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -453,6 +593,10 @@ export type UserUpdateInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -464,10 +608,18 @@ export type UserUncheckedUpdateInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -478,6 +630,10 @@ export type UserUncheckedUpdateInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -489,10 +645,18 @@ export type UserCreateManyInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -503,9 +667,17 @@ export type UserUpdateManyMutationInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -517,10 +689,23 @@ export type UserUncheckedUpdateManyInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type UserScalarRelationFilter = {
+  is?: Prisma.UserWhereInput
+  isNot?: Prisma.UserWhereInput
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -547,15 +732,24 @@ export type UserCountOrderByAggregateInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  placementTestDraft?: Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isTwoFactorEnable?: Prisma.SortOrder
   method?: Prisma.SortOrder
+  currentStreak?: Prisma.SortOrder
+  lastActivityDate?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrder
+  stripeSubscriptionId?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
+  currentStreak?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -567,10 +761,17 @@ export type UserMaxOrderByAggregateInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isTwoFactorEnable?: Prisma.SortOrder
   method?: Prisma.SortOrder
+  currentStreak?: Prisma.SortOrder
+  lastActivityDate?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrder
+  stripeSubscriptionId?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -582,20 +783,65 @@ export type UserMinOrderByAggregateInput = {
   hasCompletedPlacement?: Prisma.SortOrder
   lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  isSuspended?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isTwoFactorEnable?: Prisma.SortOrder
   method?: Prisma.SortOrder
+  currentStreak?: Prisma.SortOrder
+  lastActivityDate?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrder
+  stripeSubscriptionId?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   teacherId?: Prisma.SortOrder
+  currentStreak?: Prisma.SortOrder
 }
 
-export type UserScalarRelationFilter = {
-  is?: Prisma.UserWhereInput
-  isNot?: Prisma.UserWhereInput
+export type UserCreateNestedOneWithoutComprehensionWeakSpotsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutComprehensionWeakSpotsInput, Prisma.UserUncheckedCreateWithoutComprehensionWeakSpotsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutComprehensionWeakSpotsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutComprehensionWeakSpotsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutComprehensionWeakSpotsInput, Prisma.UserUncheckedCreateWithoutComprehensionWeakSpotsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutComprehensionWeakSpotsInput
+  upsert?: Prisma.UserUpsertWithoutComprehensionWeakSpotsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutComprehensionWeakSpotsInput, Prisma.UserUpdateWithoutComprehensionWeakSpotsInput>, Prisma.UserUncheckedUpdateWithoutComprehensionWeakSpotsInput>
+}
+
+export type UserCreateNestedOneWithoutWatchSessionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWatchSessionsInput, Prisma.UserUncheckedCreateWithoutWatchSessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWatchSessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutWatchSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWatchSessionsInput, Prisma.UserUncheckedCreateWithoutWatchSessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWatchSessionsInput
+  upsert?: Prisma.UserUpsertWithoutWatchSessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWatchSessionsInput, Prisma.UserUpdateWithoutWatchSessionsInput>, Prisma.UserUncheckedUpdateWithoutWatchSessionsInput>
+}
+
+export type UserCreateNestedOneWithoutComprehensionTestAttemptsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedCreateWithoutComprehensionTestAttemptsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutComprehensionTestAttemptsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutComprehensionTestAttemptsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedCreateWithoutComprehensionTestAttemptsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutComprehensionTestAttemptsInput
+  upsert?: Prisma.UserUpsertWithoutComprehensionTestAttemptsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutComprehensionTestAttemptsInput, Prisma.UserUpdateWithoutComprehensionTestAttemptsInput>, Prisma.UserUncheckedUpdateWithoutComprehensionTestAttemptsInput>
 }
 
 export type UserCreateNestedOneWithoutPostWatchSurveysInput = {
@@ -636,10 +882,6 @@ export type UserUncheckedCreateNestedManyWithoutTeacherInput = {
 
 export type EnumUserRoleFieldUpdateOperationsInput = {
   set?: $Enums.UserRole
-}
-
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
 }
 
 export type EnumAuthMethodFieldUpdateOperationsInput = {
@@ -798,6 +1040,494 @@ export type UserUpdateOneRequiredWithoutUserVocabularyNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutUserVocabularyInput, Prisma.UserUpdateWithoutUserVocabularyInput>, Prisma.UserUncheckedUpdateWithoutUserVocabularyInput>
 }
 
+export type UserCreateNestedOneWithoutPlacementAttemptsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPlacementAttemptsInput, Prisma.UserUncheckedCreateWithoutPlacementAttemptsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlacementAttemptsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPlacementAttemptsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPlacementAttemptsInput, Prisma.UserUncheckedCreateWithoutPlacementAttemptsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlacementAttemptsInput
+  upsert?: Prisma.UserUpsertWithoutPlacementAttemptsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPlacementAttemptsInput, Prisma.UserUpdateWithoutPlacementAttemptsInput>, Prisma.UserUncheckedUpdateWithoutPlacementAttemptsInput>
+}
+
+export type UserCreateWithoutComprehensionWeakSpotsInput = {
+  name: string
+  email: string
+  password?: string | null
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutComprehensionWeakSpotsInput = {
+  id?: number
+  name: string
+  email: string
+  password?: string | null
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
+  teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutComprehensionWeakSpotsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutComprehensionWeakSpotsInput, Prisma.UserUncheckedCreateWithoutComprehensionWeakSpotsInput>
+}
+
+export type UserUpsertWithoutComprehensionWeakSpotsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutComprehensionWeakSpotsInput, Prisma.UserUncheckedUpdateWithoutComprehensionWeakSpotsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutComprehensionWeakSpotsInput, Prisma.UserUncheckedCreateWithoutComprehensionWeakSpotsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutComprehensionWeakSpotsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutComprehensionWeakSpotsInput, Prisma.UserUncheckedUpdateWithoutComprehensionWeakSpotsInput>
+}
+
+export type UserUpdateWithoutComprehensionWeakSpotsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutComprehensionWeakSpotsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutWatchSessionsInput = {
+  name: string
+  email: string
+  password?: string | null
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutWatchSessionsInput = {
+  id?: number
+  name: string
+  email: string
+  password?: string | null
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
+  teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutWatchSessionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutWatchSessionsInput, Prisma.UserUncheckedCreateWithoutWatchSessionsInput>
+}
+
+export type UserUpsertWithoutWatchSessionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutWatchSessionsInput, Prisma.UserUncheckedUpdateWithoutWatchSessionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutWatchSessionsInput, Prisma.UserUncheckedCreateWithoutWatchSessionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutWatchSessionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutWatchSessionsInput, Prisma.UserUncheckedUpdateWithoutWatchSessionsInput>
+}
+
+export type UserUpdateWithoutWatchSessionsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutWatchSessionsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutComprehensionTestAttemptsInput = {
+  name: string
+  email: string
+  password?: string | null
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutComprehensionTestAttemptsInput = {
+  id?: number
+  name: string
+  email: string
+  password?: string | null
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
+  teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutComprehensionTestAttemptsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedCreateWithoutComprehensionTestAttemptsInput>
+}
+
+export type UserUpsertWithoutComprehensionTestAttemptsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedUpdateWithoutComprehensionTestAttemptsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedCreateWithoutComprehensionTestAttemptsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutComprehensionTestAttemptsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutComprehensionTestAttemptsInput, Prisma.UserUncheckedUpdateWithoutComprehensionTestAttemptsInput>
+}
+
+export type UserUpdateWithoutComprehensionTestAttemptsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutComprehensionTestAttemptsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
+}
+
 export type UserCreateWithoutPostWatchSurveysInput = {
   name: string
   email: string
@@ -806,9 +1536,17 @@ export type UserCreateWithoutPostWatchSurveysInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -819,6 +1557,10 @@ export type UserCreateWithoutPostWatchSurveysInput = {
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPostWatchSurveysInput = {
@@ -830,10 +1572,18 @@ export type UserUncheckedCreateWithoutPostWatchSurveysInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -843,6 +1593,10 @@ export type UserUncheckedCreateWithoutPostWatchSurveysInput = {
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPostWatchSurveysInput = {
@@ -869,9 +1623,17 @@ export type UserUpdateWithoutPostWatchSurveysInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -882,6 +1644,10 @@ export type UserUpdateWithoutPostWatchSurveysInput = {
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
@@ -893,10 +1659,18 @@ export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -906,6 +1680,10 @@ export type UserUncheckedUpdateWithoutPostWatchSurveysInput = {
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutStudentsInput = {
@@ -916,9 +1694,17 @@ export type UserCreateWithoutStudentsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -929,6 +1715,10 @@ export type UserCreateWithoutStudentsInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutStudentsInput = {
@@ -940,10 +1730,18 @@ export type UserUncheckedCreateWithoutStudentsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -953,6 +1751,10 @@ export type UserUncheckedCreateWithoutStudentsInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutStudentsInput = {
@@ -968,9 +1770,17 @@ export type UserCreateWithoutTeacherInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -981,6 +1791,10 @@ export type UserCreateWithoutTeacherInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTeacherInput = {
@@ -992,9 +1806,17 @@ export type UserUncheckedCreateWithoutTeacherInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1005,6 +1827,10 @@ export type UserUncheckedCreateWithoutTeacherInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTeacherInput = {
@@ -1036,9 +1862,17 @@ export type UserUpdateWithoutStudentsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1049,6 +1883,10 @@ export type UserUpdateWithoutStudentsInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStudentsInput = {
@@ -1060,10 +1898,18 @@ export type UserUncheckedUpdateWithoutStudentsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -1073,6 +1919,10 @@ export type UserUncheckedUpdateWithoutStudentsInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithWhereUniqueWithoutTeacherInput = {
@@ -1103,10 +1953,18 @@ export type UserScalarWhereInput = {
   hasCompletedPlacement?: Prisma.BoolFilter<"User"> | boolean
   lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  placementTestDraft?: Prisma.JsonNullableFilter<"User">
+  isSuspended?: Prisma.BoolFilter<"User"> | boolean
   teacherId?: Prisma.IntNullableFilter<"User"> | number | null
   isVerified?: Prisma.BoolFilter<"User"> | boolean
   isTwoFactorEnable?: Prisma.BoolFilter<"User"> | boolean
   method?: Prisma.EnumAuthMethodFilter<"User"> | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFilter<"User"> | number
+  lastActivityDate?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  stripeCustomerId?: Prisma.StringNullableFilter<"User"> | string | null
+  stripeSubscriptionId?: Prisma.StringNullableFilter<"User"> | string | null
+  subscriptionPlan?: Prisma.StringNullableFilter<"User"> | string | null
+  subscriptionStatus?: Prisma.StringNullableFilter<"User"> | string | null
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -1117,9 +1975,17 @@ export type UserCreateWithoutAccountsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1130,6 +1996,10 @@ export type UserCreateWithoutAccountsInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1141,10 +2011,18 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -1154,6 +2032,10 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1180,9 +2062,17 @@ export type UserUpdateWithoutAccountsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1193,6 +2083,10 @@ export type UserUpdateWithoutAccountsInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -1204,10 +2098,18 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -1217,6 +2119,10 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAdditionalUserDataInput = {
@@ -1227,9 +2133,17 @@ export type UserCreateWithoutAdditionalUserDataInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1240,6 +2154,10 @@ export type UserCreateWithoutAdditionalUserDataInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
@@ -1251,10 +2169,18 @@ export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1264,6 +2190,10 @@ export type UserUncheckedCreateWithoutAdditionalUserDataInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAdditionalUserDataInput = {
@@ -1290,9 +2220,17 @@ export type UserUpdateWithoutAdditionalUserDataInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1303,6 +2241,10 @@ export type UserUpdateWithoutAdditionalUserDataInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
@@ -1314,10 +2256,18 @@ export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1327,6 +2277,10 @@ export type UserUncheckedUpdateWithoutAdditionalUserDataInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSettingsInput = {
@@ -1337,9 +2291,17 @@ export type UserCreateWithoutSettingsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1350,6 +2312,10 @@ export type UserCreateWithoutSettingsInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSettingsInput = {
@@ -1361,10 +2327,18 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
@@ -1374,6 +2348,10 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSettingsInput = {
@@ -1400,9 +2378,17 @@ export type UserUpdateWithoutSettingsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1413,6 +2399,10 @@ export type UserUpdateWithoutSettingsInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSettingsInput = {
@@ -1424,10 +2414,18 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
@@ -1437,6 +2435,10 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutStatisticInput = {
@@ -1447,9 +2449,17 @@ export type UserCreateWithoutStatisticInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1460,6 +2470,10 @@ export type UserCreateWithoutStatisticInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutStatisticInput = {
@@ -1471,10 +2485,18 @@ export type UserUncheckedCreateWithoutStatisticInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1484,6 +2506,10 @@ export type UserUncheckedCreateWithoutStatisticInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutStatisticInput = {
@@ -1510,9 +2536,17 @@ export type UserUpdateWithoutStatisticInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1523,6 +2557,10 @@ export type UserUpdateWithoutStatisticInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStatisticInput = {
@@ -1534,10 +2572,18 @@ export type UserUncheckedUpdateWithoutStatisticInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1547,6 +2593,10 @@ export type UserUncheckedUpdateWithoutStatisticInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutLanguageDataInput = {
@@ -1557,9 +2607,17 @@ export type UserCreateWithoutLanguageDataInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1570,6 +2628,10 @@ export type UserCreateWithoutLanguageDataInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutLanguageDataInput = {
@@ -1581,10 +2643,18 @@ export type UserUncheckedCreateWithoutLanguageDataInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1594,6 +2664,10 @@ export type UserUncheckedCreateWithoutLanguageDataInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutLanguageDataInput = {
@@ -1620,9 +2694,17 @@ export type UserUpdateWithoutLanguageDataInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1633,6 +2715,10 @@ export type UserUpdateWithoutLanguageDataInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLanguageDataInput = {
@@ -1644,10 +2730,18 @@ export type UserUncheckedUpdateWithoutLanguageDataInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1657,6 +2751,10 @@ export type UserUncheckedUpdateWithoutLanguageDataInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutFriendsInput = {
@@ -1667,9 +2765,17 @@ export type UserCreateWithoutFriendsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1680,6 +2786,10 @@ export type UserCreateWithoutFriendsInput = {
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFriendsInput = {
@@ -1691,10 +2801,18 @@ export type UserUncheckedCreateWithoutFriendsInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1704,6 +2822,10 @@ export type UserUncheckedCreateWithoutFriendsInput = {
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFriendsInput = {
@@ -1719,9 +2841,17 @@ export type UserCreateWithoutFriendOfInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1732,6 +2862,10 @@ export type UserCreateWithoutFriendOfInput = {
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFriendOfInput = {
@@ -1743,10 +2877,18 @@ export type UserUncheckedCreateWithoutFriendOfInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1756,6 +2898,10 @@ export type UserUncheckedCreateWithoutFriendOfInput = {
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
   userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFriendOfInput = {
@@ -1782,9 +2928,17 @@ export type UserUpdateWithoutFriendsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1795,6 +2949,10 @@ export type UserUpdateWithoutFriendsInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFriendsInput = {
@@ -1806,10 +2964,18 @@ export type UserUncheckedUpdateWithoutFriendsInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1819,6 +2985,10 @@ export type UserUncheckedUpdateWithoutFriendsInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutFriendOfInput = {
@@ -1840,9 +3010,17 @@ export type UserUpdateWithoutFriendOfInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1853,6 +3031,10 @@ export type UserUpdateWithoutFriendOfInput = {
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFriendOfInput = {
@@ -1864,10 +3046,18 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1877,6 +3067,10 @@ export type UserUncheckedUpdateWithoutFriendOfInput = {
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutUserVocabularyInput = {
@@ -1887,9 +3081,17 @@ export type UserCreateWithoutUserVocabularyInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
   students?: Prisma.UserCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
@@ -1900,6 +3102,10 @@ export type UserCreateWithoutUserVocabularyInput = {
   friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUserVocabularyInput = {
@@ -1911,10 +3117,18 @@ export type UserUncheckedCreateWithoutUserVocabularyInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   teacherId?: number | null
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1924,6 +3138,10 @@ export type UserUncheckedCreateWithoutUserVocabularyInput = {
   friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
   friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUserVocabularyInput = {
@@ -1950,9 +3168,17 @@ export type UserUpdateWithoutUserVocabularyInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
@@ -1963,6 +3189,10 @@ export type UserUpdateWithoutUserVocabularyInput = {
   friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUserVocabularyInput = {
@@ -1974,10 +3204,18 @@ export type UserUncheckedUpdateWithoutUserVocabularyInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1987,6 +3225,168 @@ export type UserUncheckedUpdateWithoutUserVocabularyInput = {
   friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutPlacementAttemptsInput = {
+  name: string
+  email: string
+  password?: string | null
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  teacher?: Prisma.UserCreateNestedOneWithoutStudentsInput
+  students?: Prisma.UserCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  statistic?: Prisma.UserStatisticCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutPlacementAttemptsInput = {
+  id?: number
+  name: string
+  email: string
+  password?: string | null
+  role?: $Enums.UserRole
+  hasCompletedPlacement?: boolean
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
+  teacherId?: number | null
+  isVerified?: boolean
+  isTwoFactorEnable?: boolean
+  method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  students?: Prisma.UserUncheckedCreateNestedManyWithoutTeacherInput
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  statistic?: Prisma.UserStatisticUncheckedCreateNestedOneWithoutUserInput
+  languageData?: Prisma.UserLanguageDataUncheckedCreateNestedManyWithoutUserInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedCreateNestedOneWithoutUserInput
+  friends?: Prisma.UserFriendUncheckedCreateNestedManyWithoutUserInput
+  friendOf?: Prisma.UserFriendUncheckedCreateNestedManyWithoutFriendInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedCreateNestedManyWithoutUserInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedCreateNestedManyWithoutUserInput
+  watchSessions?: Prisma.WatchSessionUncheckedCreateNestedManyWithoutUserInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedCreateNestedManyWithoutUserInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutPlacementAttemptsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPlacementAttemptsInput, Prisma.UserUncheckedCreateWithoutPlacementAttemptsInput>
+}
+
+export type UserUpsertWithoutPlacementAttemptsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPlacementAttemptsInput, Prisma.UserUncheckedUpdateWithoutPlacementAttemptsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPlacementAttemptsInput, Prisma.UserUncheckedCreateWithoutPlacementAttemptsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPlacementAttemptsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPlacementAttemptsInput, Prisma.UserUncheckedUpdateWithoutPlacementAttemptsInput>
+}
+
+export type UserUpdateWithoutPlacementAttemptsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teacher?: Prisma.UserUpdateOneWithoutStudentsNestedInput
+  students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPlacementAttemptsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  teacherId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  statistic?: Prisma.UserStatisticUncheckedUpdateOneWithoutUserNestedInput
+  languageData?: Prisma.UserLanguageDataUncheckedUpdateManyWithoutUserNestedInput
+  additionalUserData?: Prisma.AdditionalUserDataUncheckedUpdateOneWithoutUserNestedInput
+  friends?: Prisma.UserFriendUncheckedUpdateManyWithoutUserNestedInput
+  friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
+  postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
+  userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyTeacherInput = {
@@ -1998,9 +3398,17 @@ export type UserCreateManyTeacherInput = {
   hasCompletedPlacement?: boolean
   lastLogin?: Date | string | null
   createdAt?: Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method: $Enums.AuthMethod
+  currentStreak?: number
+  lastActivityDate?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
 }
 
 export type UserUpdateWithoutTeacherInput = {
@@ -2011,9 +3419,17 @@ export type UserUpdateWithoutTeacherInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -2024,6 +3440,10 @@ export type UserUpdateWithoutTeacherInput = {
   friendOf?: Prisma.UserFriendUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTeacherInput = {
@@ -2035,9 +3455,17 @@ export type UserUncheckedUpdateWithoutTeacherInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   students?: Prisma.UserUncheckedUpdateManyWithoutTeacherNestedInput
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -2048,6 +3476,10 @@ export type UserUncheckedUpdateWithoutTeacherInput = {
   friendOf?: Prisma.UserFriendUncheckedUpdateManyWithoutFriendNestedInput
   postWatchSurveys?: Prisma.PostWatchSurveyUncheckedUpdateManyWithoutUserNestedInput
   userVocabulary?: Prisma.UserVocabularyUncheckedUpdateManyWithoutUserNestedInput
+  watchSessions?: Prisma.WatchSessionUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionTestAttempts?: Prisma.ComprehensionTestAttemptUncheckedUpdateManyWithoutUserNestedInput
+  comprehensionWeakSpots?: Prisma.UserComprehensionWeakSpotUncheckedUpdateManyWithoutUserNestedInput
+  placementAttempts?: Prisma.PlacementAttemptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutTeacherInput = {
@@ -2059,9 +3491,17 @@ export type UserUncheckedUpdateManyWithoutTeacherInput = {
   hasCompletedPlacement?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  placementTestDraft?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isSuspended?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isTwoFactorEnable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   method?: Prisma.EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
+  currentStreak?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActivityDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -2077,6 +3517,10 @@ export type UserCountOutputType = {
   friendOf: number
   postWatchSurveys: number
   userVocabulary: number
+  watchSessions: number
+  comprehensionTestAttempts: number
+  comprehensionWeakSpots: number
+  placementAttempts: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2087,6 +3531,10 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   friendOf?: boolean | UserCountOutputTypeCountFriendOfArgs
   postWatchSurveys?: boolean | UserCountOutputTypeCountPostWatchSurveysArgs
   userVocabulary?: boolean | UserCountOutputTypeCountUserVocabularyArgs
+  watchSessions?: boolean | UserCountOutputTypeCountWatchSessionsArgs
+  comprehensionTestAttempts?: boolean | UserCountOutputTypeCountComprehensionTestAttemptsArgs
+  comprehensionWeakSpots?: boolean | UserCountOutputTypeCountComprehensionWeakSpotsArgs
+  placementAttempts?: boolean | UserCountOutputTypeCountPlacementAttemptsArgs
 }
 
 /**
@@ -2148,6 +3596,34 @@ export type UserCountOutputTypeCountUserVocabularyArgs<ExtArgs extends runtime.T
   where?: Prisma.UserVocabularyWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountWatchSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WatchSessionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountComprehensionTestAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ComprehensionTestAttemptWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountComprehensionWeakSpotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserComprehensionWeakSpotWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPlacementAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PlacementAttemptWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2158,10 +3634,18 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  placementTestDraft?: boolean
+  isSuspended?: boolean
   teacherId?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method?: boolean
+  currentStreak?: boolean
+  lastActivityDate?: boolean
+  stripeCustomerId?: boolean
+  stripeSubscriptionId?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
   students?: boolean | Prisma.User$studentsArgs<ExtArgs>
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
@@ -2173,6 +3657,10 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   friendOf?: boolean | Prisma.User$friendOfArgs<ExtArgs>
   postWatchSurveys?: boolean | Prisma.User$postWatchSurveysArgs<ExtArgs>
   userVocabulary?: boolean | Prisma.User$userVocabularyArgs<ExtArgs>
+  watchSessions?: boolean | Prisma.User$watchSessionsArgs<ExtArgs>
+  comprehensionTestAttempts?: boolean | Prisma.User$comprehensionTestAttemptsArgs<ExtArgs>
+  comprehensionWeakSpots?: boolean | Prisma.User$comprehensionWeakSpotsArgs<ExtArgs>
+  placementAttempts?: boolean | Prisma.User$placementAttemptsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2185,10 +3673,18 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  placementTestDraft?: boolean
+  isSuspended?: boolean
   teacherId?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method?: boolean
+  currentStreak?: boolean
+  lastActivityDate?: boolean
+  stripeCustomerId?: boolean
+  stripeSubscriptionId?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2201,10 +3697,18 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  placementTestDraft?: boolean
+  isSuspended?: boolean
   teacherId?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method?: boolean
+  currentStreak?: boolean
+  lastActivityDate?: boolean
+  stripeCustomerId?: boolean
+  stripeSubscriptionId?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2217,13 +3721,21 @@ export type UserSelectScalar = {
   hasCompletedPlacement?: boolean
   lastLogin?: boolean
   createdAt?: boolean
+  placementTestDraft?: boolean
+  isSuspended?: boolean
   teacherId?: boolean
   isVerified?: boolean
   isTwoFactorEnable?: boolean
   method?: boolean
+  currentStreak?: boolean
+  lastActivityDate?: boolean
+  stripeCustomerId?: boolean
+  stripeSubscriptionId?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "lastLogin" | "createdAt" | "teacherId" | "isVerified" | "isTwoFactorEnable" | "method", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "hasCompletedPlacement" | "lastLogin" | "createdAt" | "placementTestDraft" | "isSuspended" | "teacherId" | "isVerified" | "isTwoFactorEnable" | "method" | "currentStreak" | "lastActivityDate" | "stripeCustomerId" | "stripeSubscriptionId" | "subscriptionPlan" | "subscriptionStatus", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   teacher?: boolean | Prisma.User$teacherArgs<ExtArgs>
   students?: boolean | Prisma.User$studentsArgs<ExtArgs>
@@ -2236,6 +3748,10 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   friendOf?: boolean | Prisma.User$friendOfArgs<ExtArgs>
   postWatchSurveys?: boolean | Prisma.User$postWatchSurveysArgs<ExtArgs>
   userVocabulary?: boolean | Prisma.User$userVocabularyArgs<ExtArgs>
+  watchSessions?: boolean | Prisma.User$watchSessionsArgs<ExtArgs>
+  comprehensionTestAttempts?: boolean | Prisma.User$comprehensionTestAttemptsArgs<ExtArgs>
+  comprehensionWeakSpots?: boolean | Prisma.User$comprehensionWeakSpotsArgs<ExtArgs>
+  placementAttempts?: boolean | Prisma.User$placementAttemptsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2259,6 +3775,10 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     friendOf: Prisma.$UserFriendPayload<ExtArgs>[]
     postWatchSurveys: Prisma.$PostWatchSurveyPayload<ExtArgs>[]
     userVocabulary: Prisma.$UserVocabularyPayload<ExtArgs>[]
+    watchSessions: Prisma.$WatchSessionPayload<ExtArgs>[]
+    comprehensionTestAttempts: Prisma.$ComprehensionTestAttemptPayload<ExtArgs>[]
+    comprehensionWeakSpots: Prisma.$UserComprehensionWeakSpotPayload<ExtArgs>[]
+    placementAttempts: Prisma.$PlacementAttemptPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -2269,10 +3789,24 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     hasCompletedPlacement: boolean
     lastLogin: Date | null
     createdAt: Date
+    /**
+     * Serialized placement questionnaire (correct keys) until test is completed — must match iframe payload.
+     */
+    placementTestDraft: runtime.JsonValue | null
+    /**
+     * When true, login and profile are blocked until an admin clears this flag.
+     */
+    isSuspended: boolean
     teacherId: number | null
     isVerified: boolean
     isTwoFactorEnable: boolean
     method: $Enums.AuthMethod
+    currentStreak: number
+    lastActivityDate: Date | null
+    stripeCustomerId: string | null
+    stripeSubscriptionId: string | null
+    subscriptionPlan: string | null
+    subscriptionStatus: string | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -2678,6 +4212,10 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   friendOf<T extends Prisma.User$friendOfArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$friendOfArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserFriendPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   postWatchSurveys<T extends Prisma.User$postWatchSurveysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$postWatchSurveysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostWatchSurveyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   userVocabulary<T extends Prisma.User$userVocabularyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$userVocabularyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserVocabularyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  watchSessions<T extends Prisma.User$watchSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$watchSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WatchSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  comprehensionTestAttempts<T extends Prisma.User$comprehensionTestAttemptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$comprehensionTestAttemptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ComprehensionTestAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  comprehensionWeakSpots<T extends Prisma.User$comprehensionWeakSpotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$comprehensionWeakSpotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserComprehensionWeakSpotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  placementAttempts<T extends Prisma.User$placementAttemptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$placementAttemptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlacementAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2715,10 +4253,18 @@ export interface UserFieldRefs {
   readonly hasCompletedPlacement: Prisma.FieldRef<"User", 'Boolean'>
   readonly lastLogin: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly placementTestDraft: Prisma.FieldRef<"User", 'Json'>
+  readonly isSuspended: Prisma.FieldRef<"User", 'Boolean'>
   readonly teacherId: Prisma.FieldRef<"User", 'Int'>
   readonly isVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly isTwoFactorEnable: Prisma.FieldRef<"User", 'Boolean'>
   readonly method: Prisma.FieldRef<"User", 'AuthMethod'>
+  readonly currentStreak: Prisma.FieldRef<"User", 'Int'>
+  readonly lastActivityDate: Prisma.FieldRef<"User", 'DateTime'>
+  readonly stripeCustomerId: Prisma.FieldRef<"User", 'String'>
+  readonly stripeSubscriptionId: Prisma.FieldRef<"User", 'String'>
+  readonly subscriptionPlan: Prisma.FieldRef<"User", 'String'>
+  readonly subscriptionStatus: Prisma.FieldRef<"User", 'String'>
 }
     
 
@@ -3361,6 +4907,102 @@ export type User$userVocabularyArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.UserVocabularyScalarFieldEnum | Prisma.UserVocabularyScalarFieldEnum[]
+}
+
+/**
+ * User.watchSessions
+ */
+export type User$watchSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WatchSession
+   */
+  select?: Prisma.WatchSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WatchSession
+   */
+  omit?: Prisma.WatchSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WatchSessionInclude<ExtArgs> | null
+  where?: Prisma.WatchSessionWhereInput
+  orderBy?: Prisma.WatchSessionOrderByWithRelationInput | Prisma.WatchSessionOrderByWithRelationInput[]
+  cursor?: Prisma.WatchSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WatchSessionScalarFieldEnum | Prisma.WatchSessionScalarFieldEnum[]
+}
+
+/**
+ * User.comprehensionTestAttempts
+ */
+export type User$comprehensionTestAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ComprehensionTestAttempt
+   */
+  select?: Prisma.ComprehensionTestAttemptSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ComprehensionTestAttempt
+   */
+  omit?: Prisma.ComprehensionTestAttemptOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ComprehensionTestAttemptInclude<ExtArgs> | null
+  where?: Prisma.ComprehensionTestAttemptWhereInput
+  orderBy?: Prisma.ComprehensionTestAttemptOrderByWithRelationInput | Prisma.ComprehensionTestAttemptOrderByWithRelationInput[]
+  cursor?: Prisma.ComprehensionTestAttemptWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ComprehensionTestAttemptScalarFieldEnum | Prisma.ComprehensionTestAttemptScalarFieldEnum[]
+}
+
+/**
+ * User.comprehensionWeakSpots
+ */
+export type User$comprehensionWeakSpotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserComprehensionWeakSpot
+   */
+  select?: Prisma.UserComprehensionWeakSpotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserComprehensionWeakSpot
+   */
+  omit?: Prisma.UserComprehensionWeakSpotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserComprehensionWeakSpotInclude<ExtArgs> | null
+  where?: Prisma.UserComprehensionWeakSpotWhereInput
+  orderBy?: Prisma.UserComprehensionWeakSpotOrderByWithRelationInput | Prisma.UserComprehensionWeakSpotOrderByWithRelationInput[]
+  cursor?: Prisma.UserComprehensionWeakSpotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserComprehensionWeakSpotScalarFieldEnum | Prisma.UserComprehensionWeakSpotScalarFieldEnum[]
+}
+
+/**
+ * User.placementAttempts
+ */
+export type User$placementAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PlacementAttempt
+   */
+  select?: Prisma.PlacementAttemptSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PlacementAttempt
+   */
+  omit?: Prisma.PlacementAttemptOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlacementAttemptInclude<ExtArgs> | null
+  where?: Prisma.PlacementAttemptWhereInput
+  orderBy?: Prisma.PlacementAttemptOrderByWithRelationInput | Prisma.PlacementAttemptOrderByWithRelationInput[]
+  cursor?: Prisma.PlacementAttemptWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PlacementAttemptScalarFieldEnum | Prisma.PlacementAttemptScalarFieldEnum[]
 }
 
 /**

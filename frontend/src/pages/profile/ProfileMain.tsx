@@ -1,57 +1,342 @@
-import { Link } from "react-router";
-import Button from "../../components/Button";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router";
+import {
+  BarChart3,
+  BookOpen,
+  ClipboardList,
+  Clock,
+  CreditCard,
+  GraduationCap,
+  Settings,
+  Trophy,
+} from "lucide-react";
+import { apiFetch } from "../../lib/api";
 import { useUser } from "../../context/UserContext";
+import { cn } from "../../lib/utils";
+import type {
+  ProfileHeaderModel,
+  ProfileHeaderRole,
+} from "../../components/profile/ProfileHeader";
+import { ProfileHeader } from "../../components/profile/ProfileHeader";
+import {
+  DEFAULT_WEEKLY_ACTIVITY,
+  type ProfileStatsModel,
+} from "../../components/profile/ProfileStats";
+import { ProfileStats } from "../../components/profile/ProfileStats";
+import { ProfileProgress } from "../../components/profile/ProfileProgress";
+import { ProfileAchievements } from "../../components/profile/ProfileAchievements";
+import { ProfileActivity } from "../../components/profile/ProfileActivity";
+import { ProfileSettings } from "../../components/profile/ProfileSettings";
+import { ProfileTeacherStudents } from "../../components/profile/ProfileTeacherStudents";
+import { ProfileStudyingPlan } from "../../components/profile/ProfileStudyingPlan";
+import { ProfileSubscriptions } from "../../components/profile/ProfileSubscriptions";
+import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
+
+const LEARNER_TABS = [
+  { id: "overview" as const, label: "Overview", icon: BarChart3 },
+  { id: "studying-plan" as const, label: "Studying plan", icon: ClipboardList },
+  { id: "subscriptions" as const, label: "Subscriptions", icon: CreditCard },
+  { id: "progress" as const, label: "Progress", icon: BookOpen },
+  { id: "achievements" as const, label: "Achievements", icon: Trophy },
+  { id: "activity" as const, label: "Activity", icon: Clock },
+  { id: "settings" as const, label: "Settings", icon: Settings },
+] as const;
+
+type TabId = (typeof LEARNER_TABS)[number]["id"] | "students";
+
+function normalizeRole(role: string): ProfileHeaderRole {
+  if (role === "student" || role === "teacher") return role;
+  return "adult";
+}
+
+type LearningStatsPayload = {
+  totalWatchTimeMin: number;
+  videosCompleted: number;
+  testsCompleted: number;
+  averageScore: number | null;
+  weeklyActivity: { day: string; minutes: number }[];
+};
 
 export default function ProfileMain() {
-  // const { user, isLoggedIn, isLoading } = useUser();
+  const { user, isLoading, isLoggedIn, refreshProfile } = useUser();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [joinMeta, setJoinMeta] = useState<{
+    userId: string;
+    label: string;
+  } | null>(null);
+  const [learningStats, setLearningStats] =
+    useState<LearningStatsPayload | null>(null);
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex justify-center items-center h-screen text-gray-500">
-  //       Loading profile...
-  //     </div>
-  //   );
-  // }
+  useEffect(() => {
+    if (!user?.id) return;
+    const uid = user.id;
+    let cancelled = false;
+    void (async () => {
+      const r = await apiFetch(`/users/${Number(uid)}`, {
+        method: "GET",
+      });
+      if (!r.ok || cancelled) return;
+      const j: unknown = await r.json();
+      if (!j || typeof j !== "object") return;
+      const createdAt = (j as { createdAt?: unknown }).createdAt;
+      if (typeof createdAt !== "string") return;
+      const d = new Date(createdAt);
+      if (Number.isNaN(d.getTime()) || cancelled) return;
+      setJoinMeta({
+        userId: uid,
+        label: d.toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
-  // if (!isLoggedIn || !user) {
-  //   return (
-  //     <div className="m-4 p-6 bg-red-50 text-red-600 rounded-2xl border border-red-200">
-  //       Please, login into your account.
-  //     </div>
-  //   );
-  // }
+  useEffect(() => {
+    if (!user?.id || (activeTab !== "overview" && activeTab !== "activity")) return;
+    let cancelled = false;
+    void (async () => {
+      const r = await apiFetch("/auth/profile/learning-stats", {
+        method: "GET",
+      });
+      if (!r.ok || cancelled) {
+        if (!cancelled) setLearningStats(null);
+        return;
+      }
+      const raw: unknown = await r.json();
+      if (!raw || typeof raw !== "object" || cancelled) return;
+      const o = raw as Record<string, unknown>;
+      const weekly = o.weeklyActivity;
+      setLearningStats({
+        totalWatchTimeMin: Number(o.totalWatchTimeMin ?? 0) || 0,
+        videosCompleted: Number(o.videosCompleted ?? 0) || 0,
+        testsCompleted: Number(o.testsCompleted ?? 0) || 0,
+        averageScore:
+          o.averageScore === null || o.averageScore === undefined
+            ? null
+            : Number(o.averageScore),
+        weeklyActivity: Array.isArray(weekly)
+          ? (weekly as { day: string; minutes: number }[])
+          : [...DEFAULT_WEEKLY_ACTIVITY],
+      });
+
+      console.log("LEARNING STATS FROM BACKEND:", o);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, activeTab]);
+
+  const joinDateLabel =
+    user?.id && joinMeta?.userId === user.id ? joinMeta.label : null;
+
+  const headerModel: ProfileHeaderModel | null = useMemo(() => {
+    if (!user) return null;
+    return {
+      name: user.name,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+      role: normalizeRole(user.role),
+      level: user.englishLevel?.trim() || "—",
+      joinDateLabel,
+      streakDays: (user as any).currentStreak || 0,
+    };
+  }, [user, joinDateLabel]);
+
+  const statsModel: ProfileStatsModel | null = useMemo(() => {
+    if (!user) return null;
+    const s = learningStats;
+    return {
+      totalWatchTimeMin: s?.totalWatchTimeMin ?? 0,
+      videosCompleted: s?.videosCompleted ?? 0,
+      testsCompleted: s?.testsCompleted ?? 0,
+      averageScore:
+        s?.averageScore != null && Number.isFinite(s.averageScore)
+          ? s.averageScore
+          : null,
+      weeklyActivity: s?.weeklyActivity ?? [...DEFAULT_WEEKLY_ACTIVITY],
+      levelLabel: user.englishLevel?.trim() || "A1",
+    };
+  }, [user, learningStats]);
+
+  const tabs = useMemo(() => {
+    if (user?.role === "teacher") {
+      const withoutStudying = LEARNER_TABS.filter((t) => t.id !== "studying-plan");
+      return [
+        withoutStudying[0],
+        {
+          id: "students" as const,
+          label: "Students",
+          icon: GraduationCap,
+        },
+        ...withoutStudying.slice(1),
+      ];
+    }
+    return [...LEARNER_TABS];
+  }, [user?.role]);
+
+  useEffect(() => {
+    if (!user) return;
+    const t = searchParams.get("tab");
+    const validIds = new Set<string>(tabs.map((tb) => tb.id));
+    if (t && validIds.has(t)) {
+      setActiveTab(t as TabId);
+      return;
+    }
+    if (t && !validIds.has(t)) {
+      setActiveTab("overview");
+      setSearchParams({}, { replace: true });
+      return;
+    }
+    if (!t) setActiveTab("overview");
+  }, [user, searchParams, tabs, setSearchParams]);
+
+  useEffect(() => {
+    if (user?.role !== "teacher" && activeTab === "students") {
+      setActiveTab("overview");
+      setSearchParams({}, { replace: true });
+    }
+  }, [user?.role, activeTab, setSearchParams]);
+
+  useEffect(() => {
+    if (user?.role === "teacher" && activeTab === "studying-plan") {
+      setActiveTab("overview");
+      setSearchParams({}, { replace: true });
+    }
+  }, [user?.role, activeTab, setSearchParams]);
+
+  if (isLoading) {
+    return (
+      <>
+        <SEO
+          title="Profile"
+          description="Your Explys learner or teacher profile."
+          canonicalUrl={resolveCanonicalUrl("/profileMain")}
+          noindex
+        />
+        <div className="flex min-h-dvh items-center justify-center text-muted-foreground">
+          Loading profile…
+        </div>
+      </>
+    );
+  }
+
+  if (!isLoggedIn || !user || !headerModel || !statsModel) {
+    return (
+      <>
+        <SEO
+          title="Profile"
+          description="Your Explys learner or teacher profile."
+          canonicalUrl={resolveCanonicalUrl("/profileMain")}
+          noindex
+        />
+        <div className="m-4 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-destructive">
+        <p className="font-medium">Please sign in to view your profile.</p>
+        <Link
+          to="/loginForm"
+          className="mt-3 inline-block text-primary underline-offset-4 hover:underline"
+        >
+          Go to login
+        </Link>
+      </div>
+      </>
+    );
+  }
+
+  function selectTab(id: TabId) {
+    setActiveTab(id);
+    if (id === "overview") setSearchParams({}, { replace: true });
+    else setSearchParams({ tab: id }, { replace: true });
+  }
 
   return (
-    <>
-      <div className="m-4 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)]">
-        <div className="flex flex-row justify-between">
-          <div className="m-6 flex flex-row">
-            <Link to="/video-page">
-              <img
-                src="/mainIcon.svg"
-                alt="Back to home"
-                className="hover:cursor-pointer"
-              />
-            </Link>
-            <div className="flex flex-col ml-3 justify-center">
-              <p className="text-2xl font-bold text-gray-900">Profile</p>
-              <p className="text-gray-500">Hi, user</p>
+    <div className="min-h-dvh bg-background font-display antialiased">
+      <SEO
+        title="Profile"
+        description="Your Explys learner or teacher profile."
+        canonicalUrl={resolveCanonicalUrl("/profileMain")}
+        noindex
+      />
+      <div className="flex">
+        <CatalogSidebar
+          categories={[]}
+          selectedCategory="All"
+          onSelectCategory={() => { }}
+          showCategoryFilter={false}
+          welcomeName={
+            user?.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined
+          }
+          englishLevel={user?.englishLevel || undefined}
+          collapsed={sidebarCollapsed}
+          onCollapsedChange={setSidebarCollapsed}
+        />
+
+        <main
+          className={cn(
+            "flex-1 pb-24 pt-8 transition-all duration-300 sm:px-6 lg:pb-12 lg:pt-10",
+            sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
+          )}
+        >
+          <div className="mx-auto max-w-6xl px-4 lg:px-8">
+            <ProfileHeader user={headerModel} />
+
+            <div
+              className="mt-8 flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1"
+              role="tablist"
+              aria-label="Profile sections"
+            >
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => selectTab(tab.id)}
+                    className={cn(
+                      "inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors sm:flex-none sm:justify-start",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-6">
+              {activeTab === "overview" ? (
+                <ProfileStats user={statsModel} />
+              ) : null}
+              {activeTab === "studying-plan" ? (
+                <ProfileStudyingPlan user={user} />
+              ) : null}
+              {activeTab === "subscriptions" ? (
+                <ProfileSubscriptions user={user} />
+              ) : null}
+              {activeTab === "students" ? <ProfileTeacherStudents /> : null}
+              {activeTab === "progress" ? <ProfileProgress /> : null}
+              {activeTab === "achievements" ? <ProfileAchievements /> : null}
+              {activeTab === "activity" ? <ProfileActivity weeklyActivity={learningStats?.weeklyActivity} /> : null}
+              {activeTab === "settings" ? (
+                <ProfileSettings user={user} onSaved={refreshProfile} />
+              ) : null}
             </div>
           </div>
-          <div className="m-6">
-            <img
-              src="/defaultProfileIcon.svg"
-              alt="profileIcon"
-              className="w-14 h-14 hover:cursor-pointer"
-            />
-          </div>
-        </div>
-        <hr className="mx-3 border border-gray-900/30" />
-        <div className="flex flex-row">
-          <Button className="my-4 mr-2 ml-4">Edit profile</Button>
-          <Button className="my-4 mr-4 ml-2">Subscription</Button>
-        </div>
+        </main>
       </div>
-    </>
+    </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   ConflictException,
   InternalServerErrorException,
   NotFoundException,
+  ForbiddenException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 import { JwtService } from "@nestjs/jwt";
@@ -52,6 +53,11 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+    const trimmedLearningGoal =
+      typeof dto.learningGoal === 'string' ? dto.learningGoal.trim() : '';
+    const trimmedTimeToAchieve =
+      typeof dto.timeToAchieve === 'string' ? dto.timeToAchieve.trim() : '';
+
     // ПОФИКШЕНО: Используем явную проверку && для сужения типа (Type Narrowing)
     const additionalDataPayload: any = {
       englishLevel: dto.englishLevel,
@@ -66,6 +72,9 @@ export class AuthService {
       studentGrade: dto.studentGrade,
       studentProblemTopics: dto.studentProblemTopics || [],
       studentNames: dto.studentNames, // Json массив из схемы [cite: 14]
+
+      learningGoal: trimmedLearningGoal || null,
+      timeToAchieve: trimmedTimeToAchieve || null,
 
       // Исправленная логика favoriteGenres
       favoriteGenres:
@@ -165,6 +174,9 @@ export class AuthService {
         password: true,
         isVerified: true,
         isTwoFactorEnable: true,
+        role: true,
+        hasCompletedPlacement: true,
+        isSuspended: true,
       },
     });
 
@@ -200,6 +212,10 @@ export class AuthService {
       );
     }
 
+    if (user.isSuspended) {
+      throw new ForbiddenException('Account suspended');
+    }
+
     const payload = { sub: user.id, email: user.email };
 
     return {
@@ -208,6 +224,8 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
+        hasCompletedPlacement: user.hasCompletedPlacement,
       },
     };
   }
@@ -306,5 +324,243 @@ export class AuthService {
         });
       });
     });
+  }
+
+  async getProfile(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        hasCompletedPlacement: true,
+        isSuspended: true,
+        subscriptionPlan: true,
+        subscriptionStatus: true,
+        stripeSubscriptionId: true,
+        currentStreak: true,
+        settings: {
+          select: {
+            playbackSpeed: true,
+            currentResolution: true,
+          },
+        },
+        additionalUserData: {
+          select: {
+            englishLevel: true,
+            education: true,
+            workField: true,
+            nativeLanguage: true,
+            hobbies: true,
+            learningGoal: true,
+            timeToAchieve: true,
+            favoriteGenres: { select: { id: true } },
+            hatedGenres: { select: { id: true } },
+          },
+        },
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.isSuspended) {
+      throw new ForbiddenException('Account suspended');
+    }
+    const extra = user.additionalUserData;
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      hasCompletedPlacement: user.hasCompletedPlacement,
+      currentStreak: user.currentStreak ?? 0,
+      englishLevel: extra?.englishLevel ?? '',
+      education: extra?.education ?? '',
+      workField: extra?.workField ?? '',
+      nativeLanguage: extra?.nativeLanguage ?? '',
+      hobbies: extra?.hobbies ?? [],
+      learningGoal: extra?.learningGoal ?? '',
+      timeToAchieve: extra?.timeToAchieve ?? '',
+      favoriteGenres: extra?.favoriteGenres?.map((g) => g.id) ?? [],
+      hatedGenres: extra?.hatedGenres?.map((g) => g.id) ?? [],
+      playbackSpeed: user.settings?.playbackSpeed ?? null,
+      videoQuality: user.settings?.currentResolution ?? '',
+      subscriptionPlan: user.subscriptionPlan ?? '',
+      subscriptionStatus: user.subscriptionStatus ?? '',
+      stripeSubscriptionId: user.stripeSubscriptionId ?? '',
+    };
+  }
+
+  /** Monday 00:00 UTC through Sunday (current ISO week). */
+  private utcWeekRange(): { weekStart: Date; weekEndExclusive: Date } {
+    const now = new Date();
+    const day = (d: Date) => d.getUTCDay();
+    const x = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
+    const dow = day(x);
+    const offset = dow === 0 ? -6 : 1 - dow;
+    x.setUTCDate(x.getUTCDate() + offset);
+    x.setUTCHours(0, 0, 0, 0);
+    const weekEndExclusive = new Date(x);
+    weekEndExclusive.setUTCDate(weekEndExclusive.getUTCDate() + 7);
+    return { weekStart: x, weekEndExclusive };
+  }
+
+  /**
+   * Dashboard numbers + weekly watch minutes (Mon–Sun, UTC week containing today).
+   */
+  async getLearningStats(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isSuspended: true },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.isSuspended) {
+      throw new ForbiddenException('Account suspended');
+    }
+
+    const [
+      watchSum,
+      distinctVideos,
+      quizAgg,
+      weekSessions,
+    ] = await Promise.all([
+      this.prisma.watchSession.aggregate({
+        where: { userId },
+        _sum: { secondsWatched: true },
+      }),
+      this.prisma.watchSession.findMany({
+        where: { userId, completed: true },
+        select: { contentVideoId: true },
+        distinct: ['contentVideoId'],
+      }),
+      this.prisma.comprehensionTestAttempt.aggregate({
+        where: { userId },
+        _avg: { scorePct: true },
+        _count: { _all: true },
+      }),
+      (() => {
+        const { weekStart, weekEndExclusive } = this.utcWeekRange();
+        return this.prisma.watchSession.findMany({
+          where: {
+            userId,
+            endedAt: {
+              gte: weekStart,
+              lt: weekEndExclusive,
+            },
+          },
+          select: { endedAt: true, secondsWatched: true },
+        });
+      })(),
+    ]);
+
+    const totalSeconds = watchSum?._sum?.secondsWatched ?? 0;
+    const totalWatchTimeMin = Math.round(Number(totalSeconds) / 60);
+    const videosCompleted = Array.isArray(distinctVideos)
+      ? distinctVideos.length
+      : 0;
+    const testsCompleted = quizAgg?._count?._all ?? 0;
+    const rawAvg = quizAgg?._avg?.scorePct;
+    const averageScore =
+      typeof rawAvg === 'number' && Number.isFinite(rawAvg)
+        ? Math.round(rawAvg * 10) / 10
+        : null;
+
+    const minutesMonSun = [0, 0, 0, 0, 0, 0, 0];
+    const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    for (const s of weekSessions) {
+      if (!s.endedAt) continue;
+      const d = s.endedAt as Date;
+      const utcDow = d.getUTCDay();
+      const idx = utcDow === 0 ? 6 : utcDow - 1;
+      minutesMonSun[idx] += Number(s.secondsWatched ?? 0) / 60;
+    }
+
+    const weeklyActivity = DAY_LABELS.map((day, i) => ({
+      day,
+      minutes: Math.ceil(minutesMonSun[i]),
+    }));
+
+    return {
+      totalWatchTimeMin,
+      videosCompleted,
+      testsCompleted,
+      averageScore,
+      weeklyActivity,
+    };
+  }
+
+  /**
+   * Per-tag knowledge from `UserLanguageData`: each tag gets mean scores across
+   * linked topics (listening, vocabulary, grammar, and aggregate `score`).
+   */
+  async getKnowledgeTagProgress(userId: number): Promise<{
+    tags: Array<{
+      name: string;
+      score: number;
+      listening: number;
+      vocabulary: number;
+      grammar: number;
+      topicCount: number;
+    }>;
+  }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isSuspended: true },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.isSuspended) {
+      throw new ForbiddenException('Account suspended');
+    }
+
+    const rows = await this.prisma.userLanguageData.findMany({
+      where: { userId },
+      include: {
+        topic: { include: { tags: { select: { name: true } } } },
+      },
+    });
+
+    const accum = new Map<
+      string,
+      { l: number; v: number; g: number; agg: number; n: number }
+    >();
+
+    for (const row of rows) {
+      for (const tag of row.topic.tags) {
+        const name = tag.name.trim();
+        if (!name) {
+          continue;
+        }
+        const cur = accum.get(name) ?? { l: 0, v: 0, g: 0, agg: 0, n: 0 };
+        cur.l += row.listeningScore;
+        cur.v += row.vocabularyScore;
+        cur.g += row.grammarScore;
+        cur.agg += row.score;
+        cur.n += 1;
+        accum.set(name, cur);
+      }
+    }
+
+    const tags = [...accum.entries()]
+      .map(([name, cur]) => {
+        const n = cur.n;
+        return {
+          name,
+          listening: Math.round((cur.l / n) * 1000) / 1000,
+          vocabulary: Math.round((cur.v / n) * 1000) / 1000,
+          grammar: Math.round((cur.g / n) * 1000) / 1000,
+          score: Math.round((cur.agg / n) * 1000) / 1000,
+          topicCount: cur.n,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    return { tags };
   }
 }

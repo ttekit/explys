@@ -3,10 +3,34 @@ import LabelRegister from "../../components/LabelRegister";
 import ValidateError from "../../components/ValidateError";
 import { Link, useNavigate } from "react-router";
 import SelectRegister from "../../components/SelectRegister";
-import { useState, useContext, ChangeEvent, FormEvent } from "react";
-import { RegistrationContext } from "../../context/RegistrationContext";
+import {
+  useState,
+  useContext,
+  useEffect,
+  useMemo,
+  ChangeEvent,
+  FormEvent,
+} from "react";
+import {
+  RegistrationContext,
+  type FormData,
+} from "../../context/RegistrationContext";
 import MultiSelect from "../../components/MultiSelect";
-import { getRegisterCredentialsError, registerUser } from "../../lib/registerUser";
+import {
+  fetchLearningTopicGroups,
+  type LearningTopicOption,
+} from "../../lib/learningTopicsApi";
+import type { GroupBase, MultiValue } from "react-select";
+import {
+  getRegisterCredentialsError,
+  registerUser,
+} from "../../lib/registerUser";
+import { ArrowLeft } from "lucide-react";
+import { AuthSplitLayout } from "../../components/AuthSplitLayout";
+import {
+  RegistrationRoleCards,
+  type RegistrationRoleChoice,
+} from "../../components/RegistrationRoleCards";
 
 interface SelectOption {
   value: string;
@@ -28,12 +52,50 @@ export default function RegistrationDetails() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const roleOptions: SelectOption[] = [
-    { value: "choose", text: "Choose your role" },
-    { value: "teacher", text: "Teacher" },
-    { value: "student", text: "Student" },
-    { value: "adult", text: "Adult" },
-  ];
+  const [learningTopicGroups, setLearningTopicGroups] = useState<
+    GroupBase<LearningTopicOption>[]
+  >([]);
+  const [topicsLoading, setTopicsLoading] = useState(true);
+  const [topicsLoadError, setTopicsLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchLearningTopicGroups()
+      .then((groups) => {
+        if (!cancelled) setLearningTopicGroups(groups);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setTopicsLoadError(
+            err instanceof Error ? err.message : "Could not load topics",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setTopicsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const flatLearningOptions = useMemo(
+    () => learningTopicGroups.flatMap((g) => g.options),
+    [learningTopicGroups],
+  );
+
+  const learningOptionByValue = useMemo(() => {
+    const m = new Map<string, LearningTopicOption>();
+    for (const o of flatLearningOptions) m.set(o.value, o);
+    return m;
+  }, [flatLearningOptions]);
+
+  const selectedLearningTopics = useMemo(() => {
+    const vals = formData.teacherTopics ?? [];
+    return vals
+      .map((v) => learningOptionByValue.get(v))
+      .filter((o): o is LearningTopicOption => o != null);
+  }, [formData.teacherTopics, learningOptionByValue]);
 
   const gradeOptions: SelectOption[] = [
     { value: "choose", text: "Choose grade" },
@@ -50,42 +112,49 @@ export default function RegistrationDetails() {
     { value: "11", text: "11th Grade" },
     { value: "12", text: "12th Grade" },
     { value: "university", text: "University" },
+    { value: "tutor", text: "Tutor" },
   ];
 
-  const topicOptions = [
-    { value: "grammar", label: "Grammar" },
-    { value: "vocabulary", label: "Vocabulary" },
-    { value: "speaking", label: "Speaking" },
-    { value: "listening", label: "Listening" },
-    { value: "writing", label: "Writing" },
-    { value: "reading", label: "Reading" },
-  ];
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
-    updateFormData({ [name]: value } as any);
+    updateFormData({ [name]: value } as Partial<FormData>);
   };
 
-  const handleMultiSelectChange = (name: string) => (selectedOptions: any) => {
-    const values = selectedOptions ? selectedOptions.map((o: any) => o.value) : [];
-    updateFormData({ [name]: values } as any);
+  const handleRoleSelect = (role: RegistrationRoleChoice) => {
+    updateFormData({ role } as Partial<FormData>);
+    setEmptyError(false);
   };
 
-  // Pupils Table Logic
-  const pupils: Pupil[] = Array.isArray(formData.studentNames) ? formData.studentNames : [];
+  const handleTeacherTopicsChange = (
+    selected: MultiValue<LearningTopicOption>,
+  ) => {
+    updateFormData({
+      teacherTopics: Array.from(selected ?? []).map((o) => o.value),
+    } as Partial<FormData>);
+  };
+
+  const pupils: Pupil[] = Array.isArray(formData.studentNames)
+    ? formData.studentNames
+    : [];
 
   const addPupil = () => {
-    updateFormData({ studentNames: [...pupils, { name: "", surname: "" }] } as any);
+    updateFormData({
+      studentNames: [...pupils, { name: "", surname: "" }],
+    } as Partial<FormData>);
   };
 
   const updatePupil = (index: number, field: keyof Pupil, value: string) => {
     const updated = [...pupils];
     updated[index][field] = value;
-    updateFormData({ studentNames: updated } as any);
+    updateFormData({ studentNames: updated } as Partial<FormData>);
   };
 
   const removePupil = (index: number) => {
-    updateFormData({ studentNames: pupils.filter((_, i) => i !== index) } as any);
+    updateFormData({
+      studentNames: pupils.filter((_, i) => i !== index),
+    } as Partial<FormData>);
   };
 
   const handleNext = async (e: FormEvent<HTMLFormElement>) => {
@@ -112,9 +181,14 @@ export default function RegistrationDetails() {
       const result = await registerUser(formData);
       setIsSubmitting(false);
       if (result.success) {
-        navigate("/registrationSuccess", {
-          state: { generatedStudents: result.generatedStudents },
-        });
+        const students = result.generatedStudents;
+        if (students?.length) {
+          navigate("/registrationSuccess", {
+            state: { generatedStudents: students },
+          });
+        } else {
+          navigate("/loginForm");
+        }
       } else {
         setFormError(result.message);
       }
@@ -125,82 +199,185 @@ export default function RegistrationDetails() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-2">
-      <form className="w-full max-w-150 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col" onSubmit={handleNext}>
-        <p className="text-3xl font-bold mb-1">Create an account</p>
-        <p className="text-gray-500 mb-8">Profile Details - Page 2</p>
+    <AuthSplitLayout
+      progressStep={2}
+      progressTotal={3}
+      mainClassName="max-w-2xl"
+      rightTitle="Who are you?"
+      rightSubtitle="Tell us your role so we can customize your experience."
+    >
+      <Link
+        to="/registrationMain"
+        className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Back
+      </Link>
 
-        <div className="mb-4 flex flex-col px-5">
-          <LabelRegister isRequired={true}>I am a:</LabelRegister>
-          <SelectRegister name="role" value={formData.role} onChange={handleChange} options={roleOptions} />
+      <form className="flex flex-col gap-8" onSubmit={handleNext}>
+        <section>
+          <h1 className="font-display text-2xl font-bold mb-2">
+            How will you use Explys?
+          </h1>
+          <p className="mb-6 text-muted-foreground">
+            Pick the option that fits you best—we&apos;ll tailor the setup.
+          </p>
+          <RegistrationRoleCards
+            value={formData.role}
+            onChange={handleRoleSelect}
+          />
+        </section>
 
-          {formData.role === "teacher" && (
-            <div className="mt-4 flex flex-col gap-4">
-              <LabelRegister isRequired={true}>Student grades:</LabelRegister>
-              <SelectRegister name="teacherGrades" value={formData.teacherGrades} onChange={handleChange} options={gradeOptions} />
-
-              <LabelRegister isRequired={false}>Learning topics:</LabelRegister>
-              <MultiSelect
-                inputId="teacher-topics"
-                options={topicOptions}
-                isMulti
-                placeholder="Choose topics"
-                value={topicOptions.filter((o) =>
-                  (formData.teacherTopics ?? []).includes(o.value),
-                )}
-                onChange={handleMultiSelectChange("teacherTopics")}
-              />
-
-              <div className="mt-4 border-t pt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <LabelRegister isRequired={false}>Pupils List:</LabelRegister>
-                  <button type="button" onClick={addPupil} className="text-sm bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600">
-                    + Add Pupil
-                  </button>
-                </div>
-
-                <div className="max-h-60 overflow-y-auto border rounded-xl p-2 bg-white">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="text-sm text-gray-500 border-b">
-                        <th className="pb-2">Name</th>
-                        <th className="pb-2">Surname</th>
-                        <th className="pb-2 w-10"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pupils.map((pupil, index) => (
-                        <tr key={index} className="border-b last:border-0">
-                          <td className="py-2 pr-2">
-                            <input type="text" value={pupil.name} onChange={(e) => updatePupil(index, "name", e.target.value)} placeholder="Name" className="w-full p-1 border rounded" />
-                          </td>
-                          <td className="py-2 pr-2">
-                            <input type="text" value={pupil.surname} onChange={(e) => updatePupil(index, "surname", e.target.value)} placeholder="Surname" className="w-full p-1 border rounded" />
-                          </td>
-                          <td className="py-2">
-                            <button type="button" onClick={() => removePupil(index)} className="text-red-500 font-bold px-2">✕</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {pupils.length === 0 && <p className="text-center text-gray-400 py-4">No pupils added yet.</p>}
-                </div>
+        {formData.role === "teacher" && (
+          <section className="space-y-4 border-border border-t pt-8">
+            <div className="flex items-start gap-3">
+              <img src="Icon.svg" className="w-12 h-15" />
+              <div>
+                <h2 className="font-display text-xl font-semibold">
+                  Teacher profile
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Grades you teach, optional topics, and your class list.
+                </p>
               </div>
             </div>
-          )}
-        </div>
 
-        {emptyError && <ValidateError>Please select a role.</ValidateError>}
+            <div className="space-y-2">
+              <LabelRegister isRequired={true}>Student grades</LabelRegister>
+              <SelectRegister
+                name="teacherGrades"
+                value={formData.teacherGrades}
+                onChange={handleChange}
+                options={gradeOptions}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <LabelRegister isRequired={false}>Learning topics</LabelRegister>
+              <MultiSelect<
+                LearningTopicOption,
+                true,
+                GroupBase<LearningTopicOption>
+              >
+                inputId="teacher-topics"
+                options={learningTopicGroups}
+                isMulti
+                isLoading={topicsLoading}
+                value={selectedLearningTopics}
+                onChange={handleTeacherTopicsChange}
+                placeholder={
+                  topicsLoadError
+                    ? "Topics unavailable — you can continue without them"
+                    : "Choose topics or tags"
+                }
+                noOptionsMessage={() =>
+                  topicsLoadError ? topicsLoadError : "No topics or tags found"
+                }
+              />
+              {topicsLoadError && (
+                <p className="text-destructive mt-1 text-sm">
+                  {topicsLoadError}
+                </p>
+              )}
+            </div>
+
+            <div className="border-border border-t pt-6">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <LabelRegister isRequired={false}>Pupils list</LabelRegister>
+                <button
+                  type="button"
+                  onClick={addPupil}
+                  className="rounded-[15px] bg-primary px-6 py-2.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+                >
+                  + Add pupil
+                </button>
+              </div>
+
+              <div className="bg-input border-border max-h-60 overflow-y-auto rounded-xl border p-3">
+                <table className="w-full table-fixed text-left text-sm">
+                  <thead>
+                    <tr className="text-muted-foreground border-border border-b">
+                      <th className="pb-2 font-medium">Name</th>
+                      <th className="pb-2 font-medium">Surname</th>
+                      <th className="w-12 pb-2" aria-hidden />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pupils.map((pupil, index) => (
+                      <tr
+                        key={index}
+                        className="border-border border-b align-top last:border-0"
+                      >
+                        <td className="py-2 pr-2">
+                          <input
+                            type="text"
+                            value={pupil.name}
+                            onChange={(e) =>
+                              updatePupil(index, "name", e.target.value)
+                            }
+                            placeholder="Name"
+                            className="bg-background border-border w-full rounded-lg border px-2 py-1.5 text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                          />
+                        </td>
+                        <td className="py-2 pr-2">
+                          <input
+                            type="text"
+                            value={pupil.surname}
+                            onChange={(e) =>
+                              updatePupil(index, "surname", e.target.value)
+                            }
+                            placeholder="Surname"
+                            className="bg-background border-border w-full rounded-lg border px-2 py-1.5 text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                          />
+                        </td>
+                        <td className="py-2">
+                          <button
+                            type="button"
+                            aria-label={`Remove pupil ${index + 1}`}
+                            onClick={() => removePupil(index)}
+                            className="text-destructive/70 hover:cursor-pointer hover:text-destructive px-2 pt-2 font-bold transition-colors"
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {pupils.length === 0 && (
+                  <p className="text-muted-foreground py-8 text-center text-sm">
+                    No pupils added yet.
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {emptyError && (
+          <ValidateError>
+            Please select how you&apos;ll use Explys.
+          </ValidateError>
+        )}
         {formError && <ValidateError>{formError}</ValidateError>}
 
-        <div className="mt-4 flex gap-2">
-          <Button type="submit" disabled={isSubmitting}>
+        <div className="flex flex-col gap-3 sm:flex-row-reverse sm:items-stretch">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+          >
             {formData.role === "teacher" ? "Register" : "Next"}
           </Button>
-          <Link to="/registrationMain"><Button type="button">Back</Button></Link>
+          <Button
+            type="button"
+            onClick={() => navigate("/registrationMain")}
+            className="text-sm font-medium bg-transparent text-foreground/70 hover:text-white py-2.5 px-6 transition-all rounded-[15px] hover:bg-muted-foreground/10 hover:cursor-pointer"
+          >
+            Previous step
+          </Button>
         </div>
       </form>
-    </div>
+    </AuthSplitLayout>
   );
 }

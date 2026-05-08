@@ -14,25 +14,80 @@ export class ContentVideoService {
 
   async findAll() {
     return this.prisma.contentVideo.findMany({
-      omit: { comprehensionTestsCache: true },
       include: {
+        videoCaption: {
+          select: { subtitlesFileLink: true },
+        },
         content: {
           include: {
             category: true,
+            stats: {
+              include: {
+                topics: { select: { id: true, name: true } },
+              },
+            },
           },
         },
       },
     });
   }
 
-  async findOne(id: number) {
-    const contentVideo = await this.prisma.contentVideo.findUnique({
-      where: { id },
-      omit: { comprehensionTestsCache: true },
+  /**
+   * Unique videos the learner has completed a watch session for, most recently watched first.
+   */
+  async findWatchedByUser(userId: number) {
+    const sessions = await this.prisma.watchSession.findMany({
+      where: { userId },
+      orderBy: { endedAt: "desc" },
+      select: { contentVideoId: true },
+    });
+    const orderedIds: number[] = [];
+    const seen = new Set<number>();
+    for (const s of sessions) {
+      if (seen.has(s.contentVideoId)) continue;
+      seen.add(s.contentVideoId);
+      orderedIds.push(s.contentVideoId);
+    }
+    if (orderedIds.length === 0) {
+      return [];
+    }
+    const videos = await this.prisma.contentVideo.findMany({
+      where: { id: { in: orderedIds } },
       include: {
+        videoCaption: {
+          select: { subtitlesFileLink: true },
+        },
         content: {
           include: {
             category: true,
+            stats: {
+              include: {
+                topics: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+    const rank = new Map(orderedIds.map((id, i) => [id, i]));
+    return videos.sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
+  }
+
+  async findOne(id: number) {
+    const contentVideo = await this.prisma.contentVideo.findUnique({
+      where: { id },
+      include: {
+        videoCaption: {
+          select: { subtitlesFileLink: true },
+        },
+        content: {
+          include: {
+            category: true,
+            stats: {
+              include: {
+                topics: { select: { id: true, name: true } },
+              },
+            },
           },
         },
       },

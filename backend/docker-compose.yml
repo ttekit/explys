@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: eng-curses-postgres
+    container_name: exply-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -14,7 +14,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: eng-curses-redis
+    container_name: exply-redis
     restart: unless-stopped
     ports:
       - "6379:6379"

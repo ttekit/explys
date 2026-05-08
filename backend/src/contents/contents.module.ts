@@ -6,6 +6,10 @@ import { ContentsController } from "./contents.controller";
 import { ContentsService } from "./contents.service";
 import { RedisModule } from "@nestjs-modules/ioredis"
 
+// TODO: Add GET /sitemap.xml (e.g. on ContentsController or a dedicated SEO controller)
+// returning dynamic XML with all public lesson/content URLs from the Content entity
+// (plus static routes like `/`, `/catalog`, `/pricing` as needed).
+
 @Module({
   imports: [
     ThrottlerModule.forRootAsync({

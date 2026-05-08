@@ -27,6 +27,10 @@ export interface FormData {
   workField: string;
   favoriteGenres: number[];
   hatedGenres: number[];
+  /** Adult: motivation (e.g. travel to the UK). */
+  learningGoal: string;
+  /** Adult: target horizon (e.g. 3m). */
+  timeToAchieve: string;
 }
 
 const defaultFormData: FormData = {
@@ -42,10 +46,12 @@ const defaultFormData: FormData = {
   studentProblemTopics: [],
   englishLevel: "choose",
   hobbies: [],
-  education: "choose",
-  workField: "choose",
+  education: "",
+  workField: "",
   favoriteGenres: [],
   hatedGenres: [],
+  learningGoal: "",
+  timeToAchieve: "",
 };
 
 function isRecord(x: unknown): x is Record<string, unknown> {
@@ -72,13 +78,13 @@ function mergeDraft(draft: unknown): FormData {
   const pupils = d.studentNames;
   const studentNames: FormData["studentNames"] =
     Array.isArray(pupils) &&
-    pupils.every(
-      (p) =>
-        p &&
-        typeof p === "object" &&
-        "name" in p &&
-        "surname" in p,
-    )
+      pupils.every(
+        (p) =>
+          p &&
+          typeof p === "object" &&
+          "name" in p &&
+          "surname" in p,
+      )
       ? (pupils as RegisterStudentNameRow[])
       : typeof d.studentNames === "string" || d.studentNames === undefined
         ? (d.studentNames as string) ?? defaultFormData.studentNames
@@ -116,6 +122,14 @@ function mergeDraft(draft: unknown): FormData {
       typeof d.workField === "string" ? d.workField : defaultFormData.workField,
     favoriteGenres: asNumberArray(d.favoriteGenres),
     hatedGenres: asNumberArray(d.hatedGenres),
+    learningGoal:
+      typeof d.learningGoal === "string"
+        ? d.learningGoal
+        : defaultFormData.learningGoal,
+    timeToAchieve:
+      typeof d.timeToAchieve === "string"
+        ? d.timeToAchieve
+        : defaultFormData.timeToAchieve,
   };
 }
 

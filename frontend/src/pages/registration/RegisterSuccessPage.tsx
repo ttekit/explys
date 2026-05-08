@@ -2,6 +2,7 @@ import { useLocation, useNavigate, Link } from "react-router";
 import Button from "../../components/Button";
 import { downloadStudentAccountsExcel } from "../../lib/studentAccountsExcel";
 import type { GeneratedStudentAccount } from "../../lib/registerUser";
+import { ChameleonMascot } from "../../components/ChameleonMascot";
 
 type SuccessLocationState = {
   generatedStudents?: GeneratedStudentAccount[];
@@ -15,15 +16,21 @@ export default function RegisterSuccessPage() {
   const hasStudents = students.length > 0;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-lg rounded-[40px] bg-(--gray-background) p-8 shadow-[0_20px_20px_rgba(0,0,0,0.1)]">
-        <div className="mb-2 text-4xl" aria-hidden>
+    <div className="bg-background flex min-h-screen flex-col gap-12 p-8 text-foreground lg:flex-row lg:items-center lg:justify-center lg:gap-16">
+      <div className="mx-auto hidden w-full max-w-sm flex-col items-center text-center lg:flex">
+        <ChameleonMascot size="lg" mood="excited" className="mb-6" />
+        <h2 className="font-display text-2xl font-bold">Nice work!</h2>
+        <p className="mt-3 text-muted-foreground">
+          You&apos;re ready to dive into Explys with your freshly minted roster.
+        </p>
+      </div>
+
+      <div className="border-border bg-card text-card-foreground mx-auto w-full max-w-lg rounded-3xl border p-8 shadow-2xl">
+        <div className="bg-primary/20 text-primary mb-4 inline-flex size-14 items-center justify-center rounded-full text-2xl font-bold" aria-hidden>
           ✓
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Registration successful
-        </h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="font-display text-2xl font-bold">Registration successful</h1>
+        <p className="text-muted-foreground mt-2 leading-relaxed">
           {hasStudents
             ? "Your teacher account is ready. Student logins were created for the pupils you listed. Download the Excel file to share credentials securely (store it in a safe place—anyone with the file can sign in as those students)."
             : "Your account is ready. You can sign in with the email and password you chose."}
@@ -31,12 +38,12 @@ export default function RegisterSuccessPage() {
 
         {hasStudents && (
           <div className="mt-6">
-            <p className="mb-3 text-sm font-semibold text-gray-800">
+            <p className="text-foreground mb-3 text-sm font-semibold">
               Student accounts ({students.length})
             </p>
-            <div className="max-h-48 overflow-auto rounded-2xl border border-gray-200 bg-white/80 text-sm">
+            <div className="border-border bg-muted/60 max-h-48 overflow-auto rounded-xl border text-sm">
               <table className="w-full text-left">
-                <thead className="sticky top-0 bg-white text-gray-500">
+                <thead className="bg-muted sticky top-0 text-muted-foreground">
                   <tr>
                     <th className="px-3 py-2 font-medium">Name</th>
                     <th className="px-3 py-2 font-medium">Email</th>
@@ -45,10 +52,7 @@ export default function RegisterSuccessPage() {
                 </thead>
                 <tbody>
                   {students.map((s) => (
-                    <tr
-                      key={s.email}
-                      className="border-t border-gray-100 text-gray-800"
-                    >
+                    <tr key={s.email} className="border-border border-t text-foreground">
                       <td className="px-3 py-2">{s.name}</td>
                       <td className="px-3 py-2 break-all">{s.email}</td>
                       <td className="px-3 py-2 font-mono text-xs">
@@ -63,7 +67,12 @@ export default function RegisterSuccessPage() {
             <Button
               type="button"
               className="!mt-6"
-              onClick={() => void downloadStudentAccountsExcel(students, "student-accounts")}
+              onClick={() =>
+                void downloadStudentAccountsExcel(
+                  students,
+                  "student-accounts",
+                )
+              }
             >
               Download student accounts (Excel)
             </Button>
@@ -71,10 +80,13 @@ export default function RegisterSuccessPage() {
         )}
 
         <div className="mt-8 flex flex-col gap-2">
-          <Button type="button" onClick={() => navigate("/loginForm")}>
+          <Button type="button" className="py-6 text-base font-semibold" onClick={() => navigate("/loginForm")}>
             Go to sign in
           </Button>
-          <Link to="/video-page" className="w-full text-center text-sm text-(--purple-default) font-semibold hover:underline">
+          <Link
+            to="/catalog"
+            className="hover:text-primary/90 mt-2 w-full text-center text-sm font-semibold text-primary hover:underline"
+          >
             Back to home
           </Link>
         </div>

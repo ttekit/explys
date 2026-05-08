@@ -10,6 +10,7 @@ import {
   IsArray,
   IsNumber,
   IsObject,
+  IsIn,
 } from "class-validator";
 
 export class CreateUserDto {
@@ -39,7 +40,16 @@ export class CreateUserDto {
   name: string;
 
   @IsOptional()
+<<<<<<< HEAD
   @IsString({ message: "English level must be a string" })
+=======
+  @IsString()
+  @IsIn(["adult", "student", "teacher"])
+  role?: string;
+
+  @IsOptional()
+  @IsString()
+>>>>>>> origin/main
   englishLevel?: string;
 
   @IsOptional()
@@ -81,4 +91,12 @@ export class CreateUserDto {
     message: "Each language level entry must be an object",
   })
   knownLanguageLevels?: Array<{ language: string; level: string }>;
+
+  @IsOptional()
+  @IsString()
+  learningGoal?: string;
+
+  @IsOptional()
+  @IsString()
+  timeToAchieve?: string;
 }

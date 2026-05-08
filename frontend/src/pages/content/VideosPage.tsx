@@ -1,121 +1,476 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { apiFetch } from "../../lib/api";
-import Navigation from "../mainpage/Navigation";
+import { apiFetch, getApiBase, getResponseErrorMessage, getStoredAccessToken } from "../../lib/api";
+import { useUser } from "../../context/UserContext";
+import PlacementPreferencesStep from "../../components/PlacementPreferencesStep";
+import PlacementPreTestStep, {
+  adultNeedsPlacementPrepFields,
+} from "../../components/PlacementPreTestStep";
+import { ChameleonMascot } from "../../components/ChameleonMascot";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { CatalogHero } from "../../components/catalog/CatalogHero";
+import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
+import { CatalogVideoRow } from "../../components/catalog/CatalogVideoRow";
+import type { CatalogCardVideo } from "../../components/catalog/CatalogVideoCard";
+import { cn } from "../../lib/utils";
+import { Frown } from "lucide-react";
 
 interface ContentVideo {
-    id: number;
-    videoName: string;
-    videoDescription: string | null;
-    videoLink: string;
-    content: {
-        category: {
-            name: string;
-            description: string;
-        };
+  id: number;
+  videoName: string;
+  videoDescription: string | null;
+  videoLink: string;
+  content: {
+    category: {
+      name: string;
+      description: string;
     };
+  };
+}
+
+function toCardVideo(video: ContentVideo): CatalogCardVideo {
+  return {
+    id: video.id,
+    title: video.videoName,
+    categoryLabel: video.content.category.name,
+  };
+}
+
+/** Ensure API origin in srcDoc HTML matches the SPA client (avoids broken inline script / proxy host skew). */
+function placementPatchApiOrigin(html: string, apiOrigin: string): string {
+  const trimmed = apiOrigin.replace(/\/$/, "");
+  const esc = trimmed.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+  return html.replace(
+    /<meta\s+name="explys-placement-api-origin"\s+content="[^"]*"\s*\/?\s*>/i,
+    `<meta name="explys-placement-api-origin" content="${esc}" />`,
+  );
 }
 
 export default function VideoPage() {
-    const [videos, setVideos] = useState<ContentVideo[]>([]);
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+  const [videos, setVideos] = useState<ContentVideo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true); // collapsed by default (icon-only mode)
+  const [placementDocHtml, setPlacementDocHtml] = useState<string | null>(null);
+  const [placementDocError, setPlacementDocError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { user, isLoading: userLoading, refreshProfile } = useUser();
+  const { messages, locale } = useLandingLocale();
+  const catalogSeo = messages.catalogPage;
+  const placementCompleteHandled = useRef(false);
 
-    useEffect(() => {
-        const fetchVideos = async () => {
-            try {
-                const response = await apiFetch("/content-video", {
-                    method: "GET",
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setVideos(data);
-                }
-            } catch (error) {
-                console.error("Error fetching video library:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+  const accessToken = getStoredAccessToken();
+  const needsPlacement =
+    !userLoading &&
+    !!accessToken &&
+    !!user &&
+    user.role !== "teacher" &&
+    !user.hasCompletedPlacement;
 
-        fetchVideos();
-    }, []);
+  /** Derive phase synchronously so we never flash the wrong overlay (effect + stale initial state). */
+  const placementPhaseResolved = useMemo((): "preferences" | "test" | "off" => {
+    if (!needsPlacement || !user) return "off";
+    if (user.role === "adult") {
+      return adultNeedsPlacementPrepFields(user) ? "preferences" : "test";
+    }
+    const hasPrefs =
+      (user.hobbies?.length ?? 0) > 0 && (user.favoriteGenres?.length ?? 0) > 0;
+    return hasPrefs ? "test" : "preferences";
+  }, [
+    needsPlacement,
+    user,
+    user?.hobbies,
+    user?.favoriteGenres,
+    user?.role,
+    user?.nativeLanguage,
+    user?.workField,
+    user?.education,
+  ]);
 
-    return (
-        <div className="min-h-screen bg-black text-white font-sans">
-            <Navigation />
+  const showPlacementPrepOverlay =
+    placementPhaseResolved === "preferences" && !!user;
+  const showPlacementTest =
+    placementPhaseResolved === "test" && !!accessToken;
 
-            <main className="max-w-7xl mx-auto p-8">
-                <header className="mb-12">
-                    <h1 className="text-5xl font-extrabold tracking-tight">Video Library</h1>
-                    <p className="text-zinc-500 mt-3 text-lg">
-                        Master English by watching your favorite movies and series.
-                    </p>
-                </header>
+  useEffect(() => {
+    if (!needsPlacement) {
+      placementCompleteHandled.current = false;
+      return;
+    }
+    const onMessage = (ev: MessageEvent) => {
+      // #region agent log
+      if (ev.data?.type === "placement_diag") {
+        try {
+          if (typeof console !== "undefined" && console.log) {
+            console.log(
+              "[placement:parent]",
+              ev.data.step,
+              ev.data.data ?? {},
+            );
+          }
+        } catch {
+          /* */
+        }
+        fetch(
+          "http://127.0.0.1:7658/ingest/d719e046-fe6c-4322-a0e2-5351c6126712",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "0c8a48",
+            },
+            body: JSON.stringify({
+              sessionId: "0c8a48",
+              hypothesisId: "IFRAME",
+              location: "VideosPage.tsx:message",
+              message: String(ev.data?.step ?? "placement_diag"),
+              data: (ev.data?.data as object) ?? {},
+              timestamp: Date.now(),
+            }),
+          },
+        ).catch(() => {});
+        return;
+      }
+      // #endregion
+      if (ev.data?.type === "placement_exit") {
+        navigate("/");
+        return;
+      }
+      if (
+        ev.data?.type === "placement_test_complete" &&
+        !placementCompleteHandled.current
+      ) {
+        placementCompleteHandled.current = true;
+        void (async () => {
+          await refreshProfile();
+          navigate("/learning-plan", { replace: true });
+        })();
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [needsPlacement, navigate, refreshProfile]);
 
-                {loading ? (
-                    <div className="flex flex-col justify-center items-center h-80 space-y-4">
-                        <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-blue-600 border-solid"></div>
-                        <p className="text-zinc-400 animate-pulse">Loading content...</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {videos.map((video) => (
-                            <div
-                                key={video.id}
-                                className="group bg-zinc-900/50 border border-zinc-800 rounded-3xl overflow-hidden hover:border-blue-500/50 hover:bg-zinc-900 transition-all duration-300 flex flex-col shadow-lg"
-                            >
-                                {/* Preview Area */}
-                                <div className="relative aspect-video bg-zinc-800 overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60"></div>
+  useEffect(() => {
+    if (!showPlacementTest || !accessToken) {
+      setPlacementDocHtml(null);
+      setPlacementDocError(null);
+      return;
+    }
+    let cancelled = false;
+    setPlacementDocHtml(null);
+    setPlacementDocError(null);
+    void (async () => {
+      try {
+        const res = await apiFetch("/placement-test/document", {
+          method: "GET",
+        });
+        if (!res.ok) {
+          const msg = await getResponseErrorMessage(res);
+          if (!cancelled) setPlacementDocError(msg);
+          return;
+        }
+        const html = await res.text();
+        if (!cancelled) {
+          setPlacementDocHtml(
+            placementPatchApiOrigin(html, getApiBase().replace(/\/$/, "")),
+          );
+          setPlacementDocError(null);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setPlacementDocError(
+            e instanceof Error ? e.message : "Could not load placement test.",
+          );
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showPlacementTest, accessToken]);
 
-                                    {/* Category Name from DB */}
-                                    <div className="absolute top-4 left-4 z-10">
-                                        <span className="bg-blue-600/20 text-blue-400 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest backdrop-blur-md border border-blue-500/20">
-                                            {video.content.category.name}
-                                        </span>
-                                    </div>
+  useEffect(() => {
+    try {
+      if (typeof console !== "undefined" && console.log) {
+        console.log("[placement:parent]", "placement state", {
+          placementPhaseResolved,
+          showPlacementTest,
+          showPlacementPrepOverlay,
+          needsPlacement,
+          hasToken: !!accessToken,
+          hasUser: !!user,
+          userRole: user?.role,
+          hasCompletedPlacement: user?.hasCompletedPlacement,
+          apiBase: getApiBase(),
+        });
+      }
+    } catch {
+      /* */
+    }
+  }, [
+    placementPhaseResolved,
+    showPlacementTest,
+    showPlacementPrepOverlay,
+    needsPlacement,
+    accessToken,
+    user,
+  ]);
 
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-2xl">
-                                            <svg className="w-6 h-6 text-white translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M8 5v14l11-7z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const response = await apiFetch("/content-video", { method: "GET" });
+        if (response.ok) setVideos(await response.json());
+      } catch (error) {
+        console.error("Error fetching video library:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVideos();
+  }, []);
 
-                                {/* Content Info */}
-                                <div className="p-6 flex-grow flex flex-col">
-                                    <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300 line-clamp-1 mb-2">
-                                        {video.videoName}
-                                    </h3>
+  const categoryNames = useMemo(() => {
+    const names = videos.map((v) => v.content.category.name);
+    return [...new Set(names)];
+  }, [videos]);
 
-                                    <p className="text-zinc-500 text-sm line-clamp-2 leading-relaxed flex-grow">
-                                        {video.videoDescription || video.content.category.description}
-                                    </p>
+  const filteredVideos = useMemo(() => {
+    return videos.filter((v) => {
+      if (selectedCategory === "All") return true;
+      return v.content.category.name === selectedCategory;
+    });
+  }, [videos, selectedCategory]);
 
-                                    <button
-                                        onClick={() => navigate(`/content/${video.id}`)}
-                                        className="mt-6 w-full py-3 bg-white/5 hover:bg-blue-600 text-white rounded-2xl font-bold text-sm transition-all duration-300 border border-white/5 hover:border-blue-500 shadow-sm active:scale-95"
-                                    >
-                                        Watch Now
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+  const featured = filteredVideos[0] ?? null;
+  const featuredHero = featured
+    ? {
+        id: featured.id,
+        title: featured.videoName,
+        description:
+          featured.videoDescription ??
+          featured.content.category.description ??
+          "",
+        categoryName: featured.content.category.name,
+      }
+    : null;
 
-                {/* Empty State */}
-                {!loading && videos.length === 0 && (
-                    <div className="text-center py-32 bg-zinc-900/30 rounded-[40px] border-2 border-dashed border-zinc-800/50">
-                        <div className="text-6xl mb-4">🎬</div>
-                        <h2 className="text-2xl font-bold text-white">No videos yet</h2>
-                        <p className="text-zinc-500 mt-2">Check back later for new content.</p>
-                    </div>
-                )}
-            </main>
+  const catalogRows = useMemo(() => {
+    if (filteredVideos.length === 0) return [];
+    if (selectedCategory !== "All") {
+      return [
+        {
+          title: selectedCategory,
+          description: undefined as string | undefined,
+          videos: filteredVideos.map(toCardVideo),
+        },
+      ];
+    }
+    const byCategory = new Map<string, ContentVideo[]>();
+    for (const v of filteredVideos) {
+      const key = v.content.category.name;
+      const bucket = byCategory.get(key);
+      if (bucket) bucket.push(v);
+      else byCategory.set(key, [v]);
+    }
+    return [...byCategory.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([title, list]) => ({
+        title,
+        description: undefined as string | undefined,
+        videos: list.map(toCardVideo),
+      }));
+  }, [filteredVideos, selectedCategory]);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground antialiased flex-col">
+      <SEO
+        title={catalogSeo.title}
+        description={catalogSeo.description}
+        canonicalUrl={resolveCanonicalUrl("/catalog")}
+        ogLocale={locale === "uk" ? "uk_UA" : "en_US"}
+        ogLocaleAlternate={locale === "uk" ? "en_US" : "uk_UA"}
+      />
+      <div>
+        <div className="flex">
+          <CatalogSidebar
+            categories={categoryNames}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            welcomeName={user?.name ? user.name.split(" ")[0] : undefined}
+            englishLevel={user?.englishLevel || undefined}
+            collapsed={sidebarCollapsed}
+            onCollapsedChange={setSidebarCollapsed}
+          />
+
+          <main
+            className={cn(
+              "flex-1 pb-24 transition-all duration-300 font-display lg:pb-8",
+              sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
+            )}
+          >
+            <CatalogHero featured={featuredHero} />
+            <div id="catalog-library" className="space-y-10">
+              {loading ? (
+                <div className="flex h-60 bg-card/30 flex-col items-center border-border border-t justify-center space-y-4">
+                  <div className="h-10 w-10 animate-spin rounded-full border-solid border-primary border-t-4 border-r-transparent border-b-transparent border-l-transparent" />
+                  <p className="animate-pulse text-muted-foreground">
+                    Loading catalog…
+                  </p>
+                </div>
+              ) : filteredVideos.length === 0 ? (
+                <div className="border-t border-border bg-card/30 py-15 text-center">
+                  <Frown className="text-foreground/70 justify-center w-full w-10 h-10 pb-2" />
+                  <h2 className="font-display text-2xl font-bold">
+                    Nothing here yet
+                  </h2>
+                  <p className="mt-2 text-muted-foreground">
+                    {videos.length === 0
+                      ? "Check back soon for new lessons."
+                      : "Try clearing the category filter."}
+                  </p>
+                </div>
+              ) : (
+                catalogRows.map((row) => (
+                  <CatalogVideoRow
+                    key={row.title}
+                    title={row.title}
+                    description={row.description}
+                    videos={row.videos}
+                  />
+                ))
+              )}
+            </div>
+          </main>
         </div>
-    );
+      </div>
+
+      {showPlacementPrepOverlay ? (
+        <div className="fixed inset-0 z-200 flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
+          <header className="shrink-0 border-border border-b bg-background">
+            <div className="mx-auto grid w-full max-w-4xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4">
+              <div aria-hidden="true" />
+              <div className="flex items-center gap-2">
+                <ChameleonMascot
+                  size="sm"
+                  mood="thinking"
+                  animate={false}
+                  className="h-10! w-10!"
+                />
+                <span className="font-display text-lg font-bold tracking-tight text-foreground">
+                  Explys
+                </span>
+              </div>
+              <span className="justify-self-end text-sm text-muted-foreground">
+                1 / 2
+              </span>
+            </div>
+          </header>
+          <div className="mx-auto w-full max-w-4xl shrink-0 px-4 py-6">
+            <div
+              className="h-2 w-full overflow-hidden rounded-full bg-muted"
+              role="progressbar"
+              aria-valuenow={50}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Placement flow progress"
+            >
+              <div className="h-full w-1/2 rounded-full bg-primary transition-all" />
+            </div>
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            <div className="mx-auto w-full max-w-md shrink-0 px-4 pt-2 pb-2">
+              <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
+                Before your entry test
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {user?.role === "adult" ?
+                  "Enter your job, education, hobbies, and native language — then your placement questionnaire starts."
+                : "A few quick preferences — then your placement questionnaire."}
+              </p>
+            </div>
+            <div className="flex-1 pb-6">
+              {user ?
+                user.role === "adult" ?
+                  <PlacementPreTestStep
+                    user={user}
+                    onSuccess={() => undefined}
+                  />
+                : <PlacementPreferencesStep
+                    user={user}
+                    onSuccess={() => undefined}
+                  />
+              : null}
+            </div>
+            <footer className="shrink-0 border-border border-t bg-card">
+              <div className="mx-auto flex max-w-4xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="mb-3 flex items-center gap-2">
+                    <ChameleonMascot
+                      size="sm"
+                      mood="happy"
+                      animate={false}
+                      className="h-10! w-10!"
+                    />
+                    <span className="font-display text-lg font-bold tracking-tight text-foreground">
+                      Explys
+                    </span>
+                  </div>
+                  <p className="max-w-xs text-sm text-muted-foreground">
+                    Personalized English learning through adaptive video content
+                    — learn at your own pace.
+                  </p>
+                </div>
+                <p className="shrink-0 text-sm text-muted-foreground">
+                  © {new Date().getFullYear()} Explys
+                </p>
+              </div>
+            </footer>
+          </div>
+        </div>
+      ) : null}
+
+      {showPlacementTest ? (
+        <div className="fixed inset-0 z-200 flex flex-col bg-background">
+          {placementDocError ? (
+            <div
+              className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center"
+              role="alert"
+            >
+              <p className="text-destructive text-sm font-medium">
+                Could not load the placement test.
+              </p>
+              <p className="text-muted-foreground max-w-md text-sm">
+                {placementDocError}
+              </p>
+            </div>
+          ) : placementDocHtml ? (
+            <iframe
+              key="placement-entry-test"
+              title="Placement test"
+              className="min-h-0 w-full flex-1 border-0 bg-background"
+              srcDoc={placementDocHtml}
+              onLoad={() => {
+                try {
+                  if (typeof console !== "undefined" && console.log) {
+                    console.log("[placement:parent]", "iframe onLoad (srcDoc)");
+                  }
+                } catch {
+                  /* */
+                }
+              }}
+            />
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center gap-3">
+              <div className="h-10 w-10 animate-spin rounded-full border-solid border-primary border-t-4 border-r-transparent border-b-transparent border-l-transparent" />
+              <p className="text-muted-foreground text-sm">Loading placement test…</p>
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
 }

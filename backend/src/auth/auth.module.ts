@@ -6,6 +6,7 @@ import { AuthController } from "./auth.controller";
 import { AuthGuard } from "./auth.guard";
 import { AuthService } from "./auth.service";
 import { ApiTokenOrJwtAuthGuard } from "./guards/api-token-or-jwt.guard";
+import { ApiTokenOnlyGuard } from "./guards/api-token-only.guard";
 import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
 import { UsersService } from "src/users/users.service";
 import { ProviderModule } from "./provider/provider.module";
@@ -45,6 +46,7 @@ import { getRecaptchaConfig } from "src/config/recaptcha.config";
     AuthService,
     AuthGuard,
     ApiTokenOrJwtAuthGuard,
+    ApiTokenOnlyGuard,
     UserSelfOrApiGuard,
     UsersService,
     MailService,
@@ -55,6 +57,7 @@ import { getRecaptchaConfig } from "src/config/recaptcha.config";
     AuthService,
     AuthGuard,
     ApiTokenOrJwtAuthGuard,
+    ApiTokenOnlyGuard,
     UserSelfOrApiGuard,
   ],
 })

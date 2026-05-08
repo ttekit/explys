@@ -38,6 +38,21 @@ export type ContentStats = Prisma.ContentStatsModel
  */
 export type ContentVideo = Prisma.ContentVideoModel
 /**
+ * Model UserComprehensionWeakSpot
+ * Per-user misses on a clip; used to bias future quiz generation toward similar skills.
+ */
+export type UserComprehensionWeakSpot = Prisma.UserComprehensionWeakSpotModel
+/**
+ * Model WatchSession
+ * Deduped per user/video/calendar day (UTC); updated on subsequent watch-complete same day.
+ */
+export type WatchSession = Prisma.WatchSessionModel
+/**
+ * Model ComprehensionTestAttempt
+ * 
+ */
+export type ComprehensionTestAttempt = Prisma.ComprehensionTestAttemptModel
+/**
  * Model VideoCaptions
  * 
  */
@@ -112,3 +127,8 @@ export type UserFriend = Prisma.UserFriendModel
  * 
  */
 export type UserVocabulary = Prisma.UserVocabularyModel
+/**
+ * Model PlacementAttempt
+ * One-row-per-day idempotent completion signal for admin metrics (JWT watch-complete).
+ */
+export type PlacementAttempt = Prisma.PlacementAttemptModel

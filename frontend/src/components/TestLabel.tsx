@@ -13,11 +13,10 @@ export default function TestLabel({
   return (
     <>
       <div
-        className={`m-1 flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${
-          isDone
+        className={`m-1 flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${isDone
             ? "border-violet-500/30 bg-violet-500/10 text-violet-300"
             : "border-zinc-700/60 bg-zinc-800/60 text-zinc-500 hover:border-zinc-600 hover:bg-zinc-800/90 hover:text-zinc-300"
-        }`}
+          }`}
         {...props}
       >
         <span>{children}</span>

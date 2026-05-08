@@ -5,7 +5,10 @@ import LabelRegister from "../../components/LabelRegister";
 import { Link, useNavigate } from "react-router";
 import { useContext, useState, ChangeEvent, FormEvent } from "react";
 import { RegistrationContext } from "../../context/RegistrationContext";
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { AuthSplitLayout } from "../../components/AuthSplitLayout";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
 
 export default function RegistrationMain() {
   const context = useContext(RegistrationContext);
@@ -18,7 +21,6 @@ export default function RegistrationMain() {
     useState<boolean>(false);
   const navigate = useNavigate();
 
-  /** At least 8 chars; must include upper, lower, digit, and one of @$!%*?& (any other chars allowed). */
   const isValidPassword = (p: string) =>
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(p);
 
@@ -45,16 +47,14 @@ export default function RegistrationMain() {
         return false;
       }
       if (!/[@$!%*?&]/.test(value)) {
-        setErrorText(
-          "Password must contain at least one of: @ $ ! % * ? &",
-        );
+        setErrorText("Password must contain at least one of: @ $ ! % * ? &");
         return false;
       }
     }
 
-    if (type == "confirmPassword") {
+    if (type === "confirmPassword") {
       const pw = passwordToCompare ?? formData.password;
-      if (value != pw) {
+      if (value !== pw) {
         setErrorText("Passwords do not match.");
         return false;
       }
@@ -82,13 +82,14 @@ export default function RegistrationMain() {
     e: ChangeEvent<HTMLInputElement>,
     type: "password" | "email" | "confirmPassword" | "other",
   ) => {
-    const { name, value } = e.target;
+    const { value } = e.target;
+    const name = e.target.name as keyof typeof formData & string;
     updateFormData({ [name]: value } as Record<string, string>);
 
     const passFromForm =
-      (e.currentTarget.form?.querySelector<HTMLInputElement>(
+      e.currentTarget.form?.querySelector<HTMLInputElement>(
         'input[name="password"]',
-      )?.value) ?? formData.password;
+      )?.value ?? formData.password;
     if (type === "confirmPassword") {
       validateField(value, "confirmPassword", passFromForm);
     } else {
@@ -98,8 +99,8 @@ export default function RegistrationMain() {
 
   const handleNext = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
+    const formEl = e.currentTarget;
+    const fd = new FormData(formEl);
     const name = String(fd.get("name") ?? "").trim();
     const email = String(fd.get("email") ?? "").trim();
     const password = String(fd.get("password") ?? "");
@@ -166,121 +167,152 @@ export default function RegistrationMain() {
       confirmPassword: "",
       englishLevel: "choose",
       hobbies: [],
-      education: "choose",
-      workField: "choose",
+      education: "",
+      workField: "",
       favoriteGenres: [],
       hatedGenres: [],
+      learningGoal: "",
+      timeToAchieve: "",
     });
   };
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center p-2">
-        <form
-          className="w-full max-w-100 bg-(--gray-background) rounded-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.1)] p-7 flex flex-col"
-          onSubmit={handleNext}
-          tabIndex={0}
-        >
-          <div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">
-              Create an account
-            </p>
-            <div className="flex">
-              <p className="text-gray-500 mb-8">Account Credentials</p>
-              <p>- Page 1</p>
-            </div>
-          </div>
-          <div className="space-y-2 flex flex-col">
-            <div className="flex flex-row justify-end">
-              <LabelRegister isRequired={true}>Username</LabelRegister>
-            </div>
-            <InputText
-              name="name"
-              value={formData.name}
-              onChange={(e) => handleChange(e, "other")}
-              type="text"
-              placeholder="Enter your username"
-            />
-            <div className="flex flex-row justify-end">
-              <LabelRegister isRequired={true}>Email</LabelRegister>
-            </div>
-            <InputText
-              name="email"
-              value={formData.email}
-              onChange={(e) => handleChange(e, "email")}
-              type="email"
-              placeholder="Enter your email"
-            />
-            <div className="flex flex-row justify-end">
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                aria-pressed={showPassword}
-                onClick={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? (
-                  <EyeOff className="opacity-60 w-6 h-6 pr-1" />
-                ) : (
-                  <Eye className="opacity-60 w-6 h-6 pr-1" />
-                )}
-              </button>
-              <LabelRegister isRequired={true}>Password</LabelRegister>
-            </div>
-            <div className="flex">
-              <InputText
-                name="password"
-                value={formData.password}
-                onChange={(e) => handleChange(e, "password")}
-                type={showPassword ? "text" : "password"}
-                placeholder="Create password"
-              />
-            </div>
-            <div className="flex flex-row justify-end">
-              <button
-                type="button"
-                aria-label={
-                  showConfirmPassword
-                    ? "Hide confirm password"
-                    : "Show confirm password"
-                }
-                aria-pressed={showConfirmPassword}
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="opacity-60 w-6 h-6 pr-1" />
-                ) : (
-                  <Eye className="opacity-60 w-6 h-6 pr-1" />
-                )}
-              </button>
-              <LabelRegister isRequired={true}>Confirm password</LabelRegister>
-            </div>
-            <div className="flex">
-              <InputText
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={(e) => handleChange(e, "confirmPassword")}
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm password"
-              />
-            </div>
-            {errorText && <ValidateError>{errorText}</ValidateError>}
-          </div>
-          <div>
-            <Button type="submit">Next</Button>
-            <Link to="/">
-              <Button type="button" onClick={handleBack}>
-                Back
-              </Button>
-            </Link>
-          </div>
-          <div className="mt-6 flex justify-center gap-4 text-gray-500 font-medium">
-            <p className="opacity-70">Already have an account?</p>
-            <Link to="/loginForm">
-              <p className="text-[#7c66f5] hover:underline">Sign in</p>
-            </Link>
-          </div>
-        </form>
+      <SEO
+        title="Create account"
+        description="Register for Explys to start learning English with personalized video lessons."
+        canonicalUrl={resolveCanonicalUrl("/registrationMain")}
+        noindex
+      />
+      <AuthSplitLayout
+      progressStep={1}
+      progressTotal={3}
+      rightTitle="Welcome to Explys!"
+      rightSubtitle="Join thousands of learners improving their English through personalized video content."
+    >
+      <div className="mb-1 flex items-center gap-3">
+        <img src="/Icon.svg" className="w-15 h-18 mr-4" />
+        <h1 className="font-display text-2xl font-bold">Join Explys</h1>
       </div>
+      <p className="mb-8 text-muted-foreground">
+        Create your account and start your personalized learning journey
+      </p>
+
+      <form onSubmit={handleNext} tabIndex={0} className="space-y-5">
+        <div className="space-y-2">
+          <LabelRegister isRequired={true}>Username</LabelRegister>
+          <InputText
+            name="name"
+            value={formData.name}
+            onChange={(e) => handleChange(e, "other")}
+            type="text"
+            placeholder="Choose a username"
+            autoComplete="username"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <LabelRegister isRequired={true}>Email</LabelRegister>
+          <InputText
+            name="email"
+            value={formData.email}
+            onChange={(e) => handleChange(e, "email")}
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <LabelRegister isRequired={true}>Password</LabelRegister>
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? (
+                <EyeOff className="size-5 opacity-70" />
+              ) : (
+                <Eye className="size-5 opacity-70" />
+              )}
+            </button>
+          </div>
+          <InputText
+            name="password"
+            value={formData.password}
+            onChange={(e) => handleChange(e, "password")}
+            type={showPassword ? "text" : "password"}
+            placeholder="Create a password"
+            autoComplete="new-password"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <LabelRegister isRequired={true}>Confirm password</LabelRegister>
+            <button
+              type="button"
+              aria-label={
+                showConfirmPassword
+                  ? "Hide confirm password"
+                  : "Show confirm password"
+              }
+              aria-pressed={showConfirmPassword}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="size-5 opacity-70" />
+              ) : (
+                <Eye className="size-5 opacity-70" />
+              )}
+            </button>
+          </div>
+          <InputText
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={(e) => handleChange(e, "confirmPassword")}
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Confirm password"
+            autoComplete="new-password"
+          />
+        </div>
+
+        {errorText && <ValidateError>{errorText}</ValidateError>}
+
+        <Button
+          type="submit"
+          className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+        >
+          Continue
+          <ArrowRight className="size-4" />
+        </Button>
+      </form>
+
+      <div className="mt-6 flex flex-col gap-4">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          onClick={handleBack}
+        >
+          <ArrowLeft className="size-4" />
+          Back home
+        </Link>
+      </div>
+
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link
+          to="/loginForm"
+          className="font-medium text-primary hover:underline"
+        >
+          Log in
+        </Link>
+      </p>
+    </AuthSplitLayout>
     </>
   );
 }

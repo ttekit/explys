@@ -388,6 +388,9 @@ export const ModelName = {
   ContentMedia: 'ContentMedia',
   ContentStats: 'ContentStats',
   ContentVideo: 'ContentVideo',
+  UserComprehensionWeakSpot: 'UserComprehensionWeakSpot',
+  WatchSession: 'WatchSession',
+  ComprehensionTestAttempt: 'ComprehensionTestAttempt',
   VideoCaptions: 'VideoCaptions',
   PostWatchSurvey: 'PostWatchSurvey',
   User: 'User',
@@ -402,7 +405,8 @@ export const ModelName = {
   UserStatistic: 'UserStatistic',
   UserLanguageData: 'UserLanguageData',
   UserFriend: 'UserFriend',
-  UserVocabulary: 'UserVocabulary'
+  UserVocabulary: 'UserVocabulary',
+  PlacementAttempt: 'PlacementAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -418,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "content" | "contentMedia" | "contentStats" | "contentVideo" | "videoCaptions" | "postWatchSurvey" | "user" | "account" | "token" | "additionalUserData" | "genre" | "topic" | "category" | "tag" | "userSettings" | "userStatistic" | "userLanguageData" | "userFriend" | "userVocabulary"
+    modelProps: "content" | "contentMedia" | "contentStats" | "contentVideo" | "userComprehensionWeakSpot" | "watchSession" | "comprehensionTestAttempt" | "videoCaptions" | "postWatchSurvey" | "user" | "account" | "token" | "additionalUserData" | "genre" | "topic" | "category" | "tag" | "userSettings" | "userStatistic" | "userLanguageData" | "userFriend" | "userVocabulary" | "placementAttempt"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -715,6 +719,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ContentVideoCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ContentVideoCountAggregateOutputType> | number
+        }
+      }
+    }
+    UserComprehensionWeakSpot: {
+      payload: Prisma.$UserComprehensionWeakSpotPayload<ExtArgs>
+      fields: Prisma.UserComprehensionWeakSpotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserComprehensionWeakSpotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserComprehensionWeakSpotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload>
+        }
+        findFirst: {
+          args: Prisma.UserComprehensionWeakSpotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserComprehensionWeakSpotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload>
+        }
+        findMany: {
+          args: Prisma.UserComprehensionWeakSpotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload>[]
+        }
+        create: {
+          args: Prisma.UserComprehensionWeakSpotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload>
+        }
+        createMany: {
+          args: Prisma.UserComprehensionWeakSpotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserComprehensionWeakSpotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload>[]
+        }
+        delete: {
+          args: Prisma.UserComprehensionWeakSpotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload>
+        }
+        update: {
+          args: Prisma.UserComprehensionWeakSpotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserComprehensionWeakSpotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserComprehensionWeakSpotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserComprehensionWeakSpotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserComprehensionWeakSpotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserComprehensionWeakSpotPayload>
+        }
+        aggregate: {
+          args: Prisma.UserComprehensionWeakSpotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserComprehensionWeakSpot>
+        }
+        groupBy: {
+          args: Prisma.UserComprehensionWeakSpotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserComprehensionWeakSpotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserComprehensionWeakSpotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserComprehensionWeakSpotCountAggregateOutputType> | number
+        }
+      }
+    }
+    WatchSession: {
+      payload: Prisma.$WatchSessionPayload<ExtArgs>
+      fields: Prisma.WatchSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WatchSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WatchSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.WatchSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WatchSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload>
+        }
+        findMany: {
+          args: Prisma.WatchSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload>[]
+        }
+        create: {
+          args: Prisma.WatchSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload>
+        }
+        createMany: {
+          args: Prisma.WatchSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WatchSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.WatchSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload>
+        }
+        update: {
+          args: Prisma.WatchSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.WatchSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WatchSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WatchSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.WatchSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WatchSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.WatchSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWatchSession>
+        }
+        groupBy: {
+          args: Prisma.WatchSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WatchSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WatchSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WatchSessionCountAggregateOutputType> | number
+        }
+      }
+    }
+    ComprehensionTestAttempt: {
+      payload: Prisma.$ComprehensionTestAttemptPayload<ExtArgs>
+      fields: Prisma.ComprehensionTestAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ComprehensionTestAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ComprehensionTestAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.ComprehensionTestAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ComprehensionTestAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.ComprehensionTestAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.ComprehensionTestAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.ComprehensionTestAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ComprehensionTestAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.ComprehensionTestAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload>
+        }
+        update: {
+          args: Prisma.ComprehensionTestAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.ComprehensionTestAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ComprehensionTestAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ComprehensionTestAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.ComprehensionTestAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ComprehensionTestAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.ComprehensionTestAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateComprehensionTestAttempt>
+        }
+        groupBy: {
+          args: Prisma.ComprehensionTestAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ComprehensionTestAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ComprehensionTestAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ComprehensionTestAttemptCountAggregateOutputType> | number
         }
       }
     }
@@ -1828,6 +2054,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PlacementAttempt: {
+      payload: Prisma.$PlacementAttemptPayload<ExtArgs>
+      fields: Prisma.PlacementAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PlacementAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PlacementAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.PlacementAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PlacementAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.PlacementAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.PlacementAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.PlacementAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PlacementAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.PlacementAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload>
+        }
+        update: {
+          args: Prisma.PlacementAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.PlacementAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PlacementAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PlacementAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.PlacementAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlacementAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.PlacementAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePlacementAttempt>
+        }
+        groupBy: {
+          args: Prisma.PlacementAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlacementAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PlacementAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlacementAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1872,6 +2172,7 @@ export const ContentScalarFieldEnum = {
   friendlyLink: 'friendlyLink',
   name: 'name',
   description: 'description',
+  previewUrl: 'previewUrl',
   createAt: 'createAt',
   updateAt: 'updateAt'
 } as const
@@ -1907,11 +2208,53 @@ export const ContentVideoScalarFieldEnum = {
   contentId: 'contentId',
   videoLink: 'videoLink',
   videoName: 'videoName',
-  videoDescription: 'videoDescription',
-  comprehensionTestsCache: 'comprehensionTestsCache'
+  videoDescription: 'videoDescription'
 } as const
 
 export type ContentVideoScalarFieldEnum = (typeof ContentVideoScalarFieldEnum)[keyof typeof ContentVideoScalarFieldEnum]
+
+
+export const UserComprehensionWeakSpotScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  contentVideoId: 'contentVideoId',
+  category: 'category',
+  stemHash: 'stemHash',
+  stemSnippet: 'stemSnippet',
+  missCount: 'missCount',
+  lastMissedAt: 'lastMissedAt'
+} as const
+
+export type UserComprehensionWeakSpotScalarFieldEnum = (typeof UserComprehensionWeakSpotScalarFieldEnum)[keyof typeof UserComprehensionWeakSpotScalarFieldEnum]
+
+
+export const WatchSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  contentVideoId: 'contentVideoId',
+  completionDate: 'completionDate',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  secondsWatched: 'secondsWatched',
+  completed: 'completed'
+} as const
+
+export type WatchSessionScalarFieldEnum = (typeof WatchSessionScalarFieldEnum)[keyof typeof WatchSessionScalarFieldEnum]
+
+
+export const ComprehensionTestAttemptScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  contentVideoId: 'contentVideoId',
+  correct: 'correct',
+  total: 'total',
+  scorePct: 'scorePct',
+  passed: 'passed',
+  details: 'details',
+  createdAt: 'createdAt'
+} as const
+
+export type ComprehensionTestAttemptScalarFieldEnum = (typeof ComprehensionTestAttemptScalarFieldEnum)[keyof typeof ComprehensionTestAttemptScalarFieldEnum]
 
 
 export const VideoCaptionsScalarFieldEnum = {
@@ -1947,10 +2290,18 @@ export const UserScalarFieldEnum = {
   hasCompletedPlacement: 'hasCompletedPlacement',
   lastLogin: 'lastLogin',
   createdAt: 'createdAt',
+  placementTestDraft: 'placementTestDraft',
+  isSuspended: 'isSuspended',
   teacherId: 'teacherId',
   isVerified: 'isVerified',
   isTwoFactorEnable: 'isTwoFactorEnable',
-  method: 'method'
+  method: 'method',
+  currentStreak: 'currentStreak',
+  lastActivityDate: 'lastActivityDate',
+  stripeCustomerId: 'stripeCustomerId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  subscriptionPlan: 'subscriptionPlan',
+  subscriptionStatus: 'subscriptionStatus'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -1992,6 +2343,8 @@ export const AdditionalUserDataScalarFieldEnum = {
   workField: 'workField',
   hobbies: 'hobbies',
   interests: 'interests',
+  learningGoal: 'learningGoal',
+  timeToAchieve: 'timeToAchieve',
   teacherGrades: 'teacherGrades',
   teacherTopics: 'teacherTopics',
   studentNames: 'studentNames',
@@ -2067,6 +2420,9 @@ export const UserLanguageDataScalarFieldEnum = {
   userId: 'userId',
   topicId: 'topicId',
   score: 'score',
+  listeningScore: 'listeningScore',
+  vocabularyScore: 'vocabularyScore',
+  grammarScore: 'grammarScore',
   confidence: 'confidence',
   coverage: 'coverage',
   algorithmVersion: 'algorithmVersion',
@@ -2094,11 +2450,28 @@ export const UserVocabularyScalarFieldEnum = {
   source: 'source',
   topicId: 'topicId',
   mastery: 'mastery',
+  nativeTranslation: 'nativeTranslation',
+  learnerDescription: 'learnerDescription',
+  descriptionCefrBand: 'descriptionCefrBand',
+  nativeLanguageCode: 'nativeLanguageCode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserVocabularyScalarFieldEnum = (typeof UserVocabularyScalarFieldEnum)[keyof typeof UserVocabularyScalarFieldEnum]
+
+
+export const PlacementAttemptScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  scoreCorrect: 'scoreCorrect',
+  scoreTotal: 'scoreTotal',
+  scorePct: 'scorePct',
+  englishLevel: 'englishLevel',
+  createdAt: 'createdAt'
+} as const
+
+export type PlacementAttemptScalarFieldEnum = (typeof PlacementAttemptScalarFieldEnum)[keyof typeof PlacementAttemptScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2212,6 +2585,13 @@ export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMode
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'Json'
  */
 export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
@@ -2236,13 +2616,6 @@ export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
  * Reference to a field of type 'UserRole[]'
  */
 export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -2372,6 +2745,9 @@ export type GlobalOmitConfig = {
   contentMedia?: Prisma.ContentMediaOmit
   contentStats?: Prisma.ContentStatsOmit
   contentVideo?: Prisma.ContentVideoOmit
+  userComprehensionWeakSpot?: Prisma.UserComprehensionWeakSpotOmit
+  watchSession?: Prisma.WatchSessionOmit
+  comprehensionTestAttempt?: Prisma.ComprehensionTestAttemptOmit
   videoCaptions?: Prisma.VideoCaptionsOmit
   postWatchSurvey?: Prisma.PostWatchSurveyOmit
   user?: Prisma.UserOmit
@@ -2387,6 +2763,7 @@ export type GlobalOmitConfig = {
   userLanguageData?: Prisma.UserLanguageDataOmit
   userFriend?: Prisma.UserFriendOmit
   userVocabulary?: Prisma.UserVocabularyOmit
+  placementAttempt?: Prisma.PlacementAttemptOmit
 }
 
 /* Types for Logging */

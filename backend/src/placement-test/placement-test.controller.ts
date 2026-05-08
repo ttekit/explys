@@ -22,6 +22,7 @@ import {
   ApiSecurity,
   ApiTags,
 } from "@nestjs/swagger";
+import { appendFileSync } from "node:fs";
 import { Request, Response } from "express";
 import { CompletePlacementDto } from "./dto/complete-placement.dto";
 import { PlacementCompleteResponseDto } from "./dto/placement-complete-response.dto";
@@ -30,6 +31,16 @@ import { PlacementJwtGuard } from "./placement-jwt.guard";
 import { PlacementTestService } from "./placement-test.service";
 
 type AuthedRequest = Request & { user: { sub: number; email: string } };
+
+function inferApiPublicOrigin(req: Request): string {
+  const xf = req.headers["x-forwarded-proto"];
+  const raw =
+    typeof xf === "string" ? xf.split(",")[0]?.trim() : undefined;
+  const proto = (raw || req.protocol || "http").replace(/:$/, "");
+  const host = req.get("host");
+  if (!host) return "";
+  return `${proto}://${host}`;
+}
 
 function getBearerOrQueryToken(req: Request): string {
   const authHeader = req.headers.authorization;
@@ -91,19 +102,23 @@ export class PlacementTestController {
     description:
       "Use `?access_token=<JWT>` when the browser cannot send Authorization for an iframe (same origin as the API). " +
       "Responds with `text/html` and `Content-Security-Policy: frame-ancestors` (set `PLACEMENT_TEST_FRAME_ANCESTORS` in production). " +
-      "The returned HTML issues `POST /placement-test/complete` on submit; embeds `x-api-token` in that request in production when `API_TOKEN` is set.",
+      "Each load persists a scoring draft keyed to the questionnaire in this response; `POST /placement-test/complete` scores against that draft.",
   })
   @ApiProduces("text/html")
   @Header("Content-Type", "text/html; charset=utf-8")
   @Header("Cache-Control", "no-store")
   @ApiOkResponse({
-    description: "Full HTML document (styled test UI, ready for `<iframe src=\"…\">`)",
+    description:
+      'Full HTML document (styled test UI, ready for `<iframe src="…">`)',
   })
   @ApiResponse({ status: 401, description: "Invalid or missing JWT" })
   async document(@Req() req: AuthedRequest, @Res() res: Response) {
     const frame = this.config.get<string>("PLACEMENT_TEST_FRAME_ANCESTORS");
     if (frame?.trim()) {
-      res.setHeader("Content-Security-Policy", `frame-ancestors ${frame.trim()}`);
+      res.setHeader(
+        "Content-Security-Policy",
+        `frame-ancestors ${frame.trim()}`,
+      );
     } else {
       res.setHeader("Content-Security-Policy", "frame-ancestors *");
     }
@@ -111,7 +126,32 @@ export class PlacementTestController {
       req.user.sub,
     );
     const token = getBearerOrQueryToken(req);
-    const html = this.placementTest.renderDocumentHtml(payload, token);
+    const html = this.placementTest.renderDocumentHtml(
+      payload,
+      token,
+      inferApiPublicOrigin(req),
+    );
+    // #region agent log
+    try {
+      appendFileSync(
+        "/Users/ttekit/code/eng_curses/.cursor/debug-0c8a48.log",
+        JSON.stringify({
+          sessionId: "0c8a48",
+          hypothesisId: "SRV",
+          location: "placement-test.controller.ts:document",
+          message: "placement html",
+          data: {
+            userId: req.user.sub,
+            q: payload.questions?.length ?? -1,
+            htmlLen: html.length,
+          },
+          timestamp: Date.now(),
+        }) + "\n",
+      );
+    } catch {
+      /* debug */
+    }
+    // #endregion
     res.send(html);
   }
 
@@ -125,21 +165,21 @@ export class PlacementTestController {
   })
   @ApiSecurity("api-token")
   @ApiOperation({
-    summary: "Mark placement as completed (one time)",
+    summary:
+      "Complete placement: score answers vs server draft and persist CEFR (`englishLevel`).",
   })
   @ApiBody({
     type: CompletePlacementDto,
     required: false,
     description:
-      "Optional body: `access_token` if JWT was not sent via `Authorization` (iframe); `answers` is optional for future scoring.",
+      "`access_token` when iframe callers cannot send `Authorization`; `answers` maps ids (q1…) to chosen index 0–3.",
   })
   @ApiCreatedResponse({ type: PlacementCompleteResponseDto })
   @ApiResponse({ status: 401, description: "Invalid or missing JWT" })
   complete(
     @Req() req: AuthedRequest,
-    @Body() _body: CompletePlacementDto,
+    @Body() body: CompletePlacementDto,
   ) {
-    void _body;
-    return this.placementTest.markComplete(req.user.sub);
+    return this.placementTest.completePlacement(req.user.sub, body ?? {});
   }
 }
