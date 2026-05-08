@@ -484,23 +484,6 @@ function TabPanels({
           loading={transcriptLoading}
           playbackSec={playbackSec}
           onSeek={onSeekTranscript}
-        : <VideoVocabulary vocabulary={vocabulary} />
-        : null}
-      {activeTab === "transcript" ?
-        (
-          <VideoTranscript
-            transcript={transcriptLines}
-            loading={transcriptLoading}
-            playbackSec={playbackSec}
-            onSeek={onSeekTranscript}
-          />
-        )
-        : null}
-      {activeTab === "quiz" ? (
-        <VideoQuiz
-          questions={quizQuestions}
-          isVideoComplete={isVideoComplete}
-          onComplete={onQuizComplete}
         />
       </div>
       <div
@@ -688,10 +671,6 @@ export default function ContentPage() {
           quizQuestions,
           gradingToken,
         });
-          Array.isArray(bundle.tests) && bundle.tests.length > 0 ?
-            mapApiTestsToQuiz(bundle.tests)
-            : defaultQuizQuestions;
-        setLessonSideBundle({ vocabulary, quizQuestions });
       })
       .catch(() => {
         if (!cancelled) setLessonSideBundle(null);
@@ -1239,33 +1218,6 @@ export default function ContentPage() {
                   </div>
                 </>
               ) : null}
-              <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
-              <div className="mt-0 max-h-[min(600px,70vh)] overflow-y-auto rounded-xl border border-border bg-card p-4">
-                {activeTab === "vocabulary" ?
-                  sideBundleLoading ?
-                    <p className="text-center text-sm text-muted-foreground">
-                      Preparing personalised key vocabulary…
-                    </p>
-                    : <VideoVocabulary vocabulary={vocabForUi} />
-                  : null}
-                {activeTab === "transcript" ?
-                  (
-                    <VideoTranscript
-                      transcript={transcriptLines}
-                      loading={transcriptLoading}
-                      playbackSec={playbackSec}
-                      onSeek={seekToCue}
-                    />
-                  )
-                  : null}
-                {activeTab === "quiz" ? (
-                  <VideoQuiz
-                    questions={quizForUi}
-                    isVideoComplete={isVideoComplete}
-                    onComplete={handleQuizComplete}
-                  />
-                ) : null}
-              </div>
             </div>
           </div>
         </div>
