@@ -53,37 +53,38 @@ export class EmailConfirmationService {
 
     if (!existingUser) {
       throw new NotFoundException(
-        "User with the specified email address was not found. Please ensure that you entered the correct email",
+        "User not found. Please check the email address you entered and try again.",
       );
     }
 
     await this.prismaService.user.update({
       where: {
-        id: existingUser.id
+        id: existingUser.id,
       },
       data: {
-        isVerified: true
-      }
-    })
+        isVerified: true,
+      },
+    });
 
     await this.prismaService.token.delete({
       where: {
         id: existingToken.id,
-        type: TokenType.VERIFICATION
-      }
-    })
+        type: TokenType.VERIFICATION,
+      },
+    });
 
-    return this.authService.saveSession(req, existingUser)
+    return this.authService.saveSession(req, existingUser);
   }
 
-  public async sendVerificationToken(user: User) {
-    const verificationToken = await this.generateVerificationToken(user.email)
+  public async sendVerificationToken(email: string) {
+    const verificationToken = await this.generateVerificationToken(email);
 
-    await this.mailService.sendConfirmationEmail(verificationToken.email,
-      verificationToken.token
-    )
+    await this.mailService.sendConfirmationEmail(
+      verificationToken.email,
+      verificationToken.token,
+    );
 
-    return true
+    return true;
   }
 
   private async generateVerificationToken(email: string) {

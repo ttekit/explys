@@ -1,6 +1,5 @@
 import {
   Injectable,
-  BadRequestException,
   UnauthorizedException,
   ConflictException,
   InternalServerErrorException,
@@ -18,6 +17,7 @@ import { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { ProviderService } from "./provider/provider.service";
 import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
+import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
 
 // Экспортируем интерфейс, чтобы контроллер мог его видеть
 export interface GeneratedStudent {
@@ -36,6 +36,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly providerService: ProviderService,
     private readonly emailConfirmationService: EmailConfirmationService,
+    private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
   async register(req: Request, dto: RegisterDto) {
@@ -163,6 +164,7 @@ export class AuthService {
         name: true,
         password: true,
         isVerified: true,
+        isTwoFactorEnable: true,
       },
     });
 
@@ -180,6 +182,21 @@ export class AuthService {
       await this.emailConfirmationService.sendVerificationToken(user as any);
       throw new UnauthorizedException(
         "Email not verified. Please check your mail to confirm your account.",
+      );
+    }
+
+    if (user.isTwoFactorEnable) {
+      if (!dto.code) {
+        await this.twoFactorAuthService.sendTwoFactorToken(user.email);
+
+        return {
+          message:
+            "Please check your email. Two-factor authentication code is required.",
+        };
+      }
+      await this.twoFactorAuthService.validateTwoFactorToken(
+        user.email,
+        dto.code,
       );
     }
 

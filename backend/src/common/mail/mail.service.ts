@@ -3,19 +3,34 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { render } from "node_modules/@react-email/components/dist/index.cjs";
 import { ConfirmationTemplate } from "./templates/confirmation.template";
+import { ResetPasswordTemplate } from "./templates/reset-password.template";
+import { TwoFactorAuthTemplate } from "./templates/two-factor-auth.template";
 
 @Injectable()
 export class MailService {
-  public constructor(private readonly mailerService: MailerService,
-    private readonly configService: ConfigService
+  public constructor(
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
   ) {}
 
+  public async sendConfirmationEmail(email: string, token: string) {
+    const domain = this.configService.getOrThrow<string>("ALLOWED_ORIGIN");
+    const html = await render(ConfirmationTemplate({ domain, token }));
 
-  public async sendConfirmationEmail(email:string, token: string){
-    const domain = this.configService.getOrThrow<string>('ALLOWED_ORIGIN')
-    const html = await render(ConfirmationTemplate({domain, token}))
+    return this.sendMail(email, "Email confirmation", html);
+  }
 
-    return this.sendMail(email, 'Email confirmation', html)
+  public async sendPasswordResetEmail(email: string, token: string) {
+    const domain = this.configService.getOrThrow<string>("ALLOWED_ORIGIN");
+    const html = await render(ResetPasswordTemplate({ domain, token }));
+
+    return this.sendMail(email, "Reset password", html);
+  }
+
+  public async sendTwoFactorTokenEmail(email: string, token: string) {
+    const html = await render(TwoFactorAuthTemplate({ token }));
+
+    return this.sendMail(email, "Verify your identity", html);
   }
 
   private sendMail(email: string, subject: string, html: string) {

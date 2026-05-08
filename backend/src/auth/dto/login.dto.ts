@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsString, MinLength, Matches } from 'class-validator';
+import { IsString, MinLength, Matches, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { trimEmailInput } from './trim-helpers';
 
@@ -20,4 +20,9 @@ export class LoginDto {
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password: string;
+
+  @IsOptional()
+  @IsString()
+  code: string
+
 }

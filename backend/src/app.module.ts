@@ -20,6 +20,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProviderModule } from './auth/provider/provider.module';
 import { MailModule } from './common/mail/mail.module';
 import { EmailConfirmationModule } from './auth/email-confirmation/email-confirmation.module';
+import { PasswordRecoveryModule } from './auth/password-recovery/password-recovery.module';
+import { TwoFactorAuthModule } from './auth/two-factor-auth/two-factor-auth.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { EmailConfirmationModule } from './auth/email-confirmation/email-confirm
     ProviderModule,
     MailModule,
     EmailConfirmationModule,
+    PasswordRecoveryModule,
+    TwoFactorAuthModule,
   ],
   controllers: [AppController],
   providers: [

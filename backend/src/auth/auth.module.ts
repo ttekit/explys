@@ -12,9 +12,17 @@ import { ProviderModule } from "./provider/provider.module";
 import { getProvidersConfig } from "src/config/providers.config";
 import { EmailConfirmationModule } from "./email-confirmation/email-confirmation.module";
 import { MailService } from "src/common/mail/mail.service";
+import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
+import { GoogleRecaptchaModule } from "@nestlab/google-recaptcha";
+import { getRecaptchaConfig } from "src/config/recaptcha.config";
 
 @Module({
   imports: [
+    GoogleRecaptchaModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: getRecaptchaConfig,
+      inject: [ConfigService],
+    }),
     ProviderModule.registerAsync({
       imports: [ConfigModule],
       useFactory: getProvidersConfig,
@@ -40,6 +48,7 @@ import { MailService } from "src/common/mail/mail.service";
     UserSelfOrApiGuard,
     UsersService,
     MailService,
+    TwoFactorAuthService,
   ],
   exports: [
     JwtModule,
