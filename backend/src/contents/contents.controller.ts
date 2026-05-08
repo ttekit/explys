@@ -11,9 +11,13 @@ import {
   Patch,
   Post,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from "@nestjs/platform-express";
 import { ApiTags } from "@nestjs/swagger";
 import { Express } from "express";
 import { ContentsService } from "./contents.service";
@@ -36,20 +40,17 @@ export class ContentsController {
   }
 
   @Post("create")
-  @UseInterceptors(FileInterceptor("file"))
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: "video" }, { name: "preview" }]),
+  )
   async createContent(
     @Body() createContentDto: CreateContentDto,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 20 }),
-          new FileTypeValidator({ fileType: "video/mp4" }),
-        ],
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFiles() files: {
+      video: Express.Multer.File[];
+      preview?: Express.Multer.File[]
+    }
   ) {
-    return await this.contentsService.createContent(createContentDto, file);
+    return await this.contentsService.createContent(createContentDto, files);
   }
 
   @Patch(":id")

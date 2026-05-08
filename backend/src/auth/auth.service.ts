@@ -175,7 +175,7 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException("Invalid credentials");
+      throw new UnauthorizedException("Invalid email or password");
     }
 
     if (!user.isVerified) {
@@ -271,7 +271,11 @@ export class AuthService {
     return new Promise((resolve, reject) => {
       req.session.destroy((err) => {
         if (err) {
-          return reject(new InternalServerErrorException(""));
+          return reject(
+            new InternalServerErrorException(
+              "'Could not end the session. Either the server is unreachable or the session is already invalid.'",
+            ),
+          );
         }
         res.clearCookie(this.configService.getOrThrow<string>("SESSION_NAME"));
 
@@ -283,7 +287,9 @@ export class AuthService {
   public async saveSession(req: Request, user: Partial<User>) {
     return new Promise((resolve, reject) => {
       if (!user || !user.id) {
-        throw new UnauthorizedException(" ");
+        throw new UnauthorizedException(
+          "User not found or session data is missing",
+        );
       }
       req.session.userId = user.id.toString();
 

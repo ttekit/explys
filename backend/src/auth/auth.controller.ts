@@ -96,7 +96,7 @@ export class AuthController {
 
     req.session.save((err) => {
       if (err) {
-        console.error("Ошибка сохранения сессии в Redis:", err);
+        console.error("Error save session in Redis:", err);
         throw new InternalServerErrorException("Failed to save session");
       }
 

@@ -1,9 +1,10 @@
 model Content {
   id Int @id @default(autoincrement())
 
-  friendlyLink String @map("friendly_link")
+  friendlyLink String  @map("friendly_link")
   name         String
   description  String
+  previewUrl   String? @map("preview_url") // Добавляем сюда
 
   category ContentMedia[]
 
@@ -33,17 +34,17 @@ model ContentStats {
   contentMediaId Int          @unique @map("content_media_id")
   contentMedia   ContentMedia @relation(fields: [contentMediaId], references: [id], onDelete: Cascade)
 
-  usersWatched   Int          @default(0) @map("users_watched")
-  rating         Float        @default(0)
+  usersWatched Int   @default(0) @map("users_watched")
+  rating       Float @default(0)
 
   /// CEFR band tags from transcript analysis (e.g. A2, B1)
-  systemTags            String[] @default([]) @map("system_tags")
+  systemTags           String[] @default([]) @map("system_tags")
   /// Theme / topic tags from transcript analysis
-  userTags              String[] @default([]) @map("user_tags")
+  userTags             String[] @default([]) @map("user_tags")
   /// 1–10 processing load estimate, or null if not inferred
-  processingComplexity  Int?     @map("processing_complexity")
+  processingComplexity Int?     @map("processing_complexity")
 
-  topics         Topic[]
+  topics Topic[]
 
   @@map("content_stats")
 }
@@ -69,13 +70,13 @@ model ContentVideo {
 }
 
 model VideoCaptions {
-  id        Int     @id @default(autoincrement())
-  contentVideoId Int  @unique @map("content_video_id")
+  id             Int          @id @default(autoincrement())
+  contentVideoId Int          @unique @map("content_video_id")
   contentVideo   ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
 
-  subtitlesFileLink String @map("subtitles_file_link")
-  createAt  DateTime @default(now()) @map("create_at")
-  updateAt  DateTime @updatedAt @map("update_at")
+  subtitlesFileLink String   @map("subtitles_file_link")
+  createAt          DateTime @default(now()) @map("create_at")
+  updateAt          DateTime @updatedAt @map("update_at")
 
   @@map("video_captions")
 }

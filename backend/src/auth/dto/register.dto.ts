@@ -37,65 +37,65 @@ export class RegisterDto {
   @Validate(IsPasswordsMatchingConstraint, { message: "Password don`t match" })
   passwordRepeat: string;
 
-  @IsString()
+  @IsString({ message: "Name must be a valid string" })
   name: string;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: "Role must be a string" })
   role?: string;
 
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: "Student names must be an array" })
   studentNames?: any;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: "Teacher grades must be a string" })
   teacherGrades?: string;
 
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: "Teacher topics must be an array" })
   teacherTopics?: string[];
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: "English level must be a valid string" })
   englishLevel?: string;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: "Education info must be a string" })
   education?: string;
 
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: "Hobbies must be an array of strings" })
   hobbies?: string[];
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: "Work field must be a string" })
   workField?: string;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: "Native language must be a string" })
   nativeLanguage?: string;
 
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: "Known languages must be an array" })
   knownLanguages?: string[];
 
   @IsOptional()
   knownLanguageLevels?: any;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: "Student grade must be a string" })
   studentGrade?: string;
 
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: "Problem topics must be an array" })
   studentProblemTopics?: string[];
 
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: "Favorite genres must be an array of IDs" })
   favoriteGenres?: number[];
 
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: "Hated genres must be an array of IDs" })
   hatedGenres?: number[];
 }
