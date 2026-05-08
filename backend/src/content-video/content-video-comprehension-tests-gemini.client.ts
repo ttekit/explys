@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { cefrStretchForKeyVocabulary } from "./cefr-vocabulary-target.util";
 
 export type KeyVocabularyItem = {
   word: string;
@@ -6,29 +7,46 @@ export type KeyVocabularyItem = {
   example: string;
 };
 
-export type ComprehensionTestItem = {
-  id: string;
-  question: string;
-  options: string[];
-  correctIndex: number;
-  /** Comprehension vs grammar (tense, articles, prepositions, word form). */
-  category: "comprehension" | "grammar";
+export type McqCategory = "grammar" | "vocabulary" | "comprehension";
+
+export type ComprehensionTestItem =
+  | {
+      questionType: "multiple_choice";
+      id: string;
+      question: string;
+      options: string[];
+      correctIndex: number;
+      category: McqCategory;
+      explanation: string;
+    }
+  | {
+      questionType: "open";
+      id: string;
+      question: string;
+      category: "open";
+      /** Model rubric / sample points for review UI. */
+      explanation: string;
+    };
+
+export type PriorWeakSpot = {
+  category: string;
+  stemSnippet: string;
+  missCount: number;
 };
 
 export type ComprehensionTestsGenerationContext = {
   videoName: string;
   videoDescription: string | null;
-  /** Plain text from WebVTT (may be empty if no captions). */
   transcriptPlain: string | null;
-  /** Learner CEFR / English level label, e.g. "B1" or "Intermediate". */
   learnerCefr: string | null;
-  /** User's known terms (same study language as transcript); use for difficulty + overlap. */
   vocabularyTerms: string[];
-  /** From ContentStats.userTags for this lesson. */
   videoThemeTags: string[];
-  /** Topic names where the learner has moderately strong Topic scores (theme knowledge). */
   learnerThemeKnowledge: string[];
+  priorWeakSpots: PriorWeakSpot[];
 };
+
+const EXPECTED_TEST_COUNT = 10;
+const KEY_VOCAB_COUNT = 10;
 
 @Injectable()
 export class ContentVideoComprehensionTestsGeminiClient {
@@ -49,6 +67,7 @@ export class ContentVideoComprehensionTestsGeminiClient {
 
     const hasTranscript =
       input.transcriptPlain != null && input.transcriptPlain.trim().length >= 40;
+    const stretch = cefrStretchForKeyVocabulary(input.learnerCefr);
     const level =
       input.learnerCefr?.trim() ||
       "Unknown — assume high B1: clear sentences, common idioms, no specialist jargon.";
@@ -67,6 +86,17 @@ export class ContentVideoComprehensionTestsGeminiClient {
         ? input.learnerThemeKnowledge.slice(0, 15).join(", ")
         : "(no learner topic-strength hints — tailor only from CEFR and vocabulary list.)";
 
+    const weakSpots =
+      input.priorWeakSpots.length > 0
+        ? input.priorWeakSpots
+            .slice(0, 8)
+            .map(
+              (w) =>
+                `- [${w.category}] missed ${w.missCount}x: ${w.stemSnippet.slice(0, 220)}`,
+            )
+            .join("\n")
+        : "(none — first attempt or no recorded misses for this user on this clip.)";
+
     const transcriptBlock = hasTranscript
       ? [
           "VIDEO TRANSCRIPT (ground truth; every fact and quoted word must come from here):",
@@ -75,45 +105,46 @@ export class ContentVideoComprehensionTestsGeminiClient {
       : "No transcript is available. Use only the title and description; keep questions general and do not invent specific facts.";
 
     const prompt = [
-      "You create multiple-choice tests AND a key vocabulary list for someone learning English from a video: comprehension AND grammar.",
-      "Return ONLY valid JSON with this exact top-level shape (no extra keys):",
-      '{ "tests": [ ... 9 items ... ], "keyVocabulary": [ ... 8 items ... ] }',
+      "You create an English learning assessment for a video: multiple-choice (grammar, vocabulary, comprehension), ONE open-ended summary question, AND a key vocabulary list.",
+      `Return ONLY valid JSON with this exact top-level shape (no extra keys): { "tests": [ exactly ${EXPECTED_TEST_COUNT} items ], "keyVocabulary": [ exactly ${KEY_VOCAB_COUNT} items ] }`,
       "",
-      "=== tests (9 items) ===",
-      'Each test item: {"id":"t1","category":"comprehension"|"grammar","question":"...","options":["A","B","C","D"],"correctIndex":0}',
-      "Field \"category\" is required: use \"comprehension\" for meaning, main idea, or detail; use \"grammar\" for tense, articles (a/the), prepositions, word form, subject–verb agreement, or choosing the only grammatically correct sentence among four short options. Grammar items must be grounded in ideas or paraphrases from the transcript (or title/description if no transcript) — not random unrelated grammar.",
-      "correctIndex is 0-based. Four options; one clear best answer; plausible wrong answers at the same difficulty.",
+      `=== tests (exactly ${EXPECTED_TEST_COUNT}) ===`,
+      "Include exactly ONE item with questionType \"open\" and category \"open\": ask the learner to describe in 2–3 sentences what the video was mainly about. No options or correctIndex for open.",
+      `Include exactly ${EXPECTED_TEST_COUNT - 1} items with questionType \"multiple_choice\". Each MCQ MUST be:`,
+      '{"id":"t1","questionType":"multiple_choice","category":"grammar"|"vocabulary"|"comprehension","question":"...","options":["A","B","C","D"],"correctIndex":0,"explanation":"..."}',
+      'Open item MUST be: {"id":"t_open","questionType":"open","category":"open","question":"... 2-3 sentences ...","explanation":"What a good answer should mention (short rubric for teachers/learners)."}',
       "",
-      "QUESTION MIX (strict) — 9 total:",
-      "- 3 with category \"grammar\" (distribute: e.g. tense/aspect, article or determiner, preposition or collocation) at the learner's CEFR.",
-      hasTranscript
-        ? "- 2 with category \"comprehension\" MUST ask what a specific word or phrase from the transcript means in context. Quote a short phrase that appears in the transcript."
-        : "- 2 questions about meaning of terms implied by the title or description (comprehension).",
-      hasTranscript
-        ? "- 1 \"comprehension\" MUST be \"why is ___ important?\" (or why it matters) about the transcript’s message or step."
-        : "- 1 comprehension about why the main topic matters for learners.",
-      "- Remaining comprehension items: detail or inference; still use category \"comprehension\".",
+      "MCQ categories (strict counts among the 9 MCQs):",
+      '- 3 with category "grammar" (tense/aspect, articles, prepositions, agreement) — grounded in transcript or title/description.',
+      '- 3 with category "vocabulary" (word meaning in context, collocation, phrasal verb) — quote or paraphrase from transcript when available.',
+      '- 3 with category "comprehension" (detail, inference, main idea except the open summary).',
       "",
-      "=== keyVocabulary (8 items) ===",
+      "Field \"explanation\" on MCQs: 1–3 sentences — why the correct option is right.",
+      "correctIndex is 0-based. Four options per MCQ.",
+      "",
+      "PRIOR MISSES — retest 2–3 similar skills in NEW wording (never copy stems):",
+      weakSpots,
+      "",
+      `=== keyVocabulary (exactly ${KEY_VOCAB_COUNT} item) ===`,
       'Each: {"word":"...","definition":"...","example":"..."}',
-      "- Words or short multi-word expressions that actually appear in the transcript (or in title/description if no transcript).",
-      "- Prioritize items that are useful at the learner’s CEFR: not too trivial, not impossibly rare unless central to the clip.",
-      "- When VIDEO_THEME_TAGS match LEARNER_TOPIC_STRENGTHS, you may pick slightly richer or subtler senses (they know the broader theme — push precise usage from the transcript).",
-      "- When overlaps exist between transcript and LEARNER_SAVED_VOCABULARY, favour teaching adjacent / collocation-heavy items rather repeating the exact same glossary word unless it is pedagogically crucial.",
-      "- Definitions MUST be learner-friendly English glosses at roughly the learner level; examples MUST be coherent with the lesson theme.",
+      "KEY VOCABULARY — LEVEL (mandatory):",
+      stretch.instruction,
+      `Target band label for glosses: ${stretch.vocabularyTargetBand} (not the learner’s comfort band).`,
+      "- Words or multi-word chunks from the transcript (or title/description if no transcript).",
+      "- Prioritise items whose semantics map onto LEARNER_TOPIC_STRENGTHS (known topic areas): new labels should connect to those domains when the video supports it.",
+      "- Avoid only picking the easiest, below-target high-frequency words when the clip contains suitable stretch items; definitions/examples must suit the target band above.",
+      "- Generated in this same response as the tests.",
       "",
-      "DIFFICULTY: Match the learner CEFR / level below. Vocabulary in tests: prefer words that appear in BOTH the transcript and the learner's word list when it makes sense; otherwise pick fair words from the transcript.",
-      "",
-      "LEARNER ENGLISH LEVEL (adjust sentence length in questions and option wording):",
+      "LEARNER LEVEL (whole quiz difficulty / tone — MCQs can stay near this level; keyVocabulary follows the stretch rule above):",
       level,
       "",
-      "LEARNER'S SAVED VOCABULARY (for overlap and pitch):",
+      "LEARNER SAVED VOCABULARY:",
       vocabList,
       "",
-      "VIDEO_THEME_TAGS (lesson topic labels):",
+      "VIDEO_THEME_TAGS:",
       videoThemes,
       "",
-      "LEARNER_TOPIC_STRENGTHS (practice areas showing solid progress — adjust depth of vocabulary explanations):",
+      "LEARNER_TOPIC_STRENGTHS:",
       themeStrength,
       "",
       transcriptBlock,
@@ -155,24 +186,42 @@ export class ContentVideoComprehensionTestsGeminiClient {
         return null;
       }
       const tests = normalizeTests(parsed.tests);
-      if (tests.length === 0) {
+      if (!isValidTestSet(tests)) {
         return null;
       }
-      const keyVocabularyRaw = normalizeKeyVocabulary(parsed.keyVocabulary);
-      const keyVocabulary =
-        keyVocabularyRaw.length >= 6
-          ? keyVocabularyRaw
-          : fallbackKeyVocabulary({
-              transcriptPlain: input.transcriptPlain,
-              videoName: input.videoName,
-              learnerCefr: input.learnerCefr,
-              vocabularyTerms: input.vocabularyTerms,
-            });
-      return { tests, keyVocabulary };
+      let keyVocabularyRaw = normalizeKeyVocabulary(parsed.keyVocabulary);
+      if (keyVocabularyRaw.length < KEY_VOCAB_COUNT) {
+        keyVocabularyRaw = fallbackKeyVocabulary({
+          transcriptPlain: input.transcriptPlain,
+          videoName: input.videoName,
+          videoDescription: input.videoDescription,
+          learnerCefr: input.learnerCefr,
+          vocabularyTerms: input.vocabularyTerms,
+          learnerThemeKnowledge: input.learnerThemeKnowledge,
+          videoThemeTags: input.videoThemeTags,
+        });
+      }
+      return { tests, keyVocabulary: keyVocabularyRaw };
     } catch {
       return null;
     }
   }
+}
+
+function isValidTestSet(tests: ComprehensionTestItem[]): boolean {
+  if (tests.length !== EXPECTED_TEST_COUNT) {
+    return false;
+  }
+  let mcq = 0;
+  let open = 0;
+  for (const t of tests) {
+    if (t.questionType === "open") {
+      open += 1;
+    } else {
+      mcq += 1;
+    }
+  }
+  return mcq === EXPECTED_TEST_COUNT - 1 && open === 1;
 }
 
 function normalizeTests(raw: unknown[]): ComprehensionTestItem[] {
@@ -188,6 +237,25 @@ function normalizeTests(raw: unknown[]): ComprehensionTestItem[] {
       typeof o.question === "string"
         ? o.question.slice(0, 500)
         : "What is the main idea of the video?";
+    const qt = o.questionType === "open" ? "open" : "multiple_choice";
+
+    if (qt === "open") {
+      let explanation =
+        typeof o.explanation === "string" ? o.explanation.trim().slice(0, 900) : "";
+      if (explanation.length < 8) {
+        explanation =
+          "Mention the topic and at least one concrete point from the video; 2–3 clear sentences.";
+      }
+      out.push({
+        questionType: "open",
+        id,
+        question,
+        category: "open",
+        explanation,
+      });
+      continue;
+    }
+
     let options: string[] = [];
     if (Array.isArray(o.options)) {
       options = o.options
@@ -201,8 +269,30 @@ function normalizeTests(raw: unknown[]): ComprehensionTestItem[] {
     if (typeof o.correctIndex === "number" && Number.isFinite(o.correctIndex)) {
       correctIndex = Math.max(0, Math.min(options.length - 1, Math.floor(o.correctIndex)));
     }
-    const cat = o.category === "grammar" ? "grammar" : "comprehension";
-    out.push({ id, question, options, correctIndex, category: cat });
+    const catRaw = o.category;
+    let category: McqCategory = "comprehension";
+    if (catRaw === "grammar") {
+      category = "grammar";
+    } else if (catRaw === "vocabulary") {
+      category = "vocabulary";
+    } else {
+      category = "comprehension";
+    }
+    let explanation =
+      typeof o.explanation === "string" ? o.explanation.trim().slice(0, 900) : "";
+    if (explanation.length < 8) {
+      explanation =
+        "The correct option matches the lesson evidence; distractors are plausible but do not fit as well.";
+    }
+    out.push({
+      questionType: "multiple_choice",
+      id,
+      question,
+      options,
+      correctIndex,
+      category,
+      explanation,
+    });
   }
   return out;
 }
@@ -217,14 +307,27 @@ export function normalizeKeyVocabulary(raw: unknown): KeyVocabularyItem[] {
       continue;
     }
     const o = item as Record<string, unknown>;
-    const word = typeof o.word === "string" ? o.word.trim().slice(0, 96) : "";
-    const definition =
-      typeof o.definition === "string" ? o.definition.trim().slice(0, 400) : "";
-    const example =
-      typeof o.example === "string" ? o.example.trim().slice(0, 320) : "";
-    if (word.length < 2 || definition.length < 4) {
+    const wRaw =
+      typeof o.word === "string"
+        ? o.word
+        : typeof o.term === "string"
+          ? o.term
+          : "";
+    const word = wRaw.trim().slice(0, 96);
+    let definition =
+      typeof o.definition === "string"
+        ? o.definition.trim().slice(0, 400)
+        : typeof o.meaning === "string"
+          ? o.meaning.trim().slice(0, 400)
+          : "";
+    if (word.length < 2) {
       continue;
     }
+    if (definition.length < 4) {
+      definition = `Key language from this lesson — use it in your own short sentence at ${word.length > 8 ? "this" : "the"} level.`;
+    }
+    const example =
+      typeof o.example === "string" ? o.example.trim().slice(0, 320) : "";
     out.push({
       word,
       definition,
@@ -234,196 +337,367 @@ export function normalizeKeyVocabulary(raw: unknown): KeyVocabularyItem[] {
           : `Notice how "${word}" fits the speaker's message in this clip.`,
     });
   }
-  return out.slice(0, 12);
+  return out.slice(0, KEY_VOCAB_COUNT);
+}
+
+function themeRelevanceScore(word: string, themes: string[]): number {
+  const w = word.toLowerCase();
+  let score = 0;
+  for (const raw of themes) {
+    const t = raw.trim().toLowerCase();
+    if (t.length < 2) continue;
+    if (w.includes(t) || t.includes(w)) {
+      score += 3;
+      continue;
+    }
+    for (const part of t.split(/[^a-zа-яіїєґ']+/iu)) {
+      if (part.length >= 4 && w.includes(part)) {
+        score += 1;
+      }
+    }
+  }
+  return score;
 }
 
 /** When Gemini is off or omitted `keyVocabulary` in JSON. */
 export function fallbackKeyVocabulary(ctx: {
   transcriptPlain: string | null;
   videoName: string;
+  videoDescription?: string | null;
   learnerCefr: string | null;
   vocabularyTerms: string[];
+  learnerThemeKnowledge?: string[];
+  videoThemeTags?: string[];
 }): KeyVocabularyItem[] {
   const plain = ctx.transcriptPlain?.trim() ?? "";
+  const title = ctx.videoName?.trim() ?? "";
+  const desc = (ctx.videoDescription ?? "").trim();
+  const stretch = cefrStretchForKeyVocabulary(ctx.learnerCefr);
+  const targetBand = stretch.vocabularyTargetBand;
+  const themeHints = [
+    ...(ctx.learnerThemeKnowledge ?? []),
+    ...(ctx.videoThemeTags ?? []),
+  ];
+
   const seeds: string[] = [];
-  if (plain.length >= 40) {
-    seeds.push(...pickTranscriptContentWords(plain, 10));
+
+  if (plain.length >= 12) {
+    seeds.push(...pickTranscriptContentWords(plain, 16));
   }
+  if (title.length >= 2) {
+    seeds.push(...pickTranscriptContentWords(title, 8));
+  }
+  if (desc.length >= 8) {
+    seeds.push(...pickTranscriptContentWords(desc, 8));
+  }
+
+  const seen = new Set<string>();
+  const uniq: string[] = [];
+  for (const raw of seeds) {
+    const s = raw.trim();
+    if (s.length < 2) continue;
+    const k = s.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    uniq.push(s.slice(0, 80));
+  }
+
   for (const t of ctx.vocabularyTerms) {
     const s = t.trim();
-    if (
-      s.length >= 3 &&
-      seeds.length < 14 &&
-      !seeds.some((x) => x.toLowerCase() === s.toLowerCase())
-    ) {
-      seeds.push(s);
-    }
+    if (s.length < 2 || uniq.length > 32) continue;
+    const k = s.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    uniq.push(s.slice(0, 80));
   }
-  const label = ctx.videoName.slice(0, 72) || "this lesson";
-  const level = ctx.learnerCefr?.trim() || "intermediate";
+
+  if (themeHints.length > 0) {
+    uniq.sort(
+      (a, b) => themeRelevanceScore(b, themeHints) - themeRelevanceScore(a, themeHints),
+    );
+  }
+
+  const label = title.slice(0, 72) || "this lesson";
+  const topicHint =
+    themeHints
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0)
+      .slice(0, 4)
+      .join(", ") || "the lesson topic";
   const out: KeyVocabularyItem[] = [];
-  for (const w of seeds) {
-    if (out.length >= 8) {
-      break;
-    }
+  for (const w of uniq) {
+    if (out.length >= KEY_VOCAB_COUNT) break;
     out.push({
       word: w,
-      definition: `A useful chunk from "${label}", matched to roughly ${level} listening level.`,
+      definition: `A stretch item (${targetBand}) from "${label}" — tied to areas like ${topicHint}.`,
       example: `"${w}" occurs in connected speech — copy stress and grouping from the narrator.`,
     });
   }
-  return out.slice(0, 8);
+
+  let pad = 0;
+  while (out.length < KEY_VOCAB_COUNT && pad < KEY_VOCAB_COUNT * 8) {
+    const base = GENERIC_STUDY_TERMS[pad % GENERIC_STUDY_TERMS.length];
+    let w = base;
+    let n = 0;
+    while (seen.has(w.toLowerCase()) && n < 40) {
+      n += 1;
+      w = `${base} (${n})`;
+    }
+    seen.add(w.toLowerCase());
+    out.push({
+      word: w,
+      definition: `Study term for "${label}" at about ${targetBand}, linking listening to familiar topic ideas.`,
+      example: `Try: "This clip highlights **${w.split(" (")[0]}** in real listening context."`,
+    });
+    pad += 1;
+  }
+
+  return out.slice(0, KEY_VOCAB_COUNT);
 }
 
+const GENERIC_STUDY_TERMS = [
+  "gist",
+  "detail",
+  "inference",
+  "collocation",
+  "paraphrase",
+  "register",
+  "tone",
+  "cue",
+  "chunk",
+  "utterance",
+  "stance",
+  "main idea",
+  "supporting idea",
+  "key phrase",
+  "connective",
+] as string[];
+
 const STOP = new Set(
-  "the and that this with from your have been were they their what when will would could should about there which their more some very just into also than then only over such".split(
+  "the and that this with from your have been were they their what when will would could should about there which their more some very just into also than then only over such для как при что это для для для это это".split(
     " ",
   ),
 );
 
-/**
- * Picks a few content words for fallback vocabulary-style questions.
- */
-function pickTranscriptContentWords(plain: string, max: number): string[] {
+/** Letters from any script (Cyrillic, Latin, etc.) — Latin-only regex missed non-English captions. */
+function pickTranscriptContentWords(text: string, max: number): string[] {
   const found = new Set<string>();
-  const re = /\b[a-zA-Z']{5,20}\b/g;
+  const re = /\p{L}[\p{L}\p{M}'-]{1,30}\p{L}|\p{L}{3,32}/gu;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(plain)) && found.size < max + 4) {
-    const w = m[0].toLowerCase();
-    if (STOP.has(w)) {
+  while ((m = re.exec(text)) && found.size < max + 24) {
+    let w = m[0];
+    if (w.length < 3 || w.length > 48) {
       continue;
     }
-    found.add(m[0]);
+    const low = w.toLowerCase();
+    if (low.length <= 5 && STOP.has(low)) {
+      continue;
+    }
+    found.add(w);
   }
   return [...found].slice(0, max);
 }
 
 /**
- * Heuristic MCQs when Gemini is unavailable.
+ * 9 MCQ (3 grammar, 3 vocabulary, 3 comprehension) + 1 open — when Gemini is unavailable.
  */
 export function fallbackComprehensionTests(ctx: {
   videoName: string;
   transcriptPlain: string | null;
   learnerCefr: string | null;
   vocabularyTerms: string[];
+  priorWeakSpots: PriorWeakSpot[];
 }): ComprehensionTestItem[] {
   const label = ctx.videoName.slice(0, 80) || "this lesson";
   const plain = ctx.transcriptPlain?.trim() ?? "";
-  const words = plain.length >= 40 ? pickTranscriptContentWords(plain, 2) : [];
+  const words = plain.length >= 40 ? pickTranscriptContentWords(plain, 6) : [];
   const v0 = words[0] ?? (ctx.vocabularyTerms[0] ?? "key idea");
-  const v1 = words[1] ?? (ctx.vocabularyTerms[1] ?? "main point");
+  const v1 = words[1] ?? (ctx.vocabularyTerms[1] ?? "main idea");
+  const v2 = words[2] ?? (ctx.vocabularyTerms[2] ?? "detail");
   const level = ctx.learnerCefr?.trim() || "the learner’s level";
+  const firstWeak = ctx.priorWeakSpots[0];
+  const grammarWeak = ctx.priorWeakSpots.find((w) => w.category === "grammar");
 
-  const tests: ComprehensionTestItem[] = [
-    {
-      id: "c1",
-      category: "comprehension",
-      question:
-        plain.length >= 40
-          ? `In this video, what does the word or phrase “${v0}” most likely refer to?`
-          : `What is “${label}” mainly about?`,
-      options: [
-        "Something central to the lesson’s topic in the video",
-        "A random unrelated object",
-        "A character from a different story",
-        "Only background music, not ideas",
-      ],
-      correctIndex: 0,
-    },
-    {
-      id: "c2",
-      category: "comprehension",
-      question:
-        plain.length >= 40
-          ? `What does “${v1}” mean in the context of this content? (Choose the best paraphrase.)`
-          : `For someone at ${level}, what is a sensible goal for this kind of video?`,
-      options: [
-        "To learn language tied to the topic and notice useful phrases",
-        "To ignore all new words",
-        "To memorise the credits only",
-        "To only watch without listening",
-      ],
-      correctIndex: 0,
-    },
-    {
-      id: "c3",
-      category: "comprehension",
-      question: `Why is “${label.slice(0, 60) || "this topic"}” important for language practice?`,
-      options: [
-        "It gives listening and vocabulary in a realistic context",
-        "It is only for native speakers of another language",
-        "It has no learning value",
-        "It only tests speed typing",
-      ],
-      correctIndex: 0,
-    },
-    {
-      id: "c4",
-      category: "comprehension",
-      question: "What is one good strategy while following this type of video?",
-      options: [
-        "Connect new words to the topic and replay short segments",
-        "Turn off the sound completely",
-        "Read only unrelated social media at the same time",
-        "Skip every second sentence on purpose",
-      ],
-      correctIndex: 0,
-    },
-    {
-      id: "c5",
-      category: "comprehension",
-      question:
-        ctx.vocabularyTerms.length > 0
-          ? `Your list includes the term “${ctx.vocabularyTerms[0]}”. What does the video most likely help you do with terms like that?`
-          : "What does watching with captions (when available) help you notice?",
-      options: [
-        "How words and phrases sound in context and how they are spelled",
-        "Only the file size of the video",
-        "The weather forecast",
-        "Nothing at all",
-      ],
-      correctIndex: 0,
-    },
-    {
-      id: "c6",
-      category: "comprehension",
-      question: "Why might repeating a line from the video be useful for learning?",
-      options: [
-        "It helps pronunciation and memory for useful chunks of language",
-        "It is never useful",
-        "It only works for non-English content",
-        "It only helps with mathematics",
-      ],
-      correctIndex: 0,
-    },
-    {
-      id: "g1",
-      category: "grammar",
-      question:
-        "Which sentence is grammatically correct for talking about a finished experience?",
-      options: [
-        "I have watched the video and learned a few new phrases.",
-        "I have watch the video and learned a few new phrases.",
-        "I has watched the video and learned a few new phrases.",
-        "I watching the video and learned a few new phrases.",
-      ],
-      correctIndex: 0,
-    },
-    {
-      id: "g2",
-      category: "grammar",
-      question: "Choose the best article: “I saw ___ interesting explanation in the video.”",
-      options: ["an", "a", "the", "— (no article)"],
-      correctIndex: 0,
-    },
-    {
-      id: "g3",
-      category: "grammar",
-      question:
-        "Which option correctly completes: “The speaker focuses ___ helping learners with listening.”",
-      options: ["on", "at", "for", "by"],
-      correctIndex: 0,
-    },
-  ];
-  return tests;
+  const mcq: ComprehensionTestItem[] = [];
+
+  mcq.push(
+    firstWeak?.category === "comprehension"
+      ? {
+          questionType: "multiple_choice" as const,
+          id: "c1",
+          category: "comprehension" as const,
+          question: `You missed a similar idea before (“${firstWeak.stemSnippet.slice(0, 140)}…”). What is the safest paraphrase of the speaker’s main focus?`,
+          options: [
+            "A clear, topic-relevant idea that fits the video",
+            "A detail that contradicts the clip",
+            "A guess unrelated to the content",
+            "Only music credits, not ideas",
+          ],
+          correctIndex: 0,
+          explanation:
+            "Choose the option that matches what the lesson is actually about.",
+        }
+      : {
+          questionType: "multiple_choice" as const,
+          id: "c1",
+          category: "comprehension" as const,
+          question:
+            plain.length >= 40
+              ? `In this video, what does “${v0}” most likely refer to?`
+              : `What is “${label}” mainly about?`,
+          options: [
+            "Something central to the lesson topic",
+            "An unrelated object",
+            "A random character from fiction",
+            "Only background music",
+          ],
+          correctIndex: 0,
+          explanation: "The best answer ties the phrase to the lesson topic.",
+        },
+  );
+
+  mcq.push({
+    questionType: "multiple_choice",
+    id: "c2",
+    category: "comprehension",
+    question:
+      plain.length >= 40
+        ? `What does “${v1}” mean in this context? (best paraphrase)`
+        : `For someone at ${level}, what is a sensible goal for this video?`,
+    options: [
+      "Learn language tied to the topic and notice useful phrases",
+      "Ignore every new word",
+      "Memorise credits only",
+      "Watch without listening",
+    ],
+    correctIndex: 0,
+    explanation: "Active engagement with topic language is the learning goal.",
+  });
+
+  mcq.push({
+    questionType: "multiple_choice",
+    id: "c3",
+    category: "comprehension",
+    question: `Why practise with clips like “${label.slice(0, 56)}”?`,
+    options: [
+      "Realistic listening and vocabulary in context",
+      "Only for native speakers",
+      "No learning value",
+      "Typing speed only",
+    ],
+    correctIndex: 0,
+    explanation: "Authentic context helps transfer to real communication.",
+  });
+
+  mcq.push({
+    questionType: "multiple_choice",
+    id: "v1",
+    category: "vocabulary",
+    question: `Which use of “${v2}” fits this lesson context best?`,
+    options: [
+      "The meaning tied to how the speaker uses it here",
+      "A random dictionary sense never suggested here",
+      "The opposite of its normal meaning",
+      "A surname of a person",
+    ],
+    correctIndex: 0,
+    explanation: "Context fixes which sense of a word is active in the clip.",
+  });
+
+  mcq.push({
+    questionType: "multiple_choice",
+    id: "v2",
+    category: "vocabulary",
+    question: "Which collocation sounds natural for formal workplace English?",
+    options: [
+      "We need to meet the deadline.",
+      "We need meet the deadline.",
+      "We needing meet the deadline.",
+      "We meets the deadline.",
+    ],
+    correctIndex: 0,
+    explanation: "Subject + need + to-infinitive is the standard pattern.",
+  });
+
+  mcq.push({
+    questionType: "multiple_choice",
+    id: "v3",
+    category: "vocabulary",
+    question:
+      ctx.vocabularyTerms.length > 0
+        ? `Your study list includes “${ctx.vocabularyTerms[0]}”. What does focused practice with that term in the clip help?`
+        : "What does chunking phrases help you notice?",
+    options: [
+      "How words group with neighbours in fluent speech",
+      "Video file size",
+      "Screen resolution",
+      "Nothing",
+    ],
+    correctIndex: 0,
+    explanation: "Collocation and chunking support listening and production.",
+  });
+
+  mcq.push(
+    grammarWeak
+      ? {
+          questionType: "multiple_choice" as const,
+          id: "g1",
+          category: "grammar" as const,
+          question: `Grammar recap (“${grammarWeak.stemSnippet.slice(0, 100)}…”): Which sentence is fully correct?`,
+          options: [
+            "I have finished the video and noted two useful phrases.",
+            "I have finish the video and noted two useful phrases.",
+            "I am finished the video and noted two useful phrases.",
+            "I finishing the video and noted two useful phrases.",
+          ],
+          correctIndex: 0,
+          explanation: "Present perfect + past participle marks a completed experience.",
+        }
+      : {
+          questionType: "multiple_choice" as const,
+          id: "g1",
+          category: "grammar" as const,
+          question: "Which sentence is correct for a finished experience?",
+          options: [
+            "I have watched the video and learned a few new phrases.",
+            "I have watch the video and learned a few new phrases.",
+            "I has watched the video and learned a few new phrases.",
+            "I watching the video and learned a few new phrases.",
+          ],
+          correctIndex: 0,
+          explanation: "Use have + past participle for present perfect.",
+        },
+  );
+
+  mcq.push({
+    questionType: "multiple_choice",
+    id: "g2",
+    category: "grammar",
+    question: "Choose the article: “I saw ___ interesting point in the video.”",
+    options: ["an", "a", "the", "— (no article)"],
+    correctIndex: 0,
+    explanation: "“An” precedes vowel sounds (an interesting…).",
+  });
+
+  mcq.push({
+    questionType: "multiple_choice",
+    id: "g3",
+    category: "grammar",
+    question:
+      "Which completes: “The speaker focuses ___ helping learners with listening.”",
+    options: ["on", "at", "for", "by"],
+    correctIndex: 0,
+    explanation: "“Focus on” is the fixed collocation.",
+  });
+
+  const openItem: ComprehensionTestItem = {
+    questionType: "open",
+    id: "open1",
+    category: "open",
+    question: `In 2–3 sentences, what was the video “${label.slice(0, 72)}” mainly about? Mention at least one concrete idea from the content.`,
+    explanation:
+      "A good answer states the topic and at least one specific point the speaker makes (e.g. problem, tip, or example).",
+  };
+
+  return [...mcq, openItem];
 }

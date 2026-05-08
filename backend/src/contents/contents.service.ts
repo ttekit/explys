@@ -102,7 +102,6 @@ export class ContentsService {
             if (contentMedia) {
                 const existingVideo = await this.prisma.contentVideo.findFirst({
                     where: { contentId: contentMedia.id },
-                    omit: { comprehensionTestsCache: true },
                 });
 
                 if (existingVideo?.videoLink) {
