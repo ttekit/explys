@@ -4,19 +4,39 @@
 // biome-ignore-all lint: generated file
 // @ts-nocheck 
 /*
- * This file should be your main import to use Prisma-related types and utilities in a browser. 
- * Use it to get access to models, enums, and input types.
- * 
- * This file does not contain a `PrismaClient` class, nor several other helpers that are intended as server-side only.
- * See `client.ts` for the standard, server-side entry point.
+ * This file should be your main import to use Prisma. Through it you get access to all the models, enums, and input types.
+ * If you're looking for something you can import in the client-side of your application, please refer to the `browser.ts` file instead.
  *
  * 🟢 You can import this file directly.
  */
 
-import * as Prisma from './internal/prismaNamespaceBrowser'
-export { Prisma }
+import * as process from 'node:process'
+import * as path from 'node:path'
+
+import * as runtime from "@prisma/client/runtime/client"
+import * as $Enums from "./enums"
+import * as $Class from "./internal/class"
+import * as Prisma from "./internal/prismaNamespace"
+
 export * as $Enums from './enums'
-export * from './enums';
+export * from "./enums"
+/**
+ * ## Prisma Client
+ * 
+ * Type-safe database client for TypeScript
+ * @example
+ * ```
+ * const prisma = new PrismaClient()
+ * // Fetch zero or more Contents
+ * const contents = await prisma.content.findMany()
+ * ```
+ * 
+ * Read more in our [docs](https://pris.ly/d/client).
+ */
+export const PrismaClient = $Class.getPrismaClientClass()
+export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts extends Prisma.PrismaClientOptions["omit"] = Prisma.PrismaClientOptions["omit"], ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = $Class.PrismaClient<LogOpts, OmitOpts, ExtArgs>
+export { Prisma }
+
 /**
  * Model Content
  * 

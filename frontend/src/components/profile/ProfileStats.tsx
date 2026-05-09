@@ -8,22 +8,15 @@ import {
   YAxis,
 } from "recharts";
 import {
-  Award,
   CheckCircle,
   Clock,
   PlayCircle,
   Target,
-  TrendingUp,
+  Crown,
+  Zap,
 } from "lucide-react";
 import { ProfileCard } from "./ProfileCard";
 import { parseCefrLevel, cefrIndex, cefrOrder } from "./cefr";
-
-const skillBreakdown = [
-  { skill: "Listening", value: 78 },
-  { skill: "Vocabulary", value: 65 },
-  { skill: "Grammar", value: 72 },
-  { skill: "Speaking", value: 58 },
-] as const;
 
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
@@ -37,6 +30,9 @@ export interface ProfileStatsModel {
   averageScore: number | null;
   levelLabel: string;
   weeklyActivity: { day: string; minutes: number }[];
+  // Делаем эти поля необязательными, чтобы компонент не падал без них
+  xp?: number;
+  appLevel?: number;
 }
 
 function StatTile({
@@ -51,21 +47,30 @@ function StatTile({
   label: string;
 }) {
   return (
-    <div className="rounded-xl border border-border/40 bg-card/50 p-4">
+    <div className="rounded-xl border border-border/40 bg-card/50 p-4 shadow-xs">
       <div className="flex items-center gap-3">
         <div className={`rounded-lg p-2 ${iconWrapClass}`}>
-          <Icon className="size-5 text-foreground" />
+          <Icon className="size-5" />
         </div>
         <div className="min-w-0">
-          <p className="text-2xl font-bold text-foreground">{value}</p>
-          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-xl font-bold text-foreground leading-tight">{value}</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</p>
         </div>
       </div>
     </div>
   );
 }
 
-export function ProfileStats({ user }: { user: ProfileStatsModel }) {
+export function ProfileStats({ user }: { user: ProfileStatsModel | null }) {
+  // Если данных нет — показываем заглушку, а не пустой экран
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <p className="text-muted-foreground italic">Loading statistics...</p>
+      </div>
+    );
+  }
+
   const hours = Math.floor(user.totalWatchTimeMin / 60);
   const minutes = user.totalWatchTimeMin % 60;
   const current = parseCefrLevel(user.levelLabel || "A1");
@@ -78,67 +83,77 @@ export function ProfileStats({ user }: { user: ProfileStatsModel }) {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">
-        Totals and the weekly activity chart use your watch sessions and quiz
-        attempts. Skill breakdown below is still illustrative.
-      </p>
+      {/* Секция Уровня и Опыта */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="relative overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-primary/10 to-transparent p-6">
+          <div className="flex items-center gap-4">
+            <div className="rounded-xl bg-primary/20 p-3">
+              <Crown className="size-8 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground uppercase">Current Rank</p>
+              <p className="text-4xl font-black text-foreground">
+                Level {user.appLevel || 1}
+              </p>
+            </div>
+          </div>
+          <Crown className="absolute -right-4 -bottom-4 size-24 text-primary/5 -rotate-12" />
+        </div>
 
+        <div className="relative overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-orange-500/10 to-transparent p-6">
+          <div className="flex items-center gap-4">
+            <div className="rounded-xl bg-orange-500/20 p-3">
+              <Zap className="size-8 text-orange-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground uppercase">Total Experience</p>
+              <p className="text-4xl font-black text-foreground">
+                {user.xp || 0} <span className="text-xl font-normal text-muted-foreground">XP</span>
+              </p>
+            </div>
+          </div>
+          <Zap className="absolute -right-4 -bottom-4 size-24 text-orange-500/5 rotate-12" />
+        </div>
+      </div>
+
+      {/* Основная сетка статистики */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile
           icon={Clock}
-          iconWrapClass="bg-primary/20 [&_svg]:text-primary"
-          value={
-            <>
-              {hours}h {minutes}m
-            </>
-          }
-          label="Total watch time"
+          iconWrapClass="bg-primary/20 text-primary"
+          value={<>{hours}h {minutes}m</>}
+          label="Watch time"
         />
         <StatTile
           icon={PlayCircle}
-          iconWrapClass="bg-accent/20 [&_svg]:text-accent"
+          iconWrapClass="bg-accent/20 text-accent"
           value={user.videosCompleted}
-          label="Videos completed"
+          label="Videos done"
         />
         <StatTile
           icon={CheckCircle}
-          iconWrapClass="bg-muted text-foreground"
+          iconWrapClass="bg-secondary text-muted-foreground"
           value={user.testsCompleted}
-          label="Tests completed"
+          label="Quizzes"
         />
         <StatTile
           icon={Target}
-          iconWrapClass="bg-muted [&_svg]:text-muted-foreground"
-          value={
-            user.averageScore != null ? `${user.averageScore}%` : "—"
-          }
-          label="Average quiz score"
+          iconWrapClass="bg-secondary text-muted-foreground"
+          value={user.averageScore != null ? `${user.averageScore}%` : "—"}
+          label="Avg. Score"
         />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* График активности */}
         <ProfileCard title="Weekly activity">
-          <div className="h-[200px] w-full">
+          <div className="h-[200px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={weeklyActivity}>
                 <defs>
-                  <linearGradient
-                    id="profileWeeklyActivityGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor="var(--primary)"
-                      stopOpacity={0.35}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--primary)"
-                      stopOpacity={0}
-                    />
+                  <linearGradient id="colorMinutes" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis
@@ -147,16 +162,12 @@ export function ProfileStats({ user }: { user: ProfileStatsModel }) {
                   tickLine={false}
                   tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                />
+                <YAxis hide />
                 <Tooltip
                   contentStyle={{
                     background: "var(--card)",
                     border: "1px solid var(--border)",
-                    borderRadius: "0.5rem",
+                    borderRadius: "8px"
                   }}
                 />
                 <Area
@@ -165,79 +176,48 @@ export function ProfileStats({ user }: { user: ProfileStatsModel }) {
                   stroke="var(--primary)"
                   strokeWidth={2}
                   fillOpacity={1}
-                  fill="url(#profileWeeklyActivityGradient)"
+                  fill="url(#colorMinutes)"
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-            <TrendingUp className="size-3.5 text-primary" />
-            Minutes watched this calendar week (Mon–Sun, UTC), from your sessions.
-          </p>
         </ProfileCard>
 
-        <ProfileCard title="Skill breakdown">
-          <div className="space-y-4">
-            {skillBreakdown.map((skill) => (
-              <div key={skill.skill} className="space-y-1.5">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium text-foreground">
-                    {skill.skill}
-                  </span>
-                  <span className="text-muted-foreground">{skill.value}%</span>
+        {/* Прогресс CEFR */}
+        <ProfileCard title="Language proficiency">
+          <div className="flex items-end gap-2 mt-6">
+            {order.map((lp) => {
+              const levelIndex = order.indexOf(lp);
+              let pct = 0;
+              if (levelIndex < idx) pct = 100;
+              else if (levelIndex === idx) pct = 45; // Тут можно добавить реальный прогресс к след. уровню
+
+              return (
+                <div key={lp} className="flex-1">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-3 w-full overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${current === lp ? "bg-accent" : "bg-primary/60"
+                          }`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span
+                      className={`text-xs font-bold ${current === lp ? "text-primary" : "text-muted-foreground"
+                        }`}
+                    >
+                      {lp}
+                    </span>
+                  </div>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all"
-                    style={{ width: `${skill.value}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-            <Award className="size-3.5 text-accent" />
-            Illustrative breakdown — skill analytics sync is planned.
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Estimated level: <span className="font-bold text-primary">{current}</span>
           </p>
         </ProfileCard>
       </div>
-
-      <ProfileCard title="Level progression">
-        <div className="flex items-end gap-2">
-          {order.map((lp) => {
-            const levelIndex = order.indexOf(lp);
-            let pct = 0;
-            if (levelIndex < idx) pct = 100;
-            else if (levelIndex === idx) pct = 45;
-            return (
-              <div key={lp} className="flex-1">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="h-3 w-full overflow-hidden rounded-full bg-secondary">
-                    <div
-                      className="h-full rounded-full bg-accent transition-[width]"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span
-                    className={`text-xs font-medium ${
-                      current === lp
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {lp}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          You are working around{" "}
-          <span className="font-semibold text-primary">{current}</span> — keep
-          leveling up with lessons and reviews.
-        </p>
-      </ProfileCard>
     </div>
   );
 }

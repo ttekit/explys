@@ -16,6 +16,7 @@ interface ContentVideo {
   videoName: string;
   videoDescription: string | null;
   videoLink: string;
+  thumbnailUrl?: string;
   content: {
     category: {
       name: string;
@@ -30,6 +31,8 @@ function toCardVideo(video: ContentVideo): CatalogCardVideo {
     title: video.videoName,
     categoryLabel: video.content.category.name,
     progress: 100,
+    thumbnailUrl: video.thumbnailUrl,
+    videoLink: video.videoLink,
   };
 }
 
@@ -82,7 +85,7 @@ export default function WatchedLessonsPage() {
         <CatalogSidebar
           categories={[]}
           selectedCategory="All"
-          onSelectCategory={() => {}}
+          onSelectCategory={() => { }}
           showCategoryFilter={false}
           welcomeName={
             user?.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined

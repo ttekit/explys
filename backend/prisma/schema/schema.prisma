@@ -28,24 +28,38 @@ model User {
   statistic                 UserStatistic?
   languageData              UserLanguageData[]
   additionalUserData        AdditionalUserData?
-  friends                   UserFriend[]               @relation("UserFriends")
-  friendOf                  UserFriend[]               @relation("UserFriendsReverse")
+  friends                   UserFriend[]                @relation("UserFriends")
+  friendOf                  UserFriend[]                @relation("UserFriendsReverse")
   postWatchSurveys          PostWatchSurvey[]
   userVocabulary            UserVocabulary[]
   watchSessions             WatchSession[]
   comprehensionTestAttempts ComprehensionTestAttempt[]
-  comprehensionWeakSpots         UserComprehensionWeakSpot[]
+  comprehensionWeakSpots    UserComprehensionWeakSpot[]
   placementAttempts         PlacementAttempt[]
-  currentStreak             Int                        @default(0)
+  currentStreak             Int                         @default(0)
   lastActivityDate          DateTime?
 
-  stripeCustomerId     String?  @map("stripe_customer_id")
-  stripeSubscriptionId String?  @map("stripe_subscription_id")
-  subscriptionPlan     String?  @map("subscription_plan")
-  subscriptionStatus   String?  @map("subscription_status")
+  stripeCustomerId     String? @map("stripe_customer_id")
+  stripeSubscriptionId String? @map("stripe_subscription_id")
+  subscriptionPlan     String? @map("subscription_plan")
+  subscriptionStatus   String? @map("subscription_status")
+
+  xp           Int               @default(0)
+  level        Int               @default(1)
+  achievements UserAchievement[]
 
   @@index([teacherId], map: "users_teacher_id_idx")
   @@map("users")
+}
+
+model UserAchievement {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  achievementId String
+  unlockedAt    DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
 }
 
 model AdditionalUserData {
@@ -63,9 +77,9 @@ model AdditionalUserData {
   interests           String[]
 
   /// Adult learners: why they study (e.g. travel to the UK).
-  learningGoal   String?  @map("learning_goal")
+  learningGoal  String? @map("learning_goal")
   /// Adult learners: target horizon as free text (e.g. 3m, 6 months).
-  timeToAchieve  String?  @map("time_to_achieve")
+  timeToAchieve String? @map("time_to_achieve")
 
   teacherGrades        String?
   teacherTopics        String[]
@@ -179,26 +193,26 @@ model UserFriend {
 }
 
 model UserVocabulary {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @map("user_id")
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// Study language (matches DB `language_code`)
-  language  String   @map("language_code")
-  term      String
-  source    String   @default("topic_tags")
-  topicId   Int?     @map("topic_id")
-  topic     Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
-  mastery   Float    @default(0)
+  language            String   @map("language_code")
+  term                String
+  source              String   @default("topic_tags")
+  topicId             Int?     @map("topic_id")
+  topic               Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  mastery             Float    @default(0)
   /// Gloss in the learner's native language (from profile at save/enrichment time).
-  nativeTranslation  String?  @map("native_translation")
+  nativeTranslation   String?  @map("native_translation")
   /// English explanation tuned to the learner's CEFR band (not stretch vocabulary band).
-  learnerDescription String? @map("learner_description")
+  learnerDescription  String?  @map("learner_description")
   /// Normalized band (e.g. A1) when learnerDescription was produced.
-  descriptionCefrBand String? @map("description_cefr_band")
+  descriptionCefrBand String?  @map("description_cefr_band")
   /// ISO 639-1 (or best-effort) for nativeTranslation when stored.
-  nativeLanguageCode String? @map("native_language_code")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  nativeLanguageCode  String?  @map("native_language_code")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@unique([userId, language, term])
   @@index([userId, language])

@@ -22,6 +22,7 @@ interface ContentVideo {
   videoName: string;
   videoDescription: string | null;
   videoLink: string;
+  thumbnailUrl?: string;
   content: {
     category: {
       name: string;
@@ -35,8 +36,11 @@ function toCardVideo(video: ContentVideo): CatalogCardVideo {
     id: video.id,
     title: video.videoName,
     categoryLabel: video.content.category.name,
+    thumbnailUrl: video.thumbnailUrl,
+    videoLink: video.videoLink,
   };
 }
+
 
 /** Ensure API origin in srcDoc HTML matches the SPA client (avoids broken inline script / proxy host skew). */
 function placementPatchApiOrigin(html: string, apiOrigin: string): string {
@@ -130,7 +134,7 @@ export default function VideoPage() {
               timestamp: Date.now(),
             }),
           },
-        ).catch(() => {});
+        ).catch(() => { });
         return;
       }
       // #endregion
@@ -248,14 +252,14 @@ export default function VideoPage() {
   const featured = filteredVideos[0] ?? null;
   const featuredHero = featured
     ? {
-        id: featured.id,
-        title: featured.videoName,
-        description:
-          featured.videoDescription ??
-          featured.content.category.description ??
-          "",
-        categoryName: featured.content.category.name,
-      }
+      id: featured.id,
+      title: featured.videoName,
+      description:
+        featured.videoDescription ??
+        featured.content.category.description ??
+        "",
+      categoryName: featured.content.category.name,
+    }
     : null;
 
   const catalogRows = useMemo(() => {
@@ -389,7 +393,7 @@ export default function VideoPage() {
               <p className="mt-1 text-sm text-muted-foreground">
                 {user?.role === "adult" ?
                   "Enter your job, education, hobbies, and native language — then your placement questionnaire starts."
-                : "A few quick preferences — then your placement questionnaire."}
+                  : "A few quick preferences — then your placement questionnaire."}
               </p>
             </div>
             <div className="flex-1 pb-6">
@@ -399,11 +403,11 @@ export default function VideoPage() {
                     user={user}
                     onSuccess={() => undefined}
                   />
-                : <PlacementPreferencesStep
+                  : <PlacementPreferencesStep
                     user={user}
                     onSuccess={() => undefined}
                   />
-              : null}
+                : null}
             </div>
             <footer className="shrink-0 border-border border-t bg-card">
               <div className="mx-auto flex max-w-4xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
