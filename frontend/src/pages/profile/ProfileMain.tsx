@@ -27,6 +27,7 @@ import { ProfileActivity } from "../../components/profile/ProfileActivity";
 import { ProfileSettings } from "../../components/profile/ProfileSettings";
 import { ProfileTeacherStudents } from "../../components/profile/ProfileTeacherStudents";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
+import ContentHeader from "../../components/catalog/ContentHeader";
 
 const LEARNER_TABS = [
   { id: "overview" as const, label: "Overview", icon: BarChart3 },
@@ -219,6 +220,7 @@ export default function ProfileMain() {
 
   return (
     <div className="min-h-dvh bg-background font-display antialiased">
+      <ContentHeader />
       <div className="flex">
         <CatalogSidebar
           categories={[]}
@@ -235,7 +237,7 @@ export default function ProfileMain() {
 
         <main
           className={cn(
-            "flex-1 pb-24 pt-8 transition-all duration-300 sm:px-6 lg:pb-12 lg:pt-10",
+            "flex-1 pb-24 pt-8 mt-10 transition-all duration-300 sm:px-6 lg:pb-12 lg:pt-10",
             sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
           )}
         >
@@ -258,7 +260,7 @@ export default function ProfileMain() {
                     aria-selected={isActive}
                     onClick={() => selectTab(tab.id)}
                     className={cn(
-                      "inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors sm:flex-none sm:justify-start",
+                      "inline-flex hover:cursor-pointer flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors sm:flex-none sm:justify-start",
                       isActive
                         ? "bg-primary text-primary-foreground shadow-sm"
                         : "text-muted-foreground hover:bg-secondary hover:text-foreground",

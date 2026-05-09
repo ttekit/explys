@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { apiFetch, getApiBase, getResponseErrorMessage, getStoredAccessToken } from "../../lib/api";
+import {
+  apiFetch,
+  getApiBase,
+  getResponseErrorMessage,
+  getStoredAccessToken,
+} from "../../lib/api";
 import { useUser } from "../../context/UserContext";
 import PlacementPreferencesStep from "../../components/PlacementPreferencesStep";
 import PlacementPreTestStep, {
   adultNeedsPlacementPrepFields,
 } from "../../components/PlacementPreTestStep";
-import { ChameleonMascot } from "../../components/ChameleonMascot";
 import { CatalogHero } from "../../components/catalog/CatalogHero";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
 import { CatalogVideoRow } from "../../components/catalog/CatalogVideoRow";
@@ -51,7 +55,9 @@ export default function VideoPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true); // collapsed by default (icon-only mode)
   const [placementDocHtml, setPlacementDocHtml] = useState<string | null>(null);
-  const [placementDocError, setPlacementDocError] = useState<string | null>(null);
+  const [placementDocError, setPlacementDocError] = useState<string | null>(
+    null,
+  );
   const navigate = useNavigate();
   const { user, isLoading: userLoading, refreshProfile } = useUser();
   const placementCompleteHandled = useRef(false);
@@ -86,8 +92,7 @@ export default function VideoPage() {
 
   const showPlacementPrepOverlay =
     placementPhaseResolved === "preferences" && !!user;
-  const showPlacementTest =
-    placementPhaseResolved === "test" && !!accessToken;
+  const showPlacementTest = placementPhaseResolved === "test" && !!accessToken;
 
   useEffect(() => {
     if (!needsPlacement) {
@@ -99,11 +104,7 @@ export default function VideoPage() {
       if (ev.data?.type === "placement_diag") {
         try {
           if (typeof console !== "undefined" && console.log) {
-            console.log(
-              "[placement:parent]",
-              ev.data.step,
-              ev.data.data ?? {},
-            );
+            console.log("[placement:parent]", ev.data.step, ev.data.data ?? {});
           }
         } catch {
           /* */
@@ -334,17 +335,12 @@ export default function VideoPage() {
       </div>
 
       {showPlacementPrepOverlay ? (
-        <div className="fixed inset-0 z-200 flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
+        <div className="fixed inset-0 z-200 font-display flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
           <header className="shrink-0 border-border border-b bg-background">
             <div className="mx-auto grid w-full max-w-4xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4">
               <div aria-hidden="true" />
               <div className="flex items-center gap-2">
-                <ChameleonMascot
-                  size="sm"
-                  mood="thinking"
-                  animate={false}
-                  className="h-10! w-10!"
-                />
+                <img src="/Icon.svg" className="w-10 h-13" />
                 <span className="font-display text-lg font-bold tracking-tight text-foreground">
                   Explys
                 </span>
@@ -367,39 +363,39 @@ export default function VideoPage() {
             </div>
           </div>
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-            <div className="mx-auto w-full max-w-md shrink-0 px-4 pt-2 pb-2">
-              <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
-                Before your entry test
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {user?.role === "adult" ?
-                  "Enter your job, education, and native language — then your placement questionnaire starts."
-                : "A few quick preferences — then your placement questionnaire."}
-              </p>
+            <div className="mx-auto mb-4 w-full max-w-2xl flex flex-col min-h-0 bg-card border border-border rounded-3xl overflow-scroll">
+              <div className="mx-auto w-full max-w-md shrink-0 px-4 pt-2 pb-2">
+                <h2 className="font-display text-xl font-semibold mt-1 tracking-tight text-foreground">
+                  Before your entry test
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {user?.role === "adult"
+                    ? "Enter your job, education, and native language — then your placement questionnaire starts."
+                    : "A few quick preferences — then your placement questionnaire."}
+                </p>
+              </div>
+              <div className="flex-1 pb-6">
+                {user ? (
+                  user.role === "adult" ? (
+                    <PlacementPreTestStep
+                      user={user}
+                      onSuccess={() => undefined}
+                    />
+                  ) : (
+                    <PlacementPreferencesStep
+                      user={user}
+                      onSuccess={() => undefined}
+                    />
+                  )
+                ) : null}
+              </div>
             </div>
-            <div className="flex-1 pb-6">
-              {user ?
-                user.role === "adult" ?
-                  <PlacementPreTestStep
-                    user={user}
-                    onSuccess={() => undefined}
-                  />
-                : <PlacementPreferencesStep
-                    user={user}
-                    onSuccess={() => undefined}
-                  />
-              : null}
-            </div>
+
             <footer className="shrink-0 border-border border-t bg-card">
-              <div className="mx-auto flex max-w-4xl flex-col gap-4 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mx-auto flex max-w-4xl flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="mb-3 flex items-center gap-2">
-                    <ChameleonMascot
-                      size="sm"
-                      mood="happy"
-                      animate={false}
-                      className="h-10! w-10!"
-                    />
+                    <img src="/Icon.svg" className="w-8 h-10" />
                     <span className="font-display text-lg font-bold tracking-tight text-foreground">
                       Explys
                     </span>
@@ -451,7 +447,9 @@ export default function VideoPage() {
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-3">
               <div className="h-10 w-10 animate-spin rounded-full border-solid border-primary border-t-4 border-r-transparent border-b-transparent border-l-transparent" />
-              <p className="text-muted-foreground text-sm">Loading placement test…</p>
+              <p className="text-muted-foreground text-sm">
+                Loading placement test…
+              </p>
             </div>
           )}
         </div>

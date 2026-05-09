@@ -1,7 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { useState } from "react";
 import { cn } from "../../lib/utils";
-import { ChameleonMascot } from "../ChameleonMascot";
 import {
   BookOpen,
   ChevronLeft,
@@ -11,15 +9,18 @@ import {
   Settings,
   Trophy,
   User,
+  CircleUser,
 } from "lucide-react";
 
 const sidebarLinks = [
   { icon: LayoutGrid, label: "Catalog", to: "/catalog" },
   { icon: Search, label: "Search", to: "/catalog" },
-  { icon: BookOpen, label: "Watched Lessons", to: "/watched-lessons" },
-  { icon: Trophy, label: "Progress", to: "/profile?tab=progress" },
+  { icon: BookOpen, label: "My Lessons", to: "/contentPage" },
+  { icon: Trophy, label: "Progress", to: "/profile" },
   { icon: User, label: "Profile", to: "/profile" },
 ] as const;
+
+const LEVELS = ["All", "A1", "A2", "B1", "B2", "C1", "C2"] as const;
 
 interface CatalogSidebarProps {
   categories: string[];
@@ -27,11 +28,10 @@ interface CatalogSidebarProps {
   onSelectCategory: (category: string) => void;
   welcomeName?: string;
   englishLevel?: string;
-  /** When false, hides category chips (e.g. on profile pages). Default true. */
-  showCategoryFilter?: boolean;
-  /** Controlled collapse (desktop). When set, `onCollapsedChange` is called on toggle. */
-  collapsed?: boolean;
-  onCollapsedChange?: (collapsed: boolean) => void;
+  onSelectLevel: (level: string) => void;
+  // lifted state — controlled by parent
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
 }
 
 export function CatalogSidebar({
@@ -40,50 +40,31 @@ export function CatalogSidebar({
   onSelectCategory,
   welcomeName,
   englishLevel,
-  showCategoryFilter = true,
-  collapsed: collapsedProp,
+  // onSelectLevel,
+  collapsed,
   onCollapsedChange,
 }: CatalogSidebarProps) {
-  const { pathname, search } = useLocation();
-  const profileTab = new URLSearchParams(search).get("tab");
-  const [internalCollapsed, setInternalCollapsed] = useState(false);
-  const collapsedControlled = collapsedProp !== undefined;
-  const collapsed = collapsedProp ?? internalCollapsed;
-
-  const setCollapsed = (next: boolean) => {
-    onCollapsedChange?.(next);
-    if (!collapsedControlled) setInternalCollapsed(next);
-  };
-
+  const { pathname } = useLocation();
   const sortedCategories = ["All", ...categories.filter(Boolean).sort()];
-
-  const isProfilePath =
-    pathname === "/profile" || pathname === "/profileMain";
 
   const linkActive = (link: (typeof sidebarLinks)[number]) => {
     if (link.label === "Catalog") return pathname === "/catalog";
     if (link.label === "Search") return pathname.startsWith("/catalog/search");
-    if (link.label === "Progress") {
-      return isProfilePath && profileTab === "progress";
-    }
-    if (link.label === "Profile") {
-      return isProfilePath && profileTab !== "progress";
-    }
-    return pathname === link.to.split("?")[0];
+    return pathname === link.to;
   };
 
   return (
     <>
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-40 hidden flex-col border-border border-r bg-card transition-all duration-300 lg:flex",
-          collapsed ? "w-20" : "w-64",
+          "fixed top-18 bottom-0 left-0 z-50 hidden flex-col border-r border-border bg-card font-display transition-all duration-600 lg:flex",
+          collapsed ? "w-20" : "w-64 shadow-2xl",
         )}
       >
         <button
           type="button"
-          onClick={() => setCollapsed(!collapsed)}
-          className="absolute top-6 -right-3 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card transition-colors hover:bg-muted"
+          onClick={() => onCollapsedChange(!collapsed)}
+          className="absolute top-6 hover:cursor-pointer -right-3 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card transition-colors hover:bg-muted"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -95,24 +76,24 @@ export function CatalogSidebar({
 
         <div
           className={cn(
-            "flex items-center gap-3 border-border border-b p-4",
+            "mx-3 my-3 flex items-center gap-3 rounded-3xl border border-border p-1",
             collapsed && "justify-center",
           )}
         >
-          <ChameleonMascot size="sm" mood="happy" animate={false} />
+          <CircleUser className="text-muted-foreground m-3 hover:cursor-pointer shrink-0" />
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-foreground">
+              <p className="truncate text-foreground/70">
                 {welcomeName?.trim() ? `Hi, ${welcomeName}` : "Welcome back!"}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {englishLevel?.trim() ? `Level ${englishLevel}` : "Explys"}
+              <p className="text-sm font-semibold text-accent">
+                {englishLevel?.trim() ? `• Level ${englishLevel}` : "Explys"}
               </p>
             </div>
           )}
         </div>
 
-        <nav className="flex-1 space-y-1 p-4">
+        <nav className="flex-col space-y-1 p-4">
           {sidebarLinks.map((link) => (
             <Link
               key={link.label}
@@ -131,36 +112,55 @@ export function CatalogSidebar({
           ))}
         </nav>
 
-        {!collapsed && showCategoryFilter ? (
-          <div className="space-y-4 border-border border-t p-4">
-            <div>
-              <p className="mb-2 text-sm font-medium text-foreground">
-                Category
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {sortedCategories.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => onSelectCategory(category)}
-                    className={cn(
-                      "rounded px-2 py-1 text-xs font-medium transition-colors",
-                      selectedCategory === category
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-muted text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
+        {!collapsed && (
+          <div className="space-y-4 border-t border-border p-4">
+            <p className="mb-2 text-sm font-medium text-foreground">Level</p>
+            <div className="flex flex-wrap gap-1">
+              {LEVELS.map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => {}}
+                  className={cn(
+                    "rounded px-2 py-1 text-xs font-medium transition-colors hover:cursor-pointer",
+                    englishLevel === level
+                      ? "bg-primary text-primary-foreground shadow-inner"
+                      : "bg-muted text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {level}
+                </button>
+              ))}
             </div>
           </div>
-        ) : null}
+        )}
 
-        <div className="border-border border-t p-4">
+        {!collapsed && (
+          <div className="space-y-4 border-t border-border p-4">
+            <p className="mb-2 text-sm font-medium text-foreground">Category</p>
+            <div className="flex flex-wrap gap-1">
+              {sortedCategories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => onSelectCategory(category)}
+                  className={cn(
+                    "rounded px-2 py-1 text-xs font-medium transition-colors hover:cursor-pointer",
+                    selectedCategory === category
+                      ? "bg-accent text-accent-foreground shadow-inner"
+                      : "bg-muted text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-auto border-t border-border p-4">
           <Link
-            to="/profile"
+            to="/settings"
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
               collapsed && "justify-center px-2",
@@ -172,7 +172,14 @@ export function CatalogSidebar({
         </div>
       </aside>
 
-      <nav className="fixed right-0 bottom-0 left-0 z-40 border-border border-t bg-card lg:hidden">
+      {!collapsed && (
+        <div
+          className="fixed inset-0 top-18 z-40 hidden bg-black/40 backdrop-blur-[3px] lg:block"
+          onClick={() => onCollapsedChange(true)}
+        />
+      )}
+
+      <nav className="fixed right-0 bottom-0 left-0 z-40 border-t border-border bg-card lg:hidden">
         <div className="flex items-center justify-around py-2">
           {sidebarLinks.slice(0, 5).map((link) => (
             <Link

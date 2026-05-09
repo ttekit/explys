@@ -8,6 +8,7 @@ import {
   type CatalogCardVideo,
 } from "../../components/catalog/CatalogVideoCard";
 import { ChameleonMascot } from "../../components/ChameleonMascot";
+import ContentHeader from "../../components/catalog/ContentHeader";
 
 interface ContentVideo {
   id: number;
@@ -36,6 +37,7 @@ export default function WatchedLessonsPage() {
   const [videos, setVideos] = useState<ContentVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,6 +72,7 @@ export default function WatchedLessonsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
+      <ContentHeader />
       <div className="flex">
         <CatalogSidebar
           categories={[]}
@@ -80,6 +83,7 @@ export default function WatchedLessonsPage() {
             user?.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined
           }
           englishLevel={user?.englishLevel || undefined}
+          onCollapsedChange={setSidebarCollapsed}
         />
 
         <main className="ml-0 flex-1 pb-28 lg:ml-64 lg:pb-12">
@@ -138,11 +142,7 @@ export default function WatchedLessonsPage() {
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {cards.map((video) => (
-                  <CatalogVideoCard
-                    key={video.id}
-                    video={video}
-                    showProgress
-                  />
+                  <CatalogVideoCard key={video.id} video={video} showProgress />
                 ))}
               </div>
             )}
