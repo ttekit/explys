@@ -40,7 +40,7 @@ export function HeroSection() {
               </Link>
               <Link
                 to="/catalog"
-                className="inline-flex text-foreground/70 hover:text-white rounded-[15px] px-3 items-center justify-center gap-2 rounded-xlpx-8 py-6 text-lg font-semibold transition-colors hover:bg-muted-foreground/10"
+                className="inline-flex items-center justify-center gap-2 rounded-[15px] px-8 py-6 text-lg font-semibold text-foreground/70 transition-colors hover:bg-muted-foreground/10 hover:text-white"
               >
                 <Play className="h-5 w-5" />
                 {hero.ctaSecondary}
