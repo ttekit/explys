@@ -71,9 +71,9 @@ export function ProfileAchievements() {
   return (
     <div className="space-y-6">
       <ProfileCard noPadding contentClassName="p-0">
-        <div className="border-b border-border/40 bg-gradient-to-br from-primary/20 via-card to-accent/20 p-6">
+        <div className="border-b rounded-2xl border-border/40 bg-gradient-to-br from-primary/20 via-card to-accent/20 p-6">
           <div className="flex flex-col items-center gap-6 sm:flex-row">
-            <ChameleonMascot size="lg" mood="excited" />
+            <img src="/Icon.svg" className="w-15 h-19" />
             <div className="flex-1 text-center sm:text-left">
               <h2 className="mb-2 text-2xl font-bold text-foreground">
                 Achievement Hunter
