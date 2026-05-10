@@ -3,7 +3,9 @@ import { Link, useSearchParams } from "react-router";
 import {
   BarChart3,
   BookOpen,
+  ClipboardList,
   Clock,
+  CreditCard,
   GraduationCap,
   Settings,
   Trophy,
@@ -26,16 +28,22 @@ import { ProfileAchievements } from "../../components/profile/ProfileAchievement
 import { ProfileActivity } from "../../components/profile/ProfileActivity";
 import { ProfileSettings } from "../../components/profile/ProfileSettings";
 import { ProfileTeacherStudents } from "../../components/profile/ProfileTeacherStudents";
+import { ProfileStudyingPlan } from "../../components/profile/ProfileStudyingPlan";
+import { ProfileSubscriptions } from "../../components/profile/ProfileSubscriptions";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import ContentHeader from "../../components/catalog/ContentHeader";
 
 const LEARNER_TABS = [
   { id: "overview" as const, label: "Overview", icon: BarChart3 },
+  { id: "studying-plan" as const, label: "Studying plan", icon: ClipboardList },
+  { id: "subscriptions" as const, label: "Subscriptions", icon: CreditCard },
   { id: "progress" as const, label: "Progress", icon: BookOpen },
   { id: "achievements" as const, label: "Achievements", icon: Trophy },
   { id: "activity" as const, label: "Activity", icon: Clock },
   { id: "settings" as const, label: "Settings", icon: Settings },
-];
+] as const;
 
 type TabId = (typeof LEARNER_TABS)[number]["id"] | "students";
 
@@ -93,7 +101,7 @@ export default function ProfileMain() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id || activeTab !== "overview") return;
+    if (!user?.id || (activeTab !== "overview" && activeTab !== "activity")) return;
     let cancelled = false;
     void (async () => {
       const r = await apiFetch("/auth/profile/learning-stats", {
@@ -119,6 +127,8 @@ export default function ProfileMain() {
           ? (weekly as { day: string; minutes: number }[])
           : [...DEFAULT_WEEKLY_ACTIVITY],
       });
+
+      console.log("LEARNING STATS FROM BACKEND:", o);
     })();
     return () => {
       cancelled = true;
@@ -137,7 +147,7 @@ export default function ProfileMain() {
       role: normalizeRole(user.role),
       level: user.englishLevel?.trim() || "—",
       joinDateLabel,
-      streakDays: null,
+      streakDays: (user as any).currentStreak || 0,
     };
   }, [user, joinDateLabel]);
 
@@ -154,19 +164,22 @@ export default function ProfileMain() {
           : null,
       weeklyActivity: s?.weeklyActivity ?? [...DEFAULT_WEEKLY_ACTIVITY],
       levelLabel: user.englishLevel?.trim() || "A1",
+      xp: user.xp || 0,
+      appLevel: Math.floor((user.xp || 0) / 1000) + 1,
     };
   }, [user, learningStats]);
 
   const tabs = useMemo(() => {
     if (user?.role === "teacher") {
+      const withoutStudying = LEARNER_TABS.filter((t) => t.id !== "studying-plan");
       return [
-        LEARNER_TABS[0],
+        withoutStudying[0],
         {
           id: "students" as const,
           label: "Students",
           icon: GraduationCap,
         },
-        ...LEARNER_TABS.slice(1),
+        ...withoutStudying.slice(1),
       ];
     }
     return [...LEARNER_TABS];
@@ -180,8 +193,13 @@ export default function ProfileMain() {
       setActiveTab(t as TabId);
       return;
     }
+    if (t && !validIds.has(t)) {
+      setActiveTab("overview");
+      setSearchParams({}, { replace: true });
+      return;
+    }
     if (!t) setActiveTab("overview");
-  }, [user, searchParams, tabs]);
+  }, [user, searchParams, tabs, setSearchParams]);
 
   useEffect(() => {
     if (user?.role !== "teacher" && activeTab === "students") {
@@ -190,25 +208,48 @@ export default function ProfileMain() {
     }
   }, [user?.role, activeTab, setSearchParams]);
 
+  useEffect(() => {
+    if (user?.role === "teacher" && activeTab === "studying-plan") {
+      setActiveTab("overview");
+      setSearchParams({}, { replace: true });
+    }
+  }, [user?.role, activeTab, setSearchParams]);
+
   if (isLoading) {
     return (
-      <div className="flex min-h-dvh items-center justify-center text-muted-foreground">
-        Loading profile…
-      </div>
+      <>
+        <SEO
+          title="Profile"
+          description="Your Explys learner or teacher profile."
+          canonicalUrl={resolveCanonicalUrl("/profileMain")}
+          noindex
+        />
+        <div className="flex min-h-dvh items-center justify-center text-muted-foreground">
+          Loading profile…
+        </div>
+      </>
     );
   }
 
   if (!isLoggedIn || !user || !headerModel || !statsModel) {
     return (
-      <div className="m-4 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-destructive">
-        <p className="font-medium">Please sign in to view your profile.</p>
-        <Link
-          to="/loginForm"
-          className="mt-3 inline-block text-primary underline-offset-4 hover:underline"
-        >
-          Go to login
-        </Link>
-      </div>
+      <>
+        <SEO
+          title="Profile"
+          description="Your Explys learner or teacher profile."
+          canonicalUrl={resolveCanonicalUrl("/profileMain")}
+          noindex
+        />
+        <div className="m-4 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-destructive">
+          <p className="font-medium">Please sign in to view your profile.</p>
+          <Link
+            to="/loginForm"
+            className="mt-3 inline-block text-primary underline-offset-4 hover:underline"
+          >
+            Go to login
+          </Link>
+        </div>
+      </>
     );
   }
 
@@ -221,11 +262,17 @@ export default function ProfileMain() {
   return (
     <div className="min-h-dvh bg-background font-display antialiased">
       <ContentHeader />
+      <SEO
+        title="Profile"
+        description="Your Explys learner or teacher profile."
+        canonicalUrl={resolveCanonicalUrl("/profileMain")}
+        noindex
+      />
       <div className="flex">
         <CatalogSidebar
           categories={[]}
           selectedCategory="All"
-          onSelectCategory={() => {}}
+          onSelectCategory={() => { }}
           showCategoryFilter={false}
           welcomeName={
             user?.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined
@@ -277,10 +324,16 @@ export default function ProfileMain() {
               {activeTab === "overview" ? (
                 <ProfileStats user={statsModel} />
               ) : null}
+              {activeTab === "studying-plan" ? (
+                <ProfileStudyingPlan user={user} />
+              ) : null}
+              {activeTab === "subscriptions" ? (
+                <ProfileSubscriptions user={user} />
+              ) : null}
               {activeTab === "students" ? <ProfileTeacherStudents /> : null}
               {activeTab === "progress" ? <ProfileProgress /> : null}
               {activeTab === "achievements" ? <ProfileAchievements /> : null}
-              {activeTab === "activity" ? <ProfileActivity /> : null}
+              {activeTab === "activity" ? <ProfileActivity weeklyActivity={learningStats?.weeklyActivity} /> : null}
               {activeTab === "settings" ? (
                 <ProfileSettings user={user} onSaved={refreshProfile} />
               ) : null}

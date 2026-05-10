@@ -36,7 +36,9 @@ function resolveCorsOrigin():
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
   // Dev helper: same-origin test UI for the placement/entrance test (e.g. /dev/entrance-test.html)
   app.useStaticAssets(join(process.cwd(), "public"), { prefix: "/dev/" });
 
@@ -75,6 +77,7 @@ async function bootstrap() {
     .addTag("content-video", "Content Video management endpoints")
     .addTag("content-stats", "Content Statistics management endpoints")
     .addTag("content-media", "Content Media management endpoints")
+    .addTag("billing", "Stripe Checkout and webhooks")
     .addBearerAuth(
       {
         type: "http",

@@ -1,8 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "react-hot-toast";
 import "./index.css";
+import { LandingLocaleProvider } from "./context/LandingLocaleContext";
 import RegistrationMain from "./pages/registration/RegistrationMain";
 import RegistrationDetails from "./pages/registration/RegistrationDetails";
 import RegistrationPreferences from "./pages/registration/RegistrationPreferences";
@@ -17,6 +19,8 @@ import LessonSummaryPage from "./pages/content/LessonSummaryPage";
 import RegisterSuccessPage from "./pages/registration/RegisterSuccessPage";
 import LandingPage from "./pages/landing/LandingPage";
 import LevelTestPage from "./pages/registration/LevelTestPage";
+import LearningPlanPage from "./pages/learning/LearningPlanPage";
+import PricingPage from "./pages/pricing/PricingPage";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
@@ -43,6 +47,7 @@ const router = createBrowserRouter([
       },
       { path: "/registrationSuccess", element: <RegisterSuccessPage /> },
       { path: "/loginForm", element: <LoginForm /> },
+      { path: "/pricing", element: <PricingPage /> },
       {
         element: <RequireAuth />,
         children: [
@@ -67,6 +72,7 @@ const router = createBrowserRouter([
           { path: "/profileMain", element: <ProfileMain /> },
           { path: "/profile", element: <ProfileMain /> },
           { path: "/catalog", element: <VideoPage /> },
+          { path: "/learning-plan", element: <LearningPlanPage /> },
           { path: "/video-page", element: <Navigate to="/catalog" replace /> },
           { path: "/content/:id/summary", element: <LessonSummaryPage /> },
           { path: "/content/:id?", element: <ContentPage /> },
@@ -78,17 +84,21 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <UserProvider>
-      <RegistrationProvider>
-        <RouterProvider router={router} />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            className: "bg-zinc-900 text-zinc-100 border border-zinc-700",
-            style: { boxShadow: "0 8px 30px rgba(0,0,0,0.4)" },
-          }}
-        />
-      </RegistrationProvider>
-    </UserProvider>
+    <HelmetProvider>
+      <LandingLocaleProvider>
+        <UserProvider>
+          <RegistrationProvider>
+            <RouterProvider router={router} />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                className: "bg-zinc-900 text-zinc-100 border border-zinc-700",
+                style: { boxShadow: "0 8px 30px rgba(0,0,0,0.4)" },
+              }}
+            />
+          </RegistrationProvider>
+        </UserProvider>
+      </LandingLocaleProvider>
+    </HelmetProvider>
   </StrictMode>,
 );

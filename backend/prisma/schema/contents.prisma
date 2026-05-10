@@ -33,17 +33,17 @@ model ContentStats {
   contentMediaId Int          @unique @map("content_media_id")
   contentMedia   ContentMedia @relation(fields: [contentMediaId], references: [id], onDelete: Cascade)
 
-  usersWatched   Int          @default(0) @map("users_watched")
-  rating         Float        @default(0)
+  usersWatched Int   @default(0) @map("users_watched")
+  rating       Float @default(0)
 
   /// CEFR band tags from transcript analysis (e.g. A2, B1)
-  systemTags            String[] @default([]) @map("system_tags")
+  systemTags           String[] @default([]) @map("system_tags")
   /// Theme / topic tags from transcript analysis
-  userTags              String[] @default([]) @map("user_tags")
+  userTags             String[] @default([]) @map("user_tags")
   /// 1–10 processing load estimate, or null if not inferred
-  processingComplexity  Int?     @map("processing_complexity")
+  processingComplexity Int?     @map("processing_complexity")
 
-  topics         Topic[]
+  topics Topic[]
 
   @@map("content_stats")
 }
@@ -57,33 +57,51 @@ model ContentVideo {
   videoLink        String  @map("video_link")
   videoName        String  @map("video_name")
   videoDescription String? @map("video_description")
+  thumbnailUrl     String?
 
   videoCaption     VideoCaptions?
   postWatchSurveys PostWatchSurvey[]
 
-  /// Cached multiple-choice set from last generate; refreshed when absent or on forced regen.
-  /// Shape: { source: "gemini"|"fallback", tests: ComprehensionTestItem[] }
-  comprehensionTestsCache Json? @map("comprehension_tests_cache")
-
-  watchSessions             WatchSession[]
-  comprehensionTestAttempts ComprehensionTestAttempt[]
+  watchSessions              WatchSession[]
+  comprehensionTestAttempts  ComprehensionTestAttempt[]
+  userComprehensionWeakSpots UserComprehensionWeakSpot[]
 
   @@map("content_videos")
 }
 
+/// Per-user misses on a clip; used to bias future quiz generation toward similar skills.
+model UserComprehensionWeakSpot {
+  id             Int          @id @default(autoincrement())
+  userId         Int          @map("user_id")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentVideoId Int          @map("content_video_id")
+  contentVideo   ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
+
+  category    String @map("category")
+  stemHash    String @map("stem_hash") @db.VarChar(64)
+  stemSnippet String @map("stem_snippet") @db.VarChar(500)
+
+  missCount    Int      @default(1) @map("miss_count")
+  lastMissedAt DateTime @default(now()) @map("last_missed_at")
+
+  @@unique([userId, contentVideoId, stemHash])
+  @@index([userId, contentVideoId, lastMissedAt])
+  @@map("user_comprehension_weak_spots")
+}
+
 /// Deduped per user/video/calendar day (UTC); updated on subsequent watch-complete same day.
 model WatchSession {
-  id             Int       @id @default(autoincrement())
-  userId         Int       @map("user_id")
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contentVideoId Int       @map("content_video_id")
+  id             Int          @id @default(autoincrement())
+  userId         Int          @map("user_id")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentVideoId Int          @map("content_video_id")
   contentVideo   ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
   /// Calendar date (UTC) for idempotent completion counting.
-  completionDate DateTime  @db.Date @map("completion_date")
-  startedAt      DateTime? @map("started_at")
-  endedAt        DateTime  @default(now()) @map("ended_at")
-  secondsWatched Int       @default(0) @map("seconds_watched")
-  completed      Boolean   @default(true)
+  completionDate DateTime     @map("completion_date") @db.Date
+  startedAt      DateTime?    @map("started_at")
+  endedAt        DateTime     @default(now()) @map("ended_at")
+  secondsWatched Int          @default(0) @map("seconds_watched")
+  completed      Boolean      @default(true)
 
   @@unique([userId, contentVideoId, completionDate])
   @@index([userId, contentVideoId, endedAt])
@@ -92,14 +110,14 @@ model WatchSession {
 }
 
 model ComprehensionTestAttempt {
-  id             Int       @id @default(autoincrement())
-  userId         Int       @map("user_id")
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contentVideoId Int       @map("content_video_id")
+  id             Int          @id @default(autoincrement())
+  userId         Int          @map("user_id")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentVideoId Int          @map("content_video_id")
   contentVideo   ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
   correct        Int
   total          Int
-  scorePct       Float     @map("score_pct")
+  scorePct       Float        @map("score_pct")
   passed         Boolean
   details        Json?
 
@@ -111,13 +129,13 @@ model ComprehensionTestAttempt {
 }
 
 model VideoCaptions {
-  id        Int     @id @default(autoincrement())
-  contentVideoId Int  @unique @map("content_video_id")
+  id             Int          @id @default(autoincrement())
+  contentVideoId Int          @unique @map("content_video_id")
   contentVideo   ContentVideo @relation(fields: [contentVideoId], references: [id], onDelete: Cascade)
 
-  subtitlesFileLink String @map("subtitles_file_link")
-  createAt  DateTime @default(now()) @map("create_at")
-  updateAt  DateTime @updatedAt @map("update_at")
+  subtitlesFileLink String   @map("subtitles_file_link")
+  createAt          DateTime @default(now()) @map("create_at")
+  updateAt          DateTime @updatedAt @map("update_at")
 
   @@map("video_captions")
 }

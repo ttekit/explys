@@ -81,6 +81,13 @@ export function buildRegisterBody(formData: FormData): Record<string, unknown> {
   body.favoriteGenres = isTeacher ? [] : (formData.favoriteGenres ?? []);
   body.hatedGenres = isTeacher ? [] : (formData.hatedGenres ?? []);
 
+  if (formData.role === "adult") {
+    const lg = formData.learningGoal?.trim();
+    const ta = formData.timeToAchieve?.trim();
+    if (lg) body.learningGoal = lg;
+    if (ta) body.timeToAchieve = ta;
+  }
+
   return body;
 }
 

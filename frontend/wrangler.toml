@@ -1,0 +1,14 @@
+# Cloudflare Workers (root directory = frontend):
+#   Build command:  npm ci && npm run build
+#   Deploy command: npx wrangler versions upload
+#   (CI often auto-runs install; build alone may be: npm run build)
+# Use root directory "frontend" (no leading slash). `name` must match the Worker in the dashboard.
+#
+# `[assets]` is required for `wrangler versions upload` (Workers static assets).
+# `pages_build_output_dir` is for `wrangler pages deploy` only.
+name = 'expyls'
+compatibility_date = "2026-05-07"
+pages_build_output_dir = "dist"
+
+[assets]
+directory = "./dist"

@@ -69,4 +69,14 @@ export class RegisterDto {
   @IsOptional()
   @IsArray()
   hatedGenres?: number[];
+
+  /** Adult: main motivation / destination (e.g. travel to GB). */
+  @IsOptional()
+  @IsString()
+  learningGoal?: string;
+
+  /** Adult: target time horizon (e.g. 3m). */
+  @IsOptional()
+  @IsString()
+  timeToAchieve?: string;
 }

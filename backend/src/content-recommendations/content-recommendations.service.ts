@@ -145,7 +145,6 @@ export class ContentRecommendationsService {
     );
 
     const videos = await this.prisma.contentVideo.findMany({
-      omit: { comprehensionTestsCache: true },
       orderBy: { id: "asc" },
       include: {
         videoCaption: { select: { id: true } },

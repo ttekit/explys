@@ -4,39 +4,20 @@ import {
   MonitorPlay,
   TrendingUp,
 } from "lucide-react";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 
-const steps = [
-  {
-    number: "01",
-    title: "Create Your Profile",
-    description:
-      "Tell us about yourself — your job, hobbies, favorite genres, and learning goals.",
-    icon: <CircleUser className="w-10 h-10 text-muted-foreground" />,
-  },
-  {
-    number: "02",
-    title: "Take the Level Test",
-    description:
-      "A quick assessment to determine your current English proficiency level.",
-    icon: <BookOpenCheck className="w-10 h-10 text-muted-foreground" />,
-  },
-  {
-    number: "03",
-    title: "Watch & Learn",
-    description:
-      "Enjoy personalized video content that matches your interests and level.",
-    icon: <MonitorPlay className="w-10 h-10 text-muted-foreground" />,
-  },
-  {
-    number: "04",
-    title: "Practice & Progress",
-    description:
-      "Complete interactive quizzes and watch your skills grow over time.",
-    icon: <TrendingUp className="w-10 h-10 text-muted-foreground" />,
-  },
+const stepIcons = [
+  <CircleUser key="0" className="h-10 w-10 text-muted-foreground" />,
+  <BookOpenCheck key="1" className="h-10 w-10 text-muted-foreground" />,
+  <MonitorPlay key="2" className="h-10 w-10 text-muted-foreground" />,
+  <TrendingUp key="3" className="h-10 w-10 text-muted-foreground" />,
 ];
 
 export function HowItWorksSection() {
+  const { messages } = useLandingLocale();
+  const { howItWorks } = messages;
+  const { steps } = howItWorks;
+
   return (
     <section
       id="how-explys-works"
@@ -45,10 +26,11 @@ export function HowItWorksSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
           <h2 className="font-display mb-4 text-balance text-3xl font-bold sm:text-4xl">
-            How <span className="text-primary">Explys</span> Works
+            {howItWorks.titleBefore}{" "}
+            <span className="text-primary">{howItWorks.titleBrand}</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-            Get started in minutes and begin your personalized learning journey
+            {howItWorks.subtitle}
           </p>
         </div>
 
@@ -61,11 +43,11 @@ export function HowItWorksSection() {
 
               <div className="relative flex flex-col items-center text-center">
                 <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full border-2 border-border bg-muted transition-colors group-hover:border-primary">
-                  {step.icon}
+                  {stepIcons[index]}
                 </div>
 
                 <span className="mb-2 text-sm font-bold text-primary">
-                  Step {step.number}
+                  {howItWorks.stepPrefix} {step.number}
                 </span>
                 <h3 className="mb-2 text-lg font-semibold text-foreground">
                   {step.title}

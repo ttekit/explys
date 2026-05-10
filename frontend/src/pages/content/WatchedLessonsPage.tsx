@@ -8,6 +8,8 @@ import {
   type CatalogCardVideo,
 } from "../../components/catalog/CatalogVideoCard";
 import { ChameleonMascot } from "../../components/ChameleonMascot";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import ContentHeader from "../../components/catalog/ContentHeader";
 
 interface ContentVideo {
@@ -15,6 +17,7 @@ interface ContentVideo {
   videoName: string;
   videoDescription: string | null;
   videoLink: string;
+  thumbnailUrl?: string;
   content: {
     category: {
       name: string;
@@ -29,6 +32,8 @@ function toCardVideo(video: ContentVideo): CatalogCardVideo {
     title: video.videoName,
     categoryLabel: video.content.category.name,
     progress: 100,
+    thumbnailUrl: video.thumbnailUrl,
+    videoLink: video.videoLink,
   };
 }
 
@@ -72,12 +77,18 @@ export default function WatchedLessonsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
+      <SEO
+        title="Watched lessons"
+        description="Your completed lessons on Explys."
+        canonicalUrl={resolveCanonicalUrl("/watched-lessons")}
+        noindex
+      />
       <ContentHeader />
       <div className="flex">
         <CatalogSidebar
           categories={[]}
           selectedCategory="All"
-          onSelectCategory={() => {}}
+          onSelectCategory={() => { }}
           showCategoryFilter={false}
           welcomeName={
             user?.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined

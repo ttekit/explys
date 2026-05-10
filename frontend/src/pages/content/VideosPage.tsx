@@ -11,6 +11,10 @@ import PlacementPreferencesStep from "../../components/PlacementPreferencesStep"
 import PlacementPreTestStep, {
   adultNeedsPlacementPrepFields,
 } from "../../components/PlacementPreTestStep";
+import { ChameleonMascot } from "../../components/ChameleonMascot";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 import { CatalogHero } from "../../components/catalog/CatalogHero";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
 import { CatalogVideoRow } from "../../components/catalog/CatalogVideoRow";
@@ -23,6 +27,7 @@ interface ContentVideo {
   videoName: string;
   videoDescription: string | null;
   videoLink: string;
+  thumbnailUrl?: string;
   content: {
     category: {
       name: string;
@@ -36,8 +41,11 @@ function toCardVideo(video: ContentVideo): CatalogCardVideo {
     id: video.id,
     title: video.videoName,
     categoryLabel: video.content.category.name,
+    thumbnailUrl: video.thumbnailUrl,
+    videoLink: video.videoLink,
   };
 }
+
 
 /** Ensure API origin in srcDoc HTML matches the SPA client (avoids broken inline script / proxy host skew). */
 function placementPatchApiOrigin(html: string, apiOrigin: string): string {
@@ -60,6 +68,8 @@ export default function VideoPage() {
   );
   const navigate = useNavigate();
   const { user, isLoading: userLoading, refreshProfile } = useUser();
+  const { messages, locale } = useLandingLocale();
+  const catalogSeo = messages.catalogPage;
   const placementCompleteHandled = useRef(false);
 
   const accessToken = getStoredAccessToken();
@@ -126,7 +136,7 @@ export default function VideoPage() {
               timestamp: Date.now(),
             }),
           },
-        ).catch(() => {});
+        ).catch(() => { });
         return;
       }
       // #endregion
@@ -139,7 +149,10 @@ export default function VideoPage() {
         !placementCompleteHandled.current
       ) {
         placementCompleteHandled.current = true;
-        void refreshProfile();
+        void (async () => {
+          await refreshProfile();
+          navigate("/learning-plan", { replace: true });
+        })();
       }
     };
     window.addEventListener("message", onMessage);
@@ -241,14 +254,14 @@ export default function VideoPage() {
   const featured = filteredVideos[0] ?? null;
   const featuredHero = featured
     ? {
-        id: featured.id,
-        title: featured.videoName,
-        description:
-          featured.videoDescription ??
-          featured.content.category.description ??
-          "",
-        categoryName: featured.content.category.name,
-      }
+      id: featured.id,
+      title: featured.videoName,
+      description:
+        featured.videoDescription ??
+        featured.content.category.description ??
+        "",
+      categoryName: featured.content.category.name,
+    }
     : null;
 
   const catalogRows = useMemo(() => {
@@ -280,6 +293,13 @@ export default function VideoPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased flex-col">
+      <SEO
+        title={catalogSeo.title}
+        description={catalogSeo.description}
+        canonicalUrl={resolveCanonicalUrl("/catalog")}
+        ogLocale={locale === "uk" ? "uk_UA" : "en_US"}
+        ogLocaleAlternate={locale === "uk" ? "en_US" : "uk_UA"}
+      />
       <div>
         <div className="flex">
           <CatalogSidebar
@@ -370,7 +390,7 @@ export default function VideoPage() {
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {user?.role === "adult"
-                    ? "Enter your job, education, and native language — then your placement questionnaire starts."
+                    ? "Enter your job, education, hobbies,and native language — then your placement questionnaire starts."
                     : "A few quick preferences — then your placement questionnaire."}
                 </p>
               </div>

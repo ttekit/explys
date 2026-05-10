@@ -39,6 +39,7 @@ export class PostWatchSurveyService {
   private async upsertWatchSessionDaily(
     userId: number,
     contentVideoId: number,
+    secondsWatched?: number,
   ): Promise<void> {
     const now = new Date();
     const completionDate = this.utcCompletionDate(now);
@@ -55,9 +56,11 @@ export class PostWatchSurveyService {
         contentVideoId,
         completionDate,
         endedAt: now,
+        secondsWatched: secondsWatched || 0,
       },
       update: {
         endedAt: now,
+        secondsWatched: secondsWatched || 0,
       },
     });
   }
@@ -69,13 +72,13 @@ export class PostWatchSurveyService {
   async recordWatchAndGenerateSurvey(
     contentVideoId: number,
     userId: number | null,
+    secondsWatched?: number,
   ): Promise<{
     surveyId: number;
     questions: PostWatchSurveyQuestion[];
   }> {
     const video = await this.prisma.contentVideo.findUnique({
       where: { id: contentVideoId },
-      omit: { comprehensionTestsCache: true },
     });
     if (!video) {
       throw new NotFoundException(`ContentVideo ${contentVideoId} not found`);
@@ -84,7 +87,9 @@ export class PostWatchSurveyService {
     await this.incrementUsersWatched(video.contentId);
 
     if (userId != null) {
-      await this.upsertWatchSessionDaily(userId, contentVideoId);
+      await this.upsertWatchSessionDaily(userId, contentVideoId, secondsWatched);
+      await this.awardXpAndCheckAchievements(userId);
+      await this.updateUserStreak(userId);
       void this.bumpListeningForVideoTopics(userId, contentVideoId).catch(
         () => undefined,
       );
@@ -158,7 +163,7 @@ export class PostWatchSurveyService {
   async submitSurvey(
     surveyId: number,
     answers: Record<string, unknown>,
-  ): Promise<{ ok: true; surveyId: number }> {
+  ): Promise<{ ok: true; surveyId: number, user: any }> {
     const s = await this.prisma.postWatchSurvey.findUnique({
       where: { id: surveyId },
     });
@@ -172,12 +177,142 @@ export class PostWatchSurveyService {
     await this.prisma.postWatchSurvey.update({
       where: { id: surveyId },
       data: {
-        answersJson: JSON.parse(
-          JSON.stringify(answers),
-        ) as Prisma.InputJsonValue,
+        answersJson: JSON.parse(JSON.stringify(answers)) as Prisma.InputJsonValue,
         submittedAt: new Date(),
       },
     });
-    return { ok: true, surveyId };
+
+    if (s.userId) {
+      let earnedXp = 50;
+
+      if (answers && typeof answers === 'object') {
+        for (const val of Object.values(answers)) {
+          if (typeof val === 'string' && val.trim().length >= 10) {
+            earnedXp += 50;
+            break;
+          }
+        }
+      }
+
+      await this.awardXpAndCheckAchievements(s.userId, earnedXp);
+      const updatedUser = await this.prisma.user.findUnique({
+        where: { id: s.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          hasCompletedPlacement: true,
+          englishLevel: true,
+          hobbies: true,
+          education: true,
+          workField: true,
+          nativeLanguage: true,
+          favoriteGenres: true,
+          hatedGenres: true,
+          avatarUrl: true,
+          currentStreak: true,
+          xp: true,
+          level: true,
+          achievements: {
+            select: { achievementId: true },
+          },
+        },
+      });
+
+      return {
+        ok: true,
+        surveyId,
+        user: updatedUser ? {
+          ...updatedUser,
+          achievements: updatedUser.achievements.map((a: any) => a.achievementId),
+        } : null,
+      };
+    }
+
+    return { ok: true, surveyId, user: null };
+  }
+
+  private async updateUserStreak(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { currentStreak: true, lastActivityDate: true },
+    });
+
+    if (!user) return;
+
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+    let newStreak = user.currentStreak || 0;
+
+    if (!user.lastActivityDate) {
+      newStreak = 1;
+    } else {
+      const lastActivity = new Date(user.lastActivityDate);
+      const lastActivityDay = new Date(Date.UTC(lastActivity.getUTCFullYear(), lastActivity.getUTCMonth(), lastActivity.getUTCDate()));
+
+      const diffTime = today.getTime() - lastActivityDay.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) {
+        await this.prisma.user.update({
+          where: { id: userId },
+          data: { lastActivityDate: now },
+        });
+        return;
+      } else if (diffDays === 1) {
+        newStreak += 1;
+      } else {
+        newStreak = 1;
+      }
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        currentStreak: newStreak,
+        lastActivityDate: now,
+      },
+    });
+  }
+
+  public async awardXpAndCheckAchievements(userId: number, amount: number = 125) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { xp: true, level: true, currentStreak: true },
+    });
+
+    if (!user) return;
+
+    const newXp = (user.xp || 0) + amount;
+    const newLevel = Math.floor(newXp / 1000) + 1;
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { xp: newXp, level: newLevel },
+    });
+
+    const achievementsToUnlock: string[] = [];
+
+    const sessionsCount = await this.prisma.watchSession.count({ where: { userId } });
+    if (sessionsCount >= 1) {
+      await this.prisma.userAchievement.upsert({
+        where: { userId_achievementId: { userId, achievementId: 'first-video' } },
+        create: { userId, achievementId: 'first-video' },
+        update: {},
+      });
+    }
+
+    if (user.currentStreak >= 7) achievementsToUnlock.push('streak-7');
+    if (user.currentStreak >= 30) achievementsToUnlock.push('streak-30');
+
+    for (const achievementId of achievementsToUnlock) {
+      await this.prisma.userAchievement.upsert({
+        where: { userId_achievementId: { userId, achievementId } },
+        update: {},
+        create: { userId, achievementId },
+      });
+    }
   }
 }

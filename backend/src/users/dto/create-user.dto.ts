@@ -75,4 +75,12 @@ export class CreateUserDto {
   @IsArray()
   @IsObject({ each: true })
   knownLanguageLevels?: Array<{ language: string; level: string }>;
+
+  @IsOptional()
+  @IsString()
+  learningGoal?: string;
+
+  @IsOptional()
+  @IsString()
+  timeToAchieve?: string;
 }
