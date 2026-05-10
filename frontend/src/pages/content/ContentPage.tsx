@@ -52,7 +52,7 @@ function mapApiTestsToQuiz(
     const id =
       typeof t.id === "string" && t.id.trim().length > 0 ?
         t.id.trim()
-      : `t${idx + 1}`;
+        : `t${idx + 1}`;
 
     const isOpen =
       t.questionType === "open" || t.category === "open";
@@ -82,9 +82,9 @@ function mapApiTestsToQuiz(
     const catRaw = t.category;
     const category =
       catRaw === "grammar" ? ("grammar" as const)
-      : catRaw === "vocabulary" ? ("vocabulary" as const)
-      : catRaw === "comprehension" ? ("comprehension" as const)
-      : undefined;
+        : catRaw === "vocabulary" ? ("vocabulary" as const)
+          : catRaw === "comprehension" ? ("comprehension" as const)
+            : undefined;
 
     return {
       id,
@@ -500,7 +500,8 @@ export default function ContentPage() {
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useUser();
+  // ОБ'ЄДНАНО: отримуємо і user, і refreshProfile
+  const { user, refreshProfile } = useUser();
   const [activeTab, setActiveTab] = useState<TabId>("vocabulary");
   const [isVideoComplete, setIsVideoComplete] = useState(false);
   const [videoData, setVideoData] = useState<{
@@ -564,7 +565,6 @@ export default function ContentPage() {
     const vid = Number.parseInt(String(id), 10);
     if (!Number.isFinite(vid) || vid <= 0) return;
     watchCompletePostedRef.current = true;
-
 
     const currentSeconds = videoElRef.current?.currentTime || 0;
 
@@ -661,11 +661,11 @@ export default function ContentPage() {
             mapApiTestsToQuiz(
               body.tests as NonNullable<LessonSideBundle["tests"]>,
             )
-          : defaultQuizQuestions;
+            : defaultQuizQuestions;
         const gradingToken =
           typeof body.gradingToken === "string" && body.gradingToken.length > 0 ?
             body.gradingToken
-          : null;
+            : null;
         setLessonSideBundle({
           vocabulary,
           quizQuestions,
@@ -849,8 +849,8 @@ export default function ContentPage() {
       const ready = (b: typeof lessonSideBundle) =>
         Boolean(
           b?.gradingToken &&
-            Array.isArray(b.quizQuestions) &&
-            b.quizQuestions.length > 0,
+          Array.isArray(b.quizQuestions) &&
+          b.quizQuestions.length > 0,
         );
       if (ready(lessonSideBundleRef.current)) {
         return lessonSideBundleRef.current;
@@ -884,8 +884,8 @@ export default function ContentPage() {
       const readyBundle = (b: typeof lessonSideBundle) =>
         Boolean(
           b?.gradingToken &&
-            Array.isArray(b.quizQuestions) &&
-            b.quizQuestions.length > 0,
+          Array.isArray(b.quizQuestions) &&
+          b.quizQuestions.length > 0,
         );
 
       let bundle: typeof lessonSideBundle =
@@ -921,7 +921,11 @@ export default function ContentPage() {
               keyVocabularyDetails,
             }),
           });
+
           if (r.ok) {
+            // ДОДАНО: Примусово оновлюємо дані користувача після відправки тесту
+            await refreshProfile().catch(() => { });
+
             const d = (await r.json()) as unknown;
             const fb = readOpenEndedFeedbackFromSubmit(d);
             if (fb !== undefined) {
@@ -985,7 +989,7 @@ export default function ContentPage() {
         quizReview:
           summary.wrongReview.length > 0 ?
             { wrong: summary.wrongReview }
-          : undefined,
+            : undefined,
         writtenSummaryText,
         writtenSummaryFeedback,
         writtenSummaryScore,
@@ -1000,6 +1004,7 @@ export default function ContentPage() {
       }
       void navigate(`/content/${id}/summary`, { state: payload });
     },
+    // ДОДАНО: refreshProfile в масив залежностей, щоб уникнути проблем із застарілим контекстом
     [
       id,
       videoData,
@@ -1007,6 +1012,7 @@ export default function ContentPage() {
       lessonSideBundle,
       enrichedDisplayVocabulary,
       waitForLessonSideBundleWithToken,
+      refreshProfile,
     ],
   );
 
@@ -1035,10 +1041,10 @@ export default function ContentPage() {
           noindex
         />
         <EmptyState
-        title="No video selected"
-        description="Pick a lesson from your catalog."
-        cta={{ to: "/catalog", label: "Browse catalog" }}
-      />
+          title="No video selected"
+          description="Pick a lesson from your catalog."
+          cta={{ to: "/catalog", label: "Browse catalog" }}
+        />
       </>
     );
   }
@@ -1053,10 +1059,10 @@ export default function ContentPage() {
           noindex
         />
         <EmptyState
-        title="Video not found"
-        description="This clip may have been removed or the link is wrong."
-        cta={{ to: "/catalog", label: "Back to catalog" }}
-      />
+          title="Video not found"
+          description="This clip may have been removed or the link is wrong."
+          cta={{ to: "/catalog", label: "Back to catalog" }}
+        />
       </>
     );
   }
@@ -1086,32 +1092,32 @@ export default function ContentPage() {
         isVideoComplete={false}
         onComplete={handleQuizComplete}
       />
-    : quizWaitingForServer ?
-      <div className="py-10 text-center">
-        <div
-          className="border-muted mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-t-primary border-solid"
-          aria-hidden
-        />
-        <p className="text-sm font-medium text-foreground">Loading your quiz…</p>
-        <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted-foreground">
-          Wait until questions from this lesson finish loading — then answers and written
-          feedback will match grading.
-        </p>
-      </div>
-    : quizServerFailed ?
-      <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-sm">
-        <p className="font-semibold text-foreground">Quiz couldn’t be loaded.</p>
-        <p className="mt-2 text-muted-foreground">
-          Refresh the page. If the problem continues, the lesson tests service may be
-          unavailable.
-        </p>
-      </div>
-    : <VideoQuiz
-        key={`quiz-${id}-${lessonSideBundle!.gradingToken!.slice(0, 36)}`}
-        questions={lessonSideBundle!.quizQuestions}
-        isVideoComplete={true}
-        onComplete={handleQuizComplete}
-      />;
+      : quizWaitingForServer ?
+        <div className="py-10 text-center">
+          <div
+            className="border-muted mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-t-primary border-solid"
+            aria-hidden
+          />
+          <p className="text-sm font-medium text-foreground">Loading your quiz…</p>
+          <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted-foreground">
+            Wait until questions from this lesson finish loading — then answers and written
+            feedback will match grading.
+          </p>
+        </div>
+        : quizServerFailed ?
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-sm">
+            <p className="font-semibold text-foreground">Quiz couldn’t be loaded.</p>
+            <p className="mt-2 text-muted-foreground">
+              Refresh the page. If the problem continues, the lesson tests service may be
+              unavailable.
+            </p>
+          </div>
+          : <VideoQuiz
+            key={`quiz-${id}-${lessonSideBundle!.gradingToken!.slice(0, 36)}`}
+            questions={lessonSideBundle!.quizQuestions}
+            isVideoComplete={true}
+            onComplete={handleQuizComplete}
+          />;
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">

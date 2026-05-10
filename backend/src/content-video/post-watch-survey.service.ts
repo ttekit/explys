@@ -88,6 +88,7 @@ export class PostWatchSurveyService {
 
     if (userId != null) {
       await this.upsertWatchSessionDaily(userId, contentVideoId, secondsWatched);
+      await this.awardXpAndCheckAchievements(userId);
       await this.updateUserStreak(userId);
       void this.bumpListeningForVideoTopics(userId, contentVideoId).catch(
         () => undefined,
@@ -162,7 +163,7 @@ export class PostWatchSurveyService {
   async submitSurvey(
     surveyId: number,
     answers: Record<string, unknown>,
-  ): Promise<{ ok: true; surveyId: number }> {
+  ): Promise<{ ok: true; surveyId: number, user: any }> {
     const s = await this.prisma.postWatchSurvey.findUnique({
       where: { id: surveyId },
     });
@@ -176,13 +177,60 @@ export class PostWatchSurveyService {
     await this.prisma.postWatchSurvey.update({
       where: { id: surveyId },
       data: {
-        answersJson: JSON.parse(
-          JSON.stringify(answers),
-        ) as Prisma.InputJsonValue,
+        answersJson: JSON.parse(JSON.stringify(answers)) as Prisma.InputJsonValue,
         submittedAt: new Date(),
       },
     });
-    return { ok: true, surveyId };
+
+    if (s.userId) {
+      let earnedXp = 50;
+
+      if (answers && typeof answers === 'object') {
+        for (const val of Object.values(answers)) {
+          if (typeof val === 'string' && val.trim().length >= 10) {
+            earnedXp += 50;
+            break;
+          }
+        }
+      }
+
+      await this.awardXpAndCheckAchievements(s.userId, earnedXp);
+      const updatedUser = await this.prisma.user.findUnique({
+        where: { id: s.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          hasCompletedPlacement: true,
+          englishLevel: true,
+          hobbies: true,
+          education: true,
+          workField: true,
+          nativeLanguage: true,
+          favoriteGenres: true,
+          hatedGenres: true,
+          avatarUrl: true,
+          currentStreak: true,
+          xp: true,
+          level: true,
+          achievements: {
+            select: { achievementId: true },
+          },
+        },
+      });
+
+      return {
+        ok: true,
+        surveyId,
+        user: updatedUser ? {
+          ...updatedUser,
+          achievements: updatedUser.achievements.map((a: any) => a.achievementId),
+        } : null,
+      };
+    }
+
+    return { ok: true, surveyId, user: null };
   }
 
   private async updateUserStreak(userId: number) {
@@ -227,5 +275,44 @@ export class PostWatchSurveyService {
         lastActivityDate: now,
       },
     });
+  }
+
+  public async awardXpAndCheckAchievements(userId: number, amount: number = 125) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { xp: true, level: true, currentStreak: true },
+    });
+
+    if (!user) return;
+
+    const newXp = (user.xp || 0) + amount;
+    const newLevel = Math.floor(newXp / 1000) + 1;
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { xp: newXp, level: newLevel },
+    });
+
+    const achievementsToUnlock: string[] = [];
+
+    const sessionsCount = await this.prisma.watchSession.count({ where: { userId } });
+    if (sessionsCount >= 1) {
+      await this.prisma.userAchievement.upsert({
+        where: { userId_achievementId: { userId, achievementId: 'first-video' } },
+        create: { userId, achievementId: 'first-video' },
+        update: {},
+      });
+    }
+
+    if (user.currentStreak >= 7) achievementsToUnlock.push('streak-7');
+    if (user.currentStreak >= 30) achievementsToUnlock.push('streak-30');
+
+    for (const achievementId of achievementsToUnlock) {
+      await this.prisma.userAchievement.upsert({
+        where: { userId_achievementId: { userId, achievementId } },
+        update: {},
+        create: { userId, achievementId },
+      });
+    }
   }
 }

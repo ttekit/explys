@@ -198,6 +198,9 @@ export class AuthService {
         subscriptionStatus: true,
         stripeSubscriptionId: true,
         currentStreak: true,
+        xp: true,
+        level: true,
+        achievements: { select: { achievementId: true, unlockedAt: true } },
         settings: {
           select: {
             playbackSpeed: true,
@@ -247,6 +250,9 @@ export class AuthService {
       subscriptionPlan: user.subscriptionPlan ?? '',
       subscriptionStatus: user.subscriptionStatus ?? '',
       stripeSubscriptionId: user.stripeSubscriptionId ?? '',
+      xp: user.xp,
+      level: user.level,
+      achievements: user.achievements.map((a: any) => a.achievementId),
     };
   }
 

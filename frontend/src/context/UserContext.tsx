@@ -5,6 +5,7 @@ import {
   ReactNode,
   useEffect,
   useCallback,
+  DO_NOT_USE_OR_YOU_WILL_BE_FIRED_CALLBACK_REF_RETURN_VALUES,
 } from "react";
 import { apiFetch, setStoredAccessToken } from "../lib/api";
 import { identifyLearner, resetAnalytics } from "../lib/analytics";
@@ -37,6 +38,9 @@ export interface UserData {
   subscriptionStatus?: string;
   stripeSubscriptionId?: string;
   currentStreak: number;
+  xp: number;
+  level: number;
+  achievements: string[];
 }
 
 /** Registration used `"choose"` as a sentinel for unfilled selects; strip so UI shows blanks. */
@@ -95,6 +99,9 @@ function normalizeProfile(raw: unknown): UserData | null {
     stripeSubscriptionId:
       typeof r.stripeSubscriptionId === "string" ? r.stripeSubscriptionId : "",
     currentStreak: Number(r.currentStreak) || 0,
+    xp: Number(r.xp) || 0,
+    level: Number(r.level) || 1,
+    achievements: Array.isArray(r.achievements) ? r.achievements : [],
   };
 }
 

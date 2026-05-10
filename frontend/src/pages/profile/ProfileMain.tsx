@@ -163,6 +163,8 @@ export default function ProfileMain() {
           : null,
       weeklyActivity: s?.weeklyActivity ?? [...DEFAULT_WEEKLY_ACTIVITY],
       levelLabel: user.englishLevel?.trim() || "A1",
+      xp: user.xp || 0,
+      appLevel: Math.floor((user.xp || 0) / 1000) + 1,
     };
   }, [user, learningStats]);
 
@@ -238,14 +240,14 @@ export default function ProfileMain() {
           noindex
         />
         <div className="m-4 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-destructive">
-        <p className="font-medium">Please sign in to view your profile.</p>
-        <Link
-          to="/loginForm"
-          className="mt-3 inline-block text-primary underline-offset-4 hover:underline"
-        >
-          Go to login
-        </Link>
-      </div>
+          <p className="font-medium">Please sign in to view your profile.</p>
+          <Link
+            to="/loginForm"
+            className="mt-3 inline-block text-primary underline-offset-4 hover:underline"
+          >
+            Go to login
+          </Link>
+        </div>
       </>
     );
   }
