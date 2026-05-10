@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useSearchParams } from "react-router";
 import { cn } from "../../lib/utils";
 import {
   BookOpen,
@@ -15,8 +15,8 @@ import {
 const sidebarLinks = [
   { icon: LayoutGrid, label: "Catalog", to: "/catalog" },
   { icon: Search, label: "Search", to: "/catalog" },
-  { icon: BookOpen, label: "My Lessons", to: "/contentPage" },
-  { icon: Trophy, label: "Progress", to: "/profile" },
+  { icon: BookOpen, label: "My Lessons", to: "/watched-lessons" },
+  { icon: Trophy, label: "Progress", to: "/profile?tab=progress" },
   { icon: User, label: "Profile", to: "/profile" },
 ] as const;
 
@@ -29,6 +29,8 @@ interface CatalogSidebarProps {
   welcomeName?: string;
   englishLevel?: string;
   onSelectLevel: (level: string) => void;
+  /** When false, sidebar/backdrop anchor to viewport top (use when pages omit the fixed app navbar). */
+  reserveTopNavSpace?: boolean;
   // lifted state — controlled by parent
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
@@ -41,15 +43,28 @@ export function CatalogSidebar({
   welcomeName,
   englishLevel,
   // onSelectLevel,
+  reserveTopNavSpace = true,
   collapsed,
   onCollapsedChange,
 }: CatalogSidebarProps) {
   const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
   const sortedCategories = ["All", ...categories.filter(Boolean).sort()];
 
   const linkActive = (link: (typeof sidebarLinks)[number]) => {
     if (link.label === "Catalog") return pathname === "/catalog";
     if (link.label === "Search") return pathname.startsWith("/catalog/search");
+    const tab = searchParams.get("tab");
+    if (link.label === "Progress") {
+      return pathname === "/profile" && tab === "progress";
+    }
+    if (link.label === "Profile") {
+      return (
+        pathname === "/profile" &&
+        tab !== "progress" &&
+        tab !== "settings"
+      );
+    }
     return pathname === link.to;
   };
 
@@ -57,7 +72,8 @@ export function CatalogSidebar({
     <>
       <aside
         className={cn(
-          "fixed top-18 bottom-0 left-0 z-50 hidden flex-col border-r border-border bg-card font-display transition-all duration-600 lg:flex",
+          "fixed bottom-0 left-0 z-50 hidden flex-col border-r border-border bg-card font-display transition-all duration-600 lg:flex",
+          reserveTopNavSpace ? "top-18" : "top-0",
           collapsed ? "w-20" : "w-64 shadow-2xl",
         )}
       >
@@ -160,9 +176,12 @@ export function CatalogSidebar({
 
         <div className="mt-auto border-t border-border p-4">
           <Link
-            to="/settings"
+            to="/profile?tab=settings"
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",
+              pathname === "/profile" && searchParams.get("tab") === "settings"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
               collapsed && "justify-center px-2",
             )}
           >
@@ -174,7 +193,10 @@ export function CatalogSidebar({
 
       {!collapsed && (
         <div
-          className="fixed inset-0 top-18 z-40 hidden bg-black/40 backdrop-blur-[3px] lg:block"
+          className={cn(
+            "fixed right-0 bottom-0 left-0 z-40 hidden bg-black/40 backdrop-blur-[3px] lg:block",
+            reserveTopNavSpace ? "top-18" : "top-0",
+          )}
           onClick={() => onCollapsedChange(true)}
         />
       )}

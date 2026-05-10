@@ -33,7 +33,6 @@ import { ProfileSubscriptions } from "../../components/profile/ProfileSubscripti
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
-import ContentHeader from "../../components/catalog/ContentHeader";
 
 const LEARNER_TABS = [
   { id: "overview" as const, label: "Overview", icon: BarChart3 },
@@ -261,7 +260,6 @@ export default function ProfileMain() {
 
   return (
     <div className="min-h-dvh bg-background font-display antialiased">
-      <ContentHeader />
       <SEO
         title="Profile"
         description="Your Explys learner or teacher profile."
@@ -273,7 +271,8 @@ export default function ProfileMain() {
           categories={[]}
           selectedCategory="All"
           onSelectCategory={() => { }}
-          showCategoryFilter={false}
+          onSelectLevel={() => { }}
+          reserveTopNavSpace={false}
           welcomeName={
             user?.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined
           }
@@ -284,7 +283,7 @@ export default function ProfileMain() {
 
         <main
           className={cn(
-            "flex-1 pb-24 pt-8 mt-10 transition-all duration-300 sm:px-6 lg:pb-12 lg:pt-10",
+            "flex-1 pb-24 pt-6 transition-all duration-300 sm:px-6 lg:pb-12 lg:pt-8",
             sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
           )}
         >

@@ -306,6 +306,7 @@ export default function VideoPage() {
             categories={categoryNames}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
+            onSelectLevel={() => {}}
             welcomeName={user?.name ? user.name.split(" ")[0] : undefined}
             englishLevel={user?.englishLevel || undefined}
             collapsed={sidebarCollapsed}
