@@ -1,28 +1,37 @@
-<<<<<<< HEAD
-import { PartialType } from "@nestjs/swagger";
 import { CreateUserDto } from "./create-user.dto";
-import { IsBoolean, IsEmail, IsNotEmpty, IsString } from "class-validator";
+import {
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from "class-validator";
+
+import { ApiPropertyOptional, PartialType } from "@nestjs/swagger";
+import { Transform, Type } from "class-transformer";
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
+  @IsOptional()
   @IsString({ message: "Name must be a string." })
   @IsNotEmpty({ message: "Name is required." })
-  name: string;
+  name?: string;
 
+  @IsOptional()
   @IsString({ message: "Email must be a string." })
   @IsEmail({}, { message: "Incorrect email format." })
   @IsNotEmpty({ message: "Email is required." })
-  email: string;
+  email?: string;
 
+  @IsOptional()
   @IsBoolean({ message: "isTwoFactorEnabled must be a boolean value." })
-  isTwoFactorEnabled: boolean;
-}
-=======
-import { ApiPropertyOptional, PartialType } from "@nestjs/swagger";
-import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
-import { CreateUserDto } from "./create-user.dto";
+  @Transform(({ value }) => {
+    if (value === "true" || value === true) return true;
+    if (value === "false" || value === false) return false;
+    return false;
+  })
+  isTwoFactorEnabled?: boolean;
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
@@ -41,4 +50,3 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsString()
   currentResolution?: string;
 }
->>>>>>> origin/main

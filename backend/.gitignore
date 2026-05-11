@@ -26,4 +26,8 @@ dist-ssr
 /generated/prisma
 .env
 bun.lock
-src/generated
+src/generated/*
+
+mailu.env
+mailu.yml
+mailu_data/

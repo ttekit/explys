@@ -59,7 +59,7 @@ async function bootstrap() {
   app.useStaticAssets(join(process.cwd(), "public"), { prefix: "/dev/" });
 
   app.enableCors({
-    origin: (/*resolveCorsOrigin(),*/ config.getOrThrow<string>("ALLOWED_ORIGIN")),
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
     exposedHeaders: ["set-cookie"],
     credentials: true,
   });

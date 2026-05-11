@@ -124,9 +124,6 @@ export class UsersService {
         let created: any;
         try {
             created = await prisma.user.create({
-<<<<<<< HEAD
-                data: userData,
-=======
                 data: {
                     email,
                     password: hashedPassword,
@@ -136,7 +133,6 @@ export class UsersService {
                         create: additionalDataPayload,
                     },
                 },
->>>>>>> origin/main
                 select: this.userSelect,
             });
         } catch (error: any) {
@@ -149,9 +145,6 @@ export class UsersService {
             }
             if (message.includes('Unknown argument `knownLanguages`') || message.includes('Unknown argument `knownLanguageLevels`')) {
                 created = await prisma.user.create({
-<<<<<<< HEAD
-                    data: userData,
-=======
                     data: {
                         email,
                         password: hashedPassword,
@@ -159,7 +152,6 @@ export class UsersService {
                         ...(role ? { role } : {}),
                         additionalUserData: { create: additionalDataPayload },
                     },
->>>>>>> origin/main
                     select: this.userSelect,
                 });
                 await this.alcorythmService.analyzeUserLevel(created.id);
@@ -206,7 +198,7 @@ export class UsersService {
     async FindByEmail(email: string) {
         const user = await this.prisma.user.findUnique({
             where: {
-                email
+                email: email.toLowerCase()
             },
             include: {
                 accounts: true,

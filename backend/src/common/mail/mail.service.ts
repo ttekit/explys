@@ -1,7 +1,7 @@
 import { MailerService } from "@nestjs-modules/mailer";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { render } from "node_modules/@react-email/components/dist/index.cjs";
+import { render } from "@react-email/components";
 import { ConfirmationTemplate } from "./templates/confirmation.template";
 import { ResetPasswordTemplate } from "./templates/reset-password.template";
 import { TwoFactorAuthTemplate } from "./templates/two-factor-auth.template";
@@ -14,14 +14,14 @@ export class MailService {
   ) {}
 
   public async sendConfirmationEmail(email: string, token: string) {
-    const domain = this.configService.getOrThrow<string>("ALLOWED_ORIGIN");
+    const domain = this.configService.getOrThrow<string>("APPLICATION_URL");
     const html = await render(ConfirmationTemplate({ domain, token }));
 
     return this.sendMail(email, "Email confirmation", html);
   }
 
   public async sendPasswordResetEmail(email: string, token: string) {
-    const domain = this.configService.getOrThrow<string>("ALLOWED_ORIGIN");
+    const domain = this.configService.getOrThrow<string>("APPLICATION_URL");
     const html = await render(ResetPasswordTemplate({ domain, token }));
 
     return this.sendMail(email, "Reset password", html);
@@ -33,11 +33,19 @@ export class MailService {
     return this.sendMail(email, "Verify your identity", html);
   }
 
-  private sendMail(email: string, subject: string, html: string) {
-    return this.mailerService.sendMail({
-      to: email,
-      subject,
-      html,
-    });
+  private async sendMail(email: string, subject: string, html: string) {
+    try {
+      const result = await this.mailerService.sendMail({
+        from: '"Explys Support" <no-reply@explys.com>',
+        to: email,
+        subject,
+        html,
+      });
+      console.log("✅ ПИСЬМО УСПЕШНО ОТПРАВЛЕНО В MAILTRAP");
+      return result;
+    } catch (error) {
+      console.error("❌ ОШИБКА ПРИ ОТПРАВКЕ ПИСЬМА:", error);
+      throw error;
+    }
   }
 }

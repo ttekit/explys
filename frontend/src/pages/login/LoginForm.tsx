@@ -19,7 +19,8 @@ import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
 
 function safeReturnPath(state: unknown): string | undefined {
-  if (!state || typeof state !== "object" || !("from" in state)) return undefined;
+  if (!state || typeof state !== "object" || !("from" in state))
+    return undefined;
   const raw = (state as { from?: unknown }).from;
   if (typeof raw !== "string" || raw.length === 0) return undefined;
   if (!raw.startsWith("/") || raw.startsWith("//")) return undefined;
@@ -93,6 +94,12 @@ export default function LoginForm() {
           }
         } else {
           const message = await getResponseErrorMessage(response);
+          if (message.includes("Email not verified")) {
+            navigate("/email-confirmation", {
+              state: { email: loginData.email },
+            });
+            return;
+          }
           toast.error(message);
         }
       } catch (error) {
@@ -175,9 +182,7 @@ export default function LoginForm() {
               </div>
             </div>
 
-            {emptyError && (
-              <ValidateError>{t.fillRequired}</ValidateError>
-            )}
+            {emptyError && <ValidateError>{t.fillRequired}</ValidateError>}
 
             <Button
               type="submit"

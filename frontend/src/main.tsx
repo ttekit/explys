@@ -33,6 +33,7 @@ import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 import AnalyticsLayout from "./components/AnalyticsLayout";
 import RequireAuth from "./components/RequireAuth";
+import  RegisterConfirmPage  from "./pages/registration/RegisterConfirmPage";
 
 const router = createBrowserRouter([
   {
@@ -40,8 +41,9 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <LandingPage /> },
       { path: "/registrationMain", element: <RegistrationMain /> },
+      { path: "/email-confirmation", element: <RegisterConfirmPage /> },
       { path: "/registrationDetails", element: <RegistrationDetails /> },
-      {
+      { 
         path: "/registrationPreferences",
         element: <RegistrationPreferences />,
       },
@@ -66,8 +68,14 @@ const router = createBrowserRouter([
             ],
           },
           { path: "/level-test", element: <LevelTestPage /> },
-          { path: "/entrance-test", element: <Navigate to="/catalog" replace /> },
-          { path: "/contentPage", element: <Navigate to="/watched-lessons" replace /> },
+          {
+            path: "/entrance-test",
+            element: <Navigate to="/catalog" replace />,
+          },
+          {
+            path: "/contentPage",
+            element: <Navigate to="/watched-lessons" replace />,
+          },
           { path: "/watched-lessons", element: <WatchedLessonsPage /> },
           { path: "/profileMain", element: <ProfileMain /> },
           { path: "/profile", element: <ProfileMain /> },

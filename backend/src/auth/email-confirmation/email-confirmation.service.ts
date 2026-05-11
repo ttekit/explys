@@ -10,10 +10,10 @@ import { Request } from "express";
 import { PrismaService } from "src/prisma.service";
 import { v4 as uuidv4 } from "uuid";
 import { ConfirmationDto } from "./dto/confirmation.dto";
-import { User } from "@generated/prisma/client";
 import { MailService } from "src/common/mail/mail.service";
 import { UsersService } from "src/users/users.service";
 import { AuthService } from "../auth.service";
+import { User } from "@generated/prisma/client";
 
 @Injectable()
 export class EmailConfirmationService {
@@ -76,8 +76,8 @@ export class EmailConfirmationService {
     return this.authService.saveSession(req, existingUser);
   }
 
-  public async sendVerificationToken(email: string) {
-    const verificationToken = await this.generateVerificationToken(email);
+  public async sendVerificationToken(user: User) {
+    const verificationToken = await this.generateVerificationToken(user.email);
 
     await this.mailService.sendConfirmationEmail(
       verificationToken.email,
@@ -93,7 +93,7 @@ export class EmailConfirmationService {
 
     const existingToken = await this.prismaService.token.findFirst({
       where: {
-        email,
+        email: email,
         type: TokenType.VERIFICATION,
       },
     });
@@ -106,14 +106,30 @@ export class EmailConfirmationService {
         },
       });
     }
-    const verificationToken = await this.prismaService.token.create({
-      data: {
-        email,
-        token,
-        expiresIn,
+    const verificationToken = await this.prismaService.token.upsert({
+      where: {
+        email: email,
+      },
+      update: {
+        token: token,
+        expiresIn: expiresIn,
+        type: TokenType.VERIFICATION,
+      },
+      create: {
+        email: email,
+        token: token,
+        expiresIn: expiresIn,
         type: TokenType.VERIFICATION,
       },
     });
+    // const verificationToken = await this.prismaService.token.create({
+    //   data: {
+    //     email,
+    //     token,
+    //     expiresIn,
+    //     type: TokenType.VERIFICATION,
+    //   },
+    // });
 
     return verificationToken;
   }

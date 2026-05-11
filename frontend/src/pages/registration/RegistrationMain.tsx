@@ -101,7 +101,7 @@ export default function RegistrationMain() {
     }
   };
 
-  const handleNext = (e: FormEvent<HTMLFormElement>) => {
+  const handleNext = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formEl = e.currentTarget;
     const fd = new FormData(formEl);
@@ -160,7 +160,32 @@ export default function RegistrationMain() {
       return;
     }
     setErrorText(null);
-    navigate("/registrationDetails");
+    //navigate("/registrationDetails");
+    try {
+      // 3. ТЕПЕРЬ РЕАЛЬНО РЕГИСТРИРУЕМ В БАЗЕ
+      const response = await fetch("http://localhost:4200/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, passwordRepeat: confirmPassword }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Если бэкенд нашел ошибку (например, такой email уже есть в базе)
+        setErrorText(result.message || "Помилка реєстрації");
+        return;
+      }
+
+      // 4. СОХРАНЯЕМ ТОКЕН (Самое важное для хамелеона)
+      if (result.access_token) {
+        localStorage.setItem("accessToken", result.access_token);
+      }
+      navigate("/email-confirmation", { state: { email } });
+    } catch (error) {
+      console.error("Помилка:", error);
+      setErrorText("Сервер не відповідає. Перевірте з'єднання.");
+    }
   };
 
   const handleBack = () => {
@@ -256,7 +281,9 @@ export default function RegistrationMain() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <LabelRegister isRequired={true}>{t.confirmPassword}</LabelRegister>
+                <LabelRegister isRequired={true}>
+                  {t.confirmPassword}
+                </LabelRegister>
                 <button
                   type="button"
                   aria-label={

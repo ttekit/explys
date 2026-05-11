@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 import { JwtService } from "@nestjs/jwt";
@@ -13,7 +14,7 @@ import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { AlcorythmService } from "../alcorythm/alcorythm.service";
 import { UsersService } from "src/users/users.service";
-import { AuthMethod, User } from "@generated/prisma/client";
+import { AuthMethod, TokenType, User } from "@generated/prisma/client";
 import { Request, Response } from "express";
 import { ConfigService } from "@nestjs/config";
 import { ProviderService } from "./provider/provider.service";
@@ -43,7 +44,9 @@ export class AuthService {
   async register(req: Request, dto: RegisterDto) {
     const prisma = this.prisma as any;
 
-    const userExists = await this.userService.FindByEmail(dto.email);
+    const userExists = await this.userService.FindByEmail(
+      dto.email.toLowerCase(),
+    );
 
     if (userExists) {
       throw new ConflictException(
@@ -54,9 +57,9 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     const trimmedLearningGoal =
-      typeof dto.learningGoal === 'string' ? dto.learningGoal.trim() : '';
+      typeof dto.learningGoal === "string" ? dto.learningGoal.trim() : "";
     const trimmedTimeToAchieve =
-      typeof dto.timeToAchieve === 'string' ? dto.timeToAchieve.trim() : '';
+      typeof dto.timeToAchieve === "string" ? dto.timeToAchieve.trim() : "";
 
     // ПОФИКШЕНО: Используем явную проверку && для сужения типа (Type Narrowing)
     const additionalDataPayload: any = {
@@ -89,10 +92,11 @@ export class AuthService {
           : undefined,
     };
 
+    console.log(additionalDataPayload);
     // 1. Создаем учителя (основного пользователя)
     const mainUser = await prisma.user.create({
       data: {
-        email: dto.email,
+        email: dto.email.toLowerCase(),
         password: hashedPassword,
         name: dto.name,
         role: (dto.role?.toUpperCase() || "ADULT") as any,
@@ -125,7 +129,7 @@ export class AuthService {
         // Создаем ученика и привязываем к учителю через teacherId
         const newStudent = await prisma.user.create({
           data: {
-            email: studentEmail,
+            email: studentEmail.toLowerCase(),
             password: hashedStudentPassword,
             name: pupil,
             role: "STUDENT",
@@ -146,9 +150,10 @@ export class AuthService {
 
     const payload = { sub: mainUser.id, email: mainUser.email };
 
-    await this.saveSession(req, mainUser);
+    //await this.saveSession(req, mainUser);
 
     await this.emailConfirmationService.sendVerificationToken(mainUser);
+
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: {
@@ -163,22 +168,94 @@ export class AuthService {
         "You have successfully registered. Please confirm your email. A message has been sent to your mailing address.",
     };
   }
+  // В файле auth.service.ts
+
+  public async confirmEmail(token: string) {
+    // 1. Ищем токен в правильной таблице (Token), а не в User
+    const existingToken = await this.prisma.token.findUnique({
+      where: {
+        token: token,
+      },
+    });
+
+    // 2. Если токен не найден в базе
+    if (!existingToken) {
+      throw new BadRequestException(
+        "Невірний або прострочений токен підтвердження",
+      );
+    }
+
+    // 3. Ищем пользователя по email, который привязан к этому токену
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: existingToken.email,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException("Користувача не знайдено");
+    }
+
+    // 4. Обновляем статус пользователя на "Подтвержденный"
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isVerified: true,
+        // verificationToken: null убрали, так как такого поля в User нет
+      },
+    });
+
+    // 5. Удаляем сам токен из таблицы Token, чтобы его нельзя было юзать дважды
+    await this.prisma.token.delete({
+      where: { id: existingToken.id },
+    });
+
+    return { message: "Email успішно підтверджено" };
+  }
+  public async resendConfirmationEmail(email: string) {
+    // 1. Шукаємо користувача в базі за email
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) {
+      throw new NotFoundException("Користувача з таким email не знайдено");
+    }
+
+    // 2. Перевіряємо, можливо він вже підтвердив пошту
+    if (user.isVerified) {
+      throw new BadRequestException(
+        "Цей email вже підтверджено. Ви можете увійти в систему.",
+      );
+    }
+
+    // 3. Генеруємо новий токен і відправляємо лист
+    // (використовуємо той самий сервіс, що і при реєстрації)
+    await this.emailConfirmationService.sendVerificationToken(user);
+
+    return { message: "Новий лист підтвердження надіслано успішно" };
+  }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        password: true,
-        isVerified: true,
-        isTwoFactorEnable: true,
-        role: true,
-        hasCompletedPlacement: true,
-        isSuspended: true,
+      where: {
+        email: dto.email.toLowerCase(),
       },
     });
+    // const user = await this.prisma.user.findUnique({
+    //   where: { email: dto.email },
+    //   select: {
+    //     id: true,
+    //     email: true,
+    //     name: true,
+    //     password: true,
+    //     isVerified: true,
+    //     isTwoFactorEnable: true,
+    //     role: true,
+    //     hasCompletedPlacement: true,
+    //     isSuspended: true,
+    //   },
+    // });
 
     if (!user || !user.password) {
       throw new UnauthorizedException("Invalid credentials");
@@ -191,7 +268,7 @@ export class AuthService {
     }
 
     if (!user.isVerified) {
-      await this.emailConfirmationService.sendVerificationToken(user as any);
+      await this.emailConfirmationService.sendVerificationToken(user);
       throw new UnauthorizedException(
         "Email not verified. Please check your mail to confirm your account.",
       );
@@ -213,7 +290,7 @@ export class AuthService {
     }
 
     if (user.isSuspended) {
-      throw new ForbiddenException('Account suspended');
+      throw new ForbiddenException("Account suspended");
     }
 
     const payload = { sub: user.id, email: user.email };
@@ -333,6 +410,7 @@ export class AuthService {
         id: true,
         name: true,
         email: true,
+        isVerified: true,
         role: true,
         hasCompletedPlacement: true,
         isSuspended: true,
@@ -362,33 +440,34 @@ export class AuthService {
       },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
     if (user.isSuspended) {
-      throw new ForbiddenException('Account suspended');
+      throw new ForbiddenException("Account suspended");
     }
     const extra = user.additionalUserData;
     return {
       id: user.id,
       name: user.name,
       email: user.email,
+      isVerified: user.isVerified,
       role: user.role,
       hasCompletedPlacement: user.hasCompletedPlacement,
       currentStreak: user.currentStreak ?? 0,
-      englishLevel: extra?.englishLevel ?? '',
-      education: extra?.education ?? '',
-      workField: extra?.workField ?? '',
-      nativeLanguage: extra?.nativeLanguage ?? '',
+      englishLevel: extra?.englishLevel ?? "",
+      education: extra?.education ?? "",
+      workField: extra?.workField ?? "",
+      nativeLanguage: extra?.nativeLanguage ?? "",
       hobbies: extra?.hobbies ?? [],
-      learningGoal: extra?.learningGoal ?? '',
-      timeToAchieve: extra?.timeToAchieve ?? '',
+      learningGoal: extra?.learningGoal ?? "",
+      timeToAchieve: extra?.timeToAchieve ?? "",
       favoriteGenres: extra?.favoriteGenres?.map((g) => g.id) ?? [],
       hatedGenres: extra?.hatedGenres?.map((g) => g.id) ?? [],
       playbackSpeed: user.settings?.playbackSpeed ?? null,
-      videoQuality: user.settings?.currentResolution ?? '',
-      subscriptionPlan: user.subscriptionPlan ?? '',
-      subscriptionStatus: user.subscriptionStatus ?? '',
-      stripeSubscriptionId: user.stripeSubscriptionId ?? '',
+      videoQuality: user.settings?.currentResolution ?? "",
+      subscriptionPlan: user.subscriptionPlan ?? "",
+      subscriptionStatus: user.subscriptionStatus ?? "",
+      stripeSubscriptionId: user.stripeSubscriptionId ?? "",
     };
   }
 
@@ -417,46 +496,43 @@ export class AuthService {
       select: { isSuspended: true },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
     if (user.isSuspended) {
-      throw new ForbiddenException('Account suspended');
+      throw new ForbiddenException("Account suspended");
     }
 
-    const [
-      watchSum,
-      distinctVideos,
-      quizAgg,
-      weekSessions,
-    ] = await Promise.all([
-      this.prisma.watchSession.aggregate({
-        where: { userId },
-        _sum: { secondsWatched: true },
-      }),
-      this.prisma.watchSession.findMany({
-        where: { userId, completed: true },
-        select: { contentVideoId: true },
-        distinct: ['contentVideoId'],
-      }),
-      this.prisma.comprehensionTestAttempt.aggregate({
-        where: { userId },
-        _avg: { scorePct: true },
-        _count: { _all: true },
-      }),
-      (() => {
-        const { weekStart, weekEndExclusive } = this.utcWeekRange();
-        return this.prisma.watchSession.findMany({
-          where: {
-            userId,
-            endedAt: {
-              gte: weekStart,
-              lt: weekEndExclusive,
+    const [watchSum, distinctVideos, quizAgg, weekSessions] = await Promise.all(
+      [
+        this.prisma.watchSession.aggregate({
+          where: { userId },
+          _sum: { secondsWatched: true },
+        }),
+        this.prisma.watchSession.findMany({
+          where: { userId, completed: true },
+          select: { contentVideoId: true },
+          distinct: ["contentVideoId"],
+        }),
+        this.prisma.comprehensionTestAttempt.aggregate({
+          where: { userId },
+          _avg: { scorePct: true },
+          _count: { _all: true },
+        }),
+        (() => {
+          const { weekStart, weekEndExclusive } = this.utcWeekRange();
+          return this.prisma.watchSession.findMany({
+            where: {
+              userId,
+              endedAt: {
+                gte: weekStart,
+                lt: weekEndExclusive,
+              },
             },
-          },
-          select: { endedAt: true, secondsWatched: true },
-        });
-      })(),
-    ]);
+            select: { endedAt: true, secondsWatched: true },
+          });
+        })(),
+      ],
+    );
 
     const totalSeconds = watchSum?._sum?.secondsWatched ?? 0;
     const totalWatchTimeMin = Math.round(Number(totalSeconds) / 60);
@@ -466,12 +542,12 @@ export class AuthService {
     const testsCompleted = quizAgg?._count?._all ?? 0;
     const rawAvg = quizAgg?._avg?.scorePct;
     const averageScore =
-      typeof rawAvg === 'number' && Number.isFinite(rawAvg)
+      typeof rawAvg === "number" && Number.isFinite(rawAvg)
         ? Math.round(rawAvg * 10) / 10
         : null;
 
     const minutesMonSun = [0, 0, 0, 0, 0, 0, 0];
-    const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     for (const s of weekSessions) {
       if (!s.endedAt) continue;
       const d = s.endedAt as Date;
@@ -513,10 +589,10 @@ export class AuthService {
       select: { isSuspended: true },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
     if (user.isSuspended) {
-      throw new ForbiddenException('Account suspended');
+      throw new ForbiddenException("Account suspended");
     }
 
     const rows = await this.prisma.userLanguageData.findMany({

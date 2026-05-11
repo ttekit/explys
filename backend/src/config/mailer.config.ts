@@ -8,10 +8,16 @@ export const getMailerConfig = async (
   transport: {
     host: configService.getOrThrow<string>("MAIL_HOST"),
     port: configService.getOrThrow<number>("MAIL_PORT"),
-    secure: !isDev(configService),
+    secure: false, //!isDev(configService),
+    //pool: true,
     auth: {
       user: configService.getOrThrow<string>("MAIL_LOGIN"),
       pass: configService.getOrThrow<string>("MAIL_PASSWORD"),
+    },
+    debug: true, // Включи это! Ты увидишь в консоли, на чем именно стопор
+    logger: true,
+    tls: {
+      rejectUnauthorized: false,
     },
   },
   defaults: {

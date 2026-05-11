@@ -4,12 +4,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1033.0",
     "@deepgram/captions": "^1.2.0",
-<<<<<<< HEAD
     "@nestjs-modules/ioredis": "^2.2.1",
     "@nestjs-modules/mailer": "^2.3.4",
-=======
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
->>>>>>> origin/main
     "@nestjs/common": "^11.1.14",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.14",
@@ -49,12 +46,9 @@
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
     "@nestjs/cli": "^11.0.21",
-<<<<<<< HEAD
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/cookie-parser": "^1.4.10",
     "@types/express-session": "^1.19.0",
-=======
->>>>>>> origin/main
     "@types/jest": "^30.0.0",
     "@types/multer": "^2.1.0",
     "@types/node": "^25.6.0",

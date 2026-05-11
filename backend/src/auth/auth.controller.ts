@@ -24,11 +24,12 @@ import {
   ApiResponse,
   ApiBody,
   ApiBearerAuth,
+  ApiQuery,
 } from "@nestjs/swagger";
 import { AuthProviderGuard } from "./guards/provider.guard";
 import { ProviderService } from "./provider/provider.service";
 import { ConfigService } from "@nestjs/config";
-import type { Request, Response } from 'express';
+import type { Request, Response } from "express";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -63,39 +64,64 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto);
   }
+  
+  @Post("resend-confirmation")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Resend email confirmation" })
+  @ApiBody({ schema: { properties: { email: { type: "string" } } } })
+  async resendConfirmation(@Body("email") email: string) {
+    return await this.authService.resendConfirmationEmail(email);
+  }
+
+  @Get("confirm-email")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Confirm user email via token" })
+  @ApiQuery({ name: "token", type: "string" })
+  async confirmEmail(@Query("token") token: string, @Res() res: Response) {
+    await this.authService.confirmEmail(token);
+
+    // После успешного подтверждения в базе,
+    // редиректим пользователя обратно на фронтенд (на страницу выбора ролей)
+    const frontendUrl =
+      this.configService.getOrThrow<string>("APPLICATION_URL");
+    return res.redirect(`${frontendUrl}/registrationDetails`);
+  }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('profile')
-  @ApiOperation({ summary: 'Get user profile (requires authentication)' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved successfully.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiBearerAuth("JWT-auth")
+  @Get("profile")
+  @ApiOperation({ summary: "Get user profile (requires authentication)" })
+  @ApiResponse({
+    status: 200,
+    description: "User profile retrieved successfully.",
+  })
+  @ApiResponse({ status: 401, description: "Unauthorized." })
   getProfile(@Req() req: any) {
     const userId = Number(req.user.sub);
     return this.authService.getProfile(userId);
   }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('profile/learning-stats')
+  @ApiBearerAuth("JWT-auth")
+  @Get("profile/learning-stats")
   @ApiOperation({
     summary:
-      'Learning dashboard stats (watch time, quizzes, Mon–Sun weekly activity UTC)',
+      "Learning dashboard stats (watch time, quizzes, Mon–Sun weekly activity UTC)",
   })
-  @ApiResponse({ status: 200, description: 'Stats retrieved.' })
+  @ApiResponse({ status: 200, description: "Stats retrieved." })
   getLearningStats(@Req() req: any) {
     const userId = Number(req.user.sub);
     return this.authService.getLearningStats(userId);
   }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('profile/knowledge-tags')
+  @ApiBearerAuth("JWT-auth")
+  @Get("profile/knowledge-tags")
   @ApiOperation({
     summary:
-      'Topic-tag knowledge (listening / vocabulary / grammar means from UserLanguageData)',
+      "Topic-tag knowledge (listening / vocabulary / grammar means from UserLanguageData)",
   })
-  @ApiResponse({ status: 200, description: 'Tag aggregates returned.' })
+  @ApiResponse({ status: 200, description: "Tag aggregates returned." })
   getKnowledgeTags(@Req() req: any) {
     const userId = Number(req.user.sub);
     return this.authService.getKnowledgeTagProgress(userId);

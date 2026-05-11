@@ -40,16 +40,13 @@ export class CreateUserDto {
   name: string;
 
   @IsOptional()
-<<<<<<< HEAD
   @IsString({ message: "English level must be a string" })
-=======
   @IsString()
   @IsIn(["adult", "student", "teacher"])
   role?: string;
 
   @IsOptional()
   @IsString()
->>>>>>> origin/main
   englishLevel?: string;
 
   @IsOptional()
