@@ -70,6 +70,7 @@ export default function RegistrationDetails() {
     () => ({
       credentialEmail: err.credentialEmail,
       credentialPassword: err.credentialPassword,
+      passwordsDontMatch: err.passwordsNoMatch || "",
     }),
     [err.credentialEmail, err.credentialPassword],
   );

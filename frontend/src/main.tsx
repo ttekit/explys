@@ -33,7 +33,8 @@ import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 import AnalyticsLayout from "./components/AnalyticsLayout";
 import RequireAuth from "./components/RequireAuth";
-import  RegisterConfirmPage  from "./pages/registration/RegisterConfirmPage";
+import RegisterConfirmPage from "./pages/registration/RegisterConfirmPage";
+import EmailConfirmedPage from "./pages/registration/EmailConfirmedPage";
 
 const router = createBrowserRouter([
   {
@@ -43,11 +44,12 @@ const router = createBrowserRouter([
       { path: "/registrationMain", element: <RegistrationMain /> },
       { path: "/email-confirmation", element: <RegisterConfirmPage /> },
       { path: "/registrationDetails", element: <RegistrationDetails /> },
-      { 
+      {
         path: "/registrationPreferences",
         element: <RegistrationPreferences />,
       },
       { path: "/registrationSuccess", element: <RegisterSuccessPage /> },
+      { path: "/email-success", element: <EmailConfirmedPage /> },
       { path: "/loginForm", element: <LoginForm /> },
       { path: "/pricing", element: <PricingPage /> },
       {

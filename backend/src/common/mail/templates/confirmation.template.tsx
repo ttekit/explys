@@ -22,7 +22,7 @@ export function ConfirmationTemplate({
   domain,
   token,
 }: ConfirmationTemplateProps) {
-  const confirmLink = `${domain}/email-confirmation?token=${token}`;
+  const confirmLink = `${domain}/auth/confirm-email?token=${token}`;
 
   return (
     <Html>

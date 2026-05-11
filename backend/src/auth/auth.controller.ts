@@ -77,14 +77,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Confirm user email via token" })
   @ApiQuery({ name: "token", type: "string" })
-  async confirmEmail(@Query("token") token: string, @Res() res: Response) {
+  async confirmEmail(
+    @Query("token") token: string, 
+    @Res() res: Response
+  ) {
+    // 1. Підтверджуємо пошту
     await this.authService.confirmEmail(token);
-
-    // После успешного подтверждения в базе,
-    // редиректим пользователя обратно на фронтенд (на страницу выбора ролей)
-    const frontendUrl =
-      this.configService.getOrThrow<string>("APPLICATION_URL");
-    return res.redirect(`${frontendUrl}/registrationDetails`);
+    const frontendUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:5173";
+    return res.redirect(`${frontendUrl}/email-success`);
   }
 
   @UseGuards(AuthGuard)
