@@ -5,6 +5,8 @@ import { render } from "@react-email/components";
 import { ConfirmationTemplate } from "./templates/confirmation.template";
 import { ResetPasswordTemplate } from "./templates/reset-password.template";
 import { TwoFactorAuthTemplate } from "./templates/two-factor-auth.template";
+import { PasswordChangedTemplate } from "./templates/password-change-notification.template";
+import * as React from "react";
 
 @Injectable()
 export class MailService {
@@ -45,6 +47,23 @@ export class MailService {
       return result;
     } catch (error) {
       console.error("❌ ОШИБКА ПРИ ОТПРАВКЕ ПИСЬМА:", error);
+      throw error;
+    }
+  }
+
+  async sendPasswordChangedNotification(email: string) {
+    try {
+      const emailHtml = await render(
+        React.createElement(PasswordChangedTemplate, { email }),
+      );
+      console.log("Попытка отправить письмо на:", email);
+      await this.mailerService.sendMail({
+        to: email,
+        subject: "Security Alert: Password Changed 🦎",
+        html: emailHtml,
+      });
+    } catch (error) {
+      console.error("Ошибка при отправке письма:", error);
       throw error;
     }
   }

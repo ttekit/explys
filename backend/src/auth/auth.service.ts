@@ -20,6 +20,8 @@ import { ConfigService } from "@nestjs/config";
 import { ProviderService } from "./provider/provider.service";
 import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
 import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
+import { UpdatePasswordDto } from "./dto/update-password.dto";
+import { UpdateEmailDto } from "./dto/update-email.dto";
 
 // Экспортируем интерфейс, чтобы контроллер мог его видеть
 export interface GeneratedStudent {
@@ -305,6 +307,53 @@ export class AuthService {
         hasCompletedPlacement: user.hasCompletedPlacement,
       },
     };
+  }
+
+  async updatePassword(userId: number, dto: UpdatePasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException("Неверный текущий пароль");
+    }
+
+    const hashedNewPassword = await bcrypt.hash(dto.newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    return { message: "Password successfully updated" };
+  }
+  async updateEmail(userId: number, dto: UpdateEmailDto) {
+    // Проверяем, не занята ли почта
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.newEmail },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException("Email already in use");
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { email: dto.newEmail },
+    });
+
+    return { message: "Email updated successfully" };
   }
 
   public async extractProfileFromCode(

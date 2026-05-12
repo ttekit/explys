@@ -42,6 +42,17 @@ export function ProfileSettings({
   const [job, setJob] = useState(user.workField);
   const [education, setEducation] = useState(user.education);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const [hobbies, setHobbies] = useState<string[]>(user.hobbies ?? []);
   const [favoriteGenreIds, setFavoriteGenreIds] = useState<number[]>(
     user.favoriteGenres ?? [],
@@ -72,31 +83,106 @@ export function ProfileSettings({
       videoQuality: user.videoQuality?.trim() || "auto",
     };
   });
+
+  const handleEmailUpdate = async () => {
+    setError("");
+    if (!newEmail) return setError("Please enter a new email.");
+
+    setIsLoading(true);``
+    try {
+      const response = await fetch("http://localhost:4200/auth/update-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        body: JSON.stringify({ newEmail }),
+      });
+
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Failed to update email");
+
+      setIsChangingEmail(false);
+      setNewEmail("");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handlePasswordUpdate = async () => {
+    setError("");
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("New passwords do not match.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError("New password must be at least 8 characters long.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(
+        "http://localhost:4200/auth/update-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          body: JSON.stringify({
+            currentPassword: currentPassword,
+            newPassword: newPassword,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update password");
+      }
+      setIsChangingPassword(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      setError(err.message || "Invalid current password or server error.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Функция, которая проверяет, нажата ли кнопка Escape
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsChangingPassword(false);
+        setIsChangingEmail(false); // Закрываем почту тоже
+        setError("");
       }
     };
 
-    if (isChangingPassword) {
-      // Убираем скролл
+    // Если открыта ХОТЯ БЫ ОДНА модалка
+    if (isChangingPassword || isChangingEmail) {
       document.body.style.overflow = "hidden";
-      // Вешаем "слушателя" на нажатие клавиш
       document.addEventListener("keydown", handleKeyDown);
     } else {
-      // Возвращаем скролл
       document.body.style.overflow = "unset";
     }
 
-    // Очистка (очень важно для React, чтобы не было утечек памяти)
     return () => {
       document.body.style.overflow = "unset";
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isChangingPassword]); // Эффект срабатывает каждый раз, когда меняется isChangingPassword
-
+  }, [isChangingPassword, isChangingEmail]); // Следим за обоими стейтами
   useEffect(() => {
     setName(user.name);
     setJob(user.workField);
@@ -593,26 +679,100 @@ export function ProfileSettings({
       >
         <div className="space-y-4">
           <div className="flex flex-col gap-4 rounded-lg border border-border/50 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/20 transition-colors">
-            <div>
-              <p className="font-medium text-foreground">Email address</p>
-              <p className="text-sm text-muted-foreground">
-                {maskEmail(user?.email)}
-              </p>
-            </div>
-            <button
-              type="button"
-              className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-              onClick={() => console.log("Відкрити модалку зміни пошти")}
-            >
-              Change email
-            </button>
+            <>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between w-full">
+                <div>
+                  <p className="font-medium text-foreground text-left">
+                    Email address
+                  </p>
+                  <p className="text-sm text-muted-foreground text-left">
+                    ваша@почта.com
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsChangingEmail(true)}
+                  className="shrink-0 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent transition-colors"
+                >
+                  Change email
+                </button>
+              </div>
+
+              {isChangingEmail && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-200">
+                  <div className="w-full max-w-2xl rounded-2xl border border-border bg-card text-foreground shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
+                    <div className="flex items-start justify-between p-8 pb-6">
+                      <div>
+                        <h2 className="text-3xl font-bold">Update email</h2>
+                        <p className="text-base text-muted-foreground mt-2">
+                          Enter your new email address.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setIsChangingEmail(false)}
+                        className="p-2 rounded-xl text-muted-foreground hover:bg-accent transition-colors"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="p-8 pt-0 space-y-7">
+                      {error && (
+                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium">
+                          {error}
+                        </div>
+                      )}
+                      <div className="space-y-3">
+                        <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                          New Email Address{" "}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          value={newEmail}
+                          onChange={(e) => setNewEmail(e.target.value)}
+                          className="flex h-14 w-full rounded-lg border border-input bg-background px-4 py-3 text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-6 px-8 flex items-center justify-end gap-4 rounded-b-2xl bg-muted/30 border-t border-border">
+                      <button
+                        onClick={() => setIsChangingEmail(false)}
+                        className="px-5 py-3 text-base font-medium hover:underline"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleEmailUpdate}
+                        disabled={isLoading}
+                        className="rounded-xl bg-primary px-8 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                      >
+                        {isLoading ? "Saving..." : "Done"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           </div>
 
           <div className="flex flex-col gap-4 rounded-lg border border-border/50 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/20 transition-colors">
             <>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between w-full">
                 <>
-                  {/* Основной блок */}
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between w-full">
                     <div>
                       <p className="font-medium text-foreground text-left">
@@ -632,11 +792,9 @@ export function ProfileSettings({
                     </button>
                   </div>
 
-                  {/* Модальное окно (Pop-up) поверх сайта */}
                   {isChangingPassword && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-200">
                       <div className="w-full max-w-2xl rounded-2xl border border-border bg-card text-foreground shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
-                        {/* Шапка модалки */}
                         <div className="flex items-start justify-between p-8 pb-6">
                           <div>
                             <h2 className="text-3xl font-bold">
@@ -646,9 +804,11 @@ export function ProfileSettings({
                               Enter your current and new password.
                             </p>
                           </div>
-                          {/* Крестик для закрытия с фоном при наведении */}
                           <button
-                            onClick={() => setIsChangingPassword(false)}
+                            onClick={() => {
+                              setIsChangingPassword(false);
+                              setError(""); // Очищаем ошибку при закрытии на крестик
+                            }}
                             className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors mt-1"
                           >
                             <svg
@@ -667,8 +827,14 @@ export function ProfileSettings({
                           </button>
                         </div>
 
-                        {/* Тело модалки (Добавлена блокировка автозаполнения autoComplete="new-password") */}
                         <div className="p-8 pt-0 space-y-7">
+                          {/* Плашка с ошибкой */}
+                          {error && (
+                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium">
+                              {error}
+                            </div>
+                          )}
+
                           <div className="space-y-3">
                             <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
                               Current Password{" "}
@@ -677,6 +843,10 @@ export function ProfileSettings({
                             <input
                               type="password"
                               autoComplete="new-password"
+                              value={currentPassword}
+                              onChange={(e) =>
+                                setCurrentPassword(e.target.value)
+                              }
                               className="flex h-14 w-full rounded-lg border border-input bg-background px-4 py-3 text-lg ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             />
                           </div>
@@ -688,6 +858,8 @@ export function ProfileSettings({
                             <input
                               type="password"
                               autoComplete="new-password"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
                               className="flex h-14 w-full rounded-lg border border-input bg-background px-4 py-3 text-lg ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             />
                           </div>
@@ -699,27 +871,61 @@ export function ProfileSettings({
                             <input
                               type="password"
                               autoComplete="new-password"
+                              value={confirmPassword}
+                              onChange={(e) =>
+                                setConfirmPassword(e.target.value)
+                              }
                               className="flex h-14 w-full rounded-lg border border-input bg-background px-4 py-3 text-lg ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             />
                           </div>
                         </div>
 
-                        {/* Футер модалки */}
                         <div className="p-6 px-8 flex items-center justify-end gap-4 rounded-b-2xl bg-muted/30 border-t border-border">
                           <button
-                            onClick={() => setIsChangingPassword(false)}
-                            className="px-5 py-3 text-base font-medium text-foreground hover:underline"
+                            type="button"
+                            onClick={() => {
+                              setIsChangingPassword(false);
+                              setError(""); // Очищаем ошибку при кнопке Cancel
+                            }}
+                            disabled={isLoading}
+                            className="px-5 py-3 text-base font-medium text-foreground hover:underline disabled:opacity-50"
                           >
                             Cancel
                           </button>
                           <button
-                            onClick={() => {
-                              console.log("Запрос на смену пароля");
-                              setIsChangingPassword(false);
-                            }}
-                            className="rounded-xl bg-primary px-8 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                            type="button"
+                            onClick={handlePasswordUpdate}
+                            disabled={isLoading}
+                            className="rounded-xl bg-primary px-8 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
                           >
-                            Done
+                            {/* Анимация загрузки */}
+                            {isLoading ? (
+                              <>
+                                <svg
+                                  className="animate-spin h-5 w-5 text-primary-foreground"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                                Saving...
+                              </>
+                            ) : (
+                              "Done"
+                            )}
                           </button>
                         </div>
                       </div>

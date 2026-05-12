@@ -31,6 +31,8 @@ import { ProviderService } from "./provider/provider.service";
 import { ConfigService } from "@nestjs/config";
 import type { Request, Response } from "express";
 import { Recaptcha } from "@nestlab/google-recaptcha";
+import { UpdatePasswordDto } from "./dto/update-password.dto";
+import { UpdateEmailDto } from "./dto/update-email.dto";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -67,7 +69,7 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto);
   }
-  
+
   @Post("resend-confirmation")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Resend email confirmation" })
@@ -81,7 +83,7 @@ export class AuthController {
   @ApiOperation({ summary: "Confirm user email via token" })
   @ApiQuery({ name: "token", type: "string" })
   async confirmEmail(
-    @Query("token") token: string, 
+    @Query("token") token: string,
     //@Res() res: Response
   ) {
     await this.authService.confirmEmail(token);
@@ -89,8 +91,21 @@ export class AuthController {
     // return res.redirect(`${frontendUrl}/email-success`);
     return {
       success: true,
-      message: "Email successfully confirmed"
-    }
+      message: "Email successfully confirmed",
+    };
+  }
+
+  @UseGuards(AuthGuard)
+  @Post("update-password")
+  async updatePassword(@Req() req: any, @Body() dto: UpdatePasswordDto) {
+    console.log("Расшифрованный токен:", req.user);
+    return await this.authService.updatePassword(req.user.sub, dto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post("update-email")
+  async updateEmail(@Req() req: any, @Body() dto: UpdateEmailDto) {
+    return this.authService.updateEmail(req.user.sub, dto);
   }
 
   @UseGuards(AuthGuard)
