@@ -7,7 +7,6 @@ import LabelRegister from "../../components/LabelRegister";
 import { apiFetch } from "../../lib/api";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
-import { Input } from "react-select/animated";
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -22,8 +21,40 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!password) {
+      toast.error("Введіть новий пароль");
+      return;
+    }
+
     if (password.length < 8) {
       toast.error("Пароль має бути не менше 8 символів");
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      toast.error("Пароль повинен містити хоча б одну велику літеру");
+      return;
+    }
+
+    if (!/[a-z]/.test(password)) {
+      toast.error("Пароль повинен містити хоча б одну маленьку літеру");
+      return;
+    }
+
+    if (!/\d/.test(password)) {
+      toast.error("Пароль повинен містити хоча б одну цифру");
+      return;
+    }
+
+    if (!/[@$!%*?&]/.test(password)) {
+      toast.error(
+        "Пароль повинен містити спеціальний символ (@, $, !, %, *, ?, &)",
+      );
+      return;
+    }
+
+    if (!passwordRepeat) {
+      toast.error("Підтвердіть новий пароль");
       return;
     }
 
@@ -32,7 +63,10 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (!token) return;
+    if (!token) {
+      toast.error("Відсутній токен відновлення");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -40,19 +74,19 @@ export default function ResetPasswordPage() {
         method: "POST",
         body: JSON.stringify({
           password: password,
-          passwordRepeat: password,
+          passwordRepeat: passwordRepeat,
         }),
       });
 
       if (response.ok) {
-        toast.success("Пароль змінено!");
+        toast.success("Пароль успішно змінено!");
         navigate("/loginForm");
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || "Помилка");
+        toast.error(errorData.message || "Помилка при зміні пароля");
       }
     } catch (error) {
-      toast.error("Сервер не відповідає");
+      toast.error("Сервер не відповідає. Спробуйте пізніше.");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,7 +128,7 @@ export default function ResetPasswordPage() {
           <div className="space-y-2">
             <LabelRegister isRequired={true}>Підтвердіть пароль</LabelRegister>
             <InputText // Використовуй той самий компонент InputText для однакового стилю
-              type={showPassword ? "text" : "password"} 
+              type={showPassword ? "text" : "password"}
               value={passwordRepeat}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setPasswordRepeat(e.target.value)
