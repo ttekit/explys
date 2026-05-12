@@ -20,8 +20,11 @@ import { ProfileCard } from "./ProfileCard";
 import { ToggleSwitch } from "./ToggleSwitch";
 import {
   loadProfileUiPrefs,
+  NotificationPrefs,
   saveProfileUiPrefs,
 } from "../../lib/profileUiPrefs";
+import { Lock } from "lucide-react";
+import { maskEmail } from "../../lib/stringUtils";
 
 type GenreOption = { id: number; name: string };
 
@@ -49,9 +52,7 @@ export function ProfileSettings({
   const [genreOptions, setGenreOptions] = useState<GenreOption[]>([]);
   const [saving, setSaving] = useState(false);
   const [savingPrefs, setSavingPrefs] = useState(false);
-  const [dangerOpen, setDangerOpen] = useState<"reset" | "delete" | null>(
-    null,
-  );
+  const [dangerOpen, setDangerOpen] = useState<"reset" | "delete" | null>(null);
 
   const [notifications, setNotifications] = useState(
     () => loadProfileUiPrefs(user.id).notifications,
@@ -91,8 +92,7 @@ export function ProfileSettings({
         Number.isFinite(Number(user.playbackSpeed))
           ? String(user.playbackSpeed)
           : prev.playbackSpeed || "1",
-      videoQuality:
-        user.videoQuality?.trim() || prev.videoQuality || "auto",
+      videoQuality: user.videoQuality?.trim() || prev.videoQuality || "auto",
     }));
   }, [user.id, user.playbackSpeed, user.videoQuality]);
 
@@ -255,7 +255,10 @@ export function ProfileSettings({
               <span className="text-sm font-medium text-foreground">
                 Full name
               </span>
-              <InputText value={name} onChange={(e) => setName(e.target.value)} />
+              <InputText
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-foreground">Email</span>
@@ -336,8 +339,8 @@ export function ProfileSettings({
               Genre preferences
             </span>
             <p className="mb-4 text-sm text-muted-foreground">
-              Tap the left side to favorite a genre, or the right to mark one
-              to avoid.
+              Tap the left side to favorite a genre, or the right to mark one to
+              avoid.
             </p>
             <div className="flex flex-wrap gap-2">
               {genreOptions.map((g) => {
@@ -447,9 +450,12 @@ export function ProfileSettings({
                 </p>
               </div>
               <ToggleSwitch
-                checked={notifications[item.key]}
+                checked={notifications[item.key as keyof NotificationPrefs]}
                 onCheckedChange={(checked) =>
-                  setNotifications((n) => ({ ...n, [item.key]: checked }))
+                  setNotifications((n) => ({
+                    ...n,
+                    [item.key as keyof NotificationPrefs]: checked,
+                  }))
                 }
               />
             </div>
@@ -466,8 +472,8 @@ export function ProfileSettings({
         }
       >
         <p className="mb-6 text-sm text-muted-foreground">
-          Default playback speed and quality are stored on your account. Auto-play
-          and subtitle defaults are kept on this device. Use{" "}
+          Default playback speed and quality are stored on your account.
+          Auto-play and subtitle defaults are kept on this device. Use{" "}
           <span className="font-medium text-foreground">Save preferences</span>{" "}
           below to persist everything.
         </p>
@@ -507,7 +513,9 @@ export function ProfileSettings({
         <div className="mt-6 space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-medium text-foreground">Auto-play next video</p>
+              <p className="font-medium text-foreground">
+                Auto-play next video
+              </p>
               <p className="text-sm text-muted-foreground">
                 Automatically play the next lesson in a row
               </p>
@@ -547,6 +555,64 @@ export function ProfileSettings({
             <Save className="size-4" />
             {savingPrefs ? "Saving…" : "Save preferences"}
           </Button>
+        </div>
+      </ProfileCard>
+
+      <ProfileCard
+        title={
+          <span className="flex items-center gap-2">
+            <Lock className="size-5" />
+            Security & Login
+          </span>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col gap-4 rounded-lg border border-border/50 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/20 transition-colors">
+            <div>
+              <p className="font-medium text-foreground">Email address</p>
+              <p className="text-sm text-muted-foreground">{maskEmail(user?.email)}</p>
+            </div>
+            <button
+              type="button"
+              className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+              onClick={() => console.log("Відкрити модалку зміни пошти")}
+            >
+              Change email
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-lg border border-border/50 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/20 transition-colors">
+            <div>
+              <p className="font-medium text-foreground">Password</p>
+              <p className="text-sm text-muted-foreground">
+                Update your password to keep your account secure
+              </p>
+            </div>
+            <button
+              type="button"
+              className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+              onClick={() => console.log("Відкрити модалку зміни пароля")}
+            >
+              Change password
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-lg border border-border/50 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/20 transition-colors">
+            <div>
+              <p className="font-medium text-foreground">
+                Two-factor authentication
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Add an extra layer of security to your account
+              </p>
+            </div>
+            <ToggleSwitch
+              checked={false}
+              onCheckedChange={(checked) =>
+                console.log("2FA toggled:", checked)
+              }
+            />
+          </div>
         </div>
       </ProfileCard>
 
