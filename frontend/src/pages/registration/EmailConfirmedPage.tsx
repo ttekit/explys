@@ -16,9 +16,8 @@ export default function EmailConfirmedPage() {
       }
 
       try {
-        // ЗАМІНИ ЦЕЙ URL на свій реальний ендпоінт підтвердження
         const response = await fetch(
-          `http://localhost:4200/api/auth/confirm-email?token=${token}`,
+          `http://localhost:4200/auth/confirm-email?token=${token}`,
           {
             method: "GET",
           },

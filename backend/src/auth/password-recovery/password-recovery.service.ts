@@ -12,6 +12,8 @@ import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { NewPasswordDto } from "./dto/new-password.dto";
 import * as bcrypt from "bcrypt";
 import { AuthService } from "../auth.service";
+import { EmailConfirmationController } from "../email-confirmation/email-confirmation.controller";
+import { EmailConfirmationService } from "../email-confirmation/email-confirmation.service";
 
 @Injectable()
 export class PasswordRecoveryService {
@@ -20,6 +22,7 @@ export class PasswordRecoveryService {
     private readonly userService: UsersService,
     private readonly mailService: MailService,
     private readonly authService: AuthService,
+    private readonly emailConfirmationService: EmailConfirmationService,
   ) {}
 
   public async resetPassword(dto: ResetPasswordDto) {
@@ -31,7 +34,7 @@ export class PasswordRecoveryService {
       );
     }
     if (!existingUser.isVerified) {
-      await this.authService.resendConfirmationEmail(existingUser.email);
+      await this.emailConfirmationService.sendVerificationToken(existingUser);
       throw new BadRequestException(
         "Спочатку підтвердіть вашу електронну пошту. Перевірте вхідні повідомлення",
       );
@@ -102,7 +105,7 @@ export class PasswordRecoveryService {
 
   private async generatePasswordResetToken(email: string) {
     const token = uuidv4();
-    const expiresIn = new Date(new Date().getTime() + 3600 * 1000);
+    const expiresIn = new Date(new Date().getTime() + 24 * 3600 * 1000);
 
     const existingToken = await this.prismaService.token.findUnique({
       where: {

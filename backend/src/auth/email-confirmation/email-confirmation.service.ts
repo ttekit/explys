@@ -26,7 +26,7 @@ export class EmailConfirmationService {
   ) {}
 
   public async newVerification(req: Request, dto: ConfirmationDto) {
-    const existingToken = await this.prismaService.token.findUnique({
+    const existingToken = await this.prismaService.token.findFirst({
       where: {
         token: dto.token,
         type: TokenType.VERIFICATION,
@@ -43,7 +43,7 @@ export class EmailConfirmationService {
 
     if (hasExpired) {
       throw new BadRequestException(
-        "Confirmation token has expired. Please request a new confirmation token.",
+        "Confirmation token has expired. Pleas  e request a new confirmation token.",
       );
     }
 
@@ -129,6 +129,7 @@ export class EmailConfirmationService {
         type: TokenType.VERIFICATION,
       },
     });
+    console.log(`Згенеровано новий токен для ${email}: ${token}`);
 
     return verificationToken;
   }
