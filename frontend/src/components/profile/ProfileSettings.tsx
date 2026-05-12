@@ -41,6 +41,7 @@ export function ProfileSettings({
   const [email] = useState(user.email);
   const [job, setJob] = useState(user.workField);
   const [education, setEducation] = useState(user.education);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [hobbies, setHobbies] = useState<string[]>(user.hobbies ?? []);
   const [favoriteGenreIds, setFavoriteGenreIds] = useState<number[]>(
     user.favoriteGenres ?? [],
@@ -71,6 +72,30 @@ export function ProfileSettings({
       videoQuality: user.videoQuality?.trim() || "auto",
     };
   });
+  useEffect(() => {
+    // Функция, которая проверяет, нажата ли кнопка Escape
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsChangingPassword(false);
+      }
+    };
+
+    if (isChangingPassword) {
+      // Убираем скролл
+      document.body.style.overflow = "hidden";
+      // Вешаем "слушателя" на нажатие клавиш
+      document.addEventListener("keydown", handleKeyDown);
+    } else {
+      // Возвращаем скролл
+      document.body.style.overflow = "unset";
+    }
+
+    // Очистка (очень важно для React, чтобы не было утечек памяти)
+    return () => {
+      document.body.style.overflow = "unset";
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isChangingPassword]); // Эффект срабатывает каждый раз, когда меняется isChangingPassword
 
   useEffect(() => {
     setName(user.name);
@@ -570,7 +595,9 @@ export function ProfileSettings({
           <div className="flex flex-col gap-4 rounded-lg border border-border/50 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/20 transition-colors">
             <div>
               <p className="font-medium text-foreground">Email address</p>
-              <p className="text-sm text-muted-foreground">{maskEmail(user?.email)}</p>
+              <p className="text-sm text-muted-foreground">
+                {maskEmail(user?.email)}
+              </p>
             </div>
             <button
               type="button"
@@ -582,19 +609,125 @@ export function ProfileSettings({
           </div>
 
           <div className="flex flex-col gap-4 rounded-lg border border-border/50 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/20 transition-colors">
-            <div>
-              <p className="font-medium text-foreground">Password</p>
-              <p className="text-sm text-muted-foreground">
-                Update your password to keep your account secure
-              </p>
-            </div>
-            <button
-              type="button"
-              className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-              onClick={() => console.log("Відкрити модалку зміни пароля")}
-            >
-              Change password
-            </button>
+            <>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between w-full">
+                <>
+                  {/* Основной блок */}
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between w-full">
+                    <div>
+                      <p className="font-medium text-foreground text-left">
+                        Password
+                      </p>
+                      <p className="text-sm text-muted-foreground text-left">
+                        Update your password to keep your account secure
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsChangingPassword(true)}
+                      className="shrink-0 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      Change password
+                    </button>
+                  </div>
+
+                  {/* Модальное окно (Pop-up) поверх сайта */}
+                  {isChangingPassword && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-200">
+                      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card text-foreground shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
+                        {/* Шапка модалки */}
+                        <div className="flex items-start justify-between p-8 pb-6">
+                          <div>
+                            <h2 className="text-3xl font-bold">
+                              Update password
+                            </h2>
+                            <p className="text-base text-muted-foreground mt-2">
+                              Enter your current and new password.
+                            </p>
+                          </div>
+                          {/* Крестик для закрытия с фоном при наведении */}
+                          <button
+                            onClick={() => setIsChangingPassword(false)}
+                            className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors mt-1"
+                          >
+                            <svg
+                              className="w-6 h-6"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* Тело модалки (Добавлена блокировка автозаполнения autoComplete="new-password") */}
+                        <div className="p-8 pt-0 space-y-7">
+                          <div className="space-y-3">
+                            <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                              Current Password{" "}
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="password"
+                              autoComplete="new-password"
+                              className="flex h-14 w-full rounded-lg border border-input bg-background px-4 py-3 text-lg ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                              New Password{" "}
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="password"
+                              autoComplete="new-password"
+                              className="flex h-14 w-full rounded-lg border border-input bg-background px-4 py-3 text-lg ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                              Confirm New Password{" "}
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="password"
+                              autoComplete="new-password"
+                              className="flex h-14 w-full rounded-lg border border-input bg-background px-4 py-3 text-lg ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Футер модалки */}
+                        <div className="p-6 px-8 flex items-center justify-end gap-4 rounded-b-2xl bg-muted/30 border-t border-border">
+                          <button
+                            onClick={() => setIsChangingPassword(false)}
+                            className="px-5 py-3 text-base font-medium text-foreground hover:underline"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => {
+                              console.log("Запрос на смену пароля");
+                              setIsChangingPassword(false);
+                            }}
+                            className="rounded-xl bg-primary px-8 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                          >
+                            Done
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              </div>
+            </>
           </div>
 
           <div className="flex flex-col gap-4 rounded-lg border border-border/50 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/20 transition-colors">
