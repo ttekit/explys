@@ -166,7 +166,12 @@ export default function RegistrationMain() {
       const response = await fetch("http://localhost:4200/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, passwordRepeat: confirmPassword }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          passwordRepeat: confirmPassword,
+        }),
       });
 
       const result = await response.json();

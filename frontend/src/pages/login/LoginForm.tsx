@@ -95,7 +95,7 @@ export default function LoginForm() {
         } else {
           const message = await getResponseErrorMessage(response);
           if (message.includes("Email not verified")) {
-            navigate("/email-confirmation", {
+            navigate("/auth/confirm-email", {
               state: { email: loginData.email },
             });
             return;
@@ -149,9 +149,8 @@ export default function LoginForm() {
               <div className="flex items-center justify-between gap-2">
                 <LabelRegister isRequired={true}>{t.password}</LabelRegister>
                 <Link
-                  to="#"
+                  to="/forgot-password"
                   className="text-sm text-primary hover:underline"
-                  onClick={(e) => e.preventDefault()}
                 >
                   {t.forgotPassword}
                 </Link>

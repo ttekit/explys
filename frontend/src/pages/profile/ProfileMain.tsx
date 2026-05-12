@@ -100,7 +100,8 @@ export default function ProfileMain() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id || (activeTab !== "overview" && activeTab !== "activity")) return;
+    if (!user?.id || (activeTab !== "overview" && activeTab !== "activity"))
+      return;
     let cancelled = false;
     void (async () => {
       const r = await apiFetch("/auth/profile/learning-stats", {
@@ -168,7 +169,9 @@ export default function ProfileMain() {
 
   const tabs = useMemo(() => {
     if (user?.role === "teacher") {
-      const withoutStudying = LEARNER_TABS.filter((t) => t.id !== "studying-plan");
+      const withoutStudying = LEARNER_TABS.filter(
+        (t) => t.id !== "studying-plan",
+      );
       return [
         withoutStudying[0],
         {
@@ -238,14 +241,14 @@ export default function ProfileMain() {
           noindex
         />
         <div className="m-4 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-destructive">
-        <p className="font-medium">Please sign in to view your profile.</p>
-        <Link
-          to="/loginForm"
-          className="mt-3 inline-block text-primary underline-offset-4 hover:underline"
-        >
-          Go to login
-        </Link>
-      </div>
+          <p className="font-medium">Please sign in to view your profile.</p>
+          <Link
+            to="/loginForm"
+            className="mt-3 inline-block text-primary underline-offset-4 hover:underline"
+          >
+            Go to login
+          </Link>
+        </div>
       </>
     );
   }
@@ -268,7 +271,7 @@ export default function ProfileMain() {
         <CatalogSidebar
           categories={[]}
           selectedCategory="All"
-          onSelectCategory={() => { }}
+          onSelectCategory={() => {}}
           showCategoryFilter={false}
           welcomeName={
             user?.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined
@@ -329,9 +332,18 @@ export default function ProfileMain() {
               {activeTab === "students" ? <ProfileTeacherStudents /> : null}
               {activeTab === "progress" ? <ProfileProgress /> : null}
               {activeTab === "achievements" ? <ProfileAchievements /> : null}
-              {activeTab === "activity" ? <ProfileActivity weeklyActivity={learningStats?.weeklyActivity} /> : null}
+              {activeTab === "activity" ? (
+                <ProfileActivity
+                  weeklyActivity={learningStats?.weeklyActivity}
+                />
+              ) : null}
               {activeTab === "settings" ? (
-                <ProfileSettings user={user} onSaved={refreshProfile} />
+                <ProfileSettings
+                  user={user}
+                  onSaved={async () => {
+                    await refreshProfile();
+                  }}
+                />
               ) : null}
             </div>
           </div>

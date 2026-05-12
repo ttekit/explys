@@ -4,12 +4,11 @@ import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { ContentsController } from "./contents.controller";
 import { ContentsService } from "./contents.service";
-import { RedisModule } from "@nestjs-modules/ioredis"
+import { RedisModule } from "@nestjs-modules/ioredis";
 
 // TODO: Add GET /sitemap.xml (e.g. on ContentsController or a dedicated SEO controller)
 // returning dynamic XML with all public lesson/content URLs from the Content entity
 // (plus static routes like `/`, `/catalog`, `/pricing` as needed).
-
 @Module({
   imports: [
     ThrottlerModule.forRootAsync({
@@ -22,17 +21,11 @@ import { RedisModule } from "@nestjs-modules/ioredis"
       inject: [ConfigService],
     }),
     RedisModule.forRoot({
-      type: 'single',
-      url: 'redis://localhost:6379'
-    })
+      type: "single",
+      url: "redis://localhost:6379",
+    }),
   ],
   controllers: [ContentsController],
-  providers: [
-    ContentsService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  providers: [ContentsService],
 })
 export class ContentsModule {}

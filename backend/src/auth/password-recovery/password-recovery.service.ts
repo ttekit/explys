@@ -10,7 +10,8 @@ import { UsersService } from "src/users/users.service";
 import { v4 as uuidv4 } from "uuid";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { NewPasswordDto } from "./dto/new-password.dto";
-import { hash } from "argon2";
+import * as bcrypt from "bcrypt";
+import { AuthService } from "../auth.service";
 
 @Injectable()
 export class PasswordRecoveryService {
@@ -18,6 +19,7 @@ export class PasswordRecoveryService {
     private readonly prismaService: PrismaService,
     private readonly userService: UsersService,
     private readonly mailService: MailService,
+    private readonly authService: AuthService,
   ) {}
 
   public async resetPassword(dto: ResetPasswordDto) {
@@ -26,6 +28,12 @@ export class PasswordRecoveryService {
     if (!existingUser) {
       throw new NotFoundException(
         "User not found. Please check the email address you entered and try again.",
+      );
+    }
+    if (!existingUser.isVerified) {
+      await this.authService.resendConfirmationEmail(existingUser.email);
+      throw new BadRequestException(
+        "Спочатку підтвердіть вашу електронну пошту. Перевірте вхідні повідомлення",
       );
     }
 
@@ -72,42 +80,42 @@ export class PasswordRecoveryService {
         "User not found. Please check the email address you entered and try again.",
       );
     }
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     await this.prismaService.user.update({
-        where: {
-            id: existingUser.id
-        },
-        data: {
-            password: await hash(dto.password)
-        }
-    })
+      where: {
+        id: existingUser.id,
+      },
+      data: {
+        password: hashedPassword,
+      },
+    });
 
     await this.prismaService.token.delete({
-        where: {
-            id: existingUser.id,
-            type: TokenType.PASSWORD_RESET
-        }
-    })
+      where: {
+        id: existingToken.id,
+      },
+    });
 
-    return true
+    return true;
   }
 
   private async generatePasswordResetToken(email: string) {
     const token = uuidv4();
     const expiresIn = new Date(new Date().getTime() + 3600 * 1000);
 
-    const existingToken = await this.prismaService.token.findFirst({
+    const existingToken = await this.prismaService.token.findUnique({
       where: {
         email,
-        type: TokenType.PASSWORD_RESET,
+        //type: TokenType.PASSWORD_RESET,
       },
     });
 
     if (existingToken) {
-      await this.prismaService.token.delete({
+      await this.prismaService.token.deleteMany({
         where: {
           id: existingToken.id,
-          type: TokenType.PASSWORD_RESET,
+          //type: TokenType.PASSWORD_RESET,
         },
       });
     }

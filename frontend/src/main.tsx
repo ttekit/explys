@@ -35,6 +35,8 @@ import AnalyticsLayout from "./components/AnalyticsLayout";
 import RequireAuth from "./components/RequireAuth";
 import RegisterConfirmPage from "./pages/registration/RegisterConfirmPage";
 import EmailConfirmedPage from "./pages/registration/EmailConfirmedPage";
+import ForgotPasswordPage from "./pages/login/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/login/ResetPasswordPage";
 
 const router = createBrowserRouter([
   {
@@ -43,6 +45,7 @@ const router = createBrowserRouter([
       { path: "/", element: <LandingPage /> },
       { path: "/registrationMain", element: <RegistrationMain /> },
       { path: "/email-confirmation", element: <RegisterConfirmPage /> },
+      { path: "/auth/confirm-email", element: <EmailConfirmedPage /> },
       { path: "/registrationDetails", element: <RegistrationDetails /> },
       {
         path: "/registrationPreferences",
@@ -51,6 +54,8 @@ const router = createBrowserRouter([
       { path: "/registrationSuccess", element: <RegisterSuccessPage /> },
       { path: "/email-success", element: <EmailConfirmedPage /> },
       { path: "/loginForm", element: <LoginForm /> },
+      { path: "/forgot-password", element: <ForgotPasswordPage /> },
+      { path: "/auth/new-password", element: <ResetPasswordPage /> },
       { path: "/pricing", element: <PricingPage /> },
       {
         element: <RequireAuth />,

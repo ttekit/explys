@@ -8,8 +8,8 @@ import { Recaptcha } from '@nestlab/google-recaptcha';
 export class PasswordRecoveryController {
   constructor(private readonly passwordRecoveryService: PasswordRecoveryService) {}
 
-  @Recaptcha()
-  @Post('reset')
+  //@Recaptcha()
+  @Post('/forgot')
   @HttpCode(HttpStatus.OK)
   public async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.passwordRecoveryService.resetPassword(dto)

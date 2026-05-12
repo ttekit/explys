@@ -12,6 +12,7 @@ import {
   Post,
   UploadedFile,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
 import {
@@ -23,11 +24,12 @@ import { Express } from "express";
 import { ContentsService } from "./contents.service";
 import { CreateContentDto } from "./dto/create-content.dto";
 import { UpdateContentDto } from "./dto/update-content.dto";
+import { ThrottlerGuard } from "@nestjs/throttler";
 
 @ApiTags("contents")
 @Controller("contents")
 export class ContentsController {
-  constructor(private readonly contentsService: ContentsService) { }
+  constructor(private readonly contentsService: ContentsService) {}
 
   @Get("all")
   async getContent() {
@@ -38,21 +40,23 @@ export class ContentsController {
   getContentById(@Param("id", ParseIntPipe) id: number) {
     return this.contentsService.getContentById(id);
   }
-
+  @UseGuards(ThrottlerGuard)
   @Post("create")
   @UseInterceptors(
     FileFieldsInterceptor([{ name: "video" }, { name: "preview" }]),
   )
   async createContent(
     @Body() createContentDto: CreateContentDto,
-    @UploadedFiles() files: {
+    @UploadedFiles()
+    files: {
       video: Express.Multer.File[];
-      preview?: Express.Multer.File[]
-    }
+      preview?: Express.Multer.File[];
+    },
   ) {
     return await this.contentsService.createContent(createContentDto, files);
   }
 
+  @UseGuards(ThrottlerGuard)
   @Patch(":id")
   @UseInterceptors(FileInterceptor("file"))
   updateContent(

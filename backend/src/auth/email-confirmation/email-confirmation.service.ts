@@ -102,34 +102,33 @@ export class EmailConfirmationService {
       await this.prismaService.token.delete({
         where: {
           id: existingToken.id,
-          type: TokenType.VERIFICATION,
         },
       });
     }
-    const verificationToken = await this.prismaService.token.upsert({
-      where: {
-        email: email,
-      },
-      update: {
-        token: token,
-        expiresIn: expiresIn,
-        type: TokenType.VERIFICATION,
-      },
-      create: {
-        email: email,
-        token: token,
-        expiresIn: expiresIn,
-        type: TokenType.VERIFICATION,
-      },
-    });
-    // const verificationToken = await this.prismaService.token.create({
-    //   data: {
-    //     email,
-    //     token,
-    //     expiresIn,
+    // const verificationToken = await this.prismaService.token.upsert({
+    //   where: {
+    //     email: email,
+    //   },
+    //   update: {
+    //     token: token,
+    //     expiresIn: expiresIn,
+    //     type: TokenType.VERIFICATION,
+    //   },
+    //   create: {
+    //     email: email,
+    //     token: token,
+    //     expiresIn: expiresIn,
     //     type: TokenType.VERIFICATION,
     //   },
     // });
+    const verificationToken = await this.prismaService.token.create({
+      data: {
+        email,
+        token,
+        expiresIn,
+        type: TokenType.VERIFICATION,
+      },
+    });
 
     return verificationToken;
   }
