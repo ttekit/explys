@@ -162,7 +162,6 @@ export default function RegistrationMain() {
     setErrorText(null);
     //navigate("/registrationDetails");
     try {
-      // 3. ТЕПЕРЬ РЕАЛЬНО РЕГИСТРИРУЕМ В БАЗЕ
       const response = await fetch("http://localhost:4200/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -177,12 +176,10 @@ export default function RegistrationMain() {
       const result = await response.json();
 
       if (!response.ok) {
-        // Если бэкенд нашел ошибку (например, такой email уже есть в базе)
         setErrorText(result.message || "Помилка реєстрації");
         return;
       }
 
-      // 4. СОХРАНЯЕМ ТОКЕН (Самое важное для хамелеона)
       if (result.access_token) {
         localStorage.setItem("accessToken", result.access_token);
       }

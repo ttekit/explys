@@ -82,12 +82,15 @@ export class AuthController {
   @ApiQuery({ name: "token", type: "string" })
   async confirmEmail(
     @Query("token") token: string, 
-    @Res() res: Response
+    //@Res() res: Response
   ) {
-    // 1. Підтверджуємо пошту
     await this.authService.confirmEmail(token);
-    const frontendUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:5173";
-    return res.redirect(`${frontendUrl}/email-success`);
+    // const frontendUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:5173";
+    // return res.redirect(`${frontendUrl}/email-success`);
+    return {
+      success: true,
+      message: "Email successfully confirmed"
+    }
   }
 
   @UseGuards(AuthGuard)

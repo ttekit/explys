@@ -98,22 +98,20 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <HelmetProvider>
-      <LandingLocaleProvider>
-        <UserProvider>
-          <RegistrationProvider>
-            <RouterProvider router={router} />
-            <Toaster
-              position="top-center"
-              toastOptions={{
-                className: "bg-zinc-900 text-zinc-100 border border-zinc-700",
-                style: { boxShadow: "0 8px 30px rgba(0,0,0,0.4)" },
-              }}
-            />
-          </RegistrationProvider>
-        </UserProvider>
-      </LandingLocaleProvider>
-    </HelmetProvider>
-  </StrictMode>,
+  <HelmetProvider>
+    <LandingLocaleProvider>
+      <UserProvider>
+        <RegistrationProvider>
+          <RouterProvider router={router} />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              className: "bg-zinc-900 text-zinc-100 border border-zinc-700",
+              style: { boxShadow: "0 8px 30px rgba(0,0,0,0.4)" },
+            }}
+          />
+        </RegistrationProvider>
+      </UserProvider>
+    </LandingLocaleProvider>
+  </HelmetProvider>,
 );

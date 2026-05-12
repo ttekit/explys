@@ -16,7 +16,6 @@ export default function EmailConfirmationPage() {
   const [showError, setShowError] = useState(false);
   const [isResending, setIsResending] = useState(false);
 
-  // --- ЛОГИКА 1: ПРОВЕРКА СТАТУСА ---
   const checkStatus = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -41,7 +40,6 @@ export default function EmailConfirmationPage() {
     }
   };
 
-  // --- ЛОГИКА 3: КНОПКА "ПРОДОВЖИТИ" ---
   const handleContinue = async () => {
     setIsChecking(true);
     setShowError(false);
@@ -54,7 +52,6 @@ export default function EmailConfirmationPage() {
     setIsChecking(false);
   };
 
-  // --- ЛОГИКА 4: ПОВТОРНАЯ ОТПРАВКА ---
   const handleResend = async () => {
     if (isResending) return;
     setIsResending(true);
@@ -80,7 +77,6 @@ export default function EmailConfirmationPage() {
     }
   };
 
-  // ТЕПЕРЬ RETURN НА СВОЕМ МЕСТЕ
   return (
     <AuthSplitLayout
       rightTitle="Готові продовжити?"
