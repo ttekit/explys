@@ -1,5 +1,6 @@
 import { useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Link } from "react-router";
+import { ChevronLeft, ChevronRight, ListVideo } from "lucide-react";
 import {
   CatalogVideoCard,
   type CatalogCardVideo,
@@ -10,6 +11,8 @@ interface CatalogVideoRowProps {
   description?: string;
   videos: CatalogCardVideo[];
   showProgress?: boolean;
+  /** When set, shows a link to the ordered playlist page for this series. */
+  seriesFriendlyLink?: string;
 }
 
 export function CatalogVideoRow({
@@ -17,6 +20,7 @@ export function CatalogVideoRow({
   description,
   videos,
   showProgress,
+  seriesFriendlyLink,
 }: CatalogVideoRowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +49,15 @@ export function CatalogVideoRow({
         </div>
 
         <div className="hidden items-center gap-2 sm:flex">
+          {seriesFriendlyLink?.trim() && videos.length > 0 ?
+            <Link
+              to={`/catalog/series/${encodeURIComponent(seriesFriendlyLink.trim())}`}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-primary transition-colors hover:bg-primary/10"
+            >
+              <ListVideo className="h-4 w-4" aria-hidden />
+              Playlist
+            </Link>
+          : null}
           <button
             type="button"
             aria-label="Scroll left"

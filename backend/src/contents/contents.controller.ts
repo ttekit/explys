@@ -10,14 +10,23 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiTags } from "@nestjs/swagger";
-import { Express } from "express";
+import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Express, Request } from "express";
+import { AuthGuard } from "src/auth/auth.guard";
+import { jwtSubToUserId } from "src/auth/jwt-subject.util";
+import { ApiTokenOnlyGuard } from "src/auth/guards/api-token-only.guard";
+import { AddContentEpisodeDto } from "./dto/add-content-episode.dto";
 import { ContentsService } from "./contents.service";
 import { CreateContentDto } from "./dto/create-content.dto";
+import { ReorderContentPlaylistDto } from "./dto/reorder-content-playlist.dto";
+import { TeacherPatchContentVisibilityDto } from "./dto/teacher-patch-content-visibility.dto";
+import { TeacherUploadContentDto } from "./dto/teacher-upload-content.dto";
 import { UpdateContentDto } from "./dto/update-content.dto";
 
 /** MP4 uploads; override with CONTENT_VIDEO_MAX_FILE_BYTES (bytes). Default 100 MiB. */
@@ -39,6 +48,66 @@ export class ContentsController {
   @Get("all")
   getContent() {
     return this.contentsService.getAllContent();
+  }
+
+  @Get("series/:friendlyLink")
+  @ApiOperation({
+    summary: "Ordered playlist for a series (Content) by friendly link",
+  })
+  getSeriesPlaylist(@Param("friendlyLink") friendlyLink: string) {
+    return this.contentsService.getSeriesPlaylistByFriendlyLink(friendlyLink);
+  }
+
+  @Post("teacher/upload")
+  @UseGuards(AuthGuard)
+  @UseInterceptors(
+    FileInterceptor("file", {
+      limits: { fileSize: CONTENT_VIDEO_MAX_FILE_BYTES },
+    }),
+  )
+  @ApiOperation({
+    summary:
+      "Teacher: upload a lesson (MP4). Creates a series with one clip; captions and tags are generated automatically.",
+  })
+  async teacherUpload(
+    @Req() req: Request & { user?: unknown },
+    @Body() dto: TeacherUploadContentDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: CONTENT_VIDEO_MAX_FILE_BYTES }),
+          new FileTypeValidator({ fileType: "video/mp4" }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const userId = jwtSubToUserId(req.user);
+    return this.contentsService.createTeacherUpload(userId, dto, file);
+  }
+
+  @Get("teacher/my-series")
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: "Teacher: list series uploaded from profile (with caption/tag status)",
+  })
+  async teacherMySeries(@Req() req: Request & { user?: unknown }) {
+    const userId = jwtSubToUserId(req.user);
+    return this.contentsService.findTeacherMySeries(userId);
+  }
+
+  @Patch("teacher/:id/visibility")
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Teacher: set catalog visibility ("public" or "unlisted") for owned series',
+  })
+  async teacherPatchVisibility(
+    @Req() req: Request & { user?: unknown },
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: TeacherPatchContentVisibilityDto,
+  ) {
+    const userId = jwtSubToUserId(req.user);
+    return this.contentsService.patchTeacherContentVisibility(userId, id, dto);
   }
 
   @Get(":id")
@@ -65,6 +134,44 @@ export class ContentsController {
     file: Express.Multer.File,
   ) {
     return await this.contentsService.createContent(createContentDto, file);
+  }
+
+  @Patch(":id/playlist")
+  @UseGuards(ApiTokenOnlyGuard)
+  @ApiOperation({
+    summary: "Reorder ContentMedia slots for a series (admin API token)",
+  })
+  async reorderPlaylist(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: ReorderContentPlaylistDto,
+  ): Promise<void> {
+    await this.contentsService.reorderPlaylist(id, dto);
+  }
+
+  @Post(":id/episodes")
+  @UseGuards(ApiTokenOnlyGuard)
+  @UseInterceptors(
+    FileInterceptor("file", {
+      limits: { fileSize: CONTENT_VIDEO_MAX_FILE_BYTES },
+    }),
+  )
+  @ApiOperation({
+    summary: "Add an episode (new ContentMedia + video) to an existing series",
+  })
+  async addEpisode(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: AddContentEpisodeDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: CONTENT_VIDEO_MAX_FILE_BYTES }),
+          new FileTypeValidator({ fileType: "video/mp4" }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return await this.contentsService.addEpisode(id, dto, file);
   }
 
   @Patch(":id")

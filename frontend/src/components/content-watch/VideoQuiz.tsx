@@ -5,7 +5,6 @@ import {
   CheckCircle,
   Clock,
   Lock,
-  XCircle,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { ChameleonMascot } from "../ChameleonMascot";
@@ -72,8 +71,6 @@ export function VideoQuiz({
 
   const question = questions[currentQuestion];
   const isOpen = question ? isOpenQuestion(question) : false;
-  const isCorrect =
-    !isOpen && question ? selectedAnswer === question.correct : false;
 
   const mcqTotal = questions.filter((q) => !isOpenQuestion(q)).length;
   const hasOpen = questions.some(isOpenQuestion);
@@ -153,6 +150,42 @@ export function VideoQuiz({
               ? "Good effort — skim vocabulary once more."
               : "Review the clip and vocabulary, then retry."}
         </p>
+
+        {wrongReview.length > 0 ? (
+          <div className="mb-6 w-full space-y-3 rounded-xl border border-border bg-card/50 p-4 text-left">
+            <p className="text-sm font-semibold text-foreground">
+              Review — correct answers
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Answers were hidden while you worked through the quiz. Here are the
+              items you missed:
+            </p>
+            <ul className="space-y-3 text-sm">
+              {wrongReview.map((w) => (
+                <li
+                  key={`${w.question}-${w.selectedIndex}`}
+                  className="rounded-lg border border-border/80 bg-background/60 p-3"
+                >
+                  <p className="mb-2 font-medium text-foreground">{w.question}</p>
+                  <p className="text-muted-foreground">
+                    Your answer:{" "}
+                    <span className="text-foreground">
+                      {w.options[w.selectedIndex] ?? "—"}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-accent">
+                    Correct: {w.options[w.correctIndex] ?? "—"}
+                  </p>
+                  {w.explanation?.trim() ? (
+                    <p className="mt-2 text-xs leading-snug text-muted-foreground">
+                      {w.explanation.trim()}
+                    </p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <button
           type="button"
@@ -287,8 +320,7 @@ export function VideoQuiz({
         <div className="space-y-2">
           {question.options.map((option, index) => {
             const isSelected = selectedAnswer === index;
-            const showCorrect = isAnswered && index === question.correct;
-            const showWrong = isAnswered && isSelected && !isCorrect;
+            const lockedInThis = isAnswered && isSelected;
 
             return (
               <button
@@ -304,9 +336,9 @@ export function VideoQuiz({
                   !isAnswered &&
                     !isSelected &&
                     "border-border bg-card hover:border-primary/50",
-                  showCorrect && "border-accent bg-accent/10",
-                  showWrong && "border-destructive bg-destructive/10",
-                  isAnswered && !showCorrect && !showWrong && "opacity-50",
+                  lockedInThis &&
+                    "border-primary/70 bg-primary/5 ring-1 ring-primary/25",
+                  isAnswered && !isSelected && "opacity-45",
                 )}
               >
                 <span
@@ -314,14 +346,12 @@ export function VideoQuiz({
                     "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium",
                     !isAnswered && isSelected && "bg-primary text-primary-foreground",
                     !isAnswered && !isSelected && "bg-muted text-muted-foreground",
-                    showCorrect && "bg-accent text-accent-foreground",
-                    showWrong && "bg-destructive text-destructive-foreground",
+                    lockedInThis && "bg-primary/80 text-primary-foreground",
+                    isAnswered && !isSelected && "bg-muted text-muted-foreground",
                   )}
                 >
-                  {showCorrect ? (
+                  {lockedInThis ? (
                     <CheckCircle className="h-4 w-4" />
-                  ) : showWrong ? (
-                    <XCircle className="h-4 w-4" />
                   ) : (
                     String.fromCharCode(65 + index)
                   )}
@@ -339,19 +369,12 @@ export function VideoQuiz({
             "rounded-lg p-3 text-sm",
             isOpen
               ? "bg-muted/80 text-foreground"
-              : isCorrect
-                ? "bg-accent/10 text-accent"
-                : "bg-destructive/10 text-destructive",
+              : "bg-muted/80 text-foreground",
           )}
         >
           {isOpen
             ? "Response saved — your summary will be graded when you complete the lesson."
-            : isCorrect
-              ? "Correct — nice job."
-              : `Not quite. Answer: ${question.options[question.correct]}`}
-          {!isOpen && !isCorrect && question.explanation?.trim() ? (
-            <span className="mt-2 block text-foreground">{question.explanation}</span>
-          ) : null}
+            : "Answer saved. You’ll see how you did and the correct options after you finish all questions."}
         </div>
       ) : null}
 

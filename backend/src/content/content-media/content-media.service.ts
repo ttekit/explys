@@ -9,9 +9,15 @@ export class ContentMediaService {
 
   async create(createContentMediaDto: CreateContentMediaDto) {
     const { categoryId } = createContentMediaDto;
+    const maxRow = await this.prisma.contentMedia.aggregate({
+      where: { categoryId },
+      _max: { playlistPosition: true },
+    });
+    const playlistPosition = (maxRow._max.playlistPosition ?? -1) + 1;
     return this.prisma.contentMedia.create({
       data: {
         categoryId,
+        playlistPosition,
       },
     });
   }

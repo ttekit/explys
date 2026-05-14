@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
+  ArrowDown,
+  ArrowUp,
   BarChart3,
   Captions,
   Eye,
+  ExternalLink,
   Layers,
+  ListVideo,
   Play,
   Plus,
   RefreshCw,
@@ -41,11 +45,42 @@ import {
   fetchAdminVideoSubtitlesVtt,
   matchesVideoLevelFilter,
   patchAdminContentVideo,
+  patchAdminSeriesPlaylistOrder,
+  postAdminSeriesEpisode,
   regenerateAdminVideoLevelTags,
   regenerateAdminVideoCaptions,
   regenerateAdminVideoThemeTags,
   videoLevelBadge,
 } from "../../lib/adminVideosApi";
+
+function sortAdminPlaylistRows(
+  rows: AdminCatalogVideoRow[],
+): AdminCatalogVideoRow[] {
+  return [...rows].sort((a, b) => {
+    const ma =
+      typeof a.content.playlistPosition === "number" ?
+        a.content.playlistPosition
+        : 0;
+    const mb =
+      typeof b.content.playlistPosition === "number" ?
+        b.content.playlistPosition
+        : 0;
+    if (ma !== mb) return ma - mb;
+    const va =
+      typeof a.playlistPosition === "number" ? a.playlistPosition : 0;
+    const vb =
+      typeof b.playlistPosition === "number" ? b.playlistPosition : 0;
+    if (va !== vb) return va - vb;
+    return a.id - b.id;
+  });
+}
+
+type AdminVideoSeriesGroup = {
+  contentRootId: number;
+  seriesName: string;
+  friendlyLink: string;
+  rows: AdminCatalogVideoRow[];
+};
 
 function slugFriendly(label: string): string {
   const base = label
@@ -114,6 +149,15 @@ export default function AdminVideosPage() {
   const [deleteCandidate, setDeleteCandidate] =
     useState<AdminCatalogVideoRow | null>(null);
   const [deleteSaving, setDeleteSaving] = useState(false);
+
+  const [reorderBusy, setReorderBusy] = useState(false);
+  const [addEpisodeOpen, setAddEpisodeOpen] = useState(false);
+  const [addEpisodeSeries, setAddEpisodeSeries] =
+    useState<AdminVideoSeriesGroup | null>(null);
+  const [addEpisodeTitle, setAddEpisodeTitle] = useState("");
+  const [addEpisodeDesc, setAddEpisodeDesc] = useState("");
+  const [addEpisodeFile, setAddEpisodeFile] = useState<File | null>(null);
+  const [addEpisodeSaving, setAddEpisodeSaving] = useState(false);
 
   const [inspectMeta, setInspectMeta] = useState<{
     video: AdminCatalogVideoRow;
@@ -193,6 +237,28 @@ export default function AdminVideosPage() {
       return matchSearch && matchSeries && matchLevel;
     });
   }, [videos, searchQuery, seriesFilter, levelFilter]);
+
+  const groupedSeries = useMemo((): AdminVideoSeriesGroup[] => {
+    const m = new Map<number, AdminCatalogVideoRow[]>();
+    for (const v of filtered) {
+      const rootId = v.content.category.id;
+      const arr = m.get(rootId);
+      if (arr) arr.push(v);
+      else m.set(rootId, [v]);
+    }
+    return [...m.entries()]
+      .map(([contentRootId, rows]) => {
+        const sorted = sortAdminPlaylistRows(rows);
+        const first = sorted[0];
+        return {
+          contentRootId,
+          seriesName: first?.content.category.name.trim() ?? "",
+          friendlyLink: first?.content.category.friendlyLink.trim() ?? "",
+          rows: sorted,
+        };
+      })
+      .sort((a, b) => a.seriesName.localeCompare(b.seriesName));
+  }, [filtered]);
 
   const stats = useMemo(() => {
     const watchers = videos.reduce(
@@ -368,6 +434,91 @@ export default function AdminVideosPage() {
     }
   };
 
+  const applyPlaylistReorder = useCallback(
+    async (
+      group: AdminVideoSeriesGroup,
+      reorderedRows: AdminCatalogVideoRow[],
+    ) => {
+      const orderedContentMediaIds = reorderedRows.map((r) => r.content.id);
+      const unique = new Set(orderedContentMediaIds);
+      if (unique.size !== orderedContentMediaIds.length) {
+        toast.error(
+          "Cannot reorder when multiple clips share one media slot.",
+        );
+        return;
+      }
+      setReorderBusy(true);
+      try {
+        await patchAdminSeriesPlaylistOrder(
+          group.contentRootId,
+          orderedContentMediaIds,
+        );
+        toast.success("Playlist order updated");
+        await loadVideos();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Reorder failed");
+      } finally {
+        setReorderBusy(false);
+      }
+    },
+    [loadVideos],
+  );
+
+  const moveEpisodeInSeries = useCallback(
+    async (
+      group: AdminVideoSeriesGroup,
+      index: number,
+      delta: -1 | 1,
+    ) => {
+      const next = index + delta;
+      if (next < 0 || next >= group.rows.length) return;
+      const rows = [...group.rows];
+      const tmp = rows[index]!;
+      rows[index] = rows[next]!;
+      rows[next] = tmp;
+      await applyPlaylistReorder(group, rows);
+    },
+    [applyPlaylistReorder],
+  );
+
+  const openAddEpisodeForSeries = useCallback((group: AdminVideoSeriesGroup) => {
+    setAddEpisodeSeries(group);
+    setAddEpisodeTitle("");
+    setAddEpisodeDesc("");
+    setAddEpisodeFile(null);
+    setAddEpisodeOpen(true);
+  }, []);
+
+  const handleAddEpisodeSubmit = async () => {
+    if (!addEpisodeSeries) return;
+    const name = addEpisodeTitle.trim();
+    if (name.length < 1) {
+      toast.error("Episode title required");
+      return;
+    }
+    if (!addEpisodeFile || addEpisodeFile.type !== "video/mp4") {
+      toast.error("Choose an MP4 file");
+      return;
+    }
+    setAddEpisodeSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", addEpisodeFile);
+      fd.append("videoName", name);
+      const d = addEpisodeDesc.trim();
+      if (d) fd.append("videoDescription", d);
+      await postAdminSeriesEpisode(addEpisodeSeries.contentRootId, fd);
+      toast.success("Episode added to series");
+      setAddEpisodeOpen(false);
+      setAddEpisodeSeries(null);
+      await loadVideos();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Add episode failed");
+    } finally {
+      setAddEpisodeSaving(false);
+    }
+  };
+
   const levelFor = videoLevelBadge;
   const ratingProgress = (r: number) =>
     Math.min(100, Math.round((Math.max(0, r) / 5) * 100));
@@ -382,7 +533,8 @@ export default function AdminVideosPage() {
           <p className="text-muted-foreground">
             Catalog from{" "}
             <code className="text-xs">GET /content-video</code>; upload{" "}
-            <code className="text-xs">POST /contents/create</code>.
+            <code className="text-xs">POST /contents/create</code>; series order{" "}
+            <code className="text-xs">PATCH /contents/:id/playlist</code>.
           </p>
         </div>
         <AdminButton className="gap-2" onClick={() => setUploadOpen(true)}>
@@ -458,6 +610,76 @@ export default function AdminVideosPage() {
             <p className="text-xs text-muted-foreground">
               Friendly URL slug is generated automatically.
             </p>
+          </div>
+        </div>
+      </AdminModal>
+
+      <AdminModal
+        open={addEpisodeOpen}
+        onClose={() => !addEpisodeSaving && setAddEpisodeOpen(false)}
+        title={
+          addEpisodeSeries ?
+            `Add episode · ${addEpisodeSeries.seriesName}`
+          : "Add episode"
+        }
+        footer={
+          <>
+            <AdminButton
+              variant="outline"
+              onClick={() => setAddEpisodeOpen(false)}
+              disabled={addEpisodeSaving}
+            >
+              Cancel
+            </AdminButton>
+            <AdminButton
+              disabled={addEpisodeSaving}
+              onClick={() => void handleAddEpisodeSubmit()}
+            >
+              {addEpisodeSaving ? "Uploading…" : "Add episode"}
+            </AdminButton>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <label className="block cursor-pointer rounded-lg border-2 border-dashed border-border p-8 text-center transition-colors hover:border-primary/50">
+            <input
+              type="file"
+              accept="video/mp4"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0] ?? null;
+                setAddEpisodeFile(f);
+              }}
+            />
+            <Upload className="mx-auto mb-2 h-10 w-10 text-muted-foreground" />
+            <p className="font-medium">MP4 file</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {addEpisodeFile ? addEpisodeFile.name : "Required"}
+            </p>
+          </label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="admin-ep-title">
+              Episode title
+            </label>
+            <AdminInput
+              id="admin-ep-title"
+              placeholder="Episode title"
+              value={addEpisodeTitle}
+              onChange={(e) => setAddEpisodeTitle(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="admin-ep-desc">
+              Description (optional)
+            </label>
+            <AdminTextarea
+              id="admin-ep-desc"
+              className="min-h-[72px]"
+              placeholder="Shown on catalog cards…"
+              value={addEpisodeDesc}
+              maxLength={2000}
+              onChange={(e) => setAddEpisodeDesc(e.target.value)}
+            />
           </div>
         </div>
       </AdminModal>
@@ -845,131 +1067,223 @@ export default function AdminVideosPage() {
             <p className="py-16 text-center text-muted-foreground">
               Loading catalog…
             </p>
-          ) : filtered.length === 0 ? (
+          ) : groupedSeries.length === 0 ? (
             <div className="py-12 text-center">
               <Video className="mx-auto mb-2 h-10 w-10 text-muted-foreground" />
               <p className="text-muted-foreground">No videos match filters</p>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((video) => {
-                const watchers = video.content.stats?.usersWatched ?? 0;
-                const rating = video.content.stats?.rating ?? 0;
-                const lvl = levelFor(video);
-                return (
-                  <div
-                    key={video.id}
-                    className="rounded-lg border border-border bg-muted/30 transition-colors hover:border-primary/40"
-                  >
-                    <div className="relative aspect-video overflow-hidden rounded-t-lg bg-muted">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-muted to-accent/20" />
-                      <div className="absolute top-2 left-2">
-                        <AdminBadge variant="accent">catalog</AdminBadge>
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity hover:opacity-100">
-                        <a
-                          href={`/content/${video.id}`}
+            <div className="space-y-10">
+              {groupedSeries.map((group) => (
+                <div key={group.contentRootId} className="space-y-4">
+                  <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="font-display text-lg font-semibold text-foreground">
+                        {group.seriesName}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        {group.rows.length}{" "}
+                        {group.rows.length === 1 ? "episode" : "episodes"}
+                        {group.rows.length > 1 ?
+                          " · use arrows to set playlist order"
+                        : null}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {group.friendlyLink ?
+                        <Link
+                          to={`/catalog/series/${encodeURIComponent(group.friendlyLink)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/90 shadow-lg"
-                          aria-label="Preview in new tab"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-primary transition-colors hover:bg-muted"
                         >
-                          <Play className="ml-1 h-6 w-6 text-primary-foreground" />
-                        </a>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <AdminCardTitle className="truncate text-base">
-                            {video.videoName}
-                          </AdminCardTitle>
-                          <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                            {video.videoDescription?.trim() ||
-                              video.content.category.description}
-                          </p>
-                        </div>
-                        <AdminRowMenu>
-                          <AdminRowMenuItem
-                            onClick={() => {
-                              window.open(
-                                `/content/${video.id}`,
-                                "_blank",
-                                "noopener,noreferrer",
-                              );
-                            }}
-                          >
-                            <Play className="h-4 w-4" /> Preview
-                          </AdminRowMenuItem>
-                          <AdminRowMenuItem
-                            onClick={() =>
-                              setInspectMeta({ video, tab: "themes" })
-                            }
-                          >
-                            <Tags className="h-4 w-4" /> Genres
-                          </AdminRowMenuItem>
-                          <AdminRowMenuItem
-                            onClick={() =>
-                              setInspectMeta({ video, tab: "levels" })
-                            }
-                          >
-                            <Layers className="h-4 w-4" /> CEFR level
-                          </AdminRowMenuItem>
-                          <AdminRowMenuItem
-                            onClick={() =>
-                              setInspectMeta({ video, tab: "subs" })
-                            }
-                          >
-                            <Captions className="h-4 w-4" /> Subtitles
-                          </AdminRowMenuItem>
-                          <AdminRowMenuItem onClick={() => openEdit(video)}>
-                            <Edit className="h-4 w-4" /> Edit
-                          </AdminRowMenuItem>
-                          <AdminRowMenuItem
-                            onClick={() => navigate("/admin/analytics")}
-                          >
-                            <BarChart3 className="h-4 w-4" /> Analytics
-                          </AdminRowMenuItem>
-                          <AdminRowMenuItem
-                            danger
-                            onClick={() => setDeleteCandidate(video)}
-                          >
-                            <Trash2 className="h-4 w-4" /> Delete
-                          </AdminRowMenuItem>
-                        </AdminRowMenu>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <AdminBadge variant="secondary">{lvl}</AdminBadge>
-                        <AdminBadge variant="outline">
-                          {video.content.category.name}
-                        </AdminBadge>
-                      </div>
-                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-border border-t pt-4">
-                        <span className="flex min-w-[4rem] items-center gap-1 text-sm text-muted-foreground">
-                          <Eye className="h-4 w-4" />
-                          {watchers.toLocaleString()}
-                        </span>
-                        <div className="flex max-w-[120px] flex-1 items-center gap-2">
-                          <AdminProgress value={ratingProgress(rating)} />
-                          <span className="text-xs whitespace-nowrap text-muted-foreground">
-                            {rating > 0 ? rating.toFixed(1) : "—"}
-                          </span>
-                        </div>
-                        <AdminButton
-                          variant="outline"
-                          size="sm"
-                          className="shrink-0 gap-1 border-destructive/40 text-destructive hover:bg-destructive/10"
-                          onClick={() => setDeleteCandidate(video)}
-                          type="button"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </AdminButton>
-                      </div>
+                          <ListVideo className="h-4 w-4" />
+                          Learner playlist
+                          <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                        </Link>
+                      : null}
+                      <AdminButton
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
+                        onClick={() => openAddEpisodeForSeries(group)}
+                        type="button"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add episode
+                      </AdminButton>
                     </div>
                   </div>
-                );
-              })}
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {group.rows.map((video, episodeIndex) => {
+                      const watchers = video.content.stats?.usersWatched ?? 0;
+                      const rating = video.content.stats?.rating ?? 0;
+                      const lvl = levelFor(video);
+                      return (
+                        <div
+                          key={video.id}
+                          className="rounded-lg border border-border bg-muted/30 transition-colors hover:border-primary/40"
+                        >
+                          <div className="relative aspect-video overflow-hidden rounded-t-lg bg-muted">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-muted to-accent/20" />
+                            <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                              <AdminBadge variant="accent">catalog</AdminBadge>
+                              {group.rows.length > 1 ?
+                                <AdminBadge variant="secondary">
+                                  #{episodeIndex + 1}
+                                </AdminBadge>
+                              : null}
+                            </div>
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity hover:opacity-100">
+                              <a
+                                href={`/content/${video.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/90 shadow-lg"
+                                aria-label="Preview in new tab"
+                              >
+                                <Play className="ml-1 h-6 w-6 text-primary-foreground" />
+                              </a>
+                            </div>
+                          </div>
+                          <div className="p-4">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <AdminCardTitle className="truncate text-base">
+                                  {video.videoName}
+                                </AdminCardTitle>
+                                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                                  {video.videoDescription?.trim() ||
+                                    video.content.category.description}
+                                </p>
+                              </div>
+                              <AdminRowMenu>
+                                <AdminRowMenuItem
+                                  onClick={() => {
+                                    window.open(
+                                      `/content/${video.id}`,
+                                      "_blank",
+                                      "noopener,noreferrer",
+                                    );
+                                  }}
+                                >
+                                  <Play className="h-4 w-4" /> Preview
+                                </AdminRowMenuItem>
+                                <AdminRowMenuItem
+                                  onClick={() =>
+                                    setInspectMeta({ video, tab: "themes" })
+                                  }
+                                >
+                                  <Tags className="h-4 w-4" /> Genres
+                                </AdminRowMenuItem>
+                                <AdminRowMenuItem
+                                  onClick={() =>
+                                    setInspectMeta({ video, tab: "levels" })
+                                  }
+                                >
+                                  <Layers className="h-4 w-4" /> CEFR level
+                                </AdminRowMenuItem>
+                                <AdminRowMenuItem
+                                  onClick={() =>
+                                    setInspectMeta({ video, tab: "subs" })
+                                  }
+                                >
+                                  <Captions className="h-4 w-4" /> Subtitles
+                                </AdminRowMenuItem>
+                                <AdminRowMenuItem
+                                  onClick={() => openEdit(video)}
+                                >
+                                  <Edit className="h-4 w-4" /> Edit
+                                </AdminRowMenuItem>
+                                <AdminRowMenuItem
+                                  onClick={() => navigate("/admin/analytics")}
+                                >
+                                  <BarChart3 className="h-4 w-4" /> Analytics
+                                </AdminRowMenuItem>
+                                <AdminRowMenuItem
+                                  danger
+                                  onClick={() => setDeleteCandidate(video)}
+                                >
+                                  <Trash2 className="h-4 w-4" /> Delete series
+                                </AdminRowMenuItem>
+                              </AdminRowMenu>
+                            </div>
+                            {group.rows.length > 1 ?
+                              <div className="mt-2 flex gap-2">
+                                <AdminButton
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1"
+                                  disabled={reorderBusy || episodeIndex === 0}
+                                  onClick={() =>
+                                    void moveEpisodeInSeries(
+                                      group,
+                                      episodeIndex,
+                                      -1,
+                                    )
+                                  }
+                                >
+                                  <ArrowUp className="h-3.5 w-3.5" />
+                                  Up
+                                </AdminButton>
+                                <AdminButton
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1"
+                                  disabled={
+                                    reorderBusy ||
+                                    episodeIndex >= group.rows.length - 1
+                                  }
+                                  onClick={() =>
+                                    void moveEpisodeInSeries(
+                                      group,
+                                      episodeIndex,
+                                      1,
+                                    )
+                                  }
+                                >
+                                  <ArrowDown className="h-3.5 w-3.5" />
+                                  Down
+                                </AdminButton>
+                              </div>
+                            : null}
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <AdminBadge variant="secondary">{lvl}</AdminBadge>
+                              <AdminBadge variant="outline">
+                                {video.content.category.name}
+                              </AdminBadge>
+                            </div>
+                            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-border border-t pt-4">
+                              <span className="flex min-w-[4rem] items-center gap-1 text-sm text-muted-foreground">
+                                <Eye className="h-4 w-4" />
+                                {watchers.toLocaleString()}
+                              </span>
+                              <div className="flex max-w-[120px] flex-1 items-center gap-2">
+                                <AdminProgress value={ratingProgress(rating)} />
+                                <span className="text-xs whitespace-nowrap text-muted-foreground">
+                                  {rating > 0 ? rating.toFixed(1) : "—"}
+                                </span>
+                              </div>
+                              <AdminButton
+                                variant="outline"
+                                size="sm"
+                                className="shrink-0 gap-1 border-destructive/40 text-destructive hover:bg-destructive/10"
+                                onClick={() => setDeleteCandidate(video)}
+                                type="button"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </AdminButton>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
           {!loading ? (

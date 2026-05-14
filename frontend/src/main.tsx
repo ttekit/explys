@@ -14,6 +14,7 @@ import ContentPage from "./pages/content/ContentPage";
 import ProfileMain from "./pages/profile/ProfileMain";
 import { UserProvider } from "./context/UserContext";
 import VideoPage from "./pages/content/VideosPage";
+import CatalogSeriesPage from "./pages/content/CatalogSeriesPage";
 import WatchedLessonsPage from "./pages/content/WatchedLessonsPage";
 import LessonSummaryPage from "./pages/content/LessonSummaryPage";
 import RegisterSuccessPage from "./pages/registration/RegisterSuccessPage";
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
               { path: "/watched-lessons", element: <WatchedLessonsPage /> },
               { path: "/profileMain", element: <ProfileMain /> },
               { path: "/profile", element: <ProfileMain /> },
+              {
+                path: "/catalog/series/:friendlyLink",
+                element: <CatalogSeriesPage />,
+              },
               { path: "/catalog", element: <VideoPage /> },
               { path: "/learning-plan", element: <LearningPlanPage /> },
               {

@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Settings,
   Trophy,
+  Video,
 } from "lucide-react";
 import { apiFetch } from "../../lib/api";
 import { useUser } from "../../context/UserContext";
@@ -28,6 +29,7 @@ import { ProfileAchievements } from "../../components/profile/ProfileAchievement
 import { ProfileActivity } from "../../components/profile/ProfileActivity";
 import { ProfileSettings } from "../../components/profile/ProfileSettings";
 import { ProfileTeacherStudents } from "../../components/profile/ProfileTeacherStudents";
+import { ProfileTeacherVideos } from "../../components/profile/ProfileTeacherVideos";
 import { ProfileStudyingPlan } from "../../components/profile/ProfileStudyingPlan";
 import { ProfileSubscriptions } from "../../components/profile/ProfileSubscriptions";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
@@ -44,7 +46,7 @@ const LEARNER_TABS = [
   { id: "settings" as const, label: "Settings", icon: Settings },
 ] as const;
 
-type TabId = (typeof LEARNER_TABS)[number]["id"] | "students";
+type TabId = (typeof LEARNER_TABS)[number]["id"] | "students" | "videos";
 
 function normalizeRole(role: string): ProfileHeaderRole {
   if (role === "student" || role === "teacher") return role;
@@ -178,6 +180,11 @@ export default function ProfileMain() {
           label: "Students",
           icon: GraduationCap,
         },
+        {
+          id: "videos" as const,
+          label: "Videos",
+          icon: Video,
+        },
         ...withoutStudying.slice(1),
       ];
     }
@@ -202,6 +209,13 @@ export default function ProfileMain() {
 
   useEffect(() => {
     if (user?.role !== "teacher" && activeTab === "students") {
+      setActiveTab("overview");
+      setSearchParams({}, { replace: true });
+    }
+  }, [user?.role, activeTab, setSearchParams]);
+
+  useEffect(() => {
+    if (user?.role !== "teacher" && activeTab === "videos") {
       setActiveTab("overview");
       setSearchParams({}, { replace: true });
     }
@@ -330,6 +344,7 @@ export default function ProfileMain() {
                 <ProfileSubscriptions user={user} />
               ) : null}
               {activeTab === "students" ? <ProfileTeacherStudents /> : null}
+              {activeTab === "videos" ? <ProfileTeacherVideos /> : null}
               {activeTab === "progress" ? <ProfileProgress /> : null}
               {activeTab === "achievements" ? <ProfileAchievements /> : null}
               {activeTab === "activity" ? <ProfileActivity weeklyActivity={learningStats?.weeklyActivity} /> : null}
