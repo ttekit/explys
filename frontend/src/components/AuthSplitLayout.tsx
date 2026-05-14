@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { cn } from "../lib/utils";
-import { LandingLanguageToggle } from "./landing/LandingLanguageToggle";
 
 export interface AuthSplitLayoutProps {
   children: ReactNode;
@@ -11,8 +10,6 @@ export interface AuthSplitLayoutProps {
   progressTotal?: number;
   /** Widen left column beyond default `max-w-md` when needed */
   mainClassName?: string;
-  /** Show EN/UA toggle (uses landing locale storage). */
-  localeToggle?: boolean;
 }
 
 export function AuthSplitLayout({
@@ -22,15 +19,9 @@ export function AuthSplitLayout({
   progressStep,
   progressTotal = 3,
   mainClassName,
-  localeToggle = true,
 }: AuthSplitLayoutProps) {
   return (
-    <div className="relative min-h-screen flex font-display bg-background text-foreground">
-      {localeToggle ?
-        <div className="fixed top-4 right-4 z-50 md:top-5 md:right-5">
-          <LandingLanguageToggle />
-        </div>
-      : null}
+    <div className="min-h-screen flex font-display bg-background text-foreground">
       <div className="flex-1 flex items-center justify-center p-8">
         <div className={cn("w-full max-w-md", mainClassName)}>{children}</div>
       </div>

@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router";
 import { HeroSection } from "../../components/landing/HeroSection";
 import { ReleaseCountdownSection } from "../../components/landing/ReleaseCountdown";
 import { FeaturesSection } from "../../components/landing/FeaturesSection";
@@ -13,26 +11,9 @@ import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import { buildLandingJsonLdSchemas } from "../../lib/seoStructuredData";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 
-/** React Router hash updates do not scroll like a full navigation — sync URL fragment to section ids. */
-function useLandingHashScroll() {
-  const { pathname, hash } = useLocation();
-  useEffect(() => {
-    if (pathname !== "/" || !hash) return;
-    const id = decodeURIComponent(hash.replace(/^#/, ""));
-    if (!id) return;
-    const el = document.getElementById(id);
-    if (!el) return;
-    const frame = requestAnimationFrame(() => {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [pathname, hash]);
-}
-
 export default function LandingPage() {
   const { messages, locale } = useLandingLocale();
   const { seo } = messages;
-  useLandingHashScroll();
 
   return (
     <main

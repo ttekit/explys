@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { Prisma, UserRole } from "@generated/prisma/client";
+import { Prisma } from "@generated/prisma/client";
 import { PrismaService } from "src/prisma.service";
 
 export type AdminAnalyticsOverviewDto = {
@@ -233,7 +233,7 @@ export class AdminAnalyticsService {
           userId: u.id,
           userLabel: u.name ?? `User #${u.id}`,
           detail:
-            u.role === UserRole.TEACHER
+            u.role === "teacher"
               ? "Registered as teacher"
               : "New learner account",
         },

@@ -1,5 +1,4 @@
 import { config } from "dotenv";
-import cookieParser from "cookie-parser";
 
 config();
 
@@ -9,12 +8,6 @@ import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { join } from "path";
 import { AppModule } from "./app.module";
-import { ConfigService } from "@nestjs/config";
-import IORedis from "ioredis";
-import { RedisStore } from "connect-redis";
-import session from "express-session";
-import { ms, StringValue } from "./common/utils/ms.util";
-import { parseBoolean } from "./common/utils/parse-boolean.util";
 
 function resolveCorsOrigin():
   | boolean
@@ -43,24 +36,14 @@ function resolveCorsOrigin():
 }
 
 async function bootstrap() {
-  console.log('CLIENT SECRET:', process.env.GOOGLE_CLIENT_SECRET);
-
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
   });
-  const config = app.get(ConfigService);
-  const redis = new IORedis("redis://localhost:6379");
-  //const redis = new IORedis(config.getOrThrow('REDIS_URL'))
-
-  app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
-
-
   // Dev helper: same-origin test UI for the placement/entrance test (e.g. /dev/entrance-test.html)
   app.useStaticAssets(join(process.cwd(), "public"), { prefix: "/dev/" });
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
-    exposedHeaders: ["set-cookie"],
+    origin: resolveCorsOrigin(),
     credentials: true,
   });
 
@@ -68,26 +51,6 @@ async function bootstrap() {
     new ValidationPipe({
       transform: true,
       whitelist: true,
-    }),
-  );
-
-  app.use(
-    session({
-      secret: config.getOrThrow<string>("SESSION_SECRET"),
-      name: config.getOrThrow<string>("SESSION_NAME"),
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        domain: config.getOrThrow<string>("SESSION_DOMAIN") || undefined,
-        maxAge: ms(config.getOrThrow<StringValue>("SESSION_MAX_AGE")),
-        httpOnly: parseBoolean(config.getOrThrow<string>("SESSION_HTTP_ONLY")),
-        secure: parseBoolean(config.getOrThrow<string>("SESSION_SECURE")) || false,
-        sameSite: 'lax',
-      },
-      store: new RedisStore({
-        client: redis,
-        prefix: config.getOrThrow<string>('SESSION_FOLDER')
-      })
     }),
   );
 
