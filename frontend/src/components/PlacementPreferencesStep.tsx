@@ -201,8 +201,8 @@ export default function PlacementPreferencesStep({
           Your tastes first
         </h2>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Tell us what you enjoy so we can tailor the placement experience.
-          Then you&apos;ll take the short entry test.
+          Tell us what you enjoy so we can tailor the placement experience. Then
+          you&apos;ll take the short entry test.
         </p>
       </div>
 

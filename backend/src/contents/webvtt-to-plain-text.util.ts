@@ -1,21 +1,34 @@
 /**
- * Strips WebVTT cue timestamps and structure; keeps spoken text for LLM input.
+ * Extracts spoken cue text from WebVTT for LLM input (tests, vocabulary, tags).
+ *
+ * Only text lines that belong to cues (immediately after a `timestamp --> timestamp`
+ * line) are kept. This drops the file header, including Deepgram’s `NOTE` block
+ * (“Transcription provided by Deepgram”, request id, duration, channels, etc.).
  */
 export function webVttToPlainText(vtt: string): string {
-  return vtt
-    .replace(/\r\n/g, '\n')
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => {
-      if (line.length === 0) return false;
-      if (line === 'WEBVTT') return false;
-      if (/^\d+$/.test(line)) return false; // optional cue id
-      if (/-->/.test(line)) return false; // timing line
-      if (/^NOTE($|\s)/i.test(line)) return false;
-      if (/^STYLE$/i.test(line) || /^REGION$/i.test(line)) return false;
-      return true;
-    })
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const lines = vtt.replace(/\r\n/g, "\n").split("\n");
+  const parts: string[] = [];
+  let inCuePayload = false;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) {
+      inCuePayload = false;
+      continue;
+    }
+    if (/-->/.test(line)) {
+      inCuePayload = true;
+      continue;
+    }
+    if (!inCuePayload) {
+      continue;
+    }
+    let text = line.replace(/^<v[^>]*>\s*/i, "").replace(/<\/v>\s*/gi, "");
+    text = text.replace(/<[^>]{1,120}>/g, "");
+    if (text.length > 0) {
+      parts.push(text);
+    }
+  }
+
+  return parts.join(" ").replace(/\s+/g, " ").trim();
 }

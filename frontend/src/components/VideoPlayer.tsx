@@ -4,6 +4,8 @@ import { cn } from "../lib/utils";
 interface VideoPlayerProps extends HTMLAttributes<HTMLDivElement> {
   src: string;
   onEnded?: () => void;
+  /** Fires when playback starts (each play after pause, or initial play). */
+  onPlay?: () => void;
   /** Subscribe to playback time updates (for syncing transcript). */
   onPlaybackTime?: (seconds: number) => void;
   /** Fires each `timeupdate` with `currentTime / duration` in [0,1] when duration is known. */
@@ -15,6 +17,7 @@ interface VideoPlayerProps extends HTMLAttributes<HTMLDivElement> {
 export default function VideoPlayer({
   src,
   onEnded,
+  onPlay,
   onPlaybackTime,
   onPlaybackFraction,
   onVideoMount,
@@ -98,6 +101,10 @@ export default function VideoPlayer({
         className="absolute inset-0 w-full h-full object-cover"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
+        onPlay={() => {
+          setPlaying(true);
+          onPlay?.();
+        }}
         onEnded={() => {
           setPlaying(false);
           onEnded?.();
@@ -105,9 +112,8 @@ export default function VideoPlayer({
       />
 
       <div
-        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-          playing ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-        }`}
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${playing ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+          }`}
       >
         <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
           {playing ? (

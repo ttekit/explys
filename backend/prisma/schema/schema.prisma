@@ -8,61 +8,87 @@ datasource db {
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
-  name               String
-  email              String              @unique
-  password           String
-  role               String              @default("adult")
-  hasCompletedPlacement Boolean          @default(false) @map("has_completed_placement")
+  id                    Int           @id @default(autoincrement())
+  name                  String
+  email                 String        @unique
+  password              String
+  role                  String        @default("adult")
+  hasCompletedPlacement Boolean       @default(false) @map("has_completed_placement")
   /// Serialized placement questionnaire (correct keys) until test is completed — must match iframe payload.
-  placementTestDraft Json?              @map("placement_test_draft")
-  lastLogin          DateTime?
-  createdAt          DateTime            @default(now())
+  placementTestDraft    Json?         @map("placement_test_draft")
+  lastLogin             DateTime?
+  createdAt             DateTime      @default(now())
   /// When true, login and profile are blocked until an admin clears this flag.
-  isSuspended        Boolean             @default(false) @map("is_suspended")
-  teacherId          Int?                @map("teacher_id")
-  teacher            User?               @relation("UserTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
-  students           User[]              @relation("UserTeacher")
-  settings           UserSettings?
+  isSuspended           Boolean       @default(false) @map("is_suspended")
+  teacherId             Int?          @map("teacher_id")
+  teacher               User?         @relation("UserTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  students              User[]        @relation("UserTeacher")
+  settings              UserSettings?
 
-  statistic          UserStatistic?
-  languageData       UserLanguageData[]
-  additionalUserData AdditionalUserData?
-  friends            UserFriend[]        @relation("UserFriends")
-  friendOf           UserFriend[]        @relation("UserFriendsReverse")
-  postWatchSurveys   PostWatchSurvey[]
-  userVocabulary     UserVocabulary[]
-  watchSessions                  WatchSession[]
-  comprehensionTestAttempts      ComprehensionTestAttempt[]
-  placementAttempts              PlacementAttempt[]
+  statistic                 UserStatistic?
+  languageData              UserLanguageData[]
+  additionalUserData        AdditionalUserData?
+  friends                   UserFriend[]                @relation("UserFriends")
+  friendOf                  UserFriend[]                @relation("UserFriendsReverse")
+  postWatchSurveys          PostWatchSurvey[]
+  userVocabulary            UserVocabulary[]
+  watchSessions             WatchSession[]
+  comprehensionTestAttempts ComprehensionTestAttempt[]
+  comprehensionWeakSpots    UserComprehensionWeakSpot[]
+  placementAttempts         PlacementAttempt[]
+  currentStreak             Int                         @default(0)
+  lastActivityDate          DateTime?
 
-  stripeCustomerId     String?  @map("stripe_customer_id")
-  stripeSubscriptionId String?  @map("stripe_subscription_id")
-  subscriptionPlan     String?  @map("subscription_plan")
-  subscriptionStatus   String?  @map("subscription_status")
+  stripeCustomerId     String? @map("stripe_customer_id")
+  stripeSubscriptionId String? @map("stripe_subscription_id")
+  subscriptionPlan     String? @map("subscription_plan")
+  subscriptionStatus   String? @map("subscription_status")
+
+  xp           Int               @default(0)
+  level        Int               @default(1)
+  achievements UserAchievement[]
+
+  teacherOwnedContents Content[] @relation("TeacherOwnedContent")
 
   @@index([teacherId], map: "users_teacher_id_idx")
   @@map("users")
 }
 
+model UserAchievement {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  achievementId String
+  unlockedAt    DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+}
+
 model AdditionalUserData {
-  id             Int      @id @default(autoincrement())
-  userId         Int      @unique
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  nativeLanguage String?
-  knownLanguages String[]
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nativeLanguage      String?
+  knownLanguages      String[]
   knownLanguageLevels Json?
-  job            String?
-  education      String?
-  englishLevel   String?
-  workField      String?
-  hobbies        String[]
-  interests      String[]
+  job                 String?
+  education           String?
+  englishLevel        String?
+  workField           String?
+  hobbies             String[]
+  interests           String[]
 
   /// Adult learners: why they study (e.g. travel to the UK).
-  learningGoal   String?  @map("learning_goal")
+  learningGoal  String? @map("learning_goal")
   /// Adult learners: target horizon as free text (e.g. 3m, 6 months).
-  timeToAchieve  String?  @map("time_to_achieve")
+  timeToAchieve String? @map("time_to_achieve")
+
+  /// Studying plan JSON **v2**: `{ version: 2, phases: [...], weeklyHabits }` with structured `tasks` per phase.
+  studyingPlanPhases         Json?   @map("studying_plan_phases")
+  /// 0-based index into `studyingPlanPhases.phases` (or fallback when JSON is null/invalid).
+  activeStudyingPhaseIndex   Int     @default(0) @map("active_studying_phase_index")
+  /// UTC instant when the learner entered `activeStudyingPhaseIndex` (phase-scoped task windows).
+  activePhaseEnteredAt       DateTime? @map("active_phase_entered_at")
 
   teacherGrades        String?
   teacherTopics        String[]
@@ -71,10 +97,9 @@ model AdditionalUserData {
   studentGrade         String?
   studentProblemTopics String[]
 
-
-  selectedTopics Topic[]  @relation("SelectedTopics")
-  favoriteGenres Genre[]  @relation("FavoriteGenres")
-  hatedGenres    Genre[]  @relation("HatedGenres")
+  selectedTopics Topic[] @relation("SelectedTopics")
+  favoriteGenres Genre[] @relation("FavoriteGenres")
+  hatedGenres    Genre[] @relation("HatedGenres")
 
   @@map("additional_user_data")
 }
@@ -89,19 +114,19 @@ model Genre {
 }
 
 model Topic {
-  id           Int                  @id @default(autoincrement())
-  name         String
-  categoryId   Int
-  category     Category             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  complexity   Float
-  language     String
-  tags         Tag[]
-  contentStats ContentStats[]
-  selectedBy   AdditionalUserData[] @relation("SelectedTopics")
-  languageData UserLanguageData[]
+  id             Int                  @id @default(autoincrement())
+  name           String
+  categoryId     Int
+  category       Category             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  complexity     Float
+  language       String
+  tags           Tag[]
+  contentStats   ContentStats[]
+  selectedBy     AdditionalUserData[] @relation("SelectedTopics")
+  languageData   UserLanguageData[]
   userVocabulary UserVocabulary[]
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 
   @@map("topics")
 }
@@ -153,8 +178,8 @@ model UserLanguageData {
   topic            Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   /// Mean of listening, vocabulary, and grammar (legacy aggregate for APIs and fits).
   score            Float
-  listeningScore   Float @default(0.35) @map("listening_score")
-  vocabularyScore  Float @default(0.35) @map("vocabulary_score")
+  listeningScore   Float    @default(0.35) @map("listening_score")
+  vocabularyScore  Float    @default(0.35) @map("vocabulary_score")
   grammarScore     Float    @default(0.35) @map("grammar_score")
   confidence       Float    @default(0)
   coverage         Float    @default(0)
@@ -177,18 +202,26 @@ model UserFriend {
 }
 
 model UserVocabulary {
-  id       Int     @id @default(autoincrement())
-  userId   Int     @map("user_id")
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @map("user_id")
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// Study language (matches DB `language_code`)
-  language String  @map("language_code")
-  term     String
-  source   String  @default("topic_tags")
-  topicId  Int?    @map("topic_id")
-  topic    Topic?  @relation(fields: [topicId], references: [id], onDelete: SetNull)
-  mastery  Float   @default(0)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  language            String   @map("language_code")
+  term                String
+  source              String   @default("topic_tags")
+  topicId             Int?     @map("topic_id")
+  topic               Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  mastery             Float    @default(0)
+  /// Gloss in the learner's native language (from profile at save/enrichment time).
+  nativeTranslation   String?  @map("native_translation")
+  /// English explanation tuned to the learner's CEFR band (not stretch vocabulary band).
+  learnerDescription  String?  @map("learner_description")
+  /// Normalized band (e.g. A1) when learnerDescription was produced.
+  descriptionCefrBand String?  @map("description_cefr_band")
+  /// ISO 639-1 (or best-effort) for nativeTranslation when stored.
+  nativeLanguageCode  String?  @map("native_language_code")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@unique([userId, language, term])
   @@index([userId, language])

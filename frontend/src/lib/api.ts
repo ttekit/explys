@@ -26,6 +26,12 @@ export function setStoredAccessToken(token: string | null): void {
 type FetchOpts = RequestInit & { token?: string | null };
 
 export function getApiBase(): string {
+  if (import.meta.env.DEV) {
+    const useProxy = import.meta.env.VITE_USE_API_PROXY;
+    if (useProxy === "true" || useProxy === "1") {
+      return "/__proxy";
+    }
+  }
   const u = import.meta.env.VITE_API_BASE_URL || "http://localhost:4200";
   if (typeof u !== "string" || !u.trim()) {
     return "http://localhost:4200";
@@ -71,6 +77,34 @@ export async function getResponseErrorMessage(
   return readApiErrorBody(response);
 }
 
+function isApiErrorLoggingEnabled(): boolean {
+  if (import.meta.env.DEV) {
+    return true;
+  }
+  const flag = import.meta.env.VITE_LOG_API_ERRORS ?? "";
+  return flag === "1" || flag.toLowerCase() === "true";
+}
+
+async function logFailedApiResponse(
+  url: string,
+  method: string,
+  response: Response,
+): Promise<void> {
+  let bodyPreview: string;
+  try {
+    bodyPreview = await readApiErrorBody(response.clone());
+  } catch {
+    bodyPreview = "(unreadable body)";
+  }
+  console.error(
+    "[api]",
+    method,
+    url,
+    `→ ${response.status} ${response.statusText}`,
+    bodyPreview,
+  );
+}
+
 export async function apiFetch(
   path: string,
   init: FetchOpts = {},
@@ -97,7 +131,25 @@ export async function apiFetch(
   if (key) {
     headers.set("x-api-token", key);
   }
-  return fetch(apiPath(path), { ...rest, headers });
+  const url = apiPath(path);
+  const method = (rest.method ?? "GET").toUpperCase();
+  try {
+    const response = await fetch(url, { ...rest, headers });
+    if (!response.ok && isApiErrorLoggingEnabled()) {
+      await logFailedApiResponse(url, method, response);
+    }
+    return response;
+  } catch (err) {
+    if (isApiErrorLoggingEnabled()) {
+      console.error(
+        "[api] request failed (network / CORS / unreachable)",
+        method,
+        url,
+        err,
+      );
+    }
+    throw err;
+  }
 }
 
 /** Admin analytics: do not send learner `Authorization` — use `VITE_API_TOKEN` only. */

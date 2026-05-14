@@ -6,9 +6,13 @@ export type AdminCatalogVideoRow = {
   videoName: string;
   videoDescription: string | null;
   videoLink: string;
+  /** Order within the parent `ContentMedia` when multiple clips share a slot. */
+  playlistPosition?: number;
   videoCaption: { subtitlesFileLink: string } | null;
   content: {
     id: number;
+    /** `ContentMedia` playlist index within the series. */
+    playlistPosition?: number;
     categoryId: number;
     category: {
       id: number;
@@ -95,6 +99,36 @@ export async function deleteAdminCatalogContent(
 /** Multipart POST /contents/create — field `file`, body name / friendlyLink / description. */
 export async function createAdminCatalogVideo(form: FormData): Promise<unknown> {
   const res = await adminApiFetch("/contents/create", {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    throw new Error(await readApiErrorBody(res));
+  }
+  return res.json();
+}
+
+/** PATCH /contents/:contentRootId/playlist — admin API token. */
+export async function patchAdminSeriesPlaylistOrder(
+  contentRootId: number,
+  orderedContentMediaIds: number[],
+): Promise<void> {
+  const res = await adminApiFetch(`/contents/${contentRootId}/playlist`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderedContentMediaIds }),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiErrorBody(res));
+  }
+}
+
+/** POST /contents/:contentRootId/episodes — multipart: `file`, `videoName`, optional `videoDescription`. */
+export async function postAdminSeriesEpisode(
+  contentRootId: number,
+  form: FormData,
+): Promise<unknown> {
+  const res = await adminApiFetch(`/contents/${contentRootId}/episodes`, {
     method: "POST",
     body: form,
   });

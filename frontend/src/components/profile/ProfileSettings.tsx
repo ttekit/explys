@@ -49,9 +49,7 @@ export function ProfileSettings({
   const [genreOptions, setGenreOptions] = useState<GenreOption[]>([]);
   const [saving, setSaving] = useState(false);
   const [savingPrefs, setSavingPrefs] = useState(false);
-  const [dangerOpen, setDangerOpen] = useState<"reset" | "delete" | null>(
-    null,
-  );
+  const [dangerOpen, setDangerOpen] = useState<"reset" | "delete" | null>(null);
 
   const [notifications, setNotifications] = useState(
     () => loadProfileUiPrefs(user.id).notifications,
@@ -91,8 +89,7 @@ export function ProfileSettings({
         Number.isFinite(Number(user.playbackSpeed))
           ? String(user.playbackSpeed)
           : prev.playbackSpeed || "1",
-      videoQuality:
-        user.videoQuality?.trim() || prev.videoQuality || "auto",
+      videoQuality: user.videoQuality?.trim() || prev.videoQuality || "auto",
     }));
   }, [user.id, user.playbackSpeed, user.videoQuality]);
 
@@ -255,7 +252,10 @@ export function ProfileSettings({
               <span className="text-sm font-medium text-foreground">
                 Full name
               </span>
-              <InputText value={name} onChange={(e) => setName(e.target.value)} />
+              <InputText
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-foreground">Email</span>
@@ -336,8 +336,8 @@ export function ProfileSettings({
               Genre preferences
             </span>
             <p className="mb-4 text-sm text-muted-foreground">
-              Tap the left side to favorite a genre, or the right to mark one
-              to avoid.
+              Tap the left side to favorite a genre, or the right to mark one to
+              avoid.
             </p>
             <div className="flex flex-wrap gap-2">
               {genreOptions.map((g) => {
@@ -386,7 +386,7 @@ export function ProfileSettings({
         <div className="mt-6 flex justify-end">
           <Button
             type="button"
-            className="mt-0 inline-flex w-auto items-center gap-2 px-6"
+            className="rounded-[15px] w-50 bg-primary px-6 py-3.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]6"
             disabled={saving}
             onClick={() => void saveProfile()}
           >
@@ -416,22 +416,22 @@ export function ProfileSettings({
               description: "Get reminded to practice every day",
             },
             {
-              key: "weeklyReport",
+              key: "weeklyReport" as const,
               label: "Weekly progress report",
               description: "Receive a summary of your weekly progress",
             },
             {
-              key: "achievements",
+              key: "achievements" as const,
               label: "Achievement alerts",
               description: "Get notified when you unlock achievements",
             },
             {
-              key: "newContent",
+              key: "newContent" as const,
               label: "New content alerts",
               description: "Be notified when new videos are added",
             },
             {
-              key: "marketing",
+              key: "marketing" as const,
               label: "Marketing emails",
               description: "Receive tips, offers, and updates",
             },
@@ -466,8 +466,8 @@ export function ProfileSettings({
         }
       >
         <p className="mb-6 text-sm text-muted-foreground">
-          Default playback speed and quality are stored on your account. Auto-play
-          and subtitle defaults are kept on this device. Use{" "}
+          Default playback speed and quality are stored on your account.
+          Auto-play and subtitle defaults are kept on this device. Use{" "}
           <span className="font-medium text-foreground">Save preferences</span>{" "}
           below to persist everything.
         </p>
@@ -507,7 +507,9 @@ export function ProfileSettings({
         <div className="mt-6 space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-medium text-foreground">Auto-play next video</p>
+              <p className="font-medium text-foreground">
+                Auto-play next video
+              </p>
               <p className="text-sm text-muted-foreground">
                 Automatically play the next lesson in a row
               </p>
@@ -540,7 +542,7 @@ export function ProfileSettings({
         <div className="mt-6 flex justify-end border-t border-border/50 pt-6">
           <Button
             type="button"
-            className="mt-0 inline-flex w-auto items-center gap-2 px-6"
+            className="rounded-[15px] w-50 bg-primary px-6 py-3.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]6"
             disabled={savingPrefs}
             onClick={() => void saveLearnerPreferences()}
           >
@@ -569,14 +571,14 @@ export function ProfileSettings({
             </div>
             <button
               type="button"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-destructive px-4 py-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              className="text-sm flex font-medium text-destructive py-2.5 px-6 transition-all rounded-[15px] hover:bg-destructive/10 hover:cursor-pointer"
               onClick={() => {
                 logout();
                 toast.success("Signed out.");
                 void navigate("/loginForm", { replace: true });
               }}
             >
-              <LogOut className="size-4" />
+              <LogOut className="size-4 pt-1 pr-1" />
               Log out
             </button>
           </div>
@@ -589,7 +591,7 @@ export function ProfileSettings({
             </div>
             <button
               type="button"
-              className="rounded-xl border border-destructive px-4 py-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              className="text-sm font-medium text-destructive py-2.5 px-6 transition-all rounded-[15px] hover:bg-destructive/10 hover:cursor-pointer"
               onClick={() => setDangerOpen("reset")}
             >
               Reset
@@ -604,7 +606,7 @@ export function ProfileSettings({
             </div>
             <button
               type="button"
-              className="rounded-xl bg-destructive px-4 py-2 text-destructive-foreground hover:bg-destructive/90"
+              className="rounded-[15px] w-50 bg-destructive px-6 py-2.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]6"
               onClick={() => setDangerOpen("delete")}
             >
               Delete account

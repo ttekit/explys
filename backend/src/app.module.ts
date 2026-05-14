@@ -15,6 +15,7 @@ import { TagsModule } from "./tags/tags.module";
 import { TopicsModule } from "./topics/topics.module";
 import { UsersModule } from "./users/users.module";
 import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
+import { RequireActiveSubscriptionGuard } from "./auth/guards/require-active-subscription.guard";
 import { PlacementTestModule } from "./placement-test/placement-test.module";
 import { AdminAnalyticsModule } from "./admin-analytics/admin-analytics.module";
 import { AdminUsersModule } from "./admin-users/admin-users.module";
@@ -46,6 +47,7 @@ import { BillingModule } from "./billing/billing.module";
   controllers: [AppController],
   providers: [
     AppService,
+    { provide: APP_GUARD, useClass: RequireActiveSubscriptionGuard },
     { provide: APP_GUARD, useClass: GlobalApiTokenGuard },
   ],
 })

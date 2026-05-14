@@ -11,12 +11,12 @@ import {
   getResponseErrorMessage,
   setStoredAccessToken,
 } from "../../lib/api";
+import type { UserData } from "../../context/UserContext";
 import { useUser } from "../../context/UserContext";
+import { userMayUseLearnerApp } from "../../lib/subscriptionAccess";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import { consumePendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
-import { SEO } from "../../components/SEO/SEO";
-import { resolveCanonicalUrl } from "../../lib/siteUrl";
 
 function safeReturnPath(state: unknown): string | undefined {
   if (!state || typeof state !== "object" || !("from" in state)) return undefined;
@@ -27,9 +27,18 @@ function safeReturnPath(state: unknown): string | undefined {
   return raw;
 }
 
+function postLoginNavigateTarget(
+  explicit: string | undefined,
+  profile: UserData | null,
+): string {
+  if (explicit) return explicit;
+  if (!profile) return "/subscribe";
+  if (profile.role === "teacher") return "/catalog";
+  if (userMayUseLearnerApp(profile)) return "/catalog";
+  return "/subscribe";
+}
+
 export default function LoginForm() {
-  const { messages, locale } = useLandingLocale();
-  const t = messages.auth.login;
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -39,6 +48,8 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { refreshProfile } = useUser();
+  const { messages } = useLandingLocale();
+  const t = messages.auth.login;
 
   useEffect(() => {
     const s = location.state as {
@@ -55,7 +66,7 @@ export default function LoginForm() {
       replace: true,
       state: s.from ? { from: s.from } : undefined,
     });
-  }, [location.state, navigate, t.toastAccountCreated]);
+  }, [location.state, navigate]);
 
   const isEmpty = [loginData.email, loginData.password].some(
     (value) => value.trim() === "",
@@ -81,13 +92,15 @@ export default function LoginForm() {
             access_token?: string;
           };
           const token = data.access_token;
-          const next = safeReturnPath(location.state) ?? "/catalog";
+          const fromState = safeReturnPath(location.state);
           if (!token) {
+            const next = postLoginNavigateTarget(fromState, null);
             toast.success(t.toastSignedIn);
             navigate(next);
           } else {
             setStoredAccessToken(token);
-            await refreshProfile();
+            const profile = await refreshProfile();
+            const next = postLoginNavigateTarget(fromState, profile);
             toast.success(t.toastSignedIn);
             navigate(next);
           }
@@ -106,105 +119,96 @@ export default function LoginForm() {
   };
 
   return (
-    <>
-      <SEO
-        title={t.seoTitle}
-        description={t.seoDescription}
-        canonicalUrl={resolveCanonicalUrl("/loginForm")}
-        noindex
-        ogLocale={locale === "uk" ? "uk_UA" : "en_US"}
-      />
-      <div lang={locale === "uk" ? "uk" : "en"}>
-        <AuthSplitLayout
-          rightTitle={t.rightTitle}
-          rightSubtitle={t.rightSubtitle}
-        >
-          <div className="mb-2 flex items-center gap-3">
-            <img src="/Icon.svg" className="w-12 h-15" alt="" />
-            <h1 className="font-display text-2xl font-bold">{t.welcomeBack}</h1>
-          </div>
-          <p className="mb-8 text-muted-foreground">{t.lead}</p>
-
-          <form onSubmit={handleLogin} tabIndex={0} className="space-y-5">
-            <div className="space-y-2">
-              <LabelRegister isRequired={true}>{t.email}</LabelRegister>
-              <InputText
-                name="email"
-                value={loginData.email}
-                onChange={handleChange}
-                type="email"
-                placeholder={t.placeholderEmail}
-                autoComplete="email"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <LabelRegister isRequired={true}>{t.password}</LabelRegister>
-                <Link
-                  to="#"
-                  className="text-sm text-primary hover:underline"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  {t.forgotPassword}
-                </Link>
-              </div>
-              <div className="relative">
-                <InputText
-                  name="password"
-                  value={loginData.password}
-                  onChange={handleChange}
-                  type={showPassword ? "text" : "password"}
-                  placeholder={t.placeholderPassword}
-                  autoComplete="current-password"
-                  className="pr-12"
-                />
-                <button
-                  type="button"
-                  aria-label={showPassword ? t.hidePassword : t.showPassword}
-                  aria-pressed={showPassword}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="size-5 opacity-70" />
-                  ) : (
-                    <Eye className="size-5 opacity-70" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {emptyError && (
-              <ValidateError>{t.fillRequired}</ValidateError>
-            )}
-
-            <Button
-              type="submit"
-              className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
-            >
-              {t.submit}
-            </Button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            {t.noAccount}{" "}
-            <Link
-              to="/registrationMain"
-              className="font-medium text-primary hover:underline"
-            >
-              {t.signUp}
-            </Link>
-          </p>
-
-          <Link
-            to="/"
-            className="mt-8 inline-block text-center text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {t.backHome}
-          </Link>
-        </AuthSplitLayout>
+    <AuthSplitLayout
+      rightTitle={t.rightTitle}
+      rightSubtitle={t.rightSubtitle}
+    >
+      <div className="mb-2 flex items-center gap-3">
+        <img src="/Icon.svg" className="w-12 h-15" />
+        <h1 className="font-display text-2xl font-bold">{t.welcomeBack}</h1>
       </div>
-    </>
+      <p className="mb-8 text-muted-foreground">
+        {t.lead}
+      </p>
+
+      <form onSubmit={handleLogin} tabIndex={0} className="space-y-5">
+        <div className="space-y-2">
+          <LabelRegister isRequired={true}>{t.email}</LabelRegister>
+          <InputText
+            name="email"
+            value={loginData.email}
+            onChange={handleChange}
+            type="email"
+            placeholder={t.placeholderEmail}
+            autoComplete="email"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <LabelRegister isRequired={true}>{t.password}</LabelRegister>
+            <Link
+              to="#"
+              className="text-sm text-primary hover:underline"
+              onClick={(e) => e.preventDefault()}
+            >
+              {t.forgotPassword}
+            </Link>
+          </div>
+          <div className="relative">
+            <InputText
+              name="password"
+              value={loginData.password}
+              onChange={handleChange}
+              type={showPassword ? "text" : "password"}
+              placeholder={t.placeholderPassword}
+              autoComplete="current-password"
+              className="pr-12"
+            />
+            <button
+              type="button"
+              aria-label={showPassword ? t.hidePassword : t.showPassword}
+              aria-pressed={showPassword}
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? (
+                <EyeOff className="size-5 opacity-70" />
+              ) : (
+                <Eye className="size-5 opacity-70" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {emptyError && (
+          <ValidateError>{t.fillRequired}</ValidateError>
+        )}
+
+        <Button
+          type="submit"
+          className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+        >
+          {t.submit}
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        {t.noAccount}{" "}
+        <Link
+          to="/registrationMain"
+          className="font-medium text-primary hover:underline"
+        >
+          {t.signUp}
+        </Link>
+      </p>
+
+      <Link
+        to="/"
+        className="mt-8 inline-block text-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {t.backHome}
+      </Link>
+    </AuthSplitLayout>
   );
 }

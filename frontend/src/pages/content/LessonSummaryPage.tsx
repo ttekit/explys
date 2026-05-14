@@ -10,6 +10,7 @@ import {
   estimatedLessonKnowledgeFromQuizPct,
   WATCH_COMPLETE_LISTENING_POINTS,
 } from "../../lib/lessonKnowledgeEstimate";
+import type { QuizWrongReviewItem } from "../../components/content-watch/VideoQuiz";
 
 export type LessonWordEntry = {
   word: string;
@@ -27,6 +28,14 @@ export type LessonSummaryState = {
   lessonTopics: { id: number; name: string }[];
   themeTags: string[];
   levelTags: string[];
+  /** Wrong answers with explanations when returned from the lesson quiz. */
+  quizReview?: { wrong: QuizWrongReviewItem[] };
+  /** Learner’s open-ended summary text, when the quiz included that item. */
+  writtenSummaryText?: string;
+  /** Personalized coach feedback on the written summary after submit. */
+  writtenSummaryFeedback?: string | null;
+  /** 1–10 from the server when the written summary was model-graded. */
+  writtenSummaryScore?: number | null;
 };
 
 const STORAGE_PREFIX = "lessonSummary:";
@@ -68,6 +77,59 @@ function normalizeStringList(raw: unknown): string[] {
     .slice(0, 24);
 }
 
+function normalizeQuizReview(raw: unknown): LessonSummaryState["quizReview"] {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const o = raw as { wrong?: unknown };
+  if (!Array.isArray(o.wrong)) return undefined;
+  const wrong: QuizWrongReviewItem[] = [];
+  for (const row of o.wrong) {
+    if (!row || typeof row !== "object") continue;
+    const w = row as {
+      question?: unknown;
+      options?: unknown;
+      selectedIndex?: unknown;
+      correctIndex?: unknown;
+      explanation?: unknown;
+      category?: unknown;
+    };
+    const question = typeof w.question === "string" ? w.question : "";
+    const options = Array.isArray(w.options) ? w.options.filter((x): x is string => typeof x === "string") : [];
+    const si = typeof w.selectedIndex === "number" ? w.selectedIndex : Number.NaN;
+    const ci = typeof w.correctIndex === "number" ? w.correctIndex : Number.NaN;
+    if (!question.trim() || options.length < 2 || !Number.isFinite(si) || !Number.isFinite(ci)) {
+      continue;
+    }
+    const explanation =
+      typeof w.explanation === "string" ? w.explanation.trim() : undefined;
+    const cat = w.category;
+    const category =
+      cat === "grammar" || cat === "comprehension" || cat === "vocabulary" ?
+        cat
+      : undefined;
+    wrong.push({
+      question,
+      options,
+      selectedIndex: si,
+      correctIndex: ci,
+      explanation: explanation && explanation.length > 0 ? explanation : undefined,
+      category,
+    });
+  }
+  return wrong.length > 0 ? { wrong } : undefined;
+}
+
+function normalizeWrittenSummaryScore(
+  raw: unknown,
+): number | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw === null) return null;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    const r = Math.round(raw);
+    if (r >= 1 && r <= 10) return r;
+  }
+  return undefined;
+}
+
 function readStoredSummary(videoId: string): LessonSummaryState | null {
   try {
     const raw = sessionStorage.getItem(`${STORAGE_PREFIX}${videoId}`);
@@ -96,6 +158,21 @@ function readStoredSummary(videoId: string): LessonSummaryState | null {
       lessonTopics: normalizeTopics(p.lessonTopics),
       themeTags: normalizeStringList(p.themeTags),
       levelTags: normalizeStringList(p.levelTags),
+      quizReview: normalizeQuizReview(p.quizReview),
+      writtenSummaryText:
+        typeof p.writtenSummaryText === "string" && p.writtenSummaryText.trim()
+          ? p.writtenSummaryText.trim()
+          : undefined,
+      writtenSummaryFeedback:
+        typeof p.writtenSummaryFeedback === "string" &&
+        p.writtenSummaryFeedback.trim()
+          ? p.writtenSummaryFeedback.trim()
+          : p.writtenSummaryFeedback === null
+            ? null
+            : undefined,
+      writtenSummaryScore: normalizeWrittenSummaryScore(
+        p.writtenSummaryScore,
+      ),
     };
   } catch {
     return null;
@@ -180,6 +257,19 @@ function coerceSummary(
     lessonTopics: normalizeTopics(s.lessonTopics),
     themeTags: normalizeStringList(s.themeTags),
     levelTags: normalizeStringList(s.levelTags),
+    quizReview: normalizeQuizReview(s.quizReview),
+    writtenSummaryText:
+      typeof s.writtenSummaryText === "string" && s.writtenSummaryText.trim()
+        ? s.writtenSummaryText.trim()
+        : undefined,
+    writtenSummaryFeedback:
+      typeof s.writtenSummaryFeedback === "string" &&
+      s.writtenSummaryFeedback.trim()
+        ? s.writtenSummaryFeedback.trim()
+        : s.writtenSummaryFeedback === null
+          ? null
+          : undefined,
+    writtenSummaryScore: normalizeWrittenSummaryScore(s.writtenSummaryScore),
   };
 }
 
@@ -230,10 +320,10 @@ export default function LessonSummaryPage() {
     if (summary && knowledgeEstimate) {
       const mood =
         knowledgeEstimate.pct >= 80
-          ? "excited"
+          ? ("excited" as const)
           : knowledgeEstimate.pct >= 50
-            ? "happy"
-            : "thinking";
+            ? ("happy" as const)
+            : ("thinking" as const);
       const message =
         knowledgeEstimate.pct >= 80
           ? "Strong work — you’re ready for the next lesson."
@@ -368,6 +458,93 @@ export default function LessonSummaryPage() {
                 {display.message}
               </p>
             </div>
+
+            {display.summary.writtenSummaryText ||
+            (typeof display.summary.writtenSummaryScore === "number" &&
+              display.summary.writtenSummaryScore >= 1 &&
+              display.summary.writtenSummaryScore <= 10) ||
+            (typeof display.summary.writtenSummaryFeedback === "string" &&
+              display.summary.writtenSummaryFeedback.trim().length > 0) ? (
+              <div className="mt-8 rounded-2xl border border-border bg-card p-6 sm:p-8">
+                <h2 className="font-display text-lg font-semibold">
+                  Your written summary
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Personalized comments on your answer, tailored to the lesson and
+                  your profile when you complete the quiz while signed in.
+                </p>
+                {typeof display.summary.writtenSummaryScore === "number" &&
+                display.summary.writtenSummaryScore >= 1 &&
+                display.summary.writtenSummaryScore <= 10 ? (
+                  <p className="mt-4 text-sm font-semibold tabular-nums text-primary">
+                    Summary score: {display.summary.writtenSummaryScore}/10
+                  </p>
+                ) : null}
+                {display.summary.writtenSummaryText ? (
+                  <blockquote className="mt-4 rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm leading-relaxed text-foreground">
+                    {display.summary.writtenSummaryText}
+                  </blockquote>
+                ) : null}
+                {typeof display.summary.writtenSummaryFeedback === "string" &&
+                display.summary.writtenSummaryFeedback.trim().length > 0 ? (
+                  <p className="mt-4 text-sm leading-relaxed text-foreground">
+                    {display.summary.writtenSummaryFeedback.trim()}
+                  </p>
+                ) : display.summary.writtenSummaryText?.trim() ? (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    No written-summary coach comment was saved. Finish the lesson
+                    from the quiz tab and tap “Complete lesson” while the lesson
+                    tests have finished loading so the server can attach feedback.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {display.summary.quizReview &&
+            display.summary.quizReview.wrong.length > 0 ? (
+              <div className="mt-8 rounded-2xl border border-destructive/25 bg-destructive/5 p-6 sm:p-8">
+                <h2 className="font-display text-center text-lg font-semibold">
+                  Review tricky questions
+                </h2>
+                <p className="mt-2 text-center text-sm text-muted-foreground">
+                  Explanations for items you missed — skim these before the next
+                  quiz on this lesson.
+                </p>
+                <ul className="mt-6 space-y-5 text-left">
+                  {display.summary.quizReview.wrong.map((row, i) => (
+                    <li
+                      key={`${i}-${row.question.slice(0, 48)}`}
+                      className="rounded-lg border border-border bg-background/80 px-4 py-3"
+                    >
+                      {row.category ? (
+                        <span className="inline-block rounded bg-muted px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          {row.category}
+                        </span>
+                      ) : null}
+                      <p className="mt-2 text-sm font-medium text-foreground">
+                        {row.question}
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Your answer:{" "}
+                        <span className="font-medium text-destructive">
+                          {row.options[row.selectedIndex] ?? "—"}
+                        </span>
+                        {" · "}
+                        Correct:{" "}
+                        <span className="font-medium text-accent">
+                          {row.options[row.correctIndex] ?? "—"}
+                        </span>
+                      </p>
+                      {row.explanation ? (
+                        <p className="mt-3 text-sm leading-relaxed text-foreground">
+                          {row.explanation}
+                        </p>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
 
             <div className="mt-8 rounded-2xl border border-border bg-card p-6 sm:p-8">
               <div className="flex items-center gap-2">

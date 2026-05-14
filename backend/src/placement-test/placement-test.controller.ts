@@ -22,7 +22,6 @@ import {
   ApiSecurity,
   ApiTags,
 } from "@nestjs/swagger";
-import { appendFileSync } from "node:fs";
 import { Request, Response } from "express";
 import { CompletePlacementDto } from "./dto/complete-placement.dto";
 import { PlacementCompleteResponseDto } from "./dto/placement-complete-response.dto";
@@ -131,27 +130,6 @@ export class PlacementTestController {
       token,
       inferApiPublicOrigin(req),
     );
-    // #region agent log
-    try {
-      appendFileSync(
-        "/Users/ttekit/code/eng_curses/.cursor/debug-0c8a48.log",
-        JSON.stringify({
-          sessionId: "0c8a48",
-          hypothesisId: "SRV",
-          location: "placement-test.controller.ts:document",
-          message: "placement html",
-          data: {
-            userId: req.user.sub,
-            q: payload.questions?.length ?? -1,
-            htmlLen: html.length,
-          },
-          timestamp: Date.now(),
-        }) + "\n",
-      );
-    } catch {
-      /* debug */
-    }
-    // #endregion
     res.send(html);
   }
 

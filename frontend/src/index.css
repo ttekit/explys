@@ -139,3 +139,27 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+::-webkit-scrollbar {
+  width: 6px; /* Робимо його дуже вузьким */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Трак (доріжка) буде прозорим */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.3); /* Твій фіолетовий, але дуже прозорий */
+  border-radius: 10px; /* Закруглюємо */
+  transition: background 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.5); /* При наведенні стає яскравішим */
+}
+
+/* Налаштування для Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 58, 237, 0.3) transparent;
+}

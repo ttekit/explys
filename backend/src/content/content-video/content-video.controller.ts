@@ -18,6 +18,7 @@ import { ConfigService } from "@nestjs/config";
 import { ApiOperation, ApiProduces, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthGuard } from "src/auth/auth.guard";
+import { ApiTokenOnlyGuard } from "src/auth/guards/api-token-only.guard";
 import { jwtSubToUserId } from "src/auth/jwt-subject.util";
 import { renderComprehensionTestsIframeHtml } from "src/content-video/content-video-comprehension-tests-html";
 import { ContentVideoComprehensionTestsService } from "src/content-video/content-video-comprehension-tests.service";
@@ -28,7 +29,8 @@ import { ContentVideoService } from "./content-video.service";
 import { CreateContentVideoDto } from "./dto/create-content-video.dto";
 import { ComprehensionSummaryRecommendationsBodyDto } from "./dto/summary-recommendations.dto";
 import { UpdateContentVideoDto } from "./dto/update-content-video.dto";
-import { ApiTokenOnlyGuard } from "src/auth/guards/api-token-only.guard";
+import { VocabularyHintsService } from "src/content-video/vocabulary-hints.service";
+import { VocabularyPersonalizationService } from "src/content-video/vocabulary-personalization.service";
 
 @ApiTags("content-video")
 @Controller("content-video")
@@ -40,6 +42,8 @@ export class ContentVideoController {
     private readonly videoCaptionsService: VideoCaptionsService,
     private readonly postWatchSurveyService: PostWatchSurveyService,
     private readonly comprehensionTestsService: ContentVideoComprehensionTestsService,
+    private readonly vocabularyHintsService: VocabularyHintsService,
+    private readonly vocabularyPersonalizationService: VocabularyPersonalizationService,
   ) { }
 
   @Post()
@@ -64,6 +68,45 @@ export class ContentVideoController {
     return this.contentVideoService.findWatchedByUser(userId);
   }
 
+  @Post("vocabulary-hints")
+  @ApiOperation({
+    summary:
+      "Hints for vocabulary cards: translation (optional target language), English pronunciation, simple English meaning",
+  })
+  async vocabularyHints(
+    @Body() body: { words?: string[]; targetLang?: string | null } | undefined,
+  ) {
+    const words = Array.isArray(body?.words) ? body!.words! : [];
+    const hints = await this.vocabularyHintsService.getHints(
+      words,
+      body?.targetLang ?? null,
+    );
+    return { hints };
+  }
+
+  @Post(":id/vocabulary-personalize")
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary:
+      "Personalized vocabulary hints (native translation + CEFR-tuned English gloss) for signed-in learners",
+    description:
+      "Call once when the learner starts watching. Requires the same key-vocab words as the lesson bundle.",
+  })
+  async vocabularyPersonalize(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() body: { words?: string[] } | undefined,
+    @Req() req: Request & { user: unknown },
+  ) {
+    const userId = jwtSubToUserId(req.user);
+    const words = Array.isArray(body?.words) ? body!.words! : [];
+    const hints = await this.vocabularyPersonalizationService.personalizeForUser({
+      userId,
+      contentVideoId: id,
+      words,
+    });
+    return { hints };
+  }
+
   @Post("surveys/:surveyId/submit")
   submitPostWatchSurvey(
     @Param("surveyId", ParseIntPipe) surveyId: number,
@@ -81,6 +124,7 @@ export class ContentVideoController {
   }
 
   @Post(":id/regenerate-tags")
+  @UseGuards(ApiTokenOnlyGuard)
   @ApiOperation({
     summary: "Regenerate theme labels (userTags) from captions",
     description:
@@ -91,6 +135,7 @@ export class ContentVideoController {
   }
 
   @Post(":id/regenerate-genres")
+  @UseGuards(ApiTokenOnlyGuard)
   @ApiOperation({
     summary: "Regenerate CEFR / level bands (systemTags) from captions",
     description:
@@ -101,6 +146,7 @@ export class ContentVideoController {
   }
 
   @Post(":id/regenerate-captions")
+  @UseGuards(ApiTokenOnlyGuard)
   @ApiOperation({
     summary: "Regenerate WebVTT captions",
     description:
@@ -160,11 +206,15 @@ export class ContentVideoController {
   watchComplete(
     @Param("id", ParseIntPipe) id: number,
     @Req() req: Request & { user: unknown },
+    @Body() body: { secondsWatched?: number } // <--- Добавляем получение body
   ) {
     const userId = jwtSubToUserId(req.user);
+
+    // Передаем секунды третьим аргументом в сервис
     return this.postWatchSurveyService.recordWatchAndGenerateSurvey(
       id,
       userId,
+      body.secondsWatched
     );
   }
 
@@ -182,7 +232,7 @@ export class ContentVideoController {
   @Get(":id/tests")
   @ApiOperation({
     summary:
-      "Get comprehension/grammar tests (served from cache when present, otherwise generated and stored)",
+      "Get comprehension/grammar tests (fresh generation each request; optional userId for personalization)",
   })
   @ApiQuery({
     name: "userId",
@@ -257,7 +307,19 @@ export class ContentVideoController {
   })
   submitComprehensionTest(
     @Param("id", ParseIntPipe) id: number,
-    @Body() body: { token: string; answers: Record<string, number> },
+    @Body()
+    body: {
+      token: string;
+      answers: Record<string, number | string>;
+      /** Words from lesson key vocabulary; saved for authenticated learners. */
+      keyVocabularyTerms?: string[];
+      /** Optional glosses (native + English) aligned with keyVocabularyTerms. */
+      keyVocabularyDetails?: Array<{
+        term: string;
+        nativeTranslation?: string | null;
+        learnerDescription?: string | null;
+      }>;
+    },
   ) {
     return this.comprehensionTestsService.submit(id, body);
   }

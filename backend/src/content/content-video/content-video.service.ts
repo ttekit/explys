@@ -4,17 +4,58 @@ import { PrismaService } from "src/prisma.service";
 import { CreateContentVideoDto } from "./dto/create-content-video.dto";
 import { UpdateContentVideoDto } from "./dto/update-content-video.dto";
 
+/** Catalog / playlist ordering: series → media slot → clip. */
+export function compareContentVideosPlaylistOrder(
+  a: {
+    id: number;
+    playlistPosition: number;
+    content: { categoryId: number; playlistPosition: number };
+  },
+  b: {
+    id: number;
+    playlistPosition: number;
+    content: { categoryId: number; playlistPosition: number };
+  },
+): number {
+  const bySeries = a.content.categoryId - b.content.categoryId;
+  if (bySeries !== 0) return bySeries;
+  const byMedia = a.content.playlistPosition - b.content.playlistPosition;
+  if (byMedia !== 0) return byMedia;
+  const byVideo = a.playlistPosition - b.playlistPosition;
+  if (byVideo !== 0) return byVideo;
+  return a.id - b.id;
+}
+
+export const CATALOG_CONTENT_VISIBILITY_PUBLIC = "public" as const;
+
 @Injectable()
 export class ContentVideoService {
   constructor(private prisma: PrismaService) { }
 
   async create(createContentVideoDto: CreateContentVideoDto) {
-    return this.prisma.contentVideo.create({ data: createContentVideoDto });
+    const maxRow = await this.prisma.contentVideo.aggregate({
+      where: { contentId: createContentVideoDto.contentId },
+      _max: { playlistPosition: true },
+    });
+    const playlistPosition = (maxRow._max.playlistPosition ?? -1) + 1;
+    return this.prisma.contentVideo.create({
+      data: { ...createContentVideoDto, playlistPosition },
+    });
   }
 
   async findAll() {
     return this.prisma.contentVideo.findMany({
-      omit: { comprehensionTestsCache: true },
+      where: {
+        content: {
+          category: { visibility: CATALOG_CONTENT_VISIBILITY_PUBLIC },
+        },
+      },
+      orderBy: [
+        { content: { categoryId: "asc" } },
+        { content: { playlistPosition: "asc" } },
+        { playlistPosition: "asc" },
+        { id: "asc" },
+      ],
       include: {
         videoCaption: {
           select: { subtitlesFileLink: true },
@@ -33,15 +74,13 @@ export class ContentVideoService {
     });
   }
 
-  /**
-   * Unique videos the learner has completed a watch session for, most recently watched first.
-   */
   async findWatchedByUser(userId: number) {
     const sessions = await this.prisma.watchSession.findMany({
       where: { userId },
       orderBy: { endedAt: "desc" },
       select: { contentVideoId: true },
     });
+
     const orderedIds: number[] = [];
     const seen = new Set<number>();
     for (const s of sessions) {
@@ -49,48 +88,34 @@ export class ContentVideoService {
       seen.add(s.contentVideoId);
       orderedIds.push(s.contentVideoId);
     }
-    if (orderedIds.length === 0) {
-      return [];
-    }
+
+    if (orderedIds.length === 0) return [];
+
     const videos = await this.prisma.contentVideo.findMany({
       where: { id: { in: orderedIds } },
-      omit: { comprehensionTestsCache: true },
       include: {
-        videoCaption: {
-          select: { subtitlesFileLink: true },
-        },
+        videoCaption: { select: { subtitlesFileLink: true } },
         content: {
           include: {
             category: true,
-            stats: {
-              include: {
-                topics: { select: { id: true, name: true } },
-              },
-            },
+            stats: { include: { topics: { select: { id: true, name: true } } } },
           },
         },
       },
     });
-    const rank = new Map(orderedIds.map((id, i) => [id, i]));
-    return videos.sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
+
+    return videos.sort(compareContentVideosPlaylistOrder);
   }
 
   async findOne(id: number) {
     const contentVideo = await this.prisma.contentVideo.findUnique({
       where: { id },
-      omit: { comprehensionTestsCache: true },
       include: {
-        videoCaption: {
-          select: { subtitlesFileLink: true },
-        },
+        videoCaption: { select: { subtitlesFileLink: true } },
         content: {
           include: {
             category: true,
-            stats: {
-              include: {
-                topics: { select: { id: true, name: true } },
-              },
-            },
+            stats: { include: { topics: { select: { id: true, name: true } } } },
           },
         },
       },
@@ -101,7 +126,6 @@ export class ContentVideoService {
     return contentVideo;
   }
 
-  /** HTML iframe snippet for embedding the raw `videoLink` in docs or test UIs. */
   async getIframePayload(id: number): Promise<{ iframeHtml: string }> {
     const v = await this.findOne(id);
     const iframeHtml = generateContentVideoIframe(v.videoLink, {
