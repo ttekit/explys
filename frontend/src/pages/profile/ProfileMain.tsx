@@ -26,7 +26,10 @@ import {
 import { ProfileStats } from "../../components/profile/ProfileStats";
 import { ProfileProgress } from "../../components/profile/ProfileProgress";
 import { ProfileAchievements } from "../../components/profile/ProfileAchievements";
-import { ProfileActivity } from "../../components/profile/ProfileActivity";
+import {
+  ProfileActivity,
+  type ActivityHistoryItem,
+} from "../../components/profile/ProfileActivity";
 import { ProfileSettings } from "../../components/profile/ProfileSettings";
 import { ProfileTeacherStudents } from "../../components/profile/ProfileTeacherStudents";
 import { ProfileTeacherVideos } from "../../components/profile/ProfileTeacherVideos";
@@ -60,7 +63,51 @@ type LearningStatsPayload = {
   testsCompleted: number;
   averageScore: number | null;
   weeklyActivity: { day: string; minutes: number }[];
+  thisWeekVideosWatched: number;
+  thisWeekQuizzesPassed: number;
+  thisWeekWordsLearned: number;
+  thisWeekAverageScore: number | null;
+  bestQuiz: { title: string; scorePct: number } | null;
+  activityHistory: ActivityHistoryItem[];
+  weeklyReview: {
+    weekStart: string;
+    lessonCount: number;
+    lessonTitles: string[];
+    eligible: boolean;
+    completedThisWeek: boolean;
+    lastScorePct: number | null;
+  } | null;
 };
+
+function coerceFiniteNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function parseBestQuizFromPayload(
+  raw: unknown,
+): LearningStatsPayload["bestQuiz"] {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+  const b = raw as Record<string, unknown>;
+  const scorePct = coerceFiniteNumber(b.scorePct);
+  if (scorePct == null) {
+    return null;
+  }
+  const titleRaw = b.title;
+  const title = typeof titleRaw === "string" ? titleRaw.trim() : "";
+  return {
+    title,
+    scorePct: Math.round(scorePct * 10) / 10,
+  };
+}
 
 export default function ProfileMain() {
   const { user, isLoading, isLoggedIn, refreshProfile } = useUser();
@@ -120,6 +167,42 @@ export default function ProfileMain() {
       if (!raw || typeof raw !== "object" || cancelled) return;
       const o = raw as Record<string, unknown>;
       const weekly = o.weeklyActivity;
+      const rawHistory = o.activityHistory;
+      const activityHistory: ActivityHistoryItem[] = Array.isArray(rawHistory)
+        ? rawHistory.filter(
+            (row): row is ActivityHistoryItem =>
+              row != null &&
+              typeof row === "object" &&
+              typeof (row as { kind?: unknown }).kind === "string" &&
+              typeof (row as { at?: unknown }).at === "string",
+          )
+        : [];
+      const bestQuiz = parseBestQuizFromPayload(o.bestQuiz);
+      const wAvg = o.thisWeekAverageScore;
+      let weeklyReview: LearningStatsPayload["weeklyReview"] = null;
+      const wr = o.weeklyReview;
+      if (wr && typeof wr === "object" && !Array.isArray(wr)) {
+        const wrO = wr as Record<string, unknown>;
+        const titlesRaw = wrO.lessonTitles;
+        const lessonTitles = Array.isArray(titlesRaw)
+          ? titlesRaw
+              .filter((x): x is string => typeof x === "string")
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0)
+          : [];
+        const ls = wrO.weekStart;
+        weeklyReview = {
+          weekStart: typeof ls === "string" ? ls : "",
+          lessonCount: Number(wrO.lessonCount ?? 0) || 0,
+          lessonTitles,
+          eligible: wrO.eligible === true,
+          completedThisWeek: wrO.completedThisWeek === true,
+          lastScorePct:
+            wrO.lastScorePct === null || wrO.lastScorePct === undefined ?
+              null
+            : Number(wrO.lastScorePct),
+        };
+      }
       setLearningStats({
         totalWatchTimeMin: Number(o.totalWatchTimeMin ?? 0) || 0,
         videosCompleted: Number(o.videosCompleted ?? 0) || 0,
@@ -131,9 +214,15 @@ export default function ProfileMain() {
         weeklyActivity: Array.isArray(weekly)
           ? (weekly as { day: string; minutes: number }[])
           : [...DEFAULT_WEEKLY_ACTIVITY],
+        thisWeekVideosWatched: Number(o.thisWeekVideosWatched ?? 0) || 0,
+        thisWeekQuizzesPassed: Number(o.thisWeekQuizzesPassed ?? 0) || 0,
+        thisWeekWordsLearned: Number(o.thisWeekWordsLearned ?? 0) || 0,
+        thisWeekAverageScore:
+          wAvg === null || wAvg === undefined ? null : Number(wAvg),
+        bestQuiz,
+        activityHistory,
+        weeklyReview,
       });
-
-      console.log("LEARNING STATS FROM BACKEND:", o);
     })();
     return () => {
       cancelled = true;
@@ -363,7 +452,22 @@ export default function ProfileMain() {
               {activeTab === "videos" ? <ProfileTeacherVideos /> : null}
               {activeTab === "progress" ? <ProfileProgress /> : null}
               {activeTab === "achievements" ? <ProfileAchievements /> : null}
-              {activeTab === "activity" ? <ProfileActivity weeklyActivity={learningStats?.weeklyActivity} /> : null}
+              {activeTab === "activity" ? (
+                <ProfileActivity
+                  weeklyActivity={learningStats?.weeklyActivity}
+                  activityHistory={learningStats?.activityHistory}
+                  thisWeekVideosWatched={learningStats?.thisWeekVideosWatched}
+                  thisWeekQuizzesPassed={
+                    learningStats?.thisWeekQuizzesPassed
+                  }
+                  thisWeekWordsLearned={learningStats?.thisWeekWordsLearned}
+                  thisWeekAverageScore={
+                    learningStats?.thisWeekAverageScore
+                  }
+                  bestQuiz={learningStats?.bestQuiz}
+                  weeklyReview={learningStats?.weeklyReview ?? null}
+                />
+              ) : null}
               {activeTab === "settings" ? (
                 <ProfileSettings
                   user={user}

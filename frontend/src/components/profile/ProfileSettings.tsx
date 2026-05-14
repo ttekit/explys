@@ -22,6 +22,8 @@ import {
   loadProfileUiPrefs,
   saveProfileUiPrefs,
 } from "../../lib/profileUiPrefs";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { formatMessage } from "../../lib/formatMessage";
 
 type GenreOption = { id: number; name: string };
 
@@ -34,6 +36,8 @@ export function ProfileSettings({
 }) {
   const { logout } = useUser();
   const navigate = useNavigate();
+  const { messages } = useLandingLocale();
+  const s = messages.profileSettings;
   const [name, setName] = useState(user.name);
   const [email] = useState(user.email);
   const [job, setJob] = useState(user.workField);
@@ -149,7 +153,7 @@ export function ProfileSettings({
   const saveProfile = useCallback(async () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("Please enter your name.");
+      toast.error(s.nameRequiredToast);
       return;
     }
     setSaving(true);
@@ -171,12 +175,12 @@ export function ProfileSettings({
         toast.error(await getResponseErrorMessage(res));
         return;
       }
-      toast.success("Profile saved.");
+      toast.success(s.profileSavedToast);
       await onSaved();
     } catch (e) {
       console.error(e);
       toast.error(
-        e instanceof Error ? e.message : "Could not save profile. Try again.",
+        e instanceof Error ? e.message : s.saveProfileError,
       );
     } finally {
       setSaving(false);
@@ -190,12 +194,15 @@ export function ProfileSettings({
     hatedGenreIds,
     user.id,
     onSaved,
+    s.nameRequiredToast,
+    s.profileSavedToast,
+    s.saveProfileError,
   ]);
 
   const saveLearnerPreferences = useCallback(async () => {
     const speed = Number.parseFloat(preferences.playbackSpeed);
     if (!Number.isFinite(speed) || speed <= 0) {
-      toast.error("Choose a valid playback speed.");
+      toast.error(s.playbackSpeedToast);
       return;
     }
 
@@ -221,15 +228,15 @@ export function ProfileSettings({
         return;
       }
 
-      toast.success("Preferences saved.");
+      toast.success(s.prefsSavedToast);
       await onSaved();
     } catch (e) {
       console.error(e);
-      toast.error("Could not save preferences. Try again.");
+      toast.error(s.prefsErrorToast);
     } finally {
       setSavingPrefs(false);
     }
-  }, [notifications, preferences, user.id, onSaved]);
+  }, [notifications, preferences, user.id, onSaved, s.playbackSpeedToast, s.prefsSavedToast, s.prefsErrorToast]);
 
   return (
     <div className="space-y-6">
@@ -237,20 +244,19 @@ export function ProfileSettings({
         title={
           <span className="flex items-center gap-2">
             <User className="size-5 text-primary" />
-            Profile information
+            {s.cardProfileInfo}
           </span>
         }
       >
         <p className="mb-6 text-sm text-muted-foreground">
-          Update your personal details. Email is tied to your login and
-          isn&apos;t editable here.
+          {s.cardProfileInfoLead}
         </p>
 
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-2">
               <span className="text-sm font-medium text-foreground">
-                Full name
+                {s.labelFullName}
               </span>
               <InputText
                 value={name}
@@ -258,7 +264,7 @@ export function ProfileSettings({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-medium text-foreground">Email</span>
+              <span className="text-sm font-medium text-foreground">{s.labelEmail}</span>
               <InputText value={email} disabled className="opacity-70" />
             </label>
           </div>
@@ -266,29 +272,29 @@ export function ProfileSettings({
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-2">
               <span className="text-sm font-medium text-foreground">
-                Job / occupation
+                {s.labelJob}
               </span>
               <InputText
                 value={job}
                 onChange={(e) => setJob(e.target.value)}
-                placeholder="e.g. Software engineer"
+                placeholder={s.placeholderJob}
               />
             </label>
             <label className="space-y-2">
               <span className="text-sm font-medium text-foreground">
-                Education
+                {s.labelEducation}
               </span>
               <InputText
                 value={education}
                 onChange={(e) => setEducation(e.target.value)}
-                placeholder="e.g. Bachelor's degree"
+                placeholder={s.placeholderEducation}
               />
             </label>
           </div>
 
           <div>
             <span className="mb-2 block text-sm font-medium text-foreground">
-              Hobbies &amp; interests
+              {s.hobbiesHeading}
             </span>
             <div className="mb-2 flex flex-wrap gap-2">
               {hobbies.map((hobby) => (
@@ -303,7 +309,9 @@ export function ProfileSettings({
                     onClick={() =>
                       setHobbies((prev) => prev.filter((h) => h !== hobby))
                     }
-                    aria-label={`Remove ${hobby}`}
+                    aria-label={formatMessage(s.removeHobbyAria, {
+                      name: hobby,
+                    })}
                   >
                     <X className="size-3" />
                   </button>
@@ -314,7 +322,7 @@ export function ProfileSettings({
               <InputText
                 value={newHobby}
                 onChange={(e) => setNewHobby(e.target.value)}
-                placeholder="Add a hobby..."
+                placeholder={s.placeholderHobby}
                 onKeyDown={(e) => e.key === "Enter" && addHobby()}
                 className="flex-1"
               />
@@ -322,7 +330,7 @@ export function ProfileSettings({
                 type="button"
                 onClick={addHobby}
                 className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary text-foreground hover:bg-muted"
-                aria-label="Add hobby"
+                aria-label={s.addHobbyAria}
               >
                 <Plus className="size-4" />
               </button>
@@ -333,12 +341,9 @@ export function ProfileSettings({
 
           <div>
             <span className="mb-1 block text-sm font-medium text-foreground">
-              Genre preferences
+              {s.genresHeading}
             </span>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Tap the left side to favorite a genre, or the right to mark one to
-              avoid.
-            </p>
+            <p className="mb-4 text-sm text-muted-foreground">{s.genresLead}</p>
             <div className="flex flex-wrap gap-2">
               {genreOptions.map((g) => {
                 const loved = favoriteGenreIds.includes(g.id);
@@ -364,7 +369,9 @@ export function ProfileSettings({
                           ? "bg-destructive text-destructive-foreground"
                           : "bg-secondary/80 text-muted-foreground hover:bg-muted"
                       }`}
-                      aria-label={`Avoid ${g.name}`}
+                      aria-label={formatMessage(s.avoidGenreAria, {
+                        name: g.name,
+                      })}
                     >
                       <X className="size-4" />
                     </button>
@@ -374,10 +381,10 @@ export function ProfileSettings({
             </div>
             <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <span className="size-3 rounded bg-accent" /> Prefer
+                <span className="size-3 rounded bg-accent" /> {s.genreLegendPrefer}
               </span>
               <span className="flex items-center gap-1">
-                <span className="size-3 rounded bg-destructive" /> Avoid
+                <span className="size-3 rounded bg-destructive" /> {s.genreLegendAvoid}
               </span>
             </div>
           </div>
@@ -391,7 +398,7 @@ export function ProfileSettings({
             onClick={() => void saveProfile()}
           >
             <Save className="size-4" />
-            {saving ? "Saving…" : "Save changes"}
+            {saving ? s.saving : s.saveChanges}
           </Button>
         </div>
       </ProfileCard>
@@ -400,40 +407,37 @@ export function ProfileSettings({
         title={
           <span className="flex items-center gap-2">
             <Bell className="size-5 text-primary" />
-            Notifications
+            {s.cardNotifications}
           </span>
         }
       >
-        <p className="mb-4 text-sm text-muted-foreground">
-          Notification choices are saved on this device. Email and push delivery
-          can be wired up later — your toggles stay here until then.
-        </p>
+        <p className="mb-4 text-sm text-muted-foreground">{s.cardNotificationsLead}</p>
         <div className="divide-y divide-border/50">
           {[
             {
               key: "dailyReminder" as const,
-              label: "Daily learning reminder",
-              description: "Get reminded to practice every day",
+              label: s.reminderDaily,
+              description: s.reminderDailyDesc,
             },
             {
               key: "weeklyReport" as const,
-              label: "Weekly progress report",
-              description: "Receive a summary of your weekly progress",
+              label: s.reportWeekly,
+              description: s.reportWeeklyDesc,
             },
             {
               key: "achievements" as const,
-              label: "Achievement alerts",
-              description: "Get notified when you unlock achievements",
+              label: s.achievements,
+              description: s.achievementAlertsDesc,
             },
             {
               key: "newContent" as const,
-              label: "New content alerts",
-              description: "Be notified when new videos are added",
+              label: s.newContentAlerts,
+              description: s.newContentAlertsDesc,
             },
             {
               key: "marketing" as const,
-              label: "Marketing emails",
-              description: "Receive tips, offers, and updates",
+              label: s.marketing,
+              description: s.marketingDesc,
             },
           ].map((item) => (
             <div
@@ -461,19 +465,18 @@ export function ProfileSettings({
         title={
           <span className="flex items-center gap-2">
             <Palette className="size-5 text-primary" />
-            Learning preferences
+            {s.cardLearningPrefs}
           </span>
         }
       >
         <p className="mb-6 text-sm text-muted-foreground">
-          Default playback speed and quality are stored on your account.
-          Auto-play and subtitle defaults are kept on this device. Use{" "}
-          <span className="font-medium text-foreground">Save preferences</span>{" "}
-          below to persist everything.
+          {formatMessage(s.cardLearningPrefsLead, {
+            savePhrase: s.cardLearningPrefsSavePhrase,
+          })}
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-sm font-medium">Playback speed</span>
+            <span className="text-sm font-medium">{s.labelPlaybackSpeed}</span>
             <select
               className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-foreground"
               value={preferences.playbackSpeed}
@@ -489,7 +492,7 @@ export function ProfileSettings({
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-sm font-medium">Video quality</span>
+            <span className="text-sm font-medium">{s.labelVideoQuality}</span>
             <select
               className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-foreground"
               value={preferences.videoQuality}
@@ -497,7 +500,7 @@ export function ProfileSettings({
                 setPreferences((p) => ({ ...p, videoQuality: e.target.value }))
               }
             >
-              <option value="auto">Auto</option>
+              <option value="auto">{s.videoQualityAuto}</option>
               <option value="1080p">1080p</option>
               <option value="720p">720p</option>
               <option value="480p">480p</option>
@@ -508,10 +511,10 @@ export function ProfileSettings({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium text-foreground">
-                Auto-play next video
+                {s.autoplayNextTitle}
               </p>
               <p className="text-sm text-muted-foreground">
-                Automatically play the next lesson in a row
+                {s.autoplayNextDesc}
               </p>
             </div>
             <ToggleSwitch
@@ -524,10 +527,10 @@ export function ProfileSettings({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium text-foreground">
-                Show subtitles by default
+                {s.showSubtitlesTitle}
               </p>
               <p className="text-sm text-muted-foreground">
-                Prefer English subtitles when available
+                {s.showSubtitlesDesc}
               </p>
             </div>
             <ToggleSwitch
@@ -547,7 +550,7 @@ export function ProfileSettings({
             onClick={() => void saveLearnerPreferences()}
           >
             <Save className="size-4" />
-            {savingPrefs ? "Saving…" : "Save preferences"}
+            {savingPrefs ? s.saving : s.savePreferences}
           </Button>
         </div>
       </ProfileCard>
@@ -556,7 +559,7 @@ export function ProfileSettings({
         title={
           <span className="flex items-center gap-2 text-destructive">
             <Shield className="size-5" />
-            Danger zone
+            {s.cardDangerZone}
           </span>
         }
         className="border-destructive/30"
@@ -564,52 +567,46 @@ export function ProfileSettings({
         <div className="space-y-4">
           <div className="flex flex-col gap-4 rounded-lg bg-destructive/10 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-medium text-foreground">Log out</p>
-              <p className="text-sm text-muted-foreground">
-                Sign out on this device. You can sign in again anytime.
-              </p>
+              <p className="font-medium text-foreground">{s.logoutTitle}</p>
+              <p className="text-sm text-muted-foreground">{s.logoutDesc}</p>
             </div>
             <button
               type="button"
               className="text-sm flex font-medium text-destructive py-2.5 px-6 transition-all rounded-[15px] hover:bg-destructive/10 hover:cursor-pointer"
               onClick={() => {
                 logout();
-                toast.success("Signed out.");
+                toast.success(s.signOutToast);
                 void navigate("/loginForm", { replace: true });
               }}
             >
               <LogOut className="size-4 pt-1 pr-1" />
-              Log out
+              {s.logoutCta}
             </button>
           </div>
           <div className="flex flex-col gap-4 rounded-lg bg-destructive/10 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-medium text-foreground">Reset progress</p>
-              <p className="text-sm text-muted-foreground">
-                Clear learning progress (not available yet)
-              </p>
+              <p className="font-medium text-foreground">{s.resetProgressTitle}</p>
+              <p className="text-sm text-muted-foreground">{s.resetProgressDesc}</p>
             </div>
             <button
               type="button"
               className="text-sm font-medium text-destructive py-2.5 px-6 transition-all rounded-[15px] hover:bg-destructive/10 hover:cursor-pointer"
               onClick={() => setDangerOpen("reset")}
             >
-              Reset
+              {s.resetProgressCta}
             </button>
           </div>
           <div className="flex flex-col gap-4 rounded-lg bg-destructive/10 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-medium text-foreground">Delete account</p>
-              <p className="text-sm text-muted-foreground">
-                Permanently remove your account (not available yet)
-              </p>
+              <p className="font-medium text-foreground">{s.deleteAccountTitle}</p>
+              <p className="text-sm text-muted-foreground">{s.deleteAccountDesc}</p>
             </div>
             <button
               type="button"
               className="rounded-[15px] w-50 bg-destructive px-6 py-2.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]6"
               onClick={() => setDangerOpen("delete")}
             >
-              Delete account
+              {s.deleteAccountCta}
             </button>
           </div>
         </div>
@@ -628,12 +625,12 @@ export function ProfileSettings({
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="text-lg font-semibold text-foreground">
-              {dangerOpen === "reset" ? "Reset progress?" : "Delete account?"}
+              {dangerOpen === "reset" ? s.dangerReset : s.dangerDelete}
             </h4>
             <p className="mt-2 text-sm text-muted-foreground">
               {dangerOpen === "reset"
-                ? "This action isn’t available in the app yet. Contact support if you need help."
-                : "Account deletion isn’t available in the app yet."}
+                ? s.modalUnavailableResetLead
+                : s.deletionUnavailable}
             </p>
             <div className="mt-6 flex justify-end gap-2">
               <button
@@ -641,7 +638,7 @@ export function ProfileSettings({
                 className="rounded-lg border border-border px-4 py-2 text-foreground hover:bg-secondary"
                 onClick={() => setDangerOpen(null)}
               >
-                Close
+                {s.modalClose}
               </button>
             </div>
           </div>

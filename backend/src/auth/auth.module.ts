@@ -10,10 +10,14 @@ import { ApiTokenOnlyGuard } from "./guards/api-token-only.guard";
 import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
 import { StudyingPlanGeminiClient } from "../studying-plan/studying-plan-gemini.client";
 import { StudyingPlanRegenerationService } from "../studying-plan/studying-plan-regeneration.service";
+import { UserVocabularyModule } from "../user-vocabulary/user-vocabulary.module";
+import { WeeklyReviewModule } from "../weekly-review/weekly-review.module";
 
 @Module({
   imports: [
     AlcorythmModule,
+    UserVocabularyModule,
+    WeeklyReviewModule,
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],

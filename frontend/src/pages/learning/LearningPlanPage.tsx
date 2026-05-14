@@ -15,6 +15,10 @@ import { useUser } from "../../context/UserContext";
 import { useRegenerateStudyingPlan } from "../../hooks/useRegenerateStudyingPlan";
 import { buildLearningPlanModel } from "../../lib/learningPlan";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { SEO } from "../../components/SEO/SEO";
+import { resolveCanonicalUrl } from "../../lib/siteUrl";
+import { LEARNING_PLAN_UK_DEFAULTS } from "../../locales/learningPlanUkDefaults";
+import { renderLightMarkdown } from "../../lib/renderLightMarkdown";
 
 function renderIntroMarkdownish(text: string) {
   const parts = text.split(/\*\*(.*?)\*\*/g);
@@ -30,12 +34,18 @@ function renderIntroMarkdownish(text: string) {
 export default function LearningPlanPage() {
   const { user, isLoading, isLoggedIn } = useUser();
   const { regenerate, isRegenerating } = useRegenerateStudyingPlan();
-  const { messages } = useLandingLocale();
+  const { messages, locale } = useLandingLocale();
   const lp = messages.learningPlan;
 
   const plan = useMemo(
-    () => (user ? buildLearningPlanModel(user) : null),
-    [user],
+    () =>
+      user ?
+        buildLearningPlanModel(
+          user,
+          locale === "uk" ? LEARNING_PLAN_UK_DEFAULTS : undefined,
+        )
+      : null,
+    [user, locale],
   );
 
   if (!isLoading && (!isLoggedIn || !user)) {
@@ -59,6 +69,13 @@ export default function LearningPlanPage() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,oklch(0.65_0.25_295/_18%)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-card/55" />
 
+      <SEO
+        title={lp.seoTitle}
+        description={lp.seoDescription}
+        canonicalUrl={resolveCanonicalUrl("/learning-plan")}
+        ogLocale={locale === "uk" ? "uk_UA" : "en_US"}
+        ogLocaleAlternate={locale === "uk" ? "en_US" : "uk_UA"}
+      />
       <ContentHeader />
 
       <main className="relative z-10 mx-auto max-w-3xl px-4 pb-24 pt-28 md:pt-32">
@@ -133,13 +150,16 @@ export default function LearningPlanPage() {
                 {lp.weeklyRhythm}
               </h2>
               <ul className="space-y-3 text-sm md:text-base">
-                {plan.weeklyHabits.map((h) => (
-                  <li key={h} className="flex gap-3">
+                {plan.weeklyHabits.map((h, hi) => (
+                  <li
+                    key={`${hi}-${h.slice(0, 24)}`}
+                    className="flex items-start gap-3"
+                  >
                     <span
                       className="mt-2 size-1.5 shrink-0 rounded-full bg-emerald-500/90"
                       aria-hidden
                     />
-                    {h}
+                    {renderLightMarkdown(h)}
                   </li>
                 ))}
               </ul>

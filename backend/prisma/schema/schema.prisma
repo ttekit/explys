@@ -46,6 +46,13 @@ model User {
 
   xp           Int               @default(0)
   level        Int               @default(1)
+  /// Wrong answers banked toward an “error fixing” remediation quiz (see comprehension tests).
+  comprehensionWrongBank Int @default(0) @map("comprehension_wrong_bank")
+  /// When true, the next generated comprehension test on any lesson is a remediation-focused run.
+  errorFixingTestPending Boolean @default(false) @map("error_fixing_test_pending")
+  /// `YYYY-MM-DD` (UTC Monday) when the learner last submitted the weekly review quiz.
+  weeklyReviewCompletedWeekStart String? @map("weekly_review_completed_week_start")
+  weeklyReviewLastScorePct         Float? @map("weekly_review_last_score_pct")
   achievements UserAchievement[]
 
   teacherOwnedContents Content[] @relation("TeacherOwnedContent")

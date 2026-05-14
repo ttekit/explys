@@ -26,6 +26,7 @@ import {
   type TranscriptLine,
   type VocabularyItem,
 } from "../../components/content-watch/defaultLessonSides";
+import { shouldIncludeOpenSummaryComprehensionTask } from "../../components/profile/cefr";
 import { parseSeriesPlaylistPayload } from "../../lib/catalogPlaylist";
 import { parseWebVttTranscriptLines } from "../../lib/parseWebVtt";
 import { SEO } from "../../components/SEO/SEO";
@@ -33,7 +34,7 @@ import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import { formatMessage } from "../../lib/formatMessage";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 import { useIsLgUp } from "../../hooks/useMediaQuery";
-import { nativeLanguageToIso639_1 } from "../../lib/nativeLanguageCode";
+import { vocabularyHintsTargetLang } from "../../lib/nativeLanguageCode";
 
 const LESSON_XP = 150;
 const LESSON_SUMMARY_STORAGE = "lessonSummary:";
@@ -43,7 +44,12 @@ const WATCHED_COMPLETED_RATIO = 0.75;
 /** GET /content-video/:id/tests (Gemini generates tests + keyVocabulary + gradingToken). */
 type LessonSideBundle = {
   gradingToken?: string;
-  keyVocabulary?: { word?: string; definition?: string; example?: string }[];
+  keyVocabulary?: {
+    word?: string;
+    definition?: string;
+    example?: string;
+    nativeGloss?: string;
+  }[];
   tests?: {
     id?: string;
     question?: string;
@@ -151,16 +157,23 @@ function normalizeLessonVocabulary(raw: unknown): VocabularyItem[] {
           : "";
     const translationRaw =
       typeof r.translation === "string" ? r.translation.trim() : "";
+    const nativeGlossRaw =
+      typeof r.nativeGloss === "string" ? r.nativeGloss.trim() : "";
     const pronunciationRaw =
       typeof r.pronunciation === "string" ? r.pronunciation.trim() : "";
     if (word.length < 2) continue;
     if (definition.length < 2) {
       definition = `A useful word from this lesson: “${word}”.`;
     }
+    const translationPrimary =
+      nativeGlossRaw.length > 0
+        ? (nativeGlossRaw.split(/\s+/)[0] ?? nativeGlossRaw).slice(0, 64)
+        : translationRaw;
     out.push({
       word,
       meaning: definition,
-      translation: translationRaw.length > 0 ? translationRaw : undefined,
+      translation:
+        translationPrimary.length > 0 ? translationPrimary : undefined,
       pronunciation: pronunciationRaw.length > 0 ? pronunciationRaw : undefined,
     });
   }
@@ -518,6 +531,7 @@ function TabPanels({
   sideLoading,
   transcriptLines,
   transcriptLoading,
+  transcriptHighlightVocabulary,
   playbackSec,
   onSeekTranscript,
   quizPanel,
@@ -527,6 +541,7 @@ function TabPanels({
   sideLoading: boolean;
   transcriptLines: TranscriptLine[];
   transcriptLoading: boolean;
+  transcriptHighlightVocabulary: VocabularyItem[];
   playbackSec: number;
   onSeekTranscript: (seconds: number) => void;
   quizPanel: ReactNode;
@@ -553,6 +568,7 @@ function TabPanels({
         <VideoTranscript
           transcript={transcriptLines}
           loading={transcriptLoading}
+          highlightVocabulary={transcriptHighlightVocabulary}
           playbackSec={playbackSec}
           onSeek={onSeekTranscript}
         />
@@ -571,7 +587,7 @@ export default function ContentPage() {
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const { id } = useParams();
   const navigate = useNavigate();
-  const { messages } = useLandingLocale();
+  const { messages, locale } = useLandingLocale();
   const L = messages.lesson;
   const lessonTabs = useMemo(
     (): LessonTabDef[] => [
@@ -583,6 +599,14 @@ export default function ContentPage() {
   );
   // ОБ'ЄДНАНО: отримуємо і user, і refreshProfile
   const { user, refreshProfile } = useUser();
+  const defaultQuizForUser = useMemo((): QuizQuestion[] => {
+    if (shouldIncludeOpenSummaryComprehensionTask(user?.englishLevel)) {
+      return defaultQuizQuestions;
+    }
+    return defaultQuizQuestions.filter(
+      (q) => q.questionType !== "open" && q.category !== "open",
+    );
+  }, [user?.englishLevel]);
   const [activeTab, setActiveTab] = useState<TabId>("vocabulary");
   const [isVideoComplete, setIsVideoComplete] = useState(false);
   const [videoData, setVideoData] = useState<{
@@ -614,6 +638,7 @@ export default function ContentPage() {
     vocabulary: VocabularyItem[];
     quizQuestions: QuizQuestion[];
     gradingToken: string | null;
+    isErrorFixingTest?: boolean;
   } | null>(null);
   const [sideBundleLoading, setSideBundleLoading] = useState(false);
   const [transcriptLines, setTranscriptLines] = useState<TranscriptLine[]>(
@@ -803,15 +828,19 @@ export default function ContentPage() {
             mapApiTestsToQuiz(
               body.tests as NonNullable<LessonSideBundle["tests"]>,
             )
-            : defaultQuizQuestions;
+            : defaultQuizForUser;
         const gradingToken =
           typeof body.gradingToken === "string" && body.gradingToken.length > 0 ?
             body.gradingToken
             : null;
+        const isErrorFixingTest =
+          body.isErrorFixingTest === true ||
+          body.is_error_fixing_test === true;
         setLessonSideBundle({
           vocabulary,
           quizQuestions,
           gradingToken,
+          isErrorFixingTest,
         });
       })
       .catch(() => {
@@ -936,19 +965,21 @@ export default function ContentPage() {
   }, [sideBundleLoading, tryPersonalizeVocabulary]);
 
   useEffect(() => {
-    if (user?.id != null) return;
     if (displayVocabulary.length === 0) {
       setVocabularyHintMap({});
       return;
     }
     let cancelled = false;
-    const target = nativeLanguageToIso639_1(user?.nativeLanguage);
+    const targetLang = vocabularyHintsTargetLang(
+      user?.nativeLanguage?.trim(),
+      locale,
+    );
     void apiFetch(`/content-video/vocabulary-hints`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         words: displayVocabulary.map((v) => v.word),
-        targetLang: target ?? null,
+        targetLang,
       }),
     })
       .then(async (r) => {
@@ -963,15 +994,19 @@ export default function ContentPage() {
             }
           >;
         };
-        if (!cancelled) setVocabularyHintMap(data.hints ?? {});
+        if (!cancelled) {
+          setVocabularyHintMap((prev) => ({ ...prev, ...(data.hints ?? {}) }));
+        }
       })
       .catch(() => {
-        if (!cancelled) setVocabularyHintMap({});
+        if (!cancelled) {
+          /* keep prior hints — personalize may still have filled some */
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [vocabularyWordKey, user?.id]);
+  }, [vocabularyWordKey, user?.nativeLanguage, locale]);
 
   const enrichedDisplayVocabulary = useMemo(
     () => applyVocabularyHints(displayVocabulary, vocabularyHintMap),
@@ -1038,7 +1073,7 @@ export default function ContentPage() {
       }
 
       const questions =
-        readyBundle(bundle) ? bundle!.quizQuestions : defaultQuizQuestions;
+        readyBundle(bundle) ? bundle!.quizQuestions : defaultQuizForUser;
       const writtenSummaryText = extractOpenWrittenAnswer(
         summary.answersById,
         questions,
@@ -1084,6 +1119,14 @@ export default function ContentPage() {
             if (d && typeof d === "object" && !Array.isArray(d)) {
               const o = d as Record<string, unknown>;
               if (
+                o.errorFixingTestCompleted === true ||
+                o.error_fixing_test_completed === true
+              ) {
+                setLessonSideBundle((prev) =>
+                  prev ? { ...prev, isErrorFixingTest: false } : prev,
+                );
+              }
+              if (
                 typeof o.correct === "number" &&
                 Number.isFinite(o.correct) &&
                 typeof o.total === "number" &&
@@ -1113,7 +1156,15 @@ export default function ContentPage() {
         ? stats!.systemTags!
         : [];
       const learnedWords = enrichedDisplayVocabulary
-        .map((v) => ({ word: v.word, definition: v.meaning }))
+        .map((v) => {
+          const tr = v.translation?.trim();
+          return {
+            word: v.word,
+            definition: v.meaning.trim(),
+            ...(tr && tr.length > 0 ? { nativeTranslation: tr.slice(0, 500) } : {}),
+          };
+        })
+        .filter((w) => w.word.trim().length >= 2 && w.definition.length >= 2)
         .slice(0, 12);
       const payload: LessonSummaryState = {
         correctCount,
@@ -1225,13 +1276,17 @@ export default function ContentPage() {
     (!lessonSideBundle?.gradingToken ||
       (lessonSideBundle.quizQuestions?.length ?? 0) === 0);
 
+  const errorFixingQuizBanner =
+    lessonSideBundle?.isErrorFixingTest === true ? L.errorFixingQuizBanner : null;
+
   const quizPanel: ReactNode =
     !isVideoComplete ?
       <VideoQuiz
         key={`quiz-lock-${id}`}
-        questions={defaultQuizQuestions}
+        questions={defaultQuizForUser}
         isVideoComplete={false}
         onComplete={handleQuizComplete}
+        errorFixingBanner={errorFixingQuizBanner}
       />
       : quizWaitingForServer ?
         <div className="py-10 text-center">
@@ -1256,6 +1311,7 @@ export default function ContentPage() {
             questions={lessonSideBundle!.quizQuestions}
             isVideoComplete={true}
             onComplete={handleQuizComplete}
+            errorFixingBanner={errorFixingQuizBanner}
           />;
 
   return (
@@ -1329,6 +1385,7 @@ export default function ContentPage() {
                       sideLoading={sideBundleLoading}
                       transcriptLines={transcriptLines}
                       transcriptLoading={transcriptLoading}
+                      transcriptHighlightVocabulary={enrichedDisplayVocabulary}
                       playbackSec={playbackSec}
                       onSeekTranscript={seekToCue}
                       quizPanel={quizPanel}
@@ -1366,6 +1423,7 @@ export default function ContentPage() {
                       <VideoTranscript
                         transcript={transcriptLines}
                         loading={transcriptLoading}
+                        highlightVocabulary={enrichedDisplayVocabulary}
                         playbackSec={playbackSec}
                         onSeek={seekToCue}
                       />

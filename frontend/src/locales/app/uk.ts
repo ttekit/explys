@@ -42,6 +42,48 @@ export const appUk = {
     levelWithDot: "• {prefix} {level}",
   },
 
+  myLessonsPage: {
+    seoTitle: "Мої уроки",
+    seoDescription:
+      "Завершені відео, підсумки вікторини в цій сесії, тренування помилок і персональні рекомендації.",
+    heading: "Мої уроки",
+    subtitle:
+      "Повторюй завершені уроки, переглядай стислі підсумки вікторин, потренуй граматику й лексику з твоїх промахів та відкривай добірку роликів для тебе.",
+    loadError: "Не вдалося завантажити твої уроки.",
+    loading: "Завантажуємо…",
+    emptyTitle: "Поки немає завершених уроків",
+    emptyHint:
+      "Переглянь принаймні 75% відео з каталогу, щоб воно з’явилося тут.",
+    goToCatalog: "До каталогу",
+    trainingHubTitle: "Тренування та повторний тест",
+    practiceSignInHint:
+      "Увійди в акаунт, щоб вікторини відповідали твоїм переглянутим урокам.",
+    sectionPracticeTitle: "Тренування за твоїми помилками",
+    practicePendingBadge: "Готується вікторина з повторення",
+    practicePendingBody:
+      "Наступна вікторина з розуміння наголошує граматику й лексику з попередніх промахів — відкрий урок нижче, подивись відео, щоб розблокувати тест і пройди орієнтовані питання.",
+    practiceNeutralBody:
+      "Відповіді в кожному уроку тренують аудіювання, граматику й лексику. Коли промахів накопичується достатньо, наступна вікторина після перегляду націлена саме на ці теми.",
+    practiceOpenLesson: "Перейти до уроку",
+    rerunTestTitle: "Підсумковий тест тижня — пройти ще раз",
+    rerunTestBody:
+      "Запусти тижневу вікторину знову: 10 питань із варіантами відповіді, прив’язаних до відео за цей тиждень (пн–нд за UTC) — граматика, словник і розуміння в одному проходженні.",
+    rerunTestCta: "Пройти підсумковий тест знову",
+    suggestedTitle: "Рекомендовані ролики",
+    suggestedSubtitle: "За твоїм рівнем, вподобаннями, темами й прогресом по топіках.",
+    suggestedLoadError: "Не вдалося завантажити рекомендації.",
+    suggestedEmpty:
+      "Щоб персональні добірки спрацювали краще, заверши розміщення рівня або вподобання й зазирни в каталог.",
+    completedTitle: "Завершені уроки",
+    summariesTitle: "Підсумки уроків",
+    summariesSubtitle:
+      "Зберігаються локально під час цієї сесії браузера після відправлення вікторини.",
+    summariesEmpty:
+      "Тут порожньо — заверш вікторину на уроку в цій сесії браузера.",
+    viewSummaryLink: "Підсумок",
+    scoreChip: "{correct} з {total}",
+  },
+
   catalogHero: {
     featured: "У центрі уваги",
     browseBelow: "Дивіться нижче",
@@ -100,7 +142,7 @@ export const appUk = {
     signInPrompt: "Увійди, щоб переглянути профіль.",
     goToLogin: "Перейти до входу",
     tabOverview: "Огляд",
-    tabStudyingPlan: "План навчання",
+    tabStudyingPlan: "Навчальний план",
     tabSubscriptions: "Підписки",
     tabProgress: "Прогрес",
     tabAchievements: "Досягнення",
@@ -131,6 +173,62 @@ export const appUk = {
     quizzes: "Вікторини",
     weeklyCardTitle: "Активність за тиждень",
     proficiencyCardTitle: "Володіння мовою",
+    loadingStats: "Завантажуємо статистику…",
+    currentRank: "Поточний ранг",
+    appLevelDisplay: "Рівень {n}",
+    totalExperience: "Загальний досвід",
+    xpUnit: "XP",
+    avgScore: "Серед. бал",
+    estimatedLevel: "Орієнтовний рівень:",
+    weekdayAbbrev: {
+      Mon: "Пн",
+      Tue: "Вт",
+      Wed: "Ср",
+      Thu: "Чт",
+      Fri: "Пт",
+      Sat: "Сб",
+      Sun: "Нд",
+    },
+  },
+
+  profileSubscriptions: {
+    sectionTitle: "Підписки",
+    sectionLead:
+      "Тариф оплачується через Stripe. Спосіб оплати й продовження керуються в порталі клієнта Stripe, якщо він увімкнений.",
+    noSubscriptionTitle: "Немає активної підписки",
+    noSubscriptionBody:
+      "Обери Light, Smart або Family на сторінці тарифів. План Teacher і школи — через «Звʼязатися з нами».",
+    viewPricing: "Дивитись тарифи",
+    statusPrefix: "Статус:",
+    subscriptionIdPrefix: "ID підписки:",
+    plansUpgrades: "Тарифи й оновлення",
+    statusActive: "Активна",
+    statusCancelled: "Скасовано",
+    statusPastDue: "Прострочено",
+    statusTrial: "Пробний період",
+  },
+
+  profileAchievements: {
+    hunterTitle: "Досягнення",
+    unlockedLead:
+      "Відкрито {unlocked} з {total} досягнень.",
+    progressLabel: "Прогрес",
+    unlockedExclaim: "Відкрито!",
+    rarityCommon: "звичайне",
+    rarityRare: "рідке",
+    rarityLegendary: "легендарне",
+    firstVideoTitle: "Перші кроки",
+    firstVideoDesc: "Подивись перше відео",
+    streak7Title: "Боєць тижня",
+    streak7Desc: "Тримай серію 7 днів",
+    streak30Title: "Майстер місяця",
+    streak30Desc: "Тримай серію 30 днів",
+    vocab100Title: "Збирач слів",
+    vocab100Desc: "Вивчи 100 нових слів",
+    vocab500Title: "Лорд лексики",
+    vocab500Desc: "Вивчи 500 нових слів",
+    vocab1000Title: "Божество словника",
+    vocab1000Desc: "Вивчи 1000 нових слів",
   },
 
   profileSettings: {
@@ -153,6 +251,58 @@ export const appUk = {
     dangerReset: "Скинути прогрес?",
     dangerDelete: "Видалити обліковий запис?",
     deletionUnavailable: "Видалення облікового запису ще недоступне в застосунку.",
+    cardProfileInfo: "Інформація профілю",
+    cardProfileInfoLead:
+      "Оновлюй особисті дані. Email привʼязано до входу й тут не змінюється.",
+    labelFullName: "Повне імʼя",
+    labelEmail: "Email",
+    labelJob: "Робота / посада",
+    labelEducation: "Освіта",
+    placeholderJob: "напр. інженер з ПЗ",
+    placeholderEducation: "напр. бакалавр, школа…",
+    hobbiesHeading: "Хобі та інтереси",
+    placeholderHobby: "Додай хобі…",
+    removeHobbyAria: "Прибрати {name}",
+    addHobbyAria: "Додати хобі",
+    genresHeading: "Уподобання за жанрами",
+    genresLead:
+      "Зліва — улюблені жанри, справа — ті, яких краще уникати.",
+    avoidGenreAria: "Уникати {name}",
+    genreLegendPrefer: "Подобається",
+    genreLegendAvoid: "Уникати",
+    cardNotifications: "Сповіщення",
+    cardNotificationsLead:
+      "Ці налаштування зберігаються на цьому пристрої. Email і push можна підʼєднати пізніше.",
+    reminderDailyDesc: "Нагадувати займатись щодня",
+    achievementAlertsDesc: "Сповіщати про нові досягнення",
+    newContentAlerts: "Новий контент",
+    newContentAlertsDesc: "Повідомляти про нові відео",
+    cardLearningPrefs: "Налаштування навчання",
+    cardLearningPrefsLead:
+      "Швидкість і якість зберігаються в обліковому записі. Автонаступний урок і субтитри — локально на пристрої. Натисни {savePhrase} нижче, щоб зберегти все.",
+    cardLearningPrefsSavePhrase: "«Зберегти налаштування»",
+    labelPlaybackSpeed: "Швидкість відтворення",
+    labelVideoQuality: "Якість відео",
+    videoQualityAuto: "Авто",
+    autoplayNextTitle: "Наступне відео автоматично",
+    autoplayNextDesc:
+      "Автоматично переходити до наступного уроку в ряду",
+    showSubtitlesTitle: "Типові субтитри",
+    showSubtitlesDesc:
+      "Увімкнути англійські субтитри там, де вони доступні",
+    cardDangerZone: "Небезпечна зона",
+    logoutTitle: "Вихід",
+    logoutDesc: "Вийти з облікового запису на цьому пристрої. Знову можна увійти будь-коли.",
+    logoutCta: "Вийти",
+    resetProgressTitle: "Скинути прогрес",
+    resetProgressDesc: "Очистити прогрес навчання (поки недоступно)",
+    resetProgressCta: "Скинути",
+    deleteAccountTitle: "Видалити обліковий запис",
+    deleteAccountDesc: "Незворотне видалення облікового запису (поки недоступно)",
+    deleteAccountCta: "Видалити обліковий запис",
+    modalUnavailableResetLead:
+      "Ця дія поки недоступна в застосунку. Напиши в підтримку, якщо потрібна допомога.",
+    modalClose: "Закрити",
   },
 
   profileTeacherVideos: {
@@ -181,17 +331,71 @@ export const appUk = {
 
   profileProgress: {
     tagsError: "Не вдалося завантажити знання за тегами.",
-    knowledgeByTag: "Знання за тегами",
+    knowledgeByTag: "Знання за темами",
+    progressSectionToggleExpand: "Розгорнути: {section}",
+    progressSectionToggleCollapse: "Згорнути: {section}",
     listening: "Аудіювання",
     vocabulary: "Лексика",
     grammar: "Граматика",
     learningPaths: "Навчальні шляхи",
     recentVideos: "Останні відео",
+    recentVideosLoading: "Завантажуємо останні уроки…",
+    recentVideosError: "Не вдалося завантажити останні уроки.",
+    recentVideosEmpty:
+      "Поки немає останніх уроків. Відкрий каталог і подивись урок — він з’явиться тут.",
+    recentVideosOpenLessonAria: "Відкрити урок: {title}",
+    lessonCompletedNoScore: "Завершено",
+    inProgressMinutes: "{minutes} хв",
     vocabularyProgress: "Прогрес у лексиці",
+    previewNote:
+      "Знання за темами будується за твоїми результатами щодо тем і активності.",
+    loadingTags: "Завантажуємо теги…",
+    noTagsBodyBeforeLink:
+      "Ще немає оцінок за тегами. Заповни дані профілю, за потреби пройди вхідне тестування й дивись відео з вікторинами — тоді ми оцінимо сильні сторони. Потім зайди до",
+    noTagsCatalogLink: "каталогу",
+    catalogLinkAria: "Відкрити каталог",
+    topicsOne: "тема",
+    topicsMany: "тем",
+    averagedOver: "У середньому по",
+    skillOverall: "Загалом",
+    pathBusinessTitle: "Ділова англійська",
+    pathBusinessDesc: "Професійна комунікація на роботі",
+    pathTravelTitle: "Подорожі й розмова",
+    pathTravelDesc: "Ключові фрази для подорожей за кордон",
+    pathAcademicTitle: "Академічна англійська",
+    pathAcademicDesc: "Навички письма та презентацій",
+    videosFraction: "{done} / {total} відео",
+    openCatalogPathAria: "Відкрити «{title}» в каталозі",
+    scorePrefix: "Бал:",
+    notStartedStatus: "Не почато",
+    viewAll: "Усі",
+    categoryBusiness: "Бізнес",
+    categoryMotivation: "Мотивація",
+    categoryCasual: "Розмовна",
+    categoryDrama: "Драма",
+    videoOfficeTitle: "The Office — Ділова зустріч",
+    videoTedTitle: "TED Talk: Сила вразливості",
+    videoFriendsTitle: "Friends — Інтервʼювальна серія",
+    videoBreakingTitle: "Breaking Bad — Урок хімії",
+    vocabTotalWords: "Усього слів",
+    vocabLearned: "Опрацьовано",
+    vocabMastered: "Освоєно",
+    vocabReviewing: "На повторенні",
+    overallProgressLabel: "Загальний прогрес",
+    legendMastered: "Освоєно",
+    legendLearning: "Вивчаю",
+    legendRemaining: "Залишилось",
+    vocabProgressLoading: "Завантажуємо лексику…",
+    vocabProgressError: "Не вдалося завантажити прогрес лексики.",
+    vocabProgressFootnote:
+      "Мова навчання: {lang}. Рахуються збережені слова; рівень опанування — за уроками й темами (від 75% — освоєно).",
   },
 
   profileActivity: {
     historyTitle: "Історія активності",
+    historyEmpty:
+      "Поки що немає активності. Заверши урок, пройди вікторину або збережи слово — і воно з’явиться тут.",
+    historyFooter: "Останні уроки, вікторини, досягнення й збережені слова.",
     streakTitle: "Тижнева серія",
     demoToday: "Сьогодні",
     demoYesterday: "Учора",
@@ -206,6 +410,76 @@ export const appUk = {
     demoQuiz92: "Результат вікторини 92%",
     demoLevelUp: "Новий рівень!",
     demoLevelB1: "Перехід з A2 на B1",
+    historySampleFooter:
+      "Це приклад стрічки — справжні події зʼявляться, коли підʼєднаємо історію активності.",
+    weekActiveSummary: "{count} з {total} днів цього тижня",
+    thisWeekCardTitle: "Цей тиждень",
+    videosWatchedLabel: "Переглянуто відео",
+    quizzesPassedLabel: "Пройдено вікторин",
+    wordsLearnedLabel: "Нових слів",
+    averageScoreShort: "Середній бал",
+    bestPerformanceLabel: "Найкращий результат",
+    bestPerformanceLesson: "TED Talk: Вразливість",
+    sampleScoreBadge: "{score}% (приклад)",
+    demoQuizPerfectScore: "Вікторина TED Talk на 100%",
+    demoYouOnStreak: "Серія триває уже 12 днів",
+    demoNewWordsTitle: "Нові слова вивчено",
+    demoAgoHours2: "2 год тому",
+    demoAgoHours5: "5 год тому",
+    demoDaysAgo2: "2 дні тому",
+    demoDaysAgo3: "3 дні тому",
+    lessonCompletedTitle: "Урок завершено",
+    lessonWatchingTitle: "Перегляд",
+    lessonNameLine: "{videoTitle}",
+    lessonWatchingMinutes: "{videoTitle} · ~{minutes} хв",
+    quizActivityTitle: "Вікторина",
+    quizActivitySubtitlePassed: "{videoTitle} · {score}% · пройдено",
+    quizActivitySubtitleFailed: "{videoTitle} · {score}% · не пройдено",
+    vocabActivityTitle: "Збережене слово",
+    achievementActivityTitle: "Відкрито досягнення",
+    bestPerformanceEmpty: "Пройдіть кілька вікторин, щоб тут з’явився найкращий результат.",
+    bestScoreBadge: "{score}%",
+    bestQuizLessonFallback: "Урок",
+    weekdayAbbrev: {
+      Mon: "Пн",
+      Tue: "Вт",
+      Wed: "Ср",
+      Thu: "Чт",
+      Fri: "Пт",
+      Sat: "Сб",
+      Sun: "Нд",
+    },
+    weeklyReviewTitle: "Тижнева вікторина-підсумок",
+    weeklyReviewSubtitle:
+      "10 питань за уроками, які ти дивився цього тижня (пн–нд за UTC).",
+    weeklyReviewCta: "Почати тижневий підсумок",
+    weeklyReviewCompleted:
+      "Уже здано цього тижня — твій бал {score}%. Наступна спроба: понеділок (UTC).",
+    weeklyReviewNeedWatch:
+      "Подивись хоча б один урок цього тижня, щоб відкрити підсумок.",
+    weeklyReviewLessonsHint: "Уроків цього тижня: {count}",
+  },
+
+  weeklyReviewPage: {
+    seoTitle: "Тижневий підсумок · Explys",
+    seoDescription:
+      "Повтори уроки тижня однією змішаною вікториною. Раз на тиждень (UTC).",
+    backToProfile: "До профілю",
+    title: "Тижневий підсумок",
+    lead: "Лише питання з варіантами — за фрагментами, які ти вже дивився з понеділка UTC.",
+    loading: "Готуємо тижневу вікторину…",
+    blockedTitle: "Підсумок зараз недоступний",
+    doneTitle: "Уже здано",
+    submitFail: "Не вдалося надіслати відповіді. Спробуй ще раз.",
+    resultLine: "Результат: {correct} / {total} ({pct}%). +{xp} XP.",
+    retestNextWeek: "Наступний раунд — у наступний понеділок (UTC).",
+    practiceBannerTitle: "Повтор тижневого підсумку",
+    practiceBannerBody:
+      "Та сама вікторина, що й підсумок тижня, але лише для тренування — без XP і без зміни зарахованого балу.",
+    practiceResultLine:
+      "Тренувальний результат: {correct} / {total} ({pct}%). Без XP за цей прогін.",
+    practiceFooter:
+      "Офіційний підсумок за цей тиждень без змін. Можеш проходити повтор коли захочеш до понеділка (UTC).",
   },
 
   subscription: {
@@ -242,6 +516,17 @@ export const appUk = {
     weeklyRhythm: "Тижневий ритм",
     goCatalog: "До каталогу",
     updateProfileGoal: "Оновити профіль і мету",
+    profileIncompleteLead:
+      "Твій маршрут з’явиться після вхідного тесту.",
+    profileIncompleteBody:
+      "Відкрий каталог і пройди коротке вхідне тестування. Тоді ми підлаштуємо етапи, тижневі звички та мету під твій рівень.",
+    profileDescription:
+      "Твоя мета й горизонт часу з поетапними кроками та тижневим ритмом — за ним зручно працювати в каталозі.",
+    openFullPage: "Повна сторінка",
+    continueInCatalog: "Далі в каталозі",
+    seoTitle: "Навчальний план · Explys",
+    seoDescription:
+      "Твій персональний маршрут навчання, етапи та тижневі звички.",
   },
 
   learningPlanPhases: {
@@ -287,6 +572,11 @@ export const appUk = {
     quizUnlocked: "Вікторину відкрито",
     xpAvailable: "Доступно {xp} XP",
     preparingVocabulary: "Готуємо персоналізовану ключову лексику…",
+    transcriptVocabMarkTitle: "Торкнися для перекладу й пояснення",
+    transcriptVocabHighlightHint:
+      "Бурштинове підсвічення — ключова лексика. Торкнися слова, щоб побачити переклад і пояснення.",
+    transcriptVocabTranslationLabel: "Переклад",
+    transcriptVocabMeaningLabel: "Пояснення",
     gradingFailed:
       "Запит на перевірку не вдався. Перевір з’єднання й спробуй ще раз з вікторини уроку (Завершити урок).",
     gradingUnreachable:
@@ -295,6 +585,113 @@ export const appUk = {
       "Дані вікторини не встигли підвантажитися. Залишайся на вкладці «Вікторина», поки з’являться питання, потім натисни «Завершити урок» ще раз. Якщо повторюється — онови сторінку.",
     coachCommentFallback:
       "Відповідь відправлено, але коментар коуча у відповіді немає. Переконайся, що на backend задано GEMINI_API_KEY (або покладайся на офлайн-фідбек сервера) і спробуй надіслати знову.",
+    errorFixingQuizBanner:
+      "Вікторина на виправлення помилок — набір зосереджений на навичках, які ти нещодавно промахнув. Не поспішай; звичайна вікторина повернеться після відправлення цієї.",
+  },
+
+  lessonSummaryPage: {
+    missingLesson: "Урок відсутній.",
+    pageTitle: "Підсумок уроку",
+    emptyLead:
+      'Немає результатів для цього уроку. Відкрий урок, заверши вікторину й натисни «Завершити урок», щоб тут побачити бал.',
+    openLesson: "Відкрити урок",
+    metaLead:
+      "Пройди вікторину на сторінці уроку, щоб тут побачити бал, слова й оновлення тем.",
+    continueLesson: "Продовжити урок",
+    quizResults: "Результати вікторини",
+    pctCorrect: "{pct}% правильних відповідей",
+    moodStrong:
+      "Чудова робота — можна переходити до наступного уроку.",
+    moodGood: "Гарне зусилля — ще раз переглянь словниковий блок.",
+    moodReview: "Переглянь фрагмент і слова, потім спробуй ще раз.",
+    writtenSummaryHeading: "Твій письмовий підсумок",
+    writtenSummaryLead:
+      "Персональні коментарі до твоєї відповіді з огляду на урок і профіль, коли ти завершуєш вікторину, будучи в системі.",
+    summaryScoreLine: "Бал за підсумок: {score}/10",
+    noCoachComment:
+      'Коментар тренера до письмового підсумку не збережено. Заверши урок із вкладки вікторини й натисни «Завершити урок», коли тести вже завантажаться — тоді сервер зможе додати відгук.',
+    reviewWrongHeading: "Розбір складних запитань",
+    reviewWrongLead:
+      "Пояснення до того, що не вийшло — пробіжись перед наступною вікториною на цьому урокі.",
+    yourAnswer: "Твоя відповідь:",
+    correctLabel: "Правильно:",
+    answerDash: "—",
+    wordsHeading: "Слова з уроку",
+    wordsLead:
+      "Ключова лексика — додай її до активного списку, повернувшись на вкладку «Словник».",
+    wordsNativeTooltip: "Твоєю (рідною) мовою",
+    wordsEmpty:
+      "Персонального списку слів для цього проходження немає. Спробуй ще раз після того, як бічна панель уроку завантажиться, або відкрий урок для типових підказок.",
+    topicsHeading: "Теми й знання",
+    topicsLead:
+      "Як цей урок пов’язаний із тегами та темами каталогу для цього ролика.",
+    levelFocus: "Фокус рівня",
+    linkedTopics: "Пов’язані теми",
+    lessonThemes: "Теми уроку",
+    untaggedClipLead:
+      "Цей ролик ще не прив’язаний до конкретних тем каталогу. Твій бал усе одно оновлює прогрес у категорії ",
+    untaggedClipTail: ".",
+    knowledgeShiftTitle: "Орієнтовна зміна знань за вікториною",
+    thisLesson: "Цей урок",
+    quizAdjustedSkills: "Навички з урахуванням вікторини",
+    quizAdjustedLead:
+      "Той самий вигляд, що й у прогресі — бали моделі за шкалою 0–100. Слухання враховує невеликий бонус за завершення перегляду.",
+    overall: "Загалом",
+    experienceEarned: "Отримано досвіду",
+    xpEarnedLine: "+{xp} {xpUnit}",
+    fallbackLessonTitle: "Урок",
+    quizCategoryGrammar: "Граматика",
+    quizCategoryVocabulary: "Лексика",
+    quizCategoryComprehension: "Розуміння тексту",
+  },
+
+  placementFlow: {
+    adult: {
+      job: "Робота",
+      jobPlaceholder: "напр. інженер з ПЗ, вчитель, студент",
+      education: "Освіта",
+      educationPlaceholder: "напр. бакалавр дизайну, школа, самоосвіта",
+      hobbies: "Хобі",
+      hobbiesPlaceholder: "Введи хобі й натисни Enter",
+      nativeLanguage: "Рідна мова",
+      nativeLanguagePlaceholder: "напр. українська, іспанська, мандаринська",
+      englishLevel: "Рівень англійської (CEFR)",
+      englishLevelHelp:
+        "Обери рівень, щоб підлаштувати вхідний тест. Якщо хочеш почати з початкового рівня без тесту — обери «Не знаю / без тесту».",
+      englishLevelNone: "Не знаю / без тесту",
+      englishLevelSelectPlaceholder: "Обери…",
+      errorEnglishLevel: "Будь ласка, обери варіант для рівня англійської.",
+      errorJob: "Будь ласка, вкажи роботу чи роль.",
+      errorEducation: "Будь ласка, вкажи освіту чи профіль підготовки.",
+      errorHobbies: "Додай хоча б одне хобі.",
+      errorNativeLanguage: "Будь ласка, вкажи рідну мову.",
+      saveErrorToast: "Не вдалося зберегти дані.",
+      saving: "Збереження…",
+      continueCta: "Далі до вхідного тесту",
+      continueWithoutTestCta: "Далі без вхідного тесту",
+      addChip: "Додати",
+      addChipNamed: 'Додати «{name}»',
+      hobbyNoOptions: "Почни вводити хобі, потім Enter, щоб додати.",
+    },
+    student: {
+      title: "Спочатку про смаки",
+      lead: "Розкажи, що тобі подобається — так ми підлаштуємо вхідне тестування. Потім короткий тест на рівень.",
+      hobbies: "Хобі",
+      hobbiesPlaceholder: "Введи хобі й натисни Enter",
+      genresPrefer: "Жанри, які подобаються",
+      genresPreferPlaceholder: "Обери жанри",
+      genresAvoid: "Жанри уникати",
+      genresAvoidPlaceholder: "Необов’язково",
+      errorHobbies: "Додай хоча б одне хобі.",
+      errorGenres: "Обери хоча б один жанр, який подобається.",
+      loadGenresError: "Не вдалося завантажити жанри.",
+      saveErrorToast: "Не вдалося зберегти вподобання.",
+      saving: "Збереження…",
+      continueCta: "Далі до вхідного тесту",
+      addChip: "Додати",
+      addChipNamed: 'Додати «{name}»',
+      hobbyNoOptions: "Почни вводити хобі, потім Enter, щоб додати.",
+    },
   },
 
   admin: {

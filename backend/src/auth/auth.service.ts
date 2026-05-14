@@ -16,6 +16,10 @@ import {
   phaseCountFromStoredPhases,
 } from '../content-video/studying-plan-phase-progress.util';
 import { StudyingPlanRegenerationService } from '../studying-plan/studying-plan-regeneration.service';
+import type { StudyingPlanTextLocale } from '../studying-plan/studying-plan-pass-conditions.builder';
+import { UserVocabularyService } from 'src/user-vocabulary/user-vocabulary.service';
+import { getUtcMondayWeekRange } from 'src/datetime/utc-monday-week.util';
+import { WeeklyReviewService } from 'src/weekly-review/weekly-review.service';
 
 // Экспортируем интерфейс, чтобы контроллер мог его видеть
 export interface GeneratedStudent {
@@ -31,6 +35,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly alcorythmService: AlcorythmService,
     private readonly studyingPlanRegeneration: StudyingPlanRegenerationService,
+    private readonly userVocabulary: UserVocabularyService,
+    private readonly weeklyReview: WeeklyReviewService,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -201,6 +207,7 @@ export class AuthService {
         role: true,
         teacherId: true,
         hasCompletedPlacement: true,
+        errorFixingTestPending: true,
         isSuspended: true,
         subscriptionPlan: true,
         subscriptionStatus: true,
@@ -257,6 +264,7 @@ export class AuthService {
       role: user.role,
       teacherId: user.teacherId ?? null,
       hasCompletedPlacement: user.hasCompletedPlacement,
+      errorFixingTestPending: user.errorFixingTestPending === true,
       currentStreak: user.currentStreak ?? 0,
       englishLevel: extra?.englishLevel ?? '',
       education: extra?.education ?? '',
@@ -284,28 +292,16 @@ export class AuthService {
     };
   }
 
-  /** Rebuild phases, pass criteria, and weekly habits from profile (Gemini when configured). */
-  async regenerateStudyingPlan(userId: number) {
-    await this.studyingPlanRegeneration.regenerateForUser(userId);
+  /** locale: learner-visible plan language (stored JSON copy). Default en. */
+  async regenerateStudyingPlan(
+    userId: number,
+    locale: StudyingPlanTextLocale = 'en',
+  ) {
+    await this.studyingPlanRegeneration.regenerateForUser(userId, locale);
     return this.getProfile(userId);
   }
 
   /** Monday 00:00 UTC through Sunday (current ISO week). */
-  private utcWeekRange(): { weekStart: Date; weekEndExclusive: Date } {
-    const now = new Date();
-    const day = (d: Date) => d.getUTCDay();
-    const x = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-    );
-    const dow = day(x);
-    const offset = dow === 0 ? -6 : 1 - dow;
-    x.setUTCDate(x.getUTCDate() + offset);
-    x.setUTCHours(0, 0, 0, 0);
-    const weekEndExclusive = new Date(x);
-    weekEndExclusive.setUTCDate(weekEndExclusive.getUTCDate() + 7);
-    return { weekStart: x, weekEndExclusive };
-  }
-
   /**
    * Dashboard numbers + weekly watch minutes (Mon–Sun, UTC week containing today).
    */
@@ -321,11 +317,22 @@ export class AuthService {
       throw new ForbiddenException('Account suspended');
     }
 
+    const { weekStart, weekEndExclusive } = getUtcMondayWeekRange();
+
     const [
       watchSum,
       distinctVideos,
       quizAgg,
       weekSessions,
+      weekQuizzesPassed,
+      weekVocabAdded,
+      bestQuizPassedAttempt,
+      bestQuizAnyAttempt,
+      activitySessions,
+      activityAttempts,
+      activityAchievements,
+      activityVocab,
+      weekQuizAvg,
     ] = await Promise.all([
       this.prisma.watchSession.aggregate({
         where: { userId },
@@ -341,19 +348,86 @@ export class AuthService {
         _avg: { scorePct: true },
         _count: { _all: true },
       }),
-      (() => {
-        const { weekStart, weekEndExclusive } = this.utcWeekRange();
-        return this.prisma.watchSession.findMany({
-          where: {
-            userId,
-            endedAt: {
-              gte: weekStart,
-              lt: weekEndExclusive,
-            },
+      this.prisma.watchSession.findMany({
+        where: {
+          userId,
+          endedAt: {
+            gte: weekStart,
+            lt: weekEndExclusive,
           },
-          select: { endedAt: true, secondsWatched: true },
-        });
-      })(),
+        },
+        select: { endedAt: true, secondsWatched: true, contentVideoId: true },
+      }),
+      this.prisma.comprehensionTestAttempt.count({
+        where: {
+          userId,
+          passed: true,
+          createdAt: { gte: weekStart, lt: weekEndExclusive },
+        },
+      }),
+      this.prisma.userVocabulary.count({
+        where: {
+          userId,
+          createdAt: { gte: weekStart, lt: weekEndExclusive },
+        },
+      }),
+      this.prisma.comprehensionTestAttempt.findFirst({
+        where: { userId, passed: true },
+        orderBy: { scorePct: 'desc' },
+        select: {
+          scorePct: true,
+          contentVideo: { select: { videoName: true } },
+        },
+      }),
+      this.prisma.comprehensionTestAttempt.findFirst({
+        where: { userId },
+        orderBy: { scorePct: 'desc' },
+        select: {
+          scorePct: true,
+          contentVideo: { select: { videoName: true } },
+        },
+      }),
+      this.prisma.watchSession.findMany({
+        where: { userId },
+        orderBy: { endedAt: 'desc' },
+        take: 35,
+        select: {
+          endedAt: true,
+          completed: true,
+          secondsWatched: true,
+          contentVideo: { select: { videoName: true } },
+        },
+      }),
+      this.prisma.comprehensionTestAttempt.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 35,
+        select: {
+          createdAt: true,
+          scorePct: true,
+          passed: true,
+          contentVideo: { select: { videoName: true } },
+        },
+      }),
+      this.prisma.userAchievement.findMany({
+        where: { userId },
+        orderBy: { unlockedAt: 'desc' },
+        take: 35,
+        select: { unlockedAt: true, achievementId: true },
+      }),
+      this.prisma.userVocabulary.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 35,
+        select: { createdAt: true, term: true },
+      }),
+      this.prisma.comprehensionTestAttempt.aggregate({
+        where: {
+          userId,
+          createdAt: { gte: weekStart, lt: weekEndExclusive },
+        },
+        _avg: { scorePct: true },
+      }),
     ]);
 
     const totalSeconds = watchSum?._sum?.secondsWatched ?? 0;
@@ -383,12 +457,141 @@ export class AuthService {
       minutes: Math.ceil(minutesMonSun[i]),
     }));
 
+    const weekVideoIds = new Set(
+      weekSessions.map((s) => s.contentVideoId).filter((id) => typeof id === 'number'),
+    );
+    const thisWeekVideosWatched = weekVideoIds.size;
+
+    type ActivityKind =
+      | 'video_completed'
+      | 'video_watched'
+      | 'quiz'
+      | 'achievement'
+      | 'vocabulary';
+
+    const rawEvents: Array<{
+      kind: ActivityKind;
+      atMs: number;
+      videoTitle?: string;
+      scorePct?: number;
+      passed?: boolean;
+      achievementId?: string;
+      term?: string;
+      secondsWatched?: number;
+    }> = [];
+
+    for (const s of activitySessions) {
+      rawEvents.push({
+        kind: s.completed ? 'video_completed' : 'video_watched',
+        atMs: s.endedAt.getTime(),
+        videoTitle: s.contentVideo.videoName,
+        secondsWatched: s.secondsWatched ?? 0,
+      });
+    }
+    for (const a of activityAttempts) {
+      rawEvents.push({
+        kind: 'quiz',
+        atMs: a.createdAt.getTime(),
+        videoTitle: a.contentVideo.videoName,
+        scorePct:
+          typeof a.scorePct === 'number' && Number.isFinite(a.scorePct)
+            ? Math.round(a.scorePct * 10) / 10
+            : undefined,
+        passed: a.passed,
+      });
+    }
+    for (const u of activityAchievements) {
+      rawEvents.push({
+        kind: 'achievement',
+        atMs: u.unlockedAt.getTime(),
+        achievementId: u.achievementId,
+      });
+    }
+    for (const v of activityVocab) {
+      rawEvents.push({
+        kind: 'vocabulary',
+        atMs: v.createdAt.getTime(),
+        term: v.term,
+      });
+    }
+
+    rawEvents.sort((x, y) => y.atMs - x.atMs);
+    const seen = new Set<string>();
+    const activityHistory: Array<{
+      kind: ActivityKind;
+      at: string;
+      videoTitle?: string;
+      scorePct?: number;
+      passed?: boolean;
+      achievementId?: string;
+      term?: string;
+      secondsWatched?: number;
+    }> = [];
+
+    for (const e of rawEvents) {
+      let key: string;
+      if (e.kind === 'quiz') {
+        key = `${e.kind}:${e.atMs}:${e.videoTitle ?? ''}:${e.scorePct ?? 0}`;
+      } else if (e.kind === 'achievement') {
+        key = `${e.kind}:${e.achievementId ?? ''}:${e.atMs}`;
+      } else if (e.kind === 'vocabulary') {
+        key = `${e.kind}:${e.term ?? ''}:${e.atMs}`;
+      } else {
+        key = `${e.kind}:${e.atMs}:${e.videoTitle ?? ''}`;
+      }
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      activityHistory.push({
+        kind: e.kind,
+        at: new Date(e.atMs).toISOString(),
+        videoTitle: e.videoTitle,
+        scorePct: e.scorePct,
+        passed: e.passed,
+        achievementId: e.achievementId,
+        term: e.term,
+        secondsWatched: e.secondsWatched,
+      });
+      if (activityHistory.length >= 28) {
+        break;
+      }
+    }
+
+    const bestQuizRow = bestQuizPassedAttempt ?? bestQuizAnyAttempt;
+    const rawBestScore = bestQuizRow?.scorePct;
+    const bestQuiz =
+      bestQuizRow &&
+        rawBestScore != null &&
+        Number.isFinite(Number(rawBestScore))
+        ? {
+          title: bestQuizRow.contentVideo?.videoName?.trim() ?? '',
+          scorePct:
+            Math.round(Number(rawBestScore) * 10) / 10,
+        }
+        : null;
+
+    const rawWeekAvg = weekQuizAvg._avg?.scorePct;
+    const thisWeekAverageScore =
+      typeof rawWeekAvg === 'number' && Number.isFinite(rawWeekAvg)
+        ? Math.round(rawWeekAvg * 10) / 10
+        : null;
+
+    const weeklyReview = await this.weeklyReview.getDashboardSummary(userId);
+
     return {
       totalWatchTimeMin,
       videosCompleted,
       testsCompleted,
       averageScore,
       weeklyActivity,
+      thisWeekVideosWatched,
+      thisWeekQuizzesPassed: weekQuizzesPassed,
+      thisWeekWordsLearned: weekVocabAdded,
+      thisWeekAverageScore,
+      bestQuiz,
+      activityHistory,
+      weeklyReview,
     };
   }
 
@@ -460,5 +663,22 @@ export class AuthService {
       .sort((a, b) => b.score - a.score);
 
     return { tags };
+  }
+
+  /**
+   * Saved vocabulary progress for the learner’s current study language (`UserVocabulary`).
+   */
+  async getProfileVocabularyProgress(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isSuspended: true },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.isSuspended) {
+      throw new ForbiddenException('Account suspended');
+    }
+    return this.userVocabulary.getProgressSummary(userId);
   }
 }

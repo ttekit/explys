@@ -102,6 +102,45 @@ export class UserVocabularyService {
   }
 
   /**
+   * Aggregates saved words for the learner’s study language into UI buckets (mastered / reviewing / new).
+   */
+  async getProgressSummary(userId: number): Promise<{
+    total: number;
+    learned: number;
+    mastered: number;
+    reviewing: number;
+    studyingLanguage: string;
+  }> {
+    const studyingLanguage = await this.getStudyingLanguageCode(userId);
+    const rows = await this.prisma.userVocabulary.findMany({
+      where: { userId, language: studyingLanguage },
+      select: { mastery: true },
+    });
+    const total = rows.length;
+    const masteredMin = 0.75;
+    const startedMin = 0.02;
+    let mastered = 0;
+    let reviewing = 0;
+    for (const r of rows) {
+      const raw = Number(r.mastery);
+      const m = Number.isFinite(raw) ? raw : 0;
+      if (m >= masteredMin) {
+        mastered += 1;
+      } else if (m > startedMin) {
+        reviewing += 1;
+      }
+    }
+    const learned = mastered + reviewing;
+    return {
+      total,
+      learned,
+      mastered,
+      reviewing,
+      studyingLanguage,
+    };
+  }
+
+  /**
    * Saves key-lesson vocabulary after the learner submits a comprehension test (idempotent).
    */
   async recordKeyTermsFromLesson(input: {

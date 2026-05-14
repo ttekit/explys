@@ -68,6 +68,31 @@ export class ContentVideoController {
     return this.contentVideoService.findWatchedByUser(userId);
   }
 
+  @Get("recent-watched")
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: "Recent clips for the signed-in learner (by last activity)",
+    description:
+      "Returns up to `limit` distinct videos, newest `WatchSession` first, with series title and best quiz score when any.",
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Max clips (1–24, default 8)",
+  })
+  findRecentWatchedForLearner(
+    @Req() req: Request & { user: unknown },
+    @Query("limit") limitRaw?: string,
+  ) {
+    const userId = jwtSubToUserId(req.user);
+    const parsed =
+      limitRaw != null && limitRaw !== ""
+        ? Number.parseInt(limitRaw, 10)
+        : Number.NaN;
+    const limit = Number.isFinite(parsed) ? parsed : 8;
+    return this.contentVideoService.findRecentWatchedForUser(userId, limit);
+  }
+
   @Post("vocabulary-hints")
   @ApiOperation({
     summary:
