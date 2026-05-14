@@ -31,6 +31,10 @@ interface CatalogSidebarProps {
   onSelectLevel: (level: string) => void;
   /** When false, sidebar/backdrop anchor to viewport top (use when pages omit the fixed app navbar). */
   reserveTopNavSpace?: boolean;
+  /** Catalog page: Spotlight command palette is open (highlights Search nav). */
+  catalogSpotlightOpen?: boolean;
+  /** Catalog page only: open Spotlight from sidebar Search. */
+  onOpenCatalogSpotlight?: () => void;
   // lifted state — controlled by parent
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
@@ -44,6 +48,8 @@ export function CatalogSidebar({
   englishLevel,
   // onSelectLevel,
   reserveTopNavSpace = true,
+  catalogSpotlightOpen = false,
+  onOpenCatalogSpotlight,
   collapsed,
   onCollapsedChange,
 }: CatalogSidebarProps) {
@@ -52,8 +58,12 @@ export function CatalogSidebar({
   const sortedCategories = ["All", ...categories.filter(Boolean).sort()];
 
   const linkActive = (link: (typeof sidebarLinks)[number]) => {
-    if (link.label === "Catalog") return pathname === "/catalog";
-    if (link.label === "Search") return pathname.startsWith("/catalog/search");
+    if (link.label === "Catalog") {
+      return pathname === "/catalog" && !catalogSpotlightOpen;
+    }
+    if (link.label === "Search") {
+      return pathname === "/catalog" && catalogSpotlightOpen;
+    }
     const tab = searchParams.get("tab");
     if (link.label === "Progress") {
       return pathname === "/profile" && tab === "progress";
@@ -110,22 +120,53 @@ export function CatalogSidebar({
         </div>
 
         <nav className="flex-col space-y-1 p-4">
-          {sidebarLinks.map((link) => (
-            <Link
-              key={link.label}
-              to={link.to}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",
-                linkActive(link)
+          {sidebarLinks.map((link) => {
+            if (link.label === "Search") {
+              const active = linkActive(link);
+              const itemClass = cn(
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                active
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 collapsed && "justify-center px-2",
-              )}
-            >
-              <link.icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{link.label}</span>}
-            </Link>
-          ))}
+              );
+              return pathname === "/catalog" && onOpenCatalogSpotlight ?
+                  <button
+                    key={link.label}
+                    type="button"
+                    className={itemClass}
+                    onClick={() => onOpenCatalogSpotlight()}
+                  >
+                    <link.icon className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span>{link.label}</span>}
+                  </button>
+                : <Link
+                    key={link.label}
+                    to="/catalog"
+                    state={{ openSpotlight: true }}
+                    className={itemClass}
+                  >
+                    <link.icon className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span>{link.label}</span>}
+                  </Link>;
+            }
+            return (
+              <Link
+                key={link.label}
+                to={link.to}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",
+                  linkActive(link)
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  collapsed && "justify-center px-2",
+                )}
+              >
+                <link.icon className="h-5 w-5 shrink-0" />
+                {!collapsed && <span>{link.label}</span>}
+              </Link>
+            );
+          })}
         </nav>
 
         {!collapsed && (
@@ -203,19 +244,47 @@ export function CatalogSidebar({
 
       <nav className="fixed right-0 bottom-0 left-0 z-40 border-t border-border bg-card lg:hidden">
         <div className="flex items-center justify-around py-2">
-          {sidebarLinks.slice(0, 5).map((link) => (
-            <Link
-              key={link.label}
-              to={link.to}
-              className={cn(
+          {sidebarLinks.slice(0, 5).map((link) => {
+            if (link.label === "Search") {
+              const active = linkActive(link);
+              const itemClass = cn(
                 "flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors",
-                linkActive(link) ? "text-primary" : "text-muted-foreground",
-              )}
-            >
-              <link.icon className="h-5 w-5" />
-              <span className="text-xs">{link.label}</span>
-            </Link>
-          ))}
+                active ? "text-primary" : "text-muted-foreground",
+              );
+              return pathname === "/catalog" && onOpenCatalogSpotlight ?
+                  <button
+                    key={link.label}
+                    type="button"
+                    className={itemClass}
+                    onClick={() => onOpenCatalogSpotlight()}
+                  >
+                    <link.icon className="h-5 w-5" />
+                    <span className="text-xs">{link.label}</span>
+                  </button>
+                : <Link
+                    key={link.label}
+                    to="/catalog"
+                    state={{ openSpotlight: true }}
+                    className={itemClass}
+                  >
+                    <link.icon className="h-5 w-5" />
+                    <span className="text-xs">{link.label}</span>
+                  </Link>;
+            }
+            return (
+              <Link
+                key={link.label}
+                to={link.to}
+                className={cn(
+                  "flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors",
+                  linkActive(link) ? "text-primary" : "text-muted-foreground",
+                )}
+              >
+                <link.icon className="h-5 w-5" />
+                <span className="text-xs">{link.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </nav>
     </>

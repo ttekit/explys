@@ -11,6 +11,11 @@ import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AlcorythmService } from '../alcorythm/alcorythm.service';
+import {
+  activeStudyingPhaseFromPassedLessons,
+  phaseCountFromStoredPhases,
+} from '../content-video/studying-plan-phase-progress.util';
+import { StudyingPlanRegenerationService } from '../studying-plan/studying-plan-regeneration.service';
 
 // Экспортируем интерфейс, чтобы контроллер мог его видеть
 export interface GeneratedStudent {
@@ -25,6 +30,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly alcorythmService: AlcorythmService,
+    private readonly studyingPlanRegeneration: StudyingPlanRegenerationService,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -185,13 +191,15 @@ export class AuthService {
   }
 
   async getProfile(userId: number) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
+    const [user, passedLessons] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        teacherId: true,
         hasCompletedPlacement: true,
         isSuspended: true,
         subscriptionPlan: true,
@@ -216,12 +224,20 @@ export class AuthService {
             hobbies: true,
             learningGoal: true,
             timeToAchieve: true,
+            studyingPlanPhases: true,
+            activePhaseEnteredAt: true,
             favoriteGenres: { select: { id: true } },
             hatedGenres: { select: { id: true } },
           },
         },
       },
-    });
+    }),
+      this.prisma.comprehensionTestAttempt.findMany({
+        where: { userId, passed: true },
+        distinct: ['contentVideoId'],
+        select: { contentVideoId: true },
+      }),
+    ]);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -229,11 +245,17 @@ export class AuthService {
       throw new ForbiddenException('Account suspended');
     }
     const extra = user.additionalUserData;
+    const phaseCount = phaseCountFromStoredPhases(extra?.studyingPlanPhases, 4);
+    const activeStudyingPhaseIndex = activeStudyingPhaseFromPassedLessons(
+      passedLessons.length,
+      phaseCount,
+    );
     return {
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
+      teacherId: user.teacherId ?? null,
       hasCompletedPlacement: user.hasCompletedPlacement,
       currentStreak: user.currentStreak ?? 0,
       englishLevel: extra?.englishLevel ?? '',
@@ -243,6 +265,12 @@ export class AuthService {
       hobbies: extra?.hobbies ?? [],
       learningGoal: extra?.learningGoal ?? '',
       timeToAchieve: extra?.timeToAchieve ?? '',
+      studyingPlanPhases: extra?.studyingPlanPhases ?? null,
+      activePhaseEnteredAt:
+        extra?.activePhaseEnteredAt != null ?
+          extra.activePhaseEnteredAt.toISOString()
+        : null,
+      activeStudyingPhaseIndex,
       favoriteGenres: extra?.favoriteGenres?.map((g) => g.id) ?? [],
       hatedGenres: extra?.hatedGenres?.map((g) => g.id) ?? [],
       playbackSpeed: user.settings?.playbackSpeed ?? null,
@@ -254,6 +282,12 @@ export class AuthService {
       level: user.level,
       achievements: user.achievements.map((a: any) => a.achievementId),
     };
+  }
+
+  /** Rebuild phases, pass criteria, and weekly habits from profile (Gemini when configured). */
+  async regenerateStudyingPlan(userId: number) {
+    await this.studyingPlanRegeneration.regenerateForUser(userId);
+    return this.getProfile(userId);
   }
 
   /** Monday 00:00 UTC through Sunday (current ISO week). */

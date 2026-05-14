@@ -8,6 +8,8 @@ import { AuthService } from "./auth.service";
 import { ApiTokenOrJwtAuthGuard } from "./guards/api-token-or-jwt.guard";
 import { ApiTokenOnlyGuard } from "./guards/api-token-only.guard";
 import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
+import { StudyingPlanGeminiClient } from "../studying-plan/studying-plan-gemini.client";
+import { StudyingPlanRegenerationService } from "../studying-plan/studying-plan-regeneration.service";
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
     ApiTokenOrJwtAuthGuard,
     ApiTokenOnlyGuard,
     UserSelfOrApiGuard,
+    StudyingPlanGeminiClient,
+    StudyingPlanRegenerationService,
   ],
   exports: [
     JwtModule,

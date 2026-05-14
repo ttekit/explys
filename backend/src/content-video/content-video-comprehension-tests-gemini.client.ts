@@ -43,6 +43,10 @@ export type ComprehensionTestsGenerationContext = {
   videoThemeTags: string[];
   learnerThemeKnowledge: string[];
   priorWeakSpots: PriorWeakSpot[];
+  /** Profile studying plan — `AdditionalUserData` with app defaults. */
+  learningGoal: string;
+  timeToAchieve: string;
+  hobbies: string[];
 };
 
 const EXPECTED_TEST_COUNT = 10;
@@ -97,6 +101,11 @@ export class ContentVideoComprehensionTestsGeminiClient {
             .join("\n")
         : "(none — first attempt or no recorded misses for this user on this clip.)";
 
+    const hobbyLine =
+      input.hobbies.length > 0
+        ? input.hobbies.slice(0, 6).join(", ")
+        : "(none stated)";
+
     const transcriptBlock = hasTranscript
       ? [
           "VIDEO TRANSCRIPT (ground truth; every fact and quoted word must come from here):",
@@ -125,6 +134,12 @@ export class ContentVideoComprehensionTestsGeminiClient {
       "PRIOR MISSES — retest 2–3 similar skills in NEW wording (never copy stems):",
       weakSpots,
       "",
+      "LEARNER STUDYING PLAN (from profile — use when the transcript supports it; never invent video facts):",
+      `- Stated goal: ${input.learningGoal}`,
+      `- Target time horizon: ${input.timeToAchieve}`,
+      `- Interests / hobbies: ${hobbyLine}`,
+      "Apply: Prefer MCQs, the open-summary rubric, and key vocabulary items that help toward the stated goal when the clip content allows. Use hobbies as light thematic hooks only when the video touches related ideas. Shorter horizons → favour high-utility chunks and scenarios the learner can reuse soon; longer horizons → you may include slightly broader topic words still grounded in the transcript. Questions stay transcript-grounded.",
+      "",
       `=== keyVocabulary (exactly ${KEY_VOCAB_COUNT} item) ===`,
       'Each: {"word":"...","definition":"...","example":"..."}',
       "KEY VOCABULARY — LEVEL (mandatory):",
@@ -132,6 +147,7 @@ export class ContentVideoComprehensionTestsGeminiClient {
       `Target band label for glosses: ${stretch.vocabularyTargetBand} (not the learner’s comfort band).`,
       "- Words or multi-word chunks from the transcript (or title/description if no transcript).",
       "- Prioritise items whose semantics map onto LEARNER_TOPIC_STRENGTHS (known topic areas): new labels should connect to those domains when the video supports it.",
+      "- Align several key vocabulary picks with LEARNER STUDYING PLAN (goal / interests) when transcript evidence exists; otherwise stay with neutral lesson language.",
       "- Avoid only picking the easiest, below-target high-frequency words when the clip contains suitable stretch items; definitions/examples must suit the target band above.",
       "- Generated in this same response as the tests.",
       "",
@@ -199,6 +215,9 @@ export class ContentVideoComprehensionTestsGeminiClient {
           vocabularyTerms: input.vocabularyTerms,
           learnerThemeKnowledge: input.learnerThemeKnowledge,
           videoThemeTags: input.videoThemeTags,
+          learningGoal: input.learningGoal,
+          timeToAchieve: input.timeToAchieve,
+          hobbies: input.hobbies,
         });
       }
       return { tests, keyVocabulary: keyVocabularyRaw };
@@ -368,15 +387,24 @@ export function fallbackKeyVocabulary(ctx: {
   vocabularyTerms: string[];
   learnerThemeKnowledge?: string[];
   videoThemeTags?: string[];
+  learningGoal?: string;
+  timeToAchieve?: string;
+  hobbies?: string[];
 }): KeyVocabularyItem[] {
   const plain = ctx.transcriptPlain?.trim() ?? "";
   const title = ctx.videoName?.trim() ?? "";
   const desc = (ctx.videoDescription ?? "").trim();
   const stretch = cefrStretchForKeyVocabulary(ctx.learnerCefr);
   const targetBand = stretch.vocabularyTargetBand;
+  const planGoal = ctx.learningGoal?.trim() ?? "";
+  const planHorizon = ctx.timeToAchieve?.trim() ?? "";
+  const hobbyList = ctx.hobbies ?? [];
   const themeHints = [
     ...(ctx.learnerThemeKnowledge ?? []),
     ...(ctx.videoThemeTags ?? []),
+    ...(planGoal.length > 0 ? [planGoal] : []),
+    ...(planHorizon.length > 0 ? [planHorizon] : []),
+    ...hobbyList,
   ];
 
   const seeds: string[] = [];
@@ -422,7 +450,7 @@ export function fallbackKeyVocabulary(ctx: {
     themeHints
       .map((t) => t.trim())
       .filter((t) => t.length > 0)
-      .slice(0, 4)
+      .slice(0, 6)
       .join(", ") || "the lesson topic";
   const out: KeyVocabularyItem[] = [];
   for (const w of uniq) {
@@ -507,6 +535,9 @@ export function fallbackComprehensionTests(ctx: {
   learnerCefr: string | null;
   vocabularyTerms: string[];
   priorWeakSpots: PriorWeakSpot[];
+  learningGoal?: string;
+  timeToAchieve?: string;
+  hobbies?: string[];
 }): ComprehensionTestItem[] {
   const label = ctx.videoName.slice(0, 80) || "this lesson";
   const plain = ctx.transcriptPlain?.trim() ?? "";
@@ -515,6 +546,8 @@ export function fallbackComprehensionTests(ctx: {
   const v1 = words[1] ?? (ctx.vocabularyTerms[1] ?? "main idea");
   const v2 = words[2] ?? (ctx.vocabularyTerms[2] ?? "detail");
   const level = ctx.learnerCefr?.trim() || "the learner’s level";
+  const goal = ctx.learningGoal?.trim() || "steady English progress";
+  const horizon = ctx.timeToAchieve?.trim() || "your plan horizon";
   const firstWeak = ctx.priorWeakSpots[0];
   const grammarWeak = ctx.priorWeakSpots.find((w) => w.category === "grammar");
 
@@ -578,15 +611,16 @@ export function fallbackComprehensionTests(ctx: {
     questionType: "multiple_choice",
     id: "c3",
     category: "comprehension",
-    question: `Why practise with clips like “${label.slice(0, 56)}”?`,
+    question: `Your study goal is “${goal.slice(0, 80)}” over about ${horizon.slice(0, 48)}. Why might a clip like “${label.slice(0, 40)}” still help?`,
     options: [
-      "Realistic listening and vocabulary in context",
-      "Only for native speakers",
-      "No learning value",
-      "Typing speed only",
+      "It can build listening and phrases you reuse toward that goal",
+      "Goals do not matter for video lessons",
+      "Clips never relate to personal aims",
+      "Only grammar rules count",
     ],
     correctIndex: 0,
-    explanation: "Authentic context helps transfer to real communication.",
+    explanation:
+      "Even general clips strengthen skills that support the learner’s stated aim.",
   });
 
   mcq.push({
@@ -690,13 +724,19 @@ export function fallbackComprehensionTests(ctx: {
     explanation: "“Focus on” is the fixed collocation.",
   });
 
+  const hobbyRef =
+    ctx.hobbies && ctx.hobbies.length > 0
+      ? ` If it fits the content, note one idea that could matter for an interest like ${ctx.hobbies
+          .slice(0, 2)
+          .join(" or ")
+          .slice(0, 80)}.`
+      : "";
   const openItem: ComprehensionTestItem = {
     questionType: "open",
     id: "open1",
     category: "open",
-    question: `In 2–3 sentences, what was the video “${label.slice(0, 72)}” mainly about? Mention at least one concrete idea from the content.`,
-    explanation:
-      "A good answer states the topic and at least one specific point the speaker makes (e.g. problem, tip, or example).",
+    question: `In 2–3 sentences, what was the video “${label.slice(0, 72)}” mainly about? Mention at least one concrete idea.${hobbyRef}`,
+    explanation: `Rubric: topic + one specific detail from the clip; optional one-line link to "${goal.slice(0, 60)}" only if the video actually supports it.`,
   };
 
   return [...mcq, openItem];

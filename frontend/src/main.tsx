@@ -33,6 +33,8 @@ import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 import AnalyticsLayout from "./components/AnalyticsLayout";
 import RequireAuth from "./components/RequireAuth";
+import RequireSubscriberAccess from "./components/RequireSubscriberAccess";
+import SubscribePage from "./pages/subscription/SubscribePage";
 
 const router = createBrowserRouter([
   {
@@ -51,6 +53,7 @@ const router = createBrowserRouter([
       {
         element: <RequireAuth />,
         children: [
+          { path: "/subscribe", element: <SubscribePage /> },
           {
             path: "/admin",
             element: <AdminLayout />,
@@ -66,16 +69,30 @@ const router = createBrowserRouter([
             ],
           },
           { path: "/level-test", element: <LevelTestPage /> },
-          { path: "/entrance-test", element: <Navigate to="/catalog" replace /> },
-          { path: "/contentPage", element: <Navigate to="/watched-lessons" replace /> },
-          { path: "/watched-lessons", element: <WatchedLessonsPage /> },
-          { path: "/profileMain", element: <ProfileMain /> },
-          { path: "/profile", element: <ProfileMain /> },
-          { path: "/catalog", element: <VideoPage /> },
-          { path: "/learning-plan", element: <LearningPlanPage /> },
-          { path: "/video-page", element: <Navigate to="/catalog" replace /> },
-          { path: "/content/:id/summary", element: <LessonSummaryPage /> },
-          { path: "/content/:id?", element: <ContentPage /> },
+          {
+            element: <RequireSubscriberAccess />,
+            children: [
+              {
+                path: "/entrance-test",
+                element: <Navigate to="/catalog" replace />,
+              },
+              {
+                path: "/contentPage",
+                element: <Navigate to="/watched-lessons" replace />,
+              },
+              { path: "/watched-lessons", element: <WatchedLessonsPage /> },
+              { path: "/profileMain", element: <ProfileMain /> },
+              { path: "/profile", element: <ProfileMain /> },
+              { path: "/catalog", element: <VideoPage /> },
+              { path: "/learning-plan", element: <LearningPlanPage /> },
+              {
+                path: "/video-page",
+                element: <Navigate to="/catalog" replace />,
+              },
+              { path: "/content/:id/summary", element: <LessonSummaryPage /> },
+              { path: "/content/:id?", element: <ContentPage /> },
+            ],
+          },
         ],
       },
     ],

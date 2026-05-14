@@ -81,6 +81,13 @@ model AdditionalUserData {
   /// Adult learners: target horizon as free text (e.g. 3m, 6 months).
   timeToAchieve String? @map("time_to_achieve")
 
+  /// Studying plan JSON **v2**: `{ version: 2, phases: [...], weeklyHabits }` with structured `tasks` per phase.
+  studyingPlanPhases         Json?   @map("studying_plan_phases")
+  /// 0-based index into `studyingPlanPhases.phases` (or fallback when JSON is null/invalid).
+  activeStudyingPhaseIndex   Int     @default(0) @map("active_studying_phase_index")
+  /// UTC instant when the learner entered `activeStudyingPhaseIndex` (phase-scoped task windows).
+  activePhaseEnteredAt       DateTime? @map("active_phase_entered_at")
+
   teacherGrades        String?
   teacherTopics        String[]
   /// Roster of pupils as JSON, e.g. [{ "name", "surname" }] — matches DB JSONB

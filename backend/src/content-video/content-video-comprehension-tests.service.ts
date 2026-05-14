@@ -42,6 +42,11 @@ import {
 } from "./content-video-summary-recommendations-gemini.client";
 import type { ComprehensionSummaryRecommendationsBodyDto } from "src/content/content-video/dto/summary-recommendations.dto";
 import { UserVocabularyService } from "src/user-vocabulary/user-vocabulary.service";
+import { syncActiveStudyingPhaseForUser } from "src/studying-plan/sync-active-studying-phase";
+import {
+  effectiveLearningGoal,
+  effectiveTimeHorizon,
+} from "./studying-plan.util";
 
 const GRADING_TTL_MS = 2 * 60 * 60 * 1000;
 
@@ -194,8 +199,14 @@ export class ContentVideoComprehensionTestsService {
       transcriptPlain && transcriptPlain.trim().length >= 40,
     );
 
-    const { cefr, vocabularyTerms, learnerThemeKnowledge } =
-      await this.loadLearnerContext(userId);
+    const {
+      cefr,
+      vocabularyTerms,
+      learnerThemeKnowledge,
+      learningGoal,
+      timeToAchieve,
+      hobbies,
+    } = await this.loadLearnerContext(userId);
 
     const priorWeakSpots = await this.loadPriorWeakSpots(
       userId,
@@ -227,6 +238,9 @@ export class ContentVideoComprehensionTestsService {
         videoThemeTags,
         learnerThemeKnowledge,
         priorWeakSpots,
+        learningGoal,
+        timeToAchieve,
+        hobbies,
       );
     let keyVocabulary = rawKeyVocab;
     if (!keyVocabulary.length) {
@@ -238,6 +252,9 @@ export class ContentVideoComprehensionTestsService {
         vocabularyTerms,
         learnerThemeKnowledge,
         videoThemeTags,
+        learningGoal,
+        timeToAchieve,
+        hobbies,
       });
     }
 
@@ -288,6 +305,9 @@ export class ContentVideoComprehensionTestsService {
     videoThemeTags: string[],
     learnerThemeKnowledge: string[],
     priorWeakSpots: PriorWeakSpot[],
+    learningGoal: string,
+    timeToAchieve: string,
+    hobbies: string[],
   ): Promise<{
     source: "gemini" | "fallback";
     tests: ComprehensionTestItem[];
@@ -302,6 +322,9 @@ export class ContentVideoComprehensionTestsService {
       videoThemeTags,
       learnerThemeKnowledge,
       priorWeakSpots,
+      learningGoal,
+      timeToAchieve,
+      hobbies,
     };
     const geminiBundle = await this.gemini.generateTests(ctx);
     if (geminiBundle?.tests.length) {
@@ -319,6 +342,9 @@ export class ContentVideoComprehensionTestsService {
         learnerCefr: cefr,
         vocabularyTerms,
         priorWeakSpots,
+        learningGoal,
+        timeToAchieve,
+        hobbies,
       }),
       keyVocabulary: fallbackKeyVocabulary({
         transcriptPlain,
@@ -328,6 +354,9 @@ export class ContentVideoComprehensionTestsService {
         vocabularyTerms,
         learnerThemeKnowledge,
         videoThemeTags,
+        learningGoal,
+        timeToAchieve,
+        hobbies,
       }),
     };
   }
@@ -802,34 +831,63 @@ export class ContentVideoComprehensionTestsService {
         } as unknown as Prisma.InputJsonValue,
       },
     });
+    await syncActiveStudyingPhaseForUser(this.prisma, userId);
   }
 
   private async loadLearnerContext(userId: number | null): Promise<{
     cefr: string | null;
     vocabularyTerms: string[];
     learnerThemeKnowledge: string[];
+    learningGoal: string;
+    timeToAchieve: string;
+    hobbies: string[];
   }> {
+    const planDefaults = {
+      learningGoal: effectiveLearningGoal(null),
+      timeToAchieve: effectiveTimeHorizon(null),
+      hobbies: [] as string[],
+    };
     if (userId == null) {
       return {
         cefr: null,
         vocabularyTerms: [],
         learnerThemeKnowledge: [],
+        ...planDefaults,
       };
     }
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { additionalUserData: { select: { englishLevel: true } } },
+      include: {
+        additionalUserData: {
+          select: {
+            englishLevel: true,
+            learningGoal: true,
+            timeToAchieve: true,
+            hobbies: true,
+          },
+        },
+      },
     });
     if (!user) {
       return {
         cefr: null,
         vocabularyTerms: [],
         learnerThemeKnowledge: [],
+        ...planDefaults,
       };
     }
 
-    const cefr = user.additionalUserData?.englishLevel?.trim() ?? null;
+    const extra = user.additionalUserData;
+    const learningGoal = effectiveLearningGoal(extra?.learningGoal);
+    const timeToAchieve = effectiveTimeHorizon(extra?.timeToAchieve);
+    const hobbies = Array.isArray(extra?.hobbies)
+      ? extra.hobbies
+          .map((h) => String(h).trim())
+          .filter((h) => h.length > 0)
+      : [];
+
+    const cefr = extra?.englishLevel?.trim() ?? null;
     const lang = await this.resolveStudyingLanguageCode(userId);
 
     const rows = await this.prisma.userVocabulary.findMany({
@@ -861,7 +919,14 @@ export class ContentVideoComprehensionTestsService {
       ),
     ];
 
-    return { cefr, vocabularyTerms, learnerThemeKnowledge };
+    return {
+      cefr,
+      vocabularyTerms,
+      learnerThemeKnowledge,
+      learningGoal,
+      timeToAchieve,
+      hobbies,
+    };
   }
 
   private async resolveStudyingLanguageCode(userId: number): Promise<string> {
