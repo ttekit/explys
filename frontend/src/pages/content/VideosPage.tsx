@@ -36,10 +36,15 @@ interface ContentVideo {
   videoDescription: string | null;
   videoLink: string;
   thumbnailUrl?: string;
+  playlistPosition?: number;
   content: {
+    id: number;
+    playlistPosition?: number;
     category: {
+      id: number;
       name: string;
       description: string;
+      friendlyLink: string;
     };
   };
 }
@@ -358,11 +363,30 @@ export default function VideoPage() {
   const catalogRows = useMemo(() => {
     if (filteredVideos.length === 0) return [];
     if (selectedCategory !== "All") {
+      const sorted = [...filteredVideos].sort((a, b) => {
+        const ma =
+          typeof a.content.playlistPosition === "number" ?
+            a.content.playlistPosition
+            : 0;
+        const mb =
+          typeof b.content.playlistPosition === "number" ?
+            b.content.playlistPosition
+            : 0;
+        if (ma !== mb) return ma - mb;
+        const va =
+          typeof a.playlistPosition === "number" ? a.playlistPosition : 0;
+        const vb =
+          typeof b.playlistPosition === "number" ? b.playlistPosition : 0;
+        if (va !== vb) return va - vb;
+        return a.id - b.id;
+      });
+      const link = sorted[0]?.content.category.friendlyLink?.trim() ?? "";
       return [
         {
           title: selectedCategory,
           description: undefined as string | undefined,
-          videos: filteredVideos.map(toCardVideo),
+          seriesFriendlyLink: link.length > 0 ? link : undefined,
+          videos: sorted.map(toCardVideo),
         },
       ];
     }
@@ -375,11 +399,32 @@ export default function VideoPage() {
     }
     return [...byCategory.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([title, list]) => ({
-        title,
-        description: undefined as string | undefined,
-        videos: list.map(toCardVideo),
-      }));
+      .map(([title, list]) => {
+        const sorted = [...list].sort((a, b) => {
+          const ma =
+            typeof a.content.playlistPosition === "number" ?
+              a.content.playlistPosition
+              : 0;
+          const mb =
+            typeof b.content.playlistPosition === "number" ?
+              b.content.playlistPosition
+              : 0;
+          if (ma !== mb) return ma - mb;
+          const va =
+            typeof a.playlistPosition === "number" ? a.playlistPosition : 0;
+          const vb =
+            typeof b.playlistPosition === "number" ? b.playlistPosition : 0;
+          if (va !== vb) return va - vb;
+          return a.id - b.id;
+        });
+        const link = sorted[0]?.content.category.friendlyLink?.trim() ?? "";
+        return {
+          title,
+          description: undefined as string | undefined,
+          seriesFriendlyLink: link.length > 0 ? link : undefined,
+          videos: sorted.map(toCardVideo),
+        };
+      });
   }, [filteredVideos, selectedCategory]);
 
   return (
@@ -451,6 +496,7 @@ export default function VideoPage() {
                     key={row.title}
                     title={row.title}
                     description={row.description}
+                    seriesFriendlyLink={row.seriesFriendlyLink}
                     videos={row.videos}
                   />
                 ))

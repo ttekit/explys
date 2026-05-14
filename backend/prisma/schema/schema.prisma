@@ -48,6 +48,8 @@ model User {
   level        Int               @default(1)
   achievements UserAchievement[]
 
+  teacherOwnedContents Content[] @relation("TeacherOwnedContent")
+
   @@index([teacherId], map: "users_teacher_id_idx")
   @@map("users")
 }

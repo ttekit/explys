@@ -1,15 +1,23 @@
 model Content {
   id Int @id @default(autoincrement())
 
-  friendlyLink String @map("friendly_link")
+  friendlyLink String @unique @map("friendly_link")
   name         String
   description  String
+
+  /// When set, this series was created by a teacher (profile upload). Null = admin / legacy catalog.
+  ownerUserId Int?  @map("owner_user_id")
+  ownerUser   User? @relation("TeacherOwnedContent", fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  /// "public" = listed in global catalog; "unlisted" = playable via link only.
+  visibility String @default("public")
 
   category ContentMedia[]
 
   createAt DateTime @default(now()) @map("create_at")
   updateAt DateTime @updatedAt @map("update_at")
 
+  @@index([ownerUserId], map: "contents_owner_user_id_idx")
   @@map("contents")
 }
 
@@ -19,12 +27,16 @@ model ContentMedia {
   categoryId Int     @map("category_id")
   category   Content @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
+  /// Zero-based order of this slot within the parent series (`Content`).
+  playlistPosition Int @default(0) @map("playlist_position")
+
   createAt DateTime @default(now()) @map("create_at")
   updateAt DateTime @updatedAt @map("update_at")
 
   stats        ContentStats?
   ContentVideo ContentVideo[]
 
+  @@unique([categoryId, playlistPosition], map: "content_medias_category_id_playlist_position_key")
   @@map("content_medias")
 }
 
@@ -54,6 +66,9 @@ model ContentVideo {
   contentId Int          @map("content_id")
   content   ContentMedia @relation(fields: [contentId], references: [id], onDelete: Cascade)
 
+  /// Zero-based order within the parent `ContentMedia` slot.
+  playlistPosition Int @default(0) @map("playlist_position")
+
   videoLink        String  @map("video_link")
   videoName        String  @map("video_name")
   videoDescription String? @map("video_description")
@@ -66,6 +81,7 @@ model ContentVideo {
   comprehensionTestAttempts  ComprehensionTestAttempt[]
   userComprehensionWeakSpots UserComprehensionWeakSpot[]
 
+  @@unique([contentId, playlistPosition], map: "content_videos_content_id_playlist_position_key")
   @@map("content_videos")
 }
 

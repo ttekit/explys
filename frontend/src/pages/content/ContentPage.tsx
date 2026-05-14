@@ -1,6 +1,13 @@
 import { Link, useNavigate, useParams } from "react-router";
 import { useState, useEffect, useCallback, useRef, useMemo, type ReactNode } from "react";
-import { ArrowLeft, BookOpen, FileText, HelpCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  HelpCircle,
+} from "lucide-react";
 import { apiFetch } from "../../lib/api";
 import { captureEvent } from "../../lib/analytics";
 import { cn } from "../../lib/utils";
@@ -19,6 +26,7 @@ import {
   type TranscriptLine,
   type VocabularyItem,
 } from "../../components/content-watch/defaultLessonSides";
+import { parseSeriesPlaylistPayload } from "../../lib/catalogPlaylist";
 import { parseWebVttTranscriptLines } from "../../lib/parseWebVtt";
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
@@ -330,30 +338,82 @@ const tabs: { id: TabId; label: string; icon: typeof BookOpen }[] = [
 
 function ContentWatchHeader({
   rightLabel,
+  playlistRibbon,
 }: {
   rightLabel?: string;
+  playlistRibbon?: {
+    friendlyLink: string;
+    prevVideoId: number | null;
+    nextVideoId: number | null;
+    position: number;
+    total: number;
+  } | null;
 }) {
   return (
     <header className="fixed top-0 right-0 left-0 z-50 border-border border-b bg-background/80 backdrop-blur-lg">
-      <div className="mx-auto grid max-w-7xl grid-cols-3 items-center gap-3 px-4 py-3">
-        <Link
-          to="/catalog"
-          className="flex shrink-0 items-center gap-2 justify-self-start text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="text-sm whitespace-nowrap">Back to catalog</span>
-        </Link>
+      <div className="mx-auto max-w-7xl px-4 py-3">
+        <div className="grid grid-cols-3 items-center gap-3">
+          <Link
+            to="/catalog"
+            className="flex shrink-0 items-center gap-2 justify-self-start text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="text-sm whitespace-nowrap">Back to catalog</span>
+          </Link>
 
-        <div className="flex min-w-0 items-center justify-center gap-2 justify-self-center">
-          <ChameleonMascot size="sm" mood="happy" animate={false} />
-          <span className="font-display truncate font-bold text-foreground">
-            Explys
-          </span>
-        </div>
+          <div className="flex min-w-0 items-center justify-center gap-2 justify-self-center">
+            <ChameleonMascot size="sm" mood="happy" animate={false} />
+            <span className="font-display truncate font-bold text-foreground">
+              Explys
+            </span>
+          </div>
 
-        <div className="min-h-[1.25rem] justify-self-end text-right text-xs text-muted-foreground sm:text-sm">
-          {rightLabel?.trim() ? rightLabel : null}
+          <div className="min-h-[1.25rem] justify-self-end text-right text-xs text-muted-foreground sm:text-sm">
+            {rightLabel?.trim() ? rightLabel : null}
+          </div>
         </div>
+        {playlistRibbon && playlistRibbon.total > 1 ?
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+            <div className="flex min-w-0 items-center gap-2">
+              {playlistRibbon.prevVideoId != null ?
+                <Link
+                  to={`/content/${playlistRibbon.prevVideoId}`}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Link>
+              : (
+                <span className="inline-flex items-center gap-1 px-2 py-1.5 text-sm text-muted-foreground/50">
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </span>
+              )}
+            </div>
+            <Link
+              to={`/catalog/series/${encodeURIComponent(playlistRibbon.friendlyLink)}`}
+              className="text-center text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:text-sm"
+            >
+              Series {playlistRibbon.position} / {playlistRibbon.total}
+            </Link>
+            <div className="flex items-center gap-2">
+              {playlistRibbon.nextVideoId != null ?
+                <Link
+                  to={`/content/${playlistRibbon.nextVideoId}`}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              : (
+                <span className="inline-flex items-center gap-1 px-2 py-1.5 text-sm text-muted-foreground/50">
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </span>
+              )}
+            </div>
+          </div>
+        : null}
       </div>
     </header>
   );
@@ -509,13 +569,24 @@ export default function ContentPage() {
     videoLink: string;
     videoDescription: string | null;
     content: {
-      category: { name: string; description: string };
+      category: {
+        name: string;
+        description: string;
+        friendlyLink?: string;
+      };
       stats?: {
         userTags?: string[];
         systemTags?: string[];
         topics?: { id: number; name: string }[];
       } | null;
     };
+  } | null>(null);
+  const [playlistRibbon, setPlaylistRibbon] = useState<{
+    friendlyLink: string;
+    prevVideoId: number | null;
+    nextVideoId: number | null;
+    position: number;
+    total: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [lessonSideBundle, setLessonSideBundle] = useState<{
@@ -638,6 +709,56 @@ export default function ContentPage() {
   }, [id]);
 
   useEffect(() => {
+    if (!videoData || !id) {
+      setPlaylistRibbon(null);
+      return;
+    }
+    const fl = videoData.content.category.friendlyLink?.trim();
+    if (!fl) {
+      setPlaylistRibbon(null);
+      return;
+    }
+    const vid = Number.parseInt(String(id), 10);
+    if (!Number.isFinite(vid) || vid <= 0) {
+      setPlaylistRibbon(null);
+      return;
+    }
+    let cancelled = false;
+    void apiFetch(`/contents/series/${encodeURIComponent(fl)}`, {
+      method: "GET",
+    })
+      .then(async (r) => {
+        if (!r.ok || cancelled) return;
+        const json: unknown = await r.json();
+        const parsed = parseSeriesPlaylistPayload(json);
+        if (!parsed || cancelled) return;
+        const idx = parsed.episodes.findIndex((e) => e.contentVideoId === vid);
+        if (idx < 0) {
+          if (!cancelled) setPlaylistRibbon(null);
+          return;
+        }
+        const prevEp = idx > 0 ? parsed.episodes[idx - 1] : undefined;
+        const nextEp =
+          idx < parsed.episodes.length - 1 ? parsed.episodes[idx + 1] : undefined;
+        if (!cancelled) {
+          setPlaylistRibbon({
+            friendlyLink: fl,
+            prevVideoId: prevEp ? prevEp.contentVideoId : null,
+            nextVideoId: nextEp ? nextEp.contentVideoId : null,
+            position: idx + 1,
+            total: parsed.episodes.length,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPlaylistRibbon(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [videoData, id]);
+
+  useEffect(() => {
     if (!id || !videoData) return;
     const vid = Number.parseInt(String(id), 10);
     if (!Number.isFinite(vid) || vid <= 0) return;
@@ -723,6 +844,7 @@ export default function ContentPage() {
     watchCompletePostedRef.current = false;
     playbackStartedForPersonalizeRef.current = false;
     vocabPersonalizeDoneRef.current = false;
+    setPlaylistRibbon(null);
   }, [id]);
 
   const headerRight = isVideoComplete
@@ -1126,9 +1248,16 @@ export default function ContentPage() {
         description={descriptionBlurb}
         canonicalUrl={resolveCanonicalUrl(`/content/${id}`)}
       />
-      <ContentWatchHeader rightLabel={headerRight} />
+      <ContentWatchHeader
+        rightLabel={headerRight}
+        playlistRibbon={playlistRibbon}
+      />
 
-      <main className="pt-16">
+      <main
+        className={cn(
+          playlistRibbon && playlistRibbon.total > 1 ? "pt-28" : "pt-16",
+        )}
+      >
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
