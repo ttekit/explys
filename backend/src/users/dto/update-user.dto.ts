@@ -57,10 +57,4 @@ export class UpdateUserDto extends PartialType(
   @IsOptional()
   @IsString()
   currentResolution?: string;
-
-  /** When true, marks placement as finished without requiring the entry test (used for the “no English level / skip test” path). */
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  hasCompletedPlacement?: boolean;
 }

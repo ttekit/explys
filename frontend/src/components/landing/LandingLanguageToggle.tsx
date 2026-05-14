@@ -6,7 +6,7 @@ type LandingLanguageToggleProps = {
 };
 
 export function LandingLanguageToggle({ className }: LandingLanguageToggleProps) {
-  const { locale, setLocale, messages } = useLandingLocale();
+  const { locale, setLocale } = useLandingLocale();
 
   return (
     <div
@@ -15,7 +15,7 @@ export function LandingLanguageToggle({ className }: LandingLanguageToggleProps)
         className,
       )}
       role="group"
-      aria-label={messages.common.languageToggleAria}
+      aria-label="Language / Мова"
     >
       <button
         type="button"

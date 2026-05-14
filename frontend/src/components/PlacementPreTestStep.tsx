@@ -7,49 +7,8 @@ import InputText from "./InputText";
 import LabelRegister from "./LabelRegister";
 import { apiFetch, readApiErrorBody } from "../lib/api";
 import { useUser, type UserData } from "../context/UserContext";
-import { useLandingLocale } from "../context/LandingLocaleContext";
-import { formatMessage } from "../lib/formatMessage";
-import { cn } from "../lib/utils";
 
 type HobbyOption = { value: string; label: string };
-
-/** Sentinel value for the “skip entry test” path (not persisted as `englishLevel`). */
-const ADULT_SKIP_PLACEMENT_TEST = "none" as const;
-
-const ADULT_PLACEMENT_CEFR_LEVELS = [
-  "A1",
-  "A2",
-  "B1",
-  "B2",
-  "C1",
-  "C2",
-] as const;
-
-type AdultPlacementCefrLevel = (typeof ADULT_PLACEMENT_CEFR_LEVELS)[number];
-
-const ADULT_PLACEMENT_CEFR_SET: ReadonlySet<string> = new Set(
-  ADULT_PLACEMENT_CEFR_LEVELS,
-);
-
-const selectFieldClass =
-  "w-full rounded-lg border border-border bg-input px-3 py-2.5 text-base text-foreground shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60";
-
-/**
- * Returns a CEFR code when `englishLevel` is one of the supported placement targets.
- */
-function parseAdultProfileCefrTarget(
-  level: string | undefined,
-): AdultPlacementCefrLevel | "" {
-  const raw = level?.trim().toUpperCase() ?? "";
-  if (ADULT_PLACEMENT_CEFR_SET.has(raw)) {
-    return raw as AdultPlacementCefrLevel;
-  }
-  return "";
-}
-
-type PlacementPreTestSuccessDetail = {
-  readonly skippedPlacementTest: boolean;
-};
 
 function hobbiesToOptions(h: string[]): HobbyOption[] {
   return h.map((x) => ({ value: x, label: x }));
@@ -127,10 +86,7 @@ const selectDark = {
   }),
 };
 
-/**
- * Adults must fill job, education, hobbies, native language, and either choose a CEFR
- * target (entry test) or complete the skip path (handled via `hasCompletedPlacement`).
- */
+/** Adults must fill job, education, hobbies, and native language before the placement iframe. */
 export function adultNeedsPlacementPrepFields(user: UserData): boolean {
   if (user.role !== "adult") {
     return false;
@@ -139,8 +95,7 @@ export function adultNeedsPlacementPrepFields(user: UserData): boolean {
     !user.workField?.trim() ||
     !user.education?.trim() ||
     !(user.hobbies && user.hobbies.length > 0) ||
-    !user.nativeLanguage?.trim() ||
-    !parseAdultProfileCefrTarget(user.englishLevel)
+    !user.nativeLanguage?.trim()
   );
 }
 
@@ -149,11 +104,9 @@ export default function PlacementPreTestStep({
   onSuccess,
 }: {
   user: UserData;
-  onSuccess: (detail?: PlacementPreTestSuccessDetail) => void;
+  onSuccess: () => void;
 }) {
   const { refreshProfile } = useUser();
-  const { messages } = useLandingLocale();
-  const a = messages.placementFlow.adult;
   const [job, setJob] = useState(() => user.workField?.trim() ?? "");
   const [education, setEducation] = useState(
     () => user.education?.trim() ?? "",
@@ -164,10 +117,6 @@ export default function PlacementPreTestStep({
   const [hobbies, setHobbies] = useState<string[]>(() => [
     ...(user.hobbies ?? []),
   ]);
-  const [englishLevelChoice, setEnglishLevelChoice] = useState(() => {
-    const fromProfile = parseAdultProfileCefrTarget(user.englishLevel);
-    return fromProfile === "" ? "" : fromProfile;
-  });
   const [saving, setSaving] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
 
@@ -179,60 +128,41 @@ export default function PlacementPreTestStep({
     const nl = nativeLanguage.trim();
     const hobbiesPayload = hobbies.map((h) => h.trim()).filter(Boolean);
     if (!j) {
-      setFieldError(a.errorJob);
+      setFieldError("Please enter your job or role.");
       return;
     }
     if (!ed) {
-      setFieldError(a.errorEducation);
+      setFieldError("Please enter your education level or background.");
       return;
     }
     if (hobbiesPayload.length < 1) {
-      setFieldError(a.errorHobbies);
+      setFieldError("Add at least one hobby.");
       return;
     }
     if (!nl) {
-      setFieldError(a.errorNativeLanguage);
-      return;
-    }
-    const hasCefrTarget = ADULT_PLACEMENT_CEFR_SET.has(englishLevelChoice);
-    const isSkip = englishLevelChoice === ADULT_SKIP_PLACEMENT_TEST;
-    if (englishLevelChoice === "" || (!hasCefrTarget && !isSkip)) {
-      setFieldError(a.errorEnglishLevel);
+      setFieldError("Please enter your native language.");
       return;
     }
 
     setSaving(true);
     try {
-      const skipTest = isSkip;
       const res = await apiFetch(`/users/${user.id}`, {
         method: "PATCH",
-        body: JSON.stringify(
-          skipTest
-            ? {
-                workField: j,
-                education: ed,
-                hobbies: hobbiesPayload,
-                nativeLanguage: nl,
-                englishLevel: "A1",
-                hasCompletedPlacement: true,
-              }
-            : {
-                workField: j,
-                education: ed,
-                hobbies: hobbiesPayload,
-                nativeLanguage: nl,
-                englishLevel: englishLevelChoice,
-              },
-        ),
+        body: JSON.stringify({
+          workField: j,
+          education: ed,
+          hobbies: hobbiesPayload,
+          nativeLanguage: nl,
+        }),
       });
       if (!res.ok) {
         toast.error(await readApiErrorBody(res));
         return;
       }
       await refreshProfile();
-      onSuccess(skipTest ? { skippedPlacementTest: true } : undefined);
+      onSuccess();
     } catch {
-      toast.error(a.saveErrorToast);
+      toast.error("Could not save your details.");
     } finally {
       setSaving(false);
     }
@@ -244,78 +174,53 @@ export default function PlacementPreTestStep({
       onSubmit={(e) => void handleSubmit(e)}
     >
       <div className="space-y-2">
-        <LabelRegister isRequired={true}>{a.job}</LabelRegister>
+        <LabelRegister isRequired={true}>Job</LabelRegister>
         <InputText
           name="workField"
           value={job}
           onChange={(e) => setJob(e.target.value)}
-          placeholder={a.jobPlaceholder}
+          placeholder="e.g. Software engineer, teacher, student"
         />
       </div>
 
       <div className="space-y-2">
-        <LabelRegister isRequired={true}>{a.education}</LabelRegister>
+        <LabelRegister isRequired={true}>Education</LabelRegister>
         <InputText
           name="education"
           value={education}
           onChange={(e) => setEducation(e.target.value)}
-          placeholder={a.educationPlaceholder}
+          placeholder="e.g. Bachelor’s in design, high school, self-taught"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <LabelRegister isRequired={true}>{a.hobbies}</LabelRegister>
+        <LabelRegister isRequired={true}>Hobbies</LabelRegister>
         <CreatableSelect<HobbyOption, true>
           isMulti
           isClearable
           options={[]}
           value={hobbiesToOptions(hobbies)}
           onChange={(sel) => setHobbies(normalizeHobbySelection(sel))}
-          placeholder={a.hobbiesPlaceholder}
+          placeholder="Type a hobby, then press Enter"
           formatCreateLabel={(input) => {
             const t = input.trim();
-            return t ? formatMessage(a.addChipNamed, { name: t }) : a.addChip;
+            return t ? `Add "${t}"` : "Add";
           }}
-          noOptionsMessage={() => a.hobbyNoOptions}
+          noOptionsMessage={() =>
+            "Start typing a hobby, then press Enter to add it."
+          }
           styles={selectDark}
         />
       </div>
 
       <div className="space-y-2">
-        <LabelRegister isRequired={true}>{a.nativeLanguage}</LabelRegister>
+        <LabelRegister isRequired={true}>Native language</LabelRegister>
         <InputText
           name="nativeLanguage"
           value={nativeLanguage}
           onChange={(e) => setNativeLanguage(e.target.value)}
-          placeholder={a.nativeLanguagePlaceholder}
+          placeholder="e.g. Ukrainian, Spanish, Mandarin"
         />
-      </div>
-
-      <div className="space-y-2">
-        <LabelRegister isRequired={true}>{a.englishLevel}</LabelRegister>
-        <select
-          name="englishLevel"
-          value={englishLevelChoice}
-          onChange={(e) => setEnglishLevelChoice(e.target.value)}
-          className={cn(selectFieldClass, "appearance-auto")}
-          aria-describedby="placement-english-level-help"
-        >
-          <option value="" disabled>
-            {a.englishLevelSelectPlaceholder}
-          </option>
-          <option value={ADULT_SKIP_PLACEMENT_TEST}>{a.englishLevelNone}</option>
-          {ADULT_PLACEMENT_CEFR_LEVELS.map((code) => (
-            <option key={code} value={code}>
-              {code}
-            </option>
-          ))}
-        </select>
-        <p
-          id="placement-english-level-help"
-          className="text-muted-foreground text-sm"
-        >
-          {a.englishLevelHelp}
-        </p>
       </div>
 
       {fieldError ? (
@@ -329,11 +234,7 @@ export default function PlacementPreTestStep({
         disabled={saving}
         className="rounded-[15px] bg-primary px-6 py-2.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
       >
-        {saving
-          ? a.saving
-          : englishLevelChoice === ADULT_SKIP_PLACEMENT_TEST
-            ? a.continueWithoutTestCta
-            : a.continueCta}
+        {saving ? "Saving…" : "Continue to entry test"}
       </Button>
     </form>
   );

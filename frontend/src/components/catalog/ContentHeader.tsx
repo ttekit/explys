@@ -52,15 +52,14 @@ export default function ContentHeader({
     setMenuOpen(false);
   }, [pathname, hash]);
 
-  const app = messages.appHeader;
   const appNavLinks = [
-    { label: app.home, to: "/" },
-    { label: app.catalog, to: "/catalog" },
-    { label: app.pricing, to: "/pricing" },
+    { label: "Home", to: "/" },
+    { label: "Catalog", to: "/catalog" },
+    { label: "Pricing", to: "/pricing" },
     ...(isLoggedIn && user?.hasCompletedPlacement
-      ? [{ label: app.learningPlan, to: "/learning-plan" as const }]
+      ? [{ label: "Learning plan", to: "/learning-plan" as const }]
       : []),
-    { label: app.levelTest, to: "/level-test" },
+    { label: "Level test", to: "/level-test" },
   ];
 
   return (
@@ -135,7 +134,9 @@ export default function ContentHeader({
         </nav>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <LandingLanguageToggle />
+          {variant === "landing" ?
+            <LandingLanguageToggle />
+          : null}
 
           <div className="hidden items-center gap-2 sm:gap-4 md:flex">
           {isLoggedIn ?
@@ -143,7 +144,7 @@ export default function ContentHeader({
               to="/catalog"
               className="rounded-[15px] bg-primary px-4 py-2.5 text-sm font-semibold text-foreground/70 shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)] transition-all hover:cursor-pointer hover:bg-purple-hover hover:text-white sm:px-6"
             >
-              {variant === "landing" ? landingI18n.catalog : app.catalog}
+              {variant === "landing" ? landingI18n.catalog : "Catalog"}
             </Link>
           : <>
               <Link to="/loginForm">
@@ -151,7 +152,7 @@ export default function ContentHeader({
                   type="button"
                   className="rounded-[15px] px-4 py-2.5 text-sm font-medium text-foreground/70 transition-all hover:cursor-pointer hover:bg-muted-foreground/10 hover:text-white sm:px-6"
                 >
-                  {variant === "landing" ? landingI18n.logIn : app.logIn}
+                  {variant === "landing" ? landingI18n.logIn : "Log in"}
                 </button>
               </Link>
               <Link to="/registrationMain">
@@ -159,7 +160,7 @@ export default function ContentHeader({
                   type="button"
                   className="rounded-[15px] bg-primary px-4 py-2.5 text-sm font-semibold text-foreground/70 shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)] transition-all hover:cursor-pointer hover:bg-purple-hover hover:text-white sm:px-6"
                 >
-                  {variant === "landing" ? landingI18n.getStarted : app.getStarted}
+                  {variant === "landing" ? landingI18n.getStarted : "Get started"}
                 </button>
               </Link>
             </>
@@ -177,8 +178,8 @@ export default function ContentHeader({
                 landingI18n.closeMenu
               : landingI18n.openMenu
             : menuOpen ?
-              messages.common.closeMenu
-            : messages.common.openMenu
+              "Close menu"
+            : "Open menu"
           }
           onClick={() => setMenuOpen((o) => !o)}
         >
@@ -289,7 +290,7 @@ export default function ContentHeader({
                     onClick={closeMenu}
                     className="rounded-[15px] bg-primary px-4 py-3 text-center text-sm font-semibold text-foreground/70 shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)] transition-all hover:bg-purple-hover hover:text-white"
                   >
-                    {variant === "landing" ? landingI18n.catalog : app.catalog}
+                    {variant === "landing" ? landingI18n.catalog : "Catalog"}
                   </Link>
                 : <>
                     <Link to="/loginForm" onClick={closeMenu}>
@@ -297,7 +298,7 @@ export default function ContentHeader({
                         type="button"
                         className="w-full rounded-[15px] py-3 text-center text-sm font-medium text-foreground/70 transition-all hover:bg-muted-foreground/10 hover:text-white"
                       >
-                        {variant === "landing" ? landingI18n.logIn : app.logIn}
+                        {variant === "landing" ? landingI18n.logIn : "Log in"}
                       </button>
                     </Link>
                     <Link to="/registrationMain" onClick={closeMenu}>
@@ -307,7 +308,7 @@ export default function ContentHeader({
                       >
                         {variant === "landing" ?
                           landingI18n.getStarted
-                        : app.getStarted}
+                        : "Get started"}
                       </button>
                     </Link>
                   </>

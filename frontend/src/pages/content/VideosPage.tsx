@@ -17,7 +17,6 @@ import PlacementPreTestStep, {
 } from "../../components/PlacementPreTestStep";
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
-import { formatMessage } from "../../lib/formatMessage";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 import { CatalogHero } from "../../components/catalog/CatalogHero";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
@@ -126,12 +125,10 @@ export default function VideoPage() {
         if (profile && userMayUseLearnerApp(profile)) {
           const { pathname, search } = stripCheckoutSuccessSearch();
           void navigate({ pathname, search }, { replace: true });
-          if (!import.meta.env.DEV) {
-            toast.success(messages.catalogBrowse.stripeThanksToast, {
-              id: STRIPE_CHECKOUT_CATALOG_TOAST_ID,
-              duration: 6000,
-            });
-          }
+          toast.success("Thanks for joining us — we're glad you're here.", {
+            id: STRIPE_CHECKOUT_CATALOG_TOAST_ID,
+            duration: 6000,
+          });
           return;
         }
         await new Promise((r) => setTimeout(r, 500));
@@ -139,12 +136,10 @@ export default function VideoPage() {
       if (!cancelled) {
         const { pathname, search } = stripCheckoutSuccessSearch();
         void navigate({ pathname, search }, { replace: true });
-        if (!import.meta.env.DEV) {
-          toast.error(
-            messages.catalogBrowse.stripeConfirmError,
-            { duration: 8000, id: `${STRIPE_CHECKOUT_CATALOG_TOAST_ID}-err` },
-          );
-        }
+        toast.error(
+          "We could not confirm your subscription yet. Try refreshing the page.",
+          { duration: 8000, id: `${STRIPE_CHECKOUT_CATALOG_TOAST_ID}-err` },
+        );
       }
     })();
 
@@ -179,7 +174,6 @@ export default function VideoPage() {
     user?.nativeLanguage,
     user?.workField,
     user?.education,
-    user?.englishLevel,
   ]);
 
   const showPlacementPrepOverlay =
@@ -240,7 +234,7 @@ export default function VideoPage() {
       } catch (e) {
         if (!cancelled) {
           setPlacementDocError(
-            e instanceof Error ? e.message : messages.catalogBrowse.placementLoadError,
+            e instanceof Error ? e.message : "Could not load placement test.",
           );
         }
       }
@@ -443,7 +437,7 @@ export default function VideoPage() {
         >
           <div className="size-8 animate-spin rounded-full border-2 border-muted-foreground border-t-primary" />
           <p className="text-muted-foreground text-sm">
-            {messages.catalogBrowse.activatingSubscription}
+            Activating your subscription…
           </p>
         </div>
       : null}
@@ -481,19 +475,19 @@ export default function VideoPage() {
                 <div className="flex h-60 bg-card/30 flex-col items-center border-border border-t justify-center space-y-4">
                   <div className="h-10 w-10 animate-spin rounded-full border-solid border-primary border-t-4 border-r-transparent border-b-transparent border-l-transparent" />
                   <p className="animate-pulse text-muted-foreground">
-                    {messages.catalogBrowse.loadingCatalog}
+                    Loading catalog…
                   </p>
                 </div>
               ) : filteredVideos.length === 0 ? (
                 <div className="border-t border-border bg-card/30 py-15 text-center">
                   <Frown className="text-foreground/70 justify-center w-full w-10 h-10 pb-2" />
                   <h2 className="font-display text-2xl font-bold">
-                    {messages.catalogBrowse.emptyTitle}
+                    Nothing here yet
                   </h2>
                   <p className="mt-2 text-muted-foreground">
                     {videos.length === 0
-                      ? messages.catalogBrowse.emptyNoVideos
-                      : messages.catalogBrowse.emptyFiltered}
+                      ? "Check back soon for new lessons."
+                      : "Try clearing the category filter."}
                   </p>
                 </div>
               ) : (
@@ -524,7 +518,7 @@ export default function VideoPage() {
                 </span>
               </div>
               <span className="justify-self-end text-sm text-muted-foreground">
-                {messages.catalogBrowse.placementStepCounter}
+                1 / 2
               </span>
             </div>
           </header>
@@ -535,7 +529,7 @@ export default function VideoPage() {
               aria-valuenow={50}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={messages.catalogBrowse.placementProgressAria}
+              aria-label="Placement flow progress"
             >
               <div className="h-full w-1/2 rounded-full bg-primary transition-all" />
             </div>
@@ -544,12 +538,12 @@ export default function VideoPage() {
             <div className="mx-auto mb-4 w-full max-w-2xl flex flex-col min-h-0 bg-card border border-border rounded-3xl overflow-scroll">
               <div className="mx-auto w-full max-w-md shrink-0 px-4 pt-2 pb-2">
                 <h2 className="font-display text-xl font-semibold mt-1 tracking-tight text-foreground">
-                  {messages.catalogBrowse.beforeEntryTitle}
+                  Before your entry test
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {user?.role === "adult"
-                    ? messages.catalogBrowse.beforeEntryAdult
-                    : messages.catalogBrowse.beforeEntryStudent}
+                    ? "Enter your job, education, hobbies,and native language — then your placement questionnaire starts."
+                    : "A few quick preferences — then your placement questionnaire."}
                 </p>
               </div>
               <div className="flex-1 pb-6">
@@ -557,11 +551,7 @@ export default function VideoPage() {
                   user.role === "adult" ? (
                     <PlacementPreTestStep
                       user={user}
-                      onSuccess={(detail) => {
-                        if (detail?.skippedPlacementTest) {
-                          navigate("/learning-plan", { replace: true });
-                        }
-                      }}
+                      onSuccess={() => undefined}
                     />
                   ) : (
                     <PlacementPreferencesStep
@@ -583,13 +573,12 @@ export default function VideoPage() {
                     </span>
                   </div>
                   <p className="max-w-xs text-sm text-muted-foreground">
-                    {messages.catalogBrowse.placementFooterBlurb}
+                    Personalized English learning through adaptive video content
+                    — learn at your own pace.
                   </p>
                 </div>
                 <p className="shrink-0 text-sm text-muted-foreground">
-                  {formatMessage(messages.catalogBrowse.placementCopyright, {
-                    year: String(new Date().getFullYear()),
-                  })}
+                  © {new Date().getFullYear()} Explys
                 </p>
               </div>
             </footer>
@@ -605,7 +594,7 @@ export default function VideoPage() {
               role="alert"
             >
               <p className="text-destructive text-sm font-medium">
-                {messages.catalogBrowse.couldNotLoadPlacement}
+                Could not load the placement test.
               </p>
               <p className="text-muted-foreground max-w-md text-sm">
                 {placementDocError}
@@ -614,7 +603,7 @@ export default function VideoPage() {
           ) : placementDocHtml ? (
             <iframe
               key="placement-entry-test"
-              title={messages.catalogBrowse.placementTestTitle}
+              title="Placement test"
               className="min-h-0 w-full flex-1 border-0 bg-background"
               srcDoc={placementDocHtml}
               onLoad={() => {
@@ -631,7 +620,7 @@ export default function VideoPage() {
             <div className="flex flex-1 flex-col items-center justify-center gap-3">
               <div className="h-10 w-10 animate-spin rounded-full border-solid border-primary border-t-4 border-r-transparent border-b-transparent border-l-transparent" />
               <p className="text-muted-foreground text-sm">
-                {messages.catalogBrowse.loadingPlacement}
+                Loading placement test…
               </p>
             </div>
           )}

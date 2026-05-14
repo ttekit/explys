@@ -8,8 +8,11 @@ interface VideoVocabularyProps {
 }
 
 function grayHintLine(item: VocabularyItem): string {
-  const p = item.pronunciation?.trim();
-  return p && p.length > 0 ? p : "";
+  const parts = [item.translation?.trim(), item.pronunciation?.trim()].filter(
+    (p): p is string => Boolean(p && p.length > 0),
+  );
+  if (parts.length === 0) return "";
+  return parts.join(" · ");
 }
 
 export function VideoVocabulary({ vocabulary }: VideoVocabularyProps) {
@@ -54,17 +57,7 @@ export function VideoVocabulary({ vocabulary }: VideoVocabularyProps) {
                 >
                   <Volume2 className="h-4 w-4 text-primary" />
                 </span>
-              <div className="flex flex-col items-start gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">
                 <span className="font-medium text-foreground">{item.word}</span>
-                {item.translation && item.translation.trim() ? (
-                  <span
-                    className="text-sm font-normal text-muted-foreground"
-                    title="In your language"
-                  >
-                    ({item.translation.trim()})
-                  </span>
-                ) : null}
-              </div>
               </div>
               <ChevronDown
                 className={cn(
@@ -77,15 +70,10 @@ export function VideoVocabulary({ vocabulary }: VideoVocabularyProps) {
             {expandedIndex === index ? (
               <div className="space-y-2 px-3 pb-3">
                 <div className="pl-10">
-                  {gray ? (
-                    <p className="text-sm text-muted-foreground">{gray}</p>
-                  ) : null}
-                  <div
-                    className={cn(
-                      "rounded-lg bg-muted/50 p-2",
-                      gray ? "mt-2" : "",
-                    )}
-                  >
+                  <p className="text-sm text-muted-foreground">
+                    {gray || "—"}
+                  </p>
+                  <div className="mt-2 rounded-lg bg-muted/50 p-2">
                     <p className="text-sm leading-relaxed text-foreground">
                       {meaning || "—"}
                     </p>

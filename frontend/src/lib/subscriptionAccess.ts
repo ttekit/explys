@@ -1,16 +1,7 @@
 import type { UserData } from "../context/UserContext";
 
-/**
- * When true, learner routes do not require an active Stripe subscription.
- * `vite dev` enables this automatically so local work does not wait on webhooks
- * or show post-checkout “confirming payment” UI; production builds never set `DEV`.
- * For staging/prod frontends, set `VITE_SKIP_SUBSCRIPTION_ENFORCEMENT` to match
- * backend `SKIP_SUBSCRIPTION_ENFORCEMENT`.
- */
+/** Match backend `isSubscriptionEnforcementDisabled` (`SKIP_SUBSCRIPTION_ENFORCEMENT`). */
 export function subscriptionEnforcementDisabled(): boolean {
-  if (import.meta.env.DEV) {
-    return true;
-  }
   const v = (import.meta.env.VITE_SKIP_SUBSCRIPTION_ENFORCEMENT ?? "")
     .trim()
     .toLowerCase();

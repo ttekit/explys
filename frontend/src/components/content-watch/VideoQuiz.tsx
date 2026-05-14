@@ -52,15 +52,12 @@ interface VideoQuizProps {
   questions: QuizQuestion[];
   isVideoComplete: boolean;
   onComplete: (summary: VideoQuizCompleteSummary) => void;
-  /** Shown above the quiz when the server issued an error-fixing (remediation) test. */
-  errorFixingBanner?: string | null;
 }
 
 export function VideoQuiz({
   questions,
   isVideoComplete,
   onComplete,
-  errorFixingBanner,
 }: VideoQuizProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -275,14 +272,6 @@ export function VideoQuiz({
 
   return (
     <div className="space-y-4">
-      {errorFixingBanner?.trim() ? (
-        <p
-          className="rounded-lg border border-sky-500/35 bg-sky-500/10 px-3 py-2.5 text-xs leading-relaxed text-foreground"
-          role="status"
-        >
-          {errorFixingBanner.trim()}
-        </p>
-      ) : null}
       <div className="flex items-center justify-between text-sm">
         <span className="text-muted-foreground">
           Question {currentQuestion + 1} of {questions.length}
@@ -413,11 +402,8 @@ export function VideoQuiz({
 
 export function LessonCompleteBanner({
   xpEarned,
-  catalogCtaLabel = "Catalog",
 }: {
   xpEarned: number;
-  /** Primary CTA label; default matches `catalogShell.navCatalog` in English. */
-  catalogCtaLabel?: string;
 }) {
   return (
     <div className="rounded-xl border border-accent/20 bg-accent/10 p-4 text-center">
@@ -428,7 +414,7 @@ export function LessonCompleteBanner({
         to="/catalog"
         className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
       >
-        {catalogCtaLabel}
+        Next in catalog
       </Link>
     </div>
   );

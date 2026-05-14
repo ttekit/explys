@@ -46,6 +46,29 @@ export function HeroSection() {
                 {hero.ctaSecondary}
               </Link>
             </div>
+
+            <div className="flex items-center gap-8 pt-4">
+              <div>
+                <p className="text-2xl font-bold text-foreground">50K+</p>
+                <p className="text-sm text-muted-foreground">
+                  {hero.statLearners}
+                </p>
+              </div>
+              <div className="h-10 w-px bg-border" />
+              <div>
+                <p className="text-2xl font-bold text-foreground">1000+</p>
+                <p className="text-sm text-muted-foreground">
+                  {hero.statLessons}
+                </p>
+              </div>
+              <div className="h-10 w-px bg-border" />
+              <div>
+                <p className="text-2xl font-bold text-foreground">4.9</p>
+                <p className="text-sm text-muted-foreground">
+                  {hero.statRating}
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="relative flex justify-center lg:justify-end">

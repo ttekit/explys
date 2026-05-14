@@ -13,8 +13,6 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
-import { formatMessage } from "../../lib/formatMessage";
-import { useLandingLocale } from "../../context/LandingLocaleContext";
 
 export type CatalogSpotlightItem = {
   id: number;
@@ -41,9 +39,6 @@ export function CatalogSpotlight({
   onClose,
   videos,
 }: CatalogSpotlightProps) {
-  const { messages } = useLandingLocale();
-  const spot = messages.catalogSpotlight;
-  const c = messages.common;
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -147,7 +142,7 @@ export function CatalogSpotlight({
     >
       <button
         type="button"
-        aria-label={spot.dismissAria}
+        aria-label="Dismiss search"
         className="absolute inset-0 cursor-default bg-black/55 backdrop-blur-md transition-opacity duration-150"
         onMouseDown={(e) => {
           if (e.target === e.currentTarget) onClose();
@@ -174,7 +169,7 @@ export function CatalogSpotlight({
                 aria-hidden
               />
               <label htmlFor="catalog-spotlight-input" id="catalog-spotlight-title" className="sr-only">
-                {spot.searchTitleSr}
+                Search lessons
               </label>
               <input
                 id="catalog-spotlight-input"
@@ -185,7 +180,7 @@ export function CatalogSpotlight({
                   setQuery(e.target.value);
                   setActiveIndex(0);
                 }}
-                placeholder={spot.placeholder}
+                placeholder="Search lessons…"
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -201,7 +196,7 @@ export function CatalogSpotlight({
                 className="absolute top-1/2 right-3 flex items-center gap-2 -translate-y-1/2 rounded-lg border border-border bg-muted/50 px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground"
                 onClick={() => onClose()}
               >
-                <span className="hidden sm:inline">{c.esc}</span>
+                <span className="hidden sm:inline">Esc</span>
                 <span className="sm:hidden">
                   <X className="size-3.5" />
                 </span>
@@ -210,7 +205,7 @@ export function CatalogSpotlight({
 
             <div className="px-4 py-2">
               <p className="text-muted-foreground text-xs uppercase tracking-wide">
-                {query.trim().length ? spot.matchingLessons : spot.browseCatalog}
+                {query.trim().length ? "Matching lessons" : "Browse catalog"}
               </p>
             </div>
 
@@ -223,12 +218,10 @@ export function CatalogSpotlight({
                   <Clapperboard className="size-10 text-muted-foreground/50" aria-hidden />
                   <p className="text-muted-foreground text-sm">
                     {videos.length === 0
-                      ? spot.noLessonsYet
+                      ? "No lessons in the catalog yet."
                       : query.trim().length
-                        ? formatMessage(spot.noMatches, {
-                            query: query.trim(),
-                          })
-                        : spot.startTyping}
+                        ? `No matches for "${query.trim()}"`
+                        : "Start typing to find a lesson"}
                   </p>
                 </div>
               ) : (
@@ -303,17 +296,17 @@ export function CatalogSpotlight({
                   <kbd className="rounded border border-border bg-muted/80 px-1.5 py-0.5 font-sans shadow-sm">
                     ↓
                   </kbd>{" "}
-                  {spot.navigate}
+                  Navigate
                 </span>
                 <span>
                   <kbd className="rounded border border-border bg-muted/80 px-2 py-0.5 font-sans shadow-sm">
-                    {c.enter}
+                    Enter
                   </kbd>{" "}
-                  {spot.open}
+                  Open
                 </span>
               </span>
               <span>
-                {spot.toggleWith}{" "}
+                Toggle with{" "}
                 <kbd className="rounded border border-border bg-muted/80 px-2 py-0.5 font-sans shadow-sm">
                   {shortcutLabel}
                 </kbd>

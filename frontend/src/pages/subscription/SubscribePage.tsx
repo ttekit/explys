@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -14,7 +14,6 @@ import {
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
-import { formatMessage } from "../../lib/formatMessage";
 import {
   resolveStripePublishableKey,
   stripeKeyMode,
@@ -25,14 +24,10 @@ export default function SubscribePage() {
   const navigate = useNavigate();
   const { user, isLoading, logout } = useUser();
   const { startCheckout, checkoutLoading } = usePricingCheckout();
-  const { locale, messages } = useLandingLocale();
-  const sub = messages.subscription;
+  const { locale } = useLandingLocale();
   const [stripeMode, setStripeMode] = useState<"test" | "live" | null>(null);
 
   const devSkip = subscriptionEnforcementDisabled();
-  const devSkipBannerDetail = import.meta.env.DEV
-    ? "vite dev"
-    : "VITE_SKIP_SUBSCRIPTION_ENFORCEMENT";
 
   useEffect(() => {
     if (devSkip) return;
@@ -57,11 +52,16 @@ export default function SubscribePage() {
     );
   }, []);
 
+  const title = useMemo(
+    () => "Choose your plan · Explys",
+    [],
+  );
+
   return (
     <div className="min-h-screen bg-background font-display text-foreground antialiased">
       <SEO
-        title={sub.seoTitle}
-        description={sub.seoDescription}
+        title={title}
+        description="Subscribe to unlock every Explys lesson and placement flow."
         canonicalUrl={resolveCanonicalUrl("/subscribe")}
         ogLocale={locale === "uk" ? "uk_UA" : "en_US"}
         ogLocaleAlternate={locale === "uk" ? "en_US" : "uk_UA"}
@@ -77,10 +77,11 @@ export default function SubscribePage() {
           </div>
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-              {sub.title}
+              Pick your subscription
             </h1>
             <p className="mx-auto mt-3 max-w-xl text-muted-foreground text-lg">
-              {sub.subtitle}
+              You need an active plan to open the catalog, lessons, and entry
+              test. Choose Light, Smart, or Family — then continue learning.
             </p>
           </div>
           {stripeMode ?
@@ -92,7 +93,9 @@ export default function SubscribePage() {
               }
               role="status"
             >
-              {stripeMode === "test" ? sub.stripeTest : sub.stripeLive}
+              {stripeMode === "test" ?
+                "Stripe is in test mode (no real charges)."
+              : "Stripe live mode."}
             </p>
           : null}
           {devSkip ?
@@ -100,9 +103,9 @@ export default function SubscribePage() {
               className="mx-auto max-w-lg rounded-xl border border-primary/35 bg-primary/10 px-4 py-3 text-primary text-sm"
               role="status"
             >
-              {formatMessage(sub.devModeBanner, {
-                env: devSkipBannerDetail,
-              })}
+              Dev mode: subscription enforcement is off (
+              <code className="font-mono text-xs">VITE_SKIP_SUBSCRIPTION_ENFORCEMENT</code>
+              ).
             </p>
           : null}
         </div>
@@ -116,14 +119,15 @@ export default function SubscribePage() {
               className="mx-auto w-full !grid-cols-1 md:!grid-cols-2 xl:!grid-cols-4 xl:gap-6"
             />
             <p className="mx-auto mt-10 max-w-md text-center text-muted-foreground text-xs">
-              {sub.paymentsNote}
+              Payments via Stripe. For schools and teams see{" "}
               <Link
                 to="/pricing"
                 className="text-primary underline-offset-4 hover:underline"
               >
-                {sub.pricingLinkLabel}
+                pricing
               </Link>
-              {sub.teacherPlanNote}
+              {" "}
+              or contact sales from the Teacher plan card.
             </p>
           </>
         : (
@@ -131,7 +135,7 @@ export default function SubscribePage() {
             to="/catalog"
             className="mx-auto rounded-xl bg-primary px-8 py-3 font-semibold text-primary-foreground"
           >
-            {sub.continueCatalog}
+            Continue to catalog
           </Link>
         )}
 
@@ -144,13 +148,13 @@ export default function SubscribePage() {
               navigate("/loginForm");
             }}
           >
-            {sub.signOut}
+            Sign out
           </button>
           <Link
             to="/pricing"
             className="underline-offset-4 hover:text-foreground hover:underline"
           >
-            {sub.comparePlans}
+            Compare plans publicly
           </Link>
         </div>
       </main>

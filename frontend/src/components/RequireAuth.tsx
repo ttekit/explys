@@ -1,6 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useUser } from "../context/UserContext";
-import { useLandingLocale } from "../context/LandingLocaleContext";
 
 /**
  * Renders child routes only when `UserContext` has finished loading and the user is logged in.
@@ -9,12 +8,11 @@ import { useLandingLocale } from "../context/LandingLocaleContext";
 export default function RequireAuth() {
   const { isLoggedIn, isLoading } = useUser();
   const location = useLocation();
-  const { messages } = useLandingLocale();
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-muted-foreground text-sm">{messages.common.loading}</p>
+        <p className="text-muted-foreground text-sm">Loading…</p>
       </div>
     );
   }

@@ -1,8 +1,5 @@
 import { Link, useLocation, useSearchParams } from "react-router";
-import { useMemo } from "react";
 import { cn } from "../../lib/utils";
-import { formatMessage } from "../../lib/formatMessage";
-import { useLandingLocale } from "../../context/LandingLocaleContext";
 import {
   BookOpen,
   ChevronLeft,
@@ -15,18 +12,12 @@ import {
   CircleUser,
 } from "lucide-react";
 
-type SidebarNavId = "catalog" | "search" | "myLessons" | "progress" | "profile";
-
-const SIDEBAR_LINK_DEFS: readonly {
-  readonly id: SidebarNavId;
-  readonly icon: typeof LayoutGrid;
-  readonly to: string;
-}[] = [
-  { id: "catalog", icon: LayoutGrid, to: "/catalog" },
-  { id: "search", icon: Search, to: "/catalog" },
-  { id: "myLessons", icon: BookOpen, to: "/watched-lessons" },
-  { id: "progress", icon: Trophy, to: "/profile?tab=progress" },
-  { id: "profile", icon: User, to: "/profile" },
+const sidebarLinks = [
+  { icon: LayoutGrid, label: "Catalog", to: "/catalog" },
+  { icon: Search, label: "Search", to: "/catalog" },
+  { icon: BookOpen, label: "My Lessons", to: "/watched-lessons" },
+  { icon: Trophy, label: "Progress", to: "/profile?tab=progress" },
+  { icon: User, label: "Profile", to: "/profile" },
 ] as const;
 
 const LEVELS = ["All", "A1", "A2", "B1", "B2", "C1", "C2"] as const;
@@ -44,6 +35,7 @@ interface CatalogSidebarProps {
   catalogSpotlightOpen?: boolean;
   /** Catalog page only: open Spotlight from sidebar Search. */
   onOpenCatalogSpotlight?: () => void;
+  // lifted state — controlled by parent
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
 }
@@ -54,44 +46,29 @@ export function CatalogSidebar({
   onSelectCategory,
   welcomeName,
   englishLevel,
+  // onSelectLevel,
   reserveTopNavSpace = true,
   catalogSpotlightOpen = false,
   onOpenCatalogSpotlight,
   collapsed,
   onCollapsedChange,
 }: CatalogSidebarProps) {
-  const { messages } = useLandingLocale();
-  const c = messages.common;
-  const s = messages.catalogShell;
-  const sidebarLinks = useMemo(
-    () =>
-      SIDEBAR_LINK_DEFS.map((def) => ({
-        ...def,
-        label:
-          def.id === "catalog" ? s.navCatalog
-          : def.id === "search" ? s.navSearch
-          : def.id === "myLessons" ? s.navMyLessons
-          : def.id === "progress" ? s.navProgress
-          : s.navProfile,
-      })),
-    [s],
-  );
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
   const sortedCategories = ["All", ...categories.filter(Boolean).sort()];
 
-  const linkActive = (link: (typeof sidebarLinks)[number]): boolean => {
-    if (link.id === "catalog") {
+  const linkActive = (link: (typeof sidebarLinks)[number]) => {
+    if (link.label === "Catalog") {
       return pathname === "/catalog" && !catalogSpotlightOpen;
     }
-    if (link.id === "search") {
-      return pathname === "/catalog" && !!catalogSpotlightOpen;
+    if (link.label === "Search") {
+      return pathname === "/catalog" && catalogSpotlightOpen;
     }
     const tab = searchParams.get("tab");
-    if (link.id === "progress") {
+    if (link.label === "Progress") {
       return pathname === "/profile" && tab === "progress";
     }
-    if (link.id === "profile") {
+    if (link.label === "Profile") {
       return (
         pathname === "/profile" &&
         tab !== "progress" &&
@@ -100,19 +77,6 @@ export function CatalogSidebar({
     }
     return pathname === link.to;
   };
-
-  const greeting =
-    welcomeName?.trim() ?
-      formatMessage(s.greetingHi, { name: welcomeName.trim() })
-    : s.welcomeBackExclaim;
-  const LEVEL_ALL = "All" as const;
-  const levelLine =
-    englishLevel?.trim() ?
-      formatMessage(s.levelWithDot, {
-        prefix: s.sectionLevel,
-        level: englishLevel.trim(),
-      })
-    : s.brandsFallback;
 
   return (
     <>
@@ -127,7 +91,7 @@ export function CatalogSidebar({
           type="button"
           onClick={() => onCollapsedChange(!collapsed)}
           className="absolute top-6 hover:cursor-pointer -right-3 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card transition-colors hover:bg-muted"
-          aria-label={collapsed ? c.expandSidebar : c.collapseSidebar}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
             <ChevronRight className="h-3 w-3" />
@@ -145,15 +109,19 @@ export function CatalogSidebar({
           <CircleUser className="text-muted-foreground m-3 hover:cursor-pointer shrink-0" />
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-foreground/70">{greeting}</p>
-              <p className="text-sm font-semibold text-accent">{levelLine}</p>
+              <p className="truncate text-foreground/70">
+                {welcomeName?.trim() ? `Hi, ${welcomeName}` : "Welcome back!"}
+              </p>
+              <p className="text-sm font-semibold text-accent">
+                {englishLevel?.trim() ? `• Level ${englishLevel}` : "Explys"}
+              </p>
             </div>
           )}
         </div>
 
         <nav className="flex-col space-y-1 p-4">
           {sidebarLinks.map((link) => {
-            if (link.id === "search") {
+            if (link.label === "Search") {
               const active = linkActive(link);
               const itemClass = cn(
                 "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
@@ -164,7 +132,7 @@ export function CatalogSidebar({
               );
               return pathname === "/catalog" && onOpenCatalogSpotlight ?
                   <button
-                    key={link.id}
+                    key={link.label}
                     type="button"
                     className={itemClass}
                     onClick={() => onOpenCatalogSpotlight()}
@@ -173,7 +141,7 @@ export function CatalogSidebar({
                     {!collapsed && <span>{link.label}</span>}
                   </button>
                 : <Link
-                    key={link.id}
+                    key={link.label}
                     to="/catalog"
                     state={{ openSpotlight: true }}
                     className={itemClass}
@@ -184,7 +152,7 @@ export function CatalogSidebar({
             }
             return (
               <Link
-                key={link.id}
+                key={link.label}
                 to={link.to}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",
@@ -203,9 +171,7 @@ export function CatalogSidebar({
 
         {!collapsed && (
           <div className="space-y-4 border-t border-border p-4">
-            <p className="mb-2 text-sm font-medium text-foreground">
-              {s.sectionLevel}
-            </p>
+            <p className="mb-2 text-sm font-medium text-foreground">Level</p>
             <div className="flex flex-wrap gap-1">
               {LEVELS.map((level) => (
                 <button
@@ -219,7 +185,7 @@ export function CatalogSidebar({
                       : "bg-muted text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {level === LEVEL_ALL ? c.filterAll : level}
+                  {level}
                 </button>
               ))}
             </div>
@@ -228,9 +194,7 @@ export function CatalogSidebar({
 
         {!collapsed && (
           <div className="space-y-4 border-t border-border p-4">
-            <p className="mb-2 text-sm font-medium text-foreground">
-              {s.sectionCategory}
-            </p>
+            <p className="mb-2 text-sm font-medium text-foreground">Category</p>
             <div className="flex flex-wrap gap-1">
               {sortedCategories.map((category) => (
                 <button
@@ -244,7 +208,7 @@ export function CatalogSidebar({
                       : "bg-muted text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {category === LEVEL_ALL ? c.filterAll : category}
+                  {category}
                 </button>
               ))}
             </div>
@@ -263,7 +227,7 @@ export function CatalogSidebar({
             )}
           >
             <Settings className="h-5 w-5 shrink-0" />
-            {!collapsed && <span>{s.settings}</span>}
+            {!collapsed && <span>Settings</span>}
           </Link>
         </div>
       </aside>
@@ -281,7 +245,7 @@ export function CatalogSidebar({
       <nav className="fixed right-0 bottom-0 left-0 z-40 border-t border-border bg-card lg:hidden">
         <div className="flex items-center justify-around py-2">
           {sidebarLinks.slice(0, 5).map((link) => {
-            if (link.id === "search") {
+            if (link.label === "Search") {
               const active = linkActive(link);
               const itemClass = cn(
                 "flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors",
@@ -289,7 +253,7 @@ export function CatalogSidebar({
               );
               return pathname === "/catalog" && onOpenCatalogSpotlight ?
                   <button
-                    key={link.id}
+                    key={link.label}
                     type="button"
                     className={itemClass}
                     onClick={() => onOpenCatalogSpotlight()}
@@ -298,7 +262,7 @@ export function CatalogSidebar({
                     <span className="text-xs">{link.label}</span>
                   </button>
                 : <Link
-                    key={link.id}
+                    key={link.label}
                     to="/catalog"
                     state={{ openSpotlight: true }}
                     className={itemClass}
@@ -309,7 +273,7 @@ export function CatalogSidebar({
             }
             return (
               <Link
-                key={link.id}
+                key={link.label}
                 to={link.to}
                 className={cn(
                   "flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors",

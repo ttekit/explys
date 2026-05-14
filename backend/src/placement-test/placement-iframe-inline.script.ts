@@ -111,6 +111,25 @@ export const PLACEMENT_IFRAME_SCRIPT = String.raw`
 
   try {
 
+  function getLevel(score, total) {
+    var pct = (score / total) * 100;
+    if (pct >= 90) return { level: "C1", label: "Advanced" };
+    if (pct >= 70) return { level: "B2", label: "Upper intermediate" };
+    if (pct >= 50) return { level: "B1", label: "Intermediate" };
+    if (pct >= 30) return { level: "A2", label: "Elementary" };
+    return { level: "A1", label: "Beginner" };
+  }
+
+  function levelMessage(code) {
+    if (code === "A1" || code === "A2") {
+      return "We will personalize lessons to your beginner level and help you build strong foundations.";
+    }
+    if (code === "B1" || code === "B2") {
+      return "We will match content to your intermediate level and help you keep advancing.";
+    }
+    return "We will personalize with more challenging material for your advanced skills.";
+  }
+
   var questions = d.questions;
   var n = questions.length;
   var answers = [];
@@ -400,16 +419,14 @@ export const PLACEMENT_IFRAME_SCRIPT = String.raw`
     res.setAttribute("aria-hidden", "false");
 
     var score = computeScore();
+    var level = getLevel(score, n);
     var pct = Math.round((score / n) * 100);
 
     document.getElementById("scoreFract").textContent = score + "/" + n;
     document.getElementById("scorePct").textContent = pct + "% correct";
-
-    var elMsg = document.getElementById("lvlMsg");
-    if (elMsg) {
-      elMsg.textContent =
-        "Thanks for completing the test. We use your answers to personalize your catalog — your exact level stays private. You can start learning right away.";
-    }
+    document.getElementById("lvlCode").textContent = level.level;
+    document.getElementById("lvlLabel").textContent = level.label;
+    document.getElementById("lvlMsg").textContent = levelMessage(level.level);
 
     lastSummary = buildClientSummary(questions, answers);
     renderSummary(lastSummary);

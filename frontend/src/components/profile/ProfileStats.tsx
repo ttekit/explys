@@ -17,8 +17,6 @@ import {
 } from "lucide-react";
 import { ProfileCard } from "./ProfileCard";
 import { parseCefrLevel, cefrIndex, cefrOrder } from "./cefr";
-import { useLandingLocale } from "../../context/LandingLocaleContext";
-import { formatMessage } from "../../lib/formatMessage";
 
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
@@ -32,6 +30,7 @@ export interface ProfileStatsModel {
   averageScore: number | null;
   levelLabel: string;
   weeklyActivity: { day: string; minutes: number }[];
+  // Делаем эти поля необязательными, чтобы компонент не падал без них
   xp?: number;
   appLevel?: number;
 }
@@ -62,26 +61,12 @@ function StatTile({
   );
 }
 
-function resolveChartDayAbbrev(
-  dayKey: string,
-  abbrev: Readonly<Record<string, string>>,
-): string {
-  const k = dayKey.slice(0, 3);
-  const v = abbrev[k];
-  return typeof v === "string" ? v : dayKey;
-}
-
-/**
- * Overview tab: level, XP, stat tiles, weekly chart, and CEFR band summary.
- */
 export function ProfileStats({ user }: { user: ProfileStatsModel | null }) {
-  const { messages } = useLandingLocale();
-  const s = messages.profileStats;
-
+  // Если данных нет — показываем заглушку, а не пустой экран
   if (!user) {
     return (
       <div className="flex items-center justify-center p-12">
-        <p className="text-muted-foreground italic">{s.loadingStats}</p>
+        <p className="text-muted-foreground italic">Loading statistics...</p>
       </div>
     );
   }
@@ -95,13 +80,10 @@ export function ProfileStats({ user }: { user: ProfileStatsModel | null }) {
     user.weeklyActivity?.length === 7
       ? user.weeklyActivity
       : DEFAULT_WEEKLY_ACTIVITY;
-  const chartData = weeklyActivity.map((row) => ({
-    ...row,
-    day: resolveChartDayAbbrev(row.day, s.weekdayAbbrev),
-  }));
 
   return (
     <div className="space-y-6">
+      {/* Секция Уровня и Опыта */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="relative overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-primary/10 to-transparent p-6">
           <div className="flex items-center gap-4">
@@ -109,9 +91,9 @@ export function ProfileStats({ user }: { user: ProfileStatsModel | null }) {
               <Crown className="size-8 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground uppercase">{s.currentRank}</p>
+              <p className="text-sm font-medium text-muted-foreground uppercase">Current Rank</p>
               <p className="text-4xl font-black text-foreground">
-                {formatMessage(s.appLevelDisplay, { n: user.appLevel || 1 })}
+                Level {user.appLevel || 1}
               </p>
             </div>
           </div>
@@ -124,10 +106,9 @@ export function ProfileStats({ user }: { user: ProfileStatsModel | null }) {
               <Zap className="size-8 text-orange-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground uppercase">{s.totalExperience}</p>
+              <p className="text-sm font-medium text-muted-foreground uppercase">Total Experience</p>
               <p className="text-4xl font-black text-foreground">
-                {user.xp || 0}{" "}
-                <span className="text-xl font-normal text-muted-foreground">{s.xpUnit}</span>
+                {user.xp || 0} <span className="text-xl font-normal text-muted-foreground">XP</span>
               </p>
             </div>
           </div>
@@ -135,38 +116,40 @@ export function ProfileStats({ user }: { user: ProfileStatsModel | null }) {
         </div>
       </div>
 
+      {/* Основная сетка статистики */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile
           icon={Clock}
           iconWrapClass="bg-primary/20 text-primary"
           value={<>{hours}h {minutes}m</>}
-          label={s.watchTime}
+          label="Watch time"
         />
         <StatTile
           icon={PlayCircle}
           iconWrapClass="bg-accent/20 text-accent"
           value={user.videosCompleted}
-          label={s.videosDone}
+          label="Videos done"
         />
         <StatTile
           icon={CheckCircle}
           iconWrapClass="bg-secondary text-muted-foreground"
           value={user.testsCompleted}
-          label={s.quizzes}
+          label="Quizzes"
         />
         <StatTile
           icon={Target}
           iconWrapClass="bg-secondary text-muted-foreground"
           value={user.averageScore != null ? `${user.averageScore}%` : "—"}
-          label={s.avgScore}
+          label="Avg. Score"
         />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ProfileCard title={s.weeklyCardTitle}>
+        {/* График активности */}
+        <ProfileCard title="Weekly activity">
           <div className="h-[200px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
+              <AreaChart data={weeklyActivity}>
                 <defs>
                   <linearGradient id="colorMinutes" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
@@ -184,7 +167,7 @@ export function ProfileStats({ user }: { user: ProfileStatsModel | null }) {
                   contentStyle={{
                     background: "var(--card)",
                     border: "1px solid var(--border)",
-                    borderRadius: "8px",
+                    borderRadius: "8px"
                   }}
                 />
                 <Area
@@ -200,13 +183,15 @@ export function ProfileStats({ user }: { user: ProfileStatsModel | null }) {
           </div>
         </ProfileCard>
 
-        <ProfileCard title={s.proficiencyCardTitle}>
+        {/* Прогресс CEFR */}
+        <ProfileCard title="Language proficiency">
           <div className="flex items-end gap-2 mt-6">
             {order.map((lp) => {
               const levelIndex = order.indexOf(lp);
               let pct = 0;
               if (levelIndex < idx) pct = 100;
-              else if (levelIndex === idx) pct = 45;
+              else if (levelIndex === idx) pct = 45; // Тут можно добавить реальный прогресс к след. уровню
+
               return (
                 <div key={lp} className="flex-1">
                   <div className="flex flex-col items-center gap-2">
@@ -229,8 +214,7 @@ export function ProfileStats({ user }: { user: ProfileStatsModel | null }) {
             })}
           </div>
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            {s.estimatedLevel}{" "}
-            <span className="font-bold text-primary">{current}</span>
+            Estimated level: <span className="font-bold text-primary">{current}</span>
           </p>
         </ProfileCard>
       </div>

@@ -20,7 +20,6 @@ import { coarseLevelTier } from "./studying-plan-level.util";
 import {
   buildPlanTasksForPhase,
   richPassConditionsForPhase,
-  type StudyingPlanTextLocale,
 } from "./studying-plan-pass-conditions.builder";
 import { StudyingPlanGeminiClient } from "./studying-plan-gemini.client";
 import { syncActiveStudyingPhaseForUser } from "./sync-active-studying-phase";
@@ -32,10 +31,7 @@ export class StudyingPlanRegenerationService {
     private readonly gemini: StudyingPlanGeminiClient,
   ) {}
 
-  async regenerateForUser(
-    userId: number,
-    locale: StudyingPlanTextLocale = "en",
-  ): Promise<StoredStudyingPlanV2> {
+  async regenerateForUser(userId: number): Promise<StoredStudyingPlanV2> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -66,12 +62,10 @@ export class StudyingPlanRegenerationService {
       timeHorizon,
       englishLevel,
       hobbies,
-      locale,
     });
 
     const rawPlan =
-      fromGemini ??
-      this.fallbackPlan(learningGoal, timeHorizon, hobbies, englishLevel, locale);
+      fromGemini ?? this.fallbackPlan(learningGoal, timeHorizon, hobbies, englishLevel);
     let plan: StoredStudyingPlanV2;
     try {
       plan = parseStudyingPlanV2Strict(rawPlan);
@@ -106,11 +100,7 @@ export class StudyingPlanRegenerationService {
     horizon: string,
     hobbiesNote: string[],
     englishLevel: string,
-    locale: StudyingPlanTextLocale,
   ): StoredStudyingPlanV2 {
-    if (locale === "uk") {
-      return this.fallbackPlanUk(goal, horizon, hobbiesNote, englishLevel);
-    }
     const hobbyLine =
       hobbiesNote.length > 0 ?
         ` Use interests like ${hobbiesNote.slice(0, 3).join(", ")} when choosing clips.`
@@ -192,102 +182,6 @@ export class StudyingPlanRegenerationService {
       `At least **${Math.max(2, Math.round(budget.structuredStudyWeeks / 6))}** catalog sessions with quizzes finished each week (scaled to your **~${budget.structuredStudyWeeks}-week** structured window).`,
       "One vocabulary or transcript review pulled from last week’s lessons.",
       "One stretch video slightly above your easiest comfortable pick.",
-    ]);
-  }
-
-  /** Offline template matching {@link fallbackPlan} when Gemini is unavailable (Ukrainian copy). */
-  private fallbackPlanUk(
-    goal: string,
-    horizon: string,
-    hobbiesNote: string[],
-    englishLevel: string,
-  ): StoredStudyingPlanV2 {
-    const hobbyLine =
-      hobbiesNote.length > 0 ?
-        ` Додай і відео в дусі інтересів: ${hobbiesNote.slice(0, 3).join(", ")}.`
-      : "";
-    const budget = horizonBudgetFromLabel(horizon);
-    const tier = coarseLevelTier(englishLevel.trim() || "");
-    const sessions = Math.max(2, Math.round(budget.structuredStudyWeeks / 6));
-
-    const phases: StoredStudyingPlanPhaseV2[] = [
-      {
-        title: "Етап 1 — Закріпи звичку",
-        summary:
-          "Зроби англійську невеликим щотижневим ритуалом: короткі заняття з каталогу й перевірки розуміння.",
-        actions: [
-          "Обери **2–3** фіксовані слоти на тиждень для уроків (навіть **20** хвилин важливі).",
-          "Почни з відео близько до свого рівня; надсилай кожну спробу вікторини.",
-          "Записуй нову лексику з підказок і коротко повторюй її між уроками.",
-        ],
-        tasks: buildPlanTasksForPhase({ phaseIndex: 0, budget, tier }),
-        passConditions: richPassConditionsForPhase({
-          phaseIndex: 0,
-          budget,
-          tier,
-          learningGoal: goal,
-          locale: "uk",
-        }),
-      },
-      {
-        title: "Етап 2 — Розшир сприйняття",
-        summary:
-          "Розширюй теми й складність, щоб навчання залишалось досяжним.",
-        actions: [
-          "Щомісяця додавай один жанр або тему поза «зручним» асортиментом.",
-          "Переглянь короткий фрагмент без субтитрів, потім з субтитрами — порівняй, що впустив(ла).",
-          `Шукай контент узгоджено з метою **${goal}**.${hobbyLine}`,
-        ],
-        tasks: buildPlanTasksForPhase({ phaseIndex: 1, budget, tier }),
-        passConditions: richPassConditionsForPhase({
-          phaseIndex: 1,
-          budget,
-          tier,
-          learningGoal: goal,
-          locale: "uk",
-        }),
-      },
-      {
-        title: "Етап 3 — Застосуй і перевір",
-        summary:
-          "Зв’яжи те, що чуєш, із коротким усним або письмовим висновком.",
-        actions: [
-          "Після уроку скажи або напиши **3** англійські речення-узагальнення.",
-          "Раз на місяць повтори стару вікторину або урок для контролю пам’яті.",
-          "Якщо вікторини здаються легкими два тижні поспіль — підніми складність клипів.",
-        ],
-        tasks: buildPlanTasksForPhase({ phaseIndex: 2, budget, tier }),
-        passConditions: richPassConditionsForPhase({
-          phaseIndex: 2,
-          budget,
-          tier,
-          learningGoal: goal,
-          locale: "uk",
-        }),
-      },
-      {
-        title: "Етап 4 — Тримай темп до горизонту",
-        summary: `Зберігай здобутки протягом **${horizon}** з легкою структурою й чесними очікуваннями.`,
-        actions: [
-          "Тримай мінімальний щотижневий час перегляду навіть у завантажені періоди.",
-          "Надавай перевагу завершеним серіям, а не випадковому гортанню.",
-          "Коригуй мету в профілі, якщо контекст змінився — план має лишатися реалістичним.",
-        ],
-        tasks: buildPlanTasksForPhase({ phaseIndex: 3, budget, tier }),
-        passConditions: richPassConditionsForPhase({
-          phaseIndex: 3,
-          budget,
-          tier,
-          learningGoal: goal,
-          locale: "uk",
-        }),
-      },
-    ];
-
-    return wrapStudyingPlanV2(phases, [
-      `Щонайменше **${sessions}** занять у каталозі з вікторинами щотижня (структуроване вікно **~${budget.structuredStudyWeeks}** тиж.).`,
-      "Одне повторення лексики або транскрипту з минулотижневих уроків.",
-      "Одне «навантажувальне» відео трішки вище найзручнішого рівня.",
     ]);
   }
 }

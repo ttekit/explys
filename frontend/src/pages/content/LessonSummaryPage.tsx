@@ -5,11 +5,7 @@ import { ChameleonMascot } from "../../components/ChameleonMascot";
 import { ProfileCard } from "../../components/profile/ProfileCard";
 import { KnowledgeShiftBar } from "../../components/profile/KnowledgeMeters";
 import { apiFetch } from "../../lib/api";
-import { formatMessage } from "../../lib/formatMessage";
 import { cn } from "../../lib/utils";
-import { useLandingLocale } from "../../context/LandingLocaleContext";
-import { useUser } from "../../context/UserContext";
-import { vocabularyHintsTargetLang } from "../../lib/nativeLanguageCode";
 import {
   estimatedLessonKnowledgeFromQuizPct,
   WATCH_COMPLETE_LISTENING_POINTS,
@@ -19,8 +15,6 @@ import type { QuizWrongReviewItem } from "../../components/content-watch/VideoQu
 export type LessonWordEntry = {
   word: string;
   definition: string;
-  /** Gloss in the learner’s native language when hints / API provided it (see lesson vocabulary sidebar). */
-  nativeTranslation?: string;
 };
 
 export type LessonSummaryState = {
@@ -51,29 +45,12 @@ function normalizeWords(raw: unknown): LessonWordEntry[] {
   const out: LessonWordEntry[] = [];
   for (const row of raw) {
     if (!row || typeof row !== "object") continue;
-    const w = row as {
-      word?: unknown;
-      definition?: unknown;
-      nativeTranslation?: unknown;
-      translation?: unknown;
-    };
+    const w = row as { word?: unknown; definition?: unknown };
     const word = typeof w.word === "string" ? w.word.trim() : "";
     const definition =
       typeof w.definition === "string" ? w.definition.trim() : "";
-    const nativeRaw =
-      typeof w.nativeTranslation === "string"
-        ? w.nativeTranslation.trim()
-        : typeof w.translation === "string"
-          ? w.translation.trim()
-          : "";
-    const nativeTranslation =
-      nativeRaw.length > 0 ? nativeRaw.slice(0, 500) : undefined;
     if (word.length < 2 || definition.length < 2) continue;
-    out.push({
-      word,
-      definition,
-      ...(nativeTranslation ? { nativeTranslation } : {}),
-    });
+    out.push({ word, definition });
   }
   return out.slice(0, 12);
 }
@@ -139,26 +116,6 @@ function normalizeQuizReview(raw: unknown): LessonSummaryState["quizReview"] {
     });
   }
   return wrong.length > 0 ? { wrong } : undefined;
-}
-
-function labelForQuizReviewCategory(
-  category: NonNullable<QuizWrongReviewItem["category"]>,
-  ls: {
-    readonly quizCategoryGrammar: string;
-    readonly quizCategoryVocabulary: string;
-    readonly quizCategoryComprehension: string;
-  },
-): string {
-  switch (category) {
-    case "grammar":
-      return ls.quizCategoryGrammar;
-    case "vocabulary":
-      return ls.quizCategoryVocabulary;
-    case "comprehension":
-      return ls.quizCategoryComprehension;
-    default:
-      return category;
-  }
 }
 
 function normalizeWrittenSummaryScore(
@@ -231,15 +188,14 @@ type VideoMeta = {
   levelTags: string[];
 };
 
-function parseVideoJson(data: unknown, fallbackVideoName: string): VideoMeta | null {
+function parseVideoJson(data: unknown): VideoMeta | null {
   if (!data || typeof data !== "object") return null;
   const d = data as {
     videoName?: unknown;
     videoDescription?: unknown;
     content?: unknown;
   };
-  const name =
-    typeof d.videoName === "string" ? d.videoName : fallbackVideoName;
+  const name = typeof d.videoName === "string" ? d.videoName : "Lesson";
   const desc =
     typeof d.videoDescription === "string" || d.videoDescription === null
       ? d.videoDescription
@@ -320,12 +276,6 @@ function coerceSummary(
 export default function LessonSummaryPage() {
   const { id: videoId } = useParams();
   const location = useLocation();
-  const { messages, locale } = useLandingLocale();
-  const ls = messages.lessonSummaryPage;
-  const pp = messages.profileProgress;
-  const xpUnit = messages.profileStats.xpUnit;
-  const catalogNav = messages.catalogShell.navCatalog;
-  const backToCatalogLabel = messages.lesson.backToCatalog;
   const fromNav = location.state as LessonSummaryState | null;
   const [stored, setStored] = useState<LessonSummaryState | null>(null);
   const [metaOnly, setMetaOnly] = useState<VideoMeta | null>(null);
@@ -346,13 +296,13 @@ export default function LessonSummaryPage() {
       if (cancelled || !r.ok) return;
       const data = await r.json();
       if (cancelled) return;
-      const meta = parseVideoJson(data, ls.fallbackLessonTitle);
+      const meta = parseVideoJson(data);
       if (meta) setMetaOnly(meta);
     });
     return () => {
       cancelled = true;
     };
-  }, [videoId, summary, ls.fallbackLessonTitle]);
+  }, [videoId, summary]);
 
   const knowledgeEstimate = useMemo(() => {
     if (!summary) return null;
@@ -376,10 +326,10 @@ export default function LessonSummaryPage() {
             : ("thinking" as const);
       const message =
         knowledgeEstimate.pct >= 80
-          ? ls.moodStrong
+          ? "Strong work — you’re ready for the next lesson."
           : knowledgeEstimate.pct >= 50
-            ? ls.moodGood
-            : ls.moodReview;
+            ? "Good effort — skim vocabulary once more."
+            : "Review the clip and vocabulary, then retry.";
       return {
         kind: "full" as const,
         summary,
@@ -395,86 +345,17 @@ export default function LessonSummaryPage() {
       };
     }
     return { kind: "empty" as const };
-  }, [summary, metaOnly, knowledgeEstimate, ls]);
-
-  const learnedWordsFingerprint = useMemo(() => {
-    if (display.kind !== "full") return "";
-    return display.summary.learnedWords
-      .map((w) =>
-        [w.word, w.definition, (w.nativeTranslation ?? "").trim()].join("\u001f"),
-      )
-      .join("\u001e");
-  }, [display]);
-
-  const [wordRowsWithHints, setWordRowsWithHints] = useState<
-    LessonWordEntry[] | null
-  >(null);
-  const { user } = useUser();
-
-  useEffect(() => {
-    let cancelled = false;
-    setWordRowsWithHints(null);
-    if (display.kind !== "full") return;
-    const rows = display.summary.learnedWords;
-    if (rows.length === 0) return;
-    const targetLang = vocabularyHintsTargetLang(
-      user?.nativeLanguage?.trim(),
-      locale,
-    );
-    const needsHints = rows.some((w) => !(w.nativeTranslation ?? "").trim());
-    if (!needsHints || targetLang === null) {
-      return;
-    }
-    void apiFetch(`/content-video/vocabulary-hints`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        words: rows.map((w) => w.word),
-        targetLang,
-      }),
-    })
-      .then(async (r) => {
-        if (cancelled || !r.ok) return;
-        const data = (await r.json()) as {
-          hints?: Record<
-            string,
-            { translation: string | null; pronunciation?: string | null }
-          >;
-        };
-        const hints = data.hints ?? {};
-        const merged = rows.map((w) => {
-          const hintTr =
-            hints[w.word.trim().toLowerCase()]?.translation?.trim();
-          const existing = (w.nativeTranslation ?? "").trim();
-          if (existing.length > 0) return w;
-          if (!hintTr) return w;
-          return {
-            ...w,
-            nativeTranslation: hintTr.slice(0, 500),
-          };
-        });
-        if (!cancelled) setWordRowsWithHints(merged);
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, [learnedWordsFingerprint, display.kind, locale, user?.nativeLanguage]);
-
-  const learnedWordsToShow =
-    display.kind === "full"
-      ? (wordRowsWithHints ?? display.summary.learnedWords)
-      : [];
+  }, [summary, metaOnly, knowledgeEstimate]);
 
   if (!videoId) {
     return (
       <div className="min-h-screen bg-background px-4 pt-24 text-center">
-        <p className="text-muted-foreground">{ls.missingLesson}</p>
+        <p className="text-muted-foreground">Missing lesson.</p>
         <Link
           to="/catalog"
           className="mt-4 inline-block text-sm font-medium text-primary"
         >
-          {backToCatalogLabel}
+          Back to catalog
         </Link>
       </div>
     );
@@ -489,11 +370,11 @@ export default function LessonSummaryPage() {
             className="inline-flex shrink-0 items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm">{catalogNav}</span>
+            <span className="text-sm">Catalog</span>
           </Link>
           <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
             <ChameleonMascot size="sm" mood="happy" animate={false} />
-            <span className="font-display truncate font-bold">{ls.pageTitle}</span>
+            <span className="font-display truncate font-bold">Lesson summary</span>
           </div>
           <div className="w-16 shrink-0" aria-hidden />
         </div>
@@ -502,12 +383,15 @@ export default function LessonSummaryPage() {
       <main className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
         {display.kind === "empty" ? (
           <div className="rounded-2xl border border-border bg-card/50 p-8 text-center">
-            <p className="text-muted-foreground">{ls.emptyLead}</p>
+            <p className="text-muted-foreground">
+              No results for this lesson. Open the lesson, finish the quiz, and
+              tap “Complete lesson” to see your score here.
+            </p>
             <Link
               to={`/content/${videoId}`}
               className="mt-6 inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground"
             >
-              {ls.openLesson}
+              Open lesson
             </Link>
           </div>
         ) : display.kind === "meta" ? (
@@ -521,12 +405,15 @@ export default function LessonSummaryPage() {
                 {display.metaOnly.categoryName}
               </p>
             ) : null}
-            <p className="mt-4 text-sm text-muted-foreground">{ls.metaLead}</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Complete the quiz on the lesson page to see your score, words, and
+              topic updates here.
+            </p>
             <Link
               to={`/content/${videoId}`}
               className="mt-6 inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground"
             >
-              {ls.continueLesson}
+              Continue lesson
             </Link>
           </div>
         ) : (
@@ -557,16 +444,14 @@ export default function LessonSummaryPage() {
               )}
             >
               <h2 className="font-display text-center text-lg font-semibold">
-                {ls.quizResults}
+                Quiz results
               </h2>
               <div className="mt-6 text-center">
                 <p className="font-display text-4xl font-bold text-primary tabular-nums">
                   {display.summary.correctCount}/{display.summary.totalQuestions}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {formatMessage(ls.pctCorrect, {
-                    pct: display.knowledgeEstimate.pct,
-                  })}
+                  {display.knowledgeEstimate.pct}% correct
                 </p>
               </div>
               <p className="mt-6 text-center text-sm leading-relaxed text-muted-foreground">
@@ -582,18 +467,17 @@ export default function LessonSummaryPage() {
               display.summary.writtenSummaryFeedback.trim().length > 0) ? (
               <div className="mt-8 rounded-2xl border border-border bg-card p-6 sm:p-8">
                 <h2 className="font-display text-lg font-semibold">
-                  {ls.writtenSummaryHeading}
+                  Your written summary
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {ls.writtenSummaryLead}
+                  Personalized comments on your answer, tailored to the lesson and
+                  your profile when you complete the quiz while signed in.
                 </p>
                 {typeof display.summary.writtenSummaryScore === "number" &&
                 display.summary.writtenSummaryScore >= 1 &&
                 display.summary.writtenSummaryScore <= 10 ? (
                   <p className="mt-4 text-sm font-semibold tabular-nums text-primary">
-                    {formatMessage(ls.summaryScoreLine, {
-                      score: display.summary.writtenSummaryScore,
-                    })}
+                    Summary score: {display.summary.writtenSummaryScore}/10
                   </p>
                 ) : null}
                 {display.summary.writtenSummaryText ? (
@@ -608,7 +492,9 @@ export default function LessonSummaryPage() {
                   </p>
                 ) : display.summary.writtenSummaryText?.trim() ? (
                   <p className="mt-4 text-sm text-muted-foreground">
-                    {ls.noCoachComment}
+                    No written-summary coach comment was saved. Finish the lesson
+                    from the quiz tab and tap “Complete lesson” while the lesson
+                    tests have finished loading so the server can attach feedback.
                   </p>
                 ) : null}
               </div>
@@ -618,10 +504,11 @@ export default function LessonSummaryPage() {
             display.summary.quizReview.wrong.length > 0 ? (
               <div className="mt-8 rounded-2xl border border-destructive/25 bg-destructive/5 p-6 sm:p-8">
                 <h2 className="font-display text-center text-lg font-semibold">
-                  {ls.reviewWrongHeading}
+                  Review tricky questions
                 </h2>
                 <p className="mt-2 text-center text-sm text-muted-foreground">
-                  {ls.reviewWrongLead}
+                  Explanations for items you missed — skim these before the next
+                  quiz on this lesson.
                 </p>
                 <ul className="mt-6 space-y-5 text-left">
                   {display.summary.quizReview.wrong.map((row, i) => (
@@ -631,21 +518,21 @@ export default function LessonSummaryPage() {
                     >
                       {row.category ? (
                         <span className="inline-block rounded bg-muted px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          {labelForQuizReviewCategory(row.category, ls)}
+                          {row.category}
                         </span>
                       ) : null}
                       <p className="mt-2 text-sm font-medium text-foreground">
                         {row.question}
                       </p>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        {ls.yourAnswer}{" "}
+                        Your answer:{" "}
                         <span className="font-medium text-destructive">
-                          {row.options[row.selectedIndex] ?? ls.answerDash}
+                          {row.options[row.selectedIndex] ?? "—"}
                         </span>
                         {" · "}
-                        {ls.correctLabel}{" "}
+                        Correct:{" "}
                         <span className="font-medium text-accent">
-                          {row.options[row.correctIndex] ?? ls.answerDash}
+                          {row.options[row.correctIndex] ?? "—"}
                         </span>
                       </p>
                       {row.explanation ? (
@@ -663,39 +550,33 @@ export default function LessonSummaryPage() {
               <div className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5 text-primary" aria-hidden />
                 <h2 className="font-display text-lg font-semibold">
-                  {ls.wordsHeading}
+                  Words you explored
                 </h2>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">{ls.wordsLead}</p>
-              {learnedWordsToShow.length === 0 ? (
+              <p className="mt-1 text-sm text-muted-foreground">
+                Key vocabulary from this lesson — add them to your active study
+                list by revisiting the Vocabulary tab.
+              </p>
+              {display.summary.learnedWords.length === 0 ? (
                 <p className="mt-4 text-sm text-muted-foreground">
-                  {ls.wordsEmpty}
+                  No personalised word list was returned for this run. Try again
+                  after the lesson sidebar finishes loading, or open the lesson to
+                  see defaults.
                 </p>
               ) : (
                 <ul className="mt-4 space-y-3">
-                  {learnedWordsToShow.map((w) => (
+                  {display.summary.learnedWords.map((w) => (
                     <li
                       key={w.word}
                       className="rounded-lg border border-border/80 bg-background/50 px-3 py-2.5"
                     >
-                      <div className="flex flex-col gap-1">
-                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                          <span className="font-semibold text-foreground">
-                            {w.word}
-                          </span>
-                          {w.nativeTranslation ?
-                            <span
-                              className="text-sm text-muted-foreground"
-                              title={ls.wordsNativeTooltip}
-                            >
-                              ({w.nativeTranslation})
-                            </span>
-                          : null}
-                        </div>
-                        <p className="text-sm leading-relaxed text-muted-foreground">
-                          {w.definition}
-                        </p>
-                      </div>
+                      <span className="font-semibold text-foreground">
+                        {w.word}
+                      </span>
+                      <span className="text-muted-foreground"> — </span>
+                      <span className="text-sm text-muted-foreground">
+                        {w.definition}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -706,15 +587,18 @@ export default function LessonSummaryPage() {
               <div className="flex items-center gap-2">
                 <Tags className="h-5 w-5 text-primary" aria-hidden />
                 <h2 className="font-display text-lg font-semibold">
-                  {ls.topicsHeading}
+                  Topics and knowledge
                 </h2>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">{ls.topicsLead}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                How this lesson maps to tags and catalogue topics linked to the
+                clip.
+              </p>
 
               {display.summary.levelTags.length > 0 ? (
                 <div className="mt-4">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {ls.levelFocus}
+                    Level focus
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {display.summary.levelTags.map((t) => (
@@ -732,7 +616,7 @@ export default function LessonSummaryPage() {
               {display.summary.lessonTopics.length > 0 ? (
                 <div className="mt-5">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {ls.linkedTopics}
+                    Linked topics
                   </p>
                   <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-foreground">
                     {display.summary.lessonTopics.map((t) => (
@@ -745,7 +629,7 @@ export default function LessonSummaryPage() {
               {display.summary.themeTags.length > 0 ? (
                 <div className="mt-5">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {ls.lessonThemes}
+                    Lesson themes
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {display.summary.themeTags.map((t) => (
@@ -764,26 +648,28 @@ export default function LessonSummaryPage() {
               display.summary.themeTags.length === 0 &&
               display.summary.levelTags.length === 0 ? (
                 <p className="mt-4 text-sm text-muted-foreground">
-                  {ls.untaggedClipLead}
-                  <strong>{display.summary.categoryName}</strong>
-                  {ls.untaggedClipTail}
+                  This clip isn’t tagged to specific catalogue topics yet. Your
+                  score still updates your progress in{" "}
+                  <strong>{display.summary.categoryName}</strong>.
                 </p>
               ) : null}
             </div>
 
             <div className="mt-8">
-              <ProfileCard title={ls.knowledgeShiftTitle}>
+              <ProfileCard title="Estimated knowledge shift from your quiz">
                 <div className="rounded-xl border border-border/40 bg-secondary/25 p-4">
                   <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                    {ls.thisLesson}
+                    This lesson
                   </p>
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-medium text-foreground">
-                        {ls.quizAdjustedSkills}
+                        Quiz-adjusted skills
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {ls.quizAdjustedLead}
+                        Same layout as progress — model points on a 0–100
+                        scale. Listening includes the small watch-complete
+                        boost.
                       </p>
                     </div>
                     <span className="shrink-0 rounded-md bg-primary/15 px-2 py-0.5 text-sm font-semibold tabular-nums text-primary">
@@ -791,7 +677,7 @@ export default function LessonSummaryPage() {
                     </span>
                   </div>
                   <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                    {ls.overall}
+                    Overall
                   </p>
                   <div className="mb-3 h-2 overflow-hidden rounded-full bg-secondary">
                     <div
@@ -803,7 +689,7 @@ export default function LessonSummaryPage() {
                   </div>
                   <div className="space-y-2.5 pt-1">
                     <KnowledgeShiftBar
-                      label={pp.listening}
+                      label="Listening"
                       deltaPoints={
                         display.knowledgeEstimate.listening +
                         WATCH_COMPLETE_LISTENING_POINTS
@@ -812,13 +698,13 @@ export default function LessonSummaryPage() {
                       suffix=""
                     />
                     <KnowledgeShiftBar
-                      label={pp.vocabulary}
+                      label="Vocabulary"
                       deltaPoints={display.knowledgeEstimate.vocabulary}
                       barClass="bg-violet-500/80 dark:bg-violet-400/85"
                       suffix=""
                     />
                     <KnowledgeShiftBar
-                      label={pp.grammar}
+                      label="Grammar"
                       deltaPoints={0}
                       barClass="bg-amber-500/75 dark:bg-amber-400/80"
                       suffix=""
@@ -830,20 +716,23 @@ export default function LessonSummaryPage() {
 
             <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-center">
               <p className="text-sm font-medium text-muted-foreground">
-                {ls.experienceEarned}
+                Experience earned
               </p>
               <p className="font-display mt-2 text-3xl font-bold text-foreground tabular-nums">
-                {formatMessage(ls.xpEarnedLine, {
-                  xp: display.summary.xpEarned,
-                  xpUnit,
-                })}
+                +{display.summary.xpEarned} XP
               </p>
-              <div className="mt-8 flex justify-center">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <Link
                   to="/catalog"
                   className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  {catalogNav}
+                  Next in catalog
+                </Link>
+                <Link
+                  to={`/content/${videoId}`}
+                  className="inline-flex items-center justify-center rounded-xl border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/50"
+                >
+                  Review lesson
                 </Link>
               </div>
             </div>
