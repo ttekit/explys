@@ -1,3 +1,6 @@
+import { ApiPropertyOptional, OmitType, PartialType } from "@nestjs/swagger";
+import { Type } from 'class-transformer';
+import { IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
 import { CreateUserDto } from "./create-user.dto";
 import {
   IsBoolean,
@@ -11,7 +14,13 @@ import {
 import { ApiPropertyOptional, PartialType } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
+/** User updates cannot set studying-plan phases or active phase (derived from quiz progress). */
+export class UpdateUserDto extends PartialType(
+  OmitType(CreateUserDto, [
+    "studyingPlanPhases",
+    "activeStudyingPhaseIndex",
+  ] as const),
+) {
   @IsOptional()
   @IsString({ message: "Name must be a string." })
   @IsNotEmpty({ message: "Name is required." })
@@ -31,7 +40,6 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
     return false;
   })
   isTwoFactorEnabled?: boolean;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()

@@ -7,7 +7,14 @@ import { PrismaService } from 'src/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { parseStudyingPlanV2Strict } from '../studying-plan/studying-plan-json.util';
 import { AlcorythmService } from '../alcorythm/alcorythm.service';
+import { Prisma } from '../generated/prisma/client';
+
+function clampPhaseIndex(index: number, phaseCount: number): number {
+    if (phaseCount <= 0) return 0;
+    return Math.max(0, Math.min(Math.floor(index), phaseCount - 1));
+}
 
 @Injectable()
 export class UsersService {
@@ -42,6 +49,8 @@ export class UsersService {
                 studentProblemTopics: true,
                 learningGoal: true,
                 timeToAchieve: true,
+                studyingPlanPhases: true,
+                activeStudyingPhaseIndex: true,
                 favoriteGenres: true,
                 hatedGenres: true,
             },
@@ -72,6 +81,8 @@ export class UsersService {
             knownLanguageLevels,
             learningGoal,
             timeToAchieve,
+            studyingPlanPhases,
+            activeStudyingPhaseIndex,
         } = createUserDto;
         const role =
             roleRaw &&
@@ -88,6 +99,27 @@ export class UsersService {
             workField,
             learningGoal,
             timeToAchieve,
+            ...((() => {
+                if (studyingPlanPhases === undefined || studyingPlanPhases === null) {
+                    return {};
+                }
+                try {
+                    const plan = parseStudyingPlanV2Strict(studyingPlanPhases);
+                    return {
+                        studyingPlanPhases: JSON.parse(
+                            JSON.stringify(plan),
+                        ) as Prisma.InputJsonValue,
+                        activeStudyingPhaseIndex: clampPhaseIndex(
+                            activeStudyingPhaseIndex ?? 0,
+                            plan.phases.length,
+                        ),
+                    };
+                } catch {
+                    throw new BadRequestException(
+                        "Invalid studying plan (version 2 with tasks required)",
+                    );
+                }
+            })()),
             favoriteGenres: favoriteGenres && favoriteGenres.length > 0 ? {
                 connect: favoriteGenres.map(id => ({ id }))
             } : undefined,
@@ -356,7 +388,19 @@ export class UsersService {
             });
         }
 
-        if (hasProfileUpdate) {
+        if (
+            englishLevel !== undefined ||
+            hobbies !== undefined ||
+            education !== undefined ||
+            workField !== undefined ||
+            nativeLanguage !== undefined ||
+            knownLanguages !== undefined ||
+            knownLanguageLevels !== undefined ||
+            learningGoal !== undefined ||
+            timeToAchieve !== undefined ||
+            favoriteGenres !== undefined ||
+            hatedGenres !== undefined
+        ) {
             await this.alcorythmService.analyzeUserLevel(id);
         }
 

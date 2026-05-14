@@ -112,9 +112,8 @@ export default function VideoPlayer({
       />
 
       <div
-        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-          playing ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-        }`}
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${playing ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+          }`}
       >
         <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
           {playing ? (

@@ -10,12 +10,14 @@ import {
 import { ChameleonMascot } from "../../components/ChameleonMascot";
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
+import { cn } from "../../lib/utils";
 
 interface ContentVideo {
   id: number;
   videoName: string;
   videoDescription: string | null;
   videoLink: string;
+  thumbnailUrl?: string;
   content: {
     category: {
       name: string;
@@ -30,6 +32,8 @@ function toCardVideo(video: ContentVideo): CatalogCardVideo {
     title: video.videoName,
     categoryLabel: video.content.category.name,
     progress: 100,
+    thumbnailUrl: video.thumbnailUrl,
+    videoLink: video.videoLink,
   };
 }
 
@@ -38,6 +42,7 @@ export default function WatchedLessonsPage() {
   const [videos, setVideos] = useState<ContentVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,15 +87,23 @@ export default function WatchedLessonsPage() {
         <CatalogSidebar
           categories={[]}
           selectedCategory="All"
-          onSelectCategory={() => {}}
-          showCategoryFilter={false}
+          onSelectCategory={() => { }}
+          onSelectLevel={() => { }}
+          reserveTopNavSpace={false}
           welcomeName={
             user?.name?.trim() ? user.name.trim().split(/\s+/)[0] : undefined
           }
           englishLevel={user?.englishLevel || undefined}
+          collapsed={sidebarCollapsed}
+          onCollapsedChange={setSidebarCollapsed}
         />
 
-        <main className="ml-0 flex-1 pb-28 lg:ml-64 lg:pb-12">
+        <main
+          className={cn(
+            "ml-0 flex-1 pb-28 lg:pb-12",
+            sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
+          )}
+        >
           <div className="border-border border-b bg-card/30 px-4 py-8 sm:px-6 lg:px-8">
             <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-start gap-3">
@@ -146,11 +159,7 @@ export default function WatchedLessonsPage() {
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {cards.map((video) => (
-                  <CatalogVideoCard
-                    key={video.id}
-                    video={video}
-                    showProgress
-                  />
+                  <CatalogVideoCard key={video.id} video={video} showProgress />
                 ))}
               </div>
             )}

@@ -33,5 +33,6 @@ import { ContentVideoService } from "./content-video.service";
     VocabularyPersonalizeGeminiClient,
     VocabularyPersonalizationService,
   ],
+  exports: [ContentVideoService, VideoCaptionsService],
 })
 export class ContentVideoModule { }

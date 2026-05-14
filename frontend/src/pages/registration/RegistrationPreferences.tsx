@@ -112,6 +112,15 @@ export default function RegistrationPreferences() {
 
       if (response.ok) {
         setStoredAccessToken(null);
+        if (formData.role === "student" || formData.role === "adult") {
+          setPendingRegistrationLoginWelcome();
+          navigate("/loginForm", {
+            replace: true,
+            state: { from: "/subscribe", registrationComplete: true },
+          });
+        } else {
+          navigate("/loginForm");
+        }
         navigate("/email-confirmation", {
           replace: true,
           state: { email: formData.email },

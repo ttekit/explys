@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { AuthModule } from "src/auth/auth.module";
+import { ContentVideoModule } from "src/content/content-video/content-video.module";
 import { ContentsController } from "./contents.controller";
 import { ContentsService } from "./contents.service";
 import { RedisModule } from "@nestjs-modules/ioredis";
@@ -11,6 +13,8 @@ import { RedisModule } from "@nestjs-modules/ioredis";
 // (plus static routes like `/`, `/catalog`, `/pricing` as needed).
 @Module({
   imports: [
+    AuthModule,
+    ContentVideoModule,
     ThrottlerModule.forRootAsync({
       useFactory: (configService: ConfigService) => [
         {

@@ -5,6 +5,7 @@ import {
   ReactNode,
   useEffect,
   useCallback,
+  DO_NOT_USE_OR_YOU_WILL_BE_FIRED_CALLBACK_REF_RETURN_VALUES,
 } from "react";
 import { apiFetch, setStoredAccessToken } from "../lib/api";
 import { identifyLearner, resetAnalytics } from "../lib/analytics";
@@ -32,11 +33,22 @@ export interface UserData {
   learningGoal?: string;
   /** Adult profile: target horizon. */
   timeToAchieve?: string;
+  /** Saved studying-plan JSON v2 (`additional_user_data.studying_plan_phases`). */
+  studyingPlanPhases?: unknown;
+  /** ISO timestamp when the user entered the current phase (phase-scoped tasks). */
+  activePhaseEnteredAt?: string | null;
+  /** 0-based active phase (clamped client-side to phase count). */
+  activeStudyingPhaseIndex?: number;
   /** Stripe: light | smart | family */
   subscriptionPlan?: string;
   subscriptionStatus?: string;
   stripeSubscriptionId?: string;
+  /** Set when this account is a roster student under a teacher (exempt from consumer subscription). */
+  teacherId?: number | null;
   currentStreak: number;
+  xp: number;
+  level: number;
+  achievements: string[];
 }
 
 /** Registration used `"choose"` as a sentinel for unfilled selects; strip so UI shows blanks. */
@@ -88,13 +100,38 @@ function normalizeProfile(raw: unknown): UserData | null {
       typeof r.learningGoal === "string" ? r.learningGoal : "",
     timeToAchieve:
       typeof r.timeToAchieve === "string" ? r.timeToAchieve : "",
+    studyingPlanPhases:
+      r.studyingPlanPhases !== undefined && r.studyingPlanPhases !== null
+        ? r.studyingPlanPhases
+        : undefined,
+    activePhaseEnteredAt:
+      typeof r.activePhaseEnteredAt === "string" ?
+        r.activePhaseEnteredAt
+      : r.activePhaseEnteredAt === null ?
+        null
+      : undefined,
+    activeStudyingPhaseIndex: (() => {
+      const v = r.activeStudyingPhaseIndex;
+      if (v === null || v === undefined) return undefined;
+      const n = typeof v === "number" ? v : Number(v);
+      return Number.isFinite(n) ? n : undefined;
+    })(),
     subscriptionPlan:
       typeof r.subscriptionPlan === "string" ? r.subscriptionPlan : "",
     subscriptionStatus:
       typeof r.subscriptionStatus === "string" ? r.subscriptionStatus : "",
     stripeSubscriptionId:
       typeof r.stripeSubscriptionId === "string" ? r.stripeSubscriptionId : "",
+    teacherId: (() => {
+      const t = r.teacherId;
+      if (t === null || t === undefined) return null;
+      const n = typeof t === "number" ? t : Number(t);
+      return Number.isFinite(n) ? n : null;
+    })(),
     currentStreak: Number(r.currentStreak) || 0,
+    xp: Number(r.xp) || 0,
+    level: Number(r.level) || 1,
+    achievements: Array.isArray(r.achievements) ? r.achievements : [],
   };
 }
 

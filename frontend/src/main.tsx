@@ -14,6 +14,7 @@ import ContentPage from "./pages/content/ContentPage";
 import ProfileMain from "./pages/profile/ProfileMain";
 import { UserProvider } from "./context/UserContext";
 import VideoPage from "./pages/content/VideosPage";
+import CatalogSeriesPage from "./pages/content/CatalogSeriesPage";
 import WatchedLessonsPage from "./pages/content/WatchedLessonsPage";
 import LessonSummaryPage from "./pages/content/LessonSummaryPage";
 import RegisterSuccessPage from "./pages/registration/RegisterSuccessPage";
@@ -33,10 +34,8 @@ import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 import AnalyticsLayout from "./components/AnalyticsLayout";
 import RequireAuth from "./components/RequireAuth";
-import RegisterConfirmPage from "./pages/registration/RegisterConfirmPage";
-import EmailConfirmedPage from "./pages/registration/EmailConfirmedPage";
-import ForgotPasswordPage from "./pages/login/ForgotPasswordPage";
-import ResetPasswordPage from "./pages/login/ResetPasswordPage";
+import RequireSubscriberAccess from "./components/RequireSubscriberAccess";
+import SubscribePage from "./pages/subscription/SubscribePage";
 
 const router = createBrowserRouter([
   {
@@ -44,22 +43,18 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <LandingPage /> },
       { path: "/registrationMain", element: <RegistrationMain /> },
-      { path: "/email-confirmation", element: <RegisterConfirmPage /> },
-      { path: "/auth/confirm-email", element: <EmailConfirmedPage /> },
       { path: "/registrationDetails", element: <RegistrationDetails /> },
       {
         path: "/registrationPreferences",
         element: <RegistrationPreferences />,
       },
       { path: "/registrationSuccess", element: <RegisterSuccessPage /> },
-      { path: "/email-success", element: <EmailConfirmedPage /> },
       { path: "/loginForm", element: <LoginForm /> },
-      { path: "/forgot-password", element: <ForgotPasswordPage /> },
-      { path: "/auth/new-password", element: <ResetPasswordPage /> },
       { path: "/pricing", element: <PricingPage /> },
       {
         element: <RequireAuth />,
         children: [
+          { path: "/subscribe", element: <SubscribePage /> },
           {
             path: "/admin",
             element: <AdminLayout />,
@@ -76,21 +71,33 @@ const router = createBrowserRouter([
           },
           { path: "/level-test", element: <LevelTestPage /> },
           {
-            path: "/entrance-test",
-            element: <Navigate to="/catalog" replace />,
+            element: <RequireSubscriberAccess />,
+            children: [
+              {
+                path: "/entrance-test",
+                element: <Navigate to="/catalog" replace />,
+              },
+              {
+                path: "/contentPage",
+                element: <Navigate to="/watched-lessons" replace />,
+              },
+              { path: "/watched-lessons", element: <WatchedLessonsPage /> },
+              { path: "/profileMain", element: <ProfileMain /> },
+              { path: "/profile", element: <ProfileMain /> },
+              {
+                path: "/catalog/series/:friendlyLink",
+                element: <CatalogSeriesPage />,
+              },
+              { path: "/catalog", element: <VideoPage /> },
+              { path: "/learning-plan", element: <LearningPlanPage /> },
+              {
+                path: "/video-page",
+                element: <Navigate to="/catalog" replace />,
+              },
+              { path: "/content/:id/summary", element: <LessonSummaryPage /> },
+              { path: "/content/:id?", element: <ContentPage /> },
+            ],
           },
-          {
-            path: "/contentPage",
-            element: <Navigate to="/watched-lessons" replace />,
-          },
-          { path: "/watched-lessons", element: <WatchedLessonsPage /> },
-          { path: "/profileMain", element: <ProfileMain /> },
-          { path: "/profile", element: <ProfileMain /> },
-          { path: "/catalog", element: <VideoPage /> },
-          { path: "/learning-plan", element: <LearningPlanPage /> },
-          { path: "/video-page", element: <Navigate to="/catalog" replace /> },
-          { path: "/content/:id/summary", element: <LessonSummaryPage /> },
-          { path: "/content/:id?", element: <ContentPage /> },
         ],
       },
     ],
@@ -98,20 +105,22 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <HelmetProvider>
-    <LandingLocaleProvider>
-      <UserProvider>
-        <RegistrationProvider>
-          <RouterProvider router={router} />
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              className: "bg-zinc-900 text-zinc-100 border border-zinc-700",
-              style: { boxShadow: "0 8px 30px rgba(0,0,0,0.4)" },
-            }}
-          />
-        </RegistrationProvider>
-      </UserProvider>
-    </LandingLocaleProvider>
-  </HelmetProvider>,
+  <StrictMode>
+    <HelmetProvider>
+      <LandingLocaleProvider>
+        <UserProvider>
+          <RegistrationProvider>
+            <RouterProvider router={router} />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                className: "bg-zinc-900 text-zinc-100 border border-zinc-700",
+                style: { boxShadow: "0 8px 30px rgba(0,0,0,0.4)" },
+              }}
+            />
+          </RegistrationProvider>
+        </UserProvider>
+      </LandingLocaleProvider>
+    </HelmetProvider>
+  </StrictMode>,
 );

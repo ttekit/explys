@@ -500,7 +500,7 @@ export function ProfileSettings({
         <div className="mt-6 flex justify-end">
           <Button
             type="button"
-            className="mt-0 inline-flex w-auto items-center gap-2 px-6"
+            className="rounded-[15px] w-50 bg-primary px-6 py-3.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]6"
             disabled={saving}
             onClick={() => void saveProfile()}
           >
@@ -659,7 +659,7 @@ export function ProfileSettings({
         <div className="mt-6 flex justify-end border-t border-border/50 pt-6">
           <Button
             type="button"
-            className="mt-0 inline-flex w-auto items-center gap-2 px-6"
+            className="rounded-[15px] w-50 bg-primary px-6 py-3.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]6"
             disabled={savingPrefs}
             onClick={() => void saveLearnerPreferences()}
           >
@@ -974,14 +974,14 @@ export function ProfileSettings({
             </div>
             <button
               type="button"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-destructive px-4 py-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              className="text-sm flex font-medium text-destructive py-2.5 px-6 transition-all rounded-[15px] hover:bg-destructive/10 hover:cursor-pointer"
               onClick={() => {
                 logout();
                 toast.success("Signed out.");
                 void navigate("/loginForm", { replace: true });
               }}
             >
-              <LogOut className="size-4" />
+              <LogOut className="size-4 pt-1 pr-1" />
               Log out
             </button>
           </div>
@@ -994,7 +994,7 @@ export function ProfileSettings({
             </div>
             <button
               type="button"
-              className="rounded-xl border border-destructive px-4 py-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              className="text-sm font-medium text-destructive py-2.5 px-6 transition-all rounded-[15px] hover:bg-destructive/10 hover:cursor-pointer"
               onClick={() => setDangerOpen("reset")}
             >
               Reset
@@ -1009,7 +1009,7 @@ export function ProfileSettings({
             </div>
             <button
               type="button"
-              className="rounded-xl bg-destructive px-4 py-2 text-destructive-foreground hover:bg-destructive/90"
+              className="rounded-[15px] w-50 bg-destructive px-6 py-2.5 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]6"
               onClick={() => setDangerOpen("delete")}
             >
               Delete account

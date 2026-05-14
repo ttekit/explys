@@ -1,130 +1,177 @@
+# Explys
 
-# 🎓 EngCurses 🐒🚑
-
-**EngCurses** — это фронтенд-приложение для изучения английского языка через видеокурсы. Проект ориентирован на минимализм и фокус на обучении: центральное место занимает видеоплеер, а вспомогательные функции (профиль, настройки, авторизация) логично распределены по краям экрана.
-
-<img width="1439" height="569" alt="концепция главной страницы" src="https://github.com/user-attachments/assets/2177b534-614c-4de6-b08e-6acb864a3cf0" />
+Monorepo for **Explys**: personalized English learning through curated video clips, captions, quizzes, vocabulary support, placements, Stripe subscriptions, and an admin toolkit.
 
 ---
 
-## 🎯 Концепция
+## Repo layout
 
-Основная идея — сделать обучение сфокусированным и избавленным от лишних отвлекающих факторов.
+```text
+eng_curses/
+├── backend/                 # NestJS API, Prisma, workers/pipelines integration
+│   ├── prisma/              # schema (split under schema/), migrations, seed
+│   ├── src/
+│   │   ├── auth/            # JWT, guards, registration
+│   │   ├── billing/         # Stripe checkout + webhook
+│   │   ├── content-video/    # quizzes, summaries, vocab personalization, surveys
+│   │   ├── contents/        # media pipeline: captions (Deepgram/FFmpeg), tags
+│   │   ├── user-vocabulary/ # learner word lists & glosses
+│   │   ├── users/           # profiles, placements, learning stats
+│   │   ├── admin-ish modules# topics, analytics, placements, etc.
+│   │   └── generated/prisma/# Prisma client output (committed / post-generate)
+│   ├── docker-compose.yml   # Postgres + Redis for local/dev
+│   └── .env.example         # canonical env vars
+│
+├── frontend/                # SPA: React 19 + Vite + Tailwind + React Router
+│   ├── src/
+│   │   ├── pages/           # landing, catalog, lesson watch, profile, registration, admin
+│   │   ├── components/      # catalog, content-watch, landing, SEO, …
+│   │   ├── context/        # User, registration, landing locale
+│   │   └── lib/             # api client, SEO, checkout helpers
+│   ├── public/
+│   └── wrangler.toml        # optional Cloudflare Pages deploy
+│
+└── README.md                # this file
+```
 
-**Структура главной страницы:**
-
-- **Центр:** Видеоплеер (основной процесс обучения).
-- **Слева:** Профиль пользователя и настройки.
-- **Справа:** Потоки авторизации и регистрации.
-- **Сверху:** Навигационная панель.
+See also `frontend/README.md` (short pointer to this doc).
 
 ---
 
-## 🛠 Стек технологий и инструменты
+## Tech stack
 
-| Инструмент       | Назначение        | Описание                                               |
-| :--------------- | :---------------- | :----------------------------------------------------- |
-| **React**        | UI Библиотека     | Создание интерфейса на основе компонентов.             |
-| **Tailwind CSS** | Стилизация        | Utility-first подход для быстрой и адаптивной верстки. |
-| **React Router** | Роутинг           | Навигация между страницами без перезагрузки.           |
-| **Vite**         | Сборщик           | Инструмент для сверхбыстрой разработки и сборки.       |
-| **pnpm**         | Пакетный менеджер | Эффективная и быстрая альтернатива npm/yarn.           |
+| Area | Choices |
+|------|---------|
+| **API** | NestJS 11, Express, Swagger |
+| **Data** | PostgreSQL (Prisma 7), optional Redis in Docker |
+| **Auth** | JWT, role-aware guards |
+| **Payments** | Stripe (subscriptions + webhook) |
+| **LLM** | Google Gemini (`GEMINI_MODEL`, `GEMINI_API_KEY`) — quizzes, grading, summaries, surveys, vocab glosses |
+| **Speech** | Deepgram (captions WAV → transcript) |
+| **Storage** | AWS S3 (video/assets) |
+| **SPA** | React 19, Vite 7, Tailwind 4, PostHog (optional analytics) |
 
 ---
 
-## 🚀 Быстрый старт
+## Prerequisites
 
-### 1. Установка pnpm
+- Node.js 20+ (LTS recommended)
+- `npm`, `pnpm`, or `pnpm`-compatible lockfiles exist in both apps (use one manager consistently per package).
 
-Мы используем **pnpm** для ускорения установки зависимостей и экономии места на диске. Если он еще не установлен, выполните:
+---
 
-```bash
-npm install -g pnpm
-```
+## Workflows
 
-### 2. Установка зависимостей и Tailwind CSS
-
-Клонируйте репозиторий и установите все необходимые пакеты, включая инструменты для стилизации:
+### Backend
 
 ```bash
-# Клонирование репозитория
-git clone [https://github.com/ваш-логин/eng_curses.git](https://github.com/ваш-логин/eng_curses.git)
-cd eng_curses
+cd backend
 
-# Установка базовых зависимостей
-pnpm install
+# Install
+npm ci   # or: npm install / pnpm install
 
-# Установка Tailwind CSS, PostCSS и Autoprefixer
-pnpm add -D tailwindcss postcss autoprefixer
+# Env: copy example and edit secrets (JWT, DATABASE_URL / Postgres vars, Gemini, Stripe, S3…)
+cp .env.example .env
 
-# Инициализация конфигурационных файлов Tailwind
-pnpx tailwindcss init -p
+# Postgres & Redis locally (fills POSTGRES_* from .env)
+docker compose --env-file .env up -d
+
+# Migrate DB & generate client (local: migrate dev applies + names migration; CI/prod often uses migrate deploy)
+npx prisma migrate dev
+npx prisma generate
+
+# Optional seed
+npm run seed
+
+# Dev API (watch)
+npm run dev
+# Default PORT from .env, often http://localhost:4200
+
+# Production-shaped build + start (after prisma generate / migrate on the host or CI)
+npm run build && npm run start
 ```
 
-### 3. Настройка конфигурации
+**Typical `.env` items:** `DATABASE_URL` *or* `POSTGRES_*` pieces (see `src/config/database-url.ts`), `JWT_SECRET`, `GEMINI_*`, optional `GEMINI_API_URL`, Stripe keys + price IDs, `AWS_*`, `DEEPGRAM_API_KEY`. In production, `NODE_ENV=production` enables the global `API_TOKEN`; match `VITE_API_TOKEN` on the frontend.
 
-Настройка путей (tailwind.config.js)
-Добавьте пути ко всем вашим компонентам в файл конфигурации:
-
-```js
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-};
-```
-
-Подключение директив (src/index.css)
-Добавьте эти строки в ваш основной CSS файл:
-
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
-### Запуск проЭкта
+### Frontend
 
 ```bash
-pnpm dev
+cd frontend
+
+npm ci    # or pnpm install
+
+cp .env.example .env   # set VITE_API_BASE_URL / token if used
+
+npm run dev            # http://localhost:5173
+
+npm run build          # static output → dist/
+
+npm run preview        # local preview of prod build
+
+# Optional Cloudflare Pages
+npm run pages:deploy
 ```
 
-Приложение будет доступно по адресу: http://localhost:5173
-📁 Структура проекта
+**Quality:**
 
-```Plaintext
-src/
-├── components/      # Общие компоненты (Кнопки, Инпуты, Плеер)
-├── pages/           # Страницы (Main, Profile, Auth)
-├── router/          # Конфигурация React Router
-├── assets/          # Медиафайлы, иконки, изображения
-├── index.css        # Глобальные стили (Tailwind)
-├── App.jsx          # Корневой компонент
-└── main.jsx         # Точка входа
+```bash
+npm run lint
+npm run type-check
 ```
 
-### 🧩 Текущий статус и планы
+Wire the SPA to the API origin (`VITE_*` vars in `.env.example`).
 
-# Помолимся
+---
 
-# React + Vite
+## High-level learner flow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+1. **Register / placement** → level and preferences stored in Prisma.
+2. **Catalog** → lists `ContentVideo` entries from the API.
+3. **Lesson** → video player + captions vocabulary side panel (personalization can call Gemini via backend).
+4. **Post-watch** → watch completion can trigger Gemini-generated reflection questions (`post-watch-survey`).
+5. **Comprehension** → quizzes are **generated on demand** via Gemini (`content-video-comprehension-tests`; transcript excerpt up to **14 000 chars** grounded in captions); open answers graded by Gemini (`content-video-open-answer-grader`; transcript excerpt up to **6 000 chars**).
+6. **Summary** → short recommendations (`content-video-summary-recommendations`).
+7. **Profile / billing** → stats, Stripe customer portal/checkout from `billing` module.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Estimated monthly LLM token use (one user × 3 new lessons/day)
 
-## React Compiler
+Rough **order-of-magnitude** numbers for budgeting — not a guarantee. Actual usage depends on transcript length, whether Gemini is configured (otherwise fallbacks consume **0** tokens), retries, caching changes, and which screens the learner opens.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Assumption
 
-## Expanding the ESLint configuration
+One signed-in learner completes **three different videos per calendar day**, each time going through:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- video finishes → **post-watch survey** generation (Gemini),
+- loads quiz → **comprehension + key vocabulary bundle** generation (heavy; grounded in transcript),
+- submits quiz → **open-ended summary grading**,
+- lesson summary UI → **summary recommendations**.
 
-> > > > > > > master
+Optionally (+1 smaller call/day): **vocabulary personalization** (~20 lemmas) when expanding glosses.
+
+### Typical Gemini calls per fully completed lesson (core path)
+
+| Call | Approx. input tokens | Approx. output tokens | Notes |
+|------|----------------------|-----------------------|-------|
+| Post-watch survey | 700–1 200 | 350–750 | Title/description led |
+| Comprehension + vocab (`generateTests`) | 8 000–14 000 | 2 000–4 000 | Largest line item; transcript slice up to ~14 k chars in prompt |
+| Open summary grading | 2 000–4 000 | 450–950 | Answer + excerpt of transcript |
+| Summary recommendations | 900–1 600 | 400–950 | Structured feedback |
+| *Optional*: vocab personalization (≤20 words) | 1 600–3 500 | 1 300–3 000 | One batch |
+
+**Per lesson (core, median-ish):** about **13–20 000 input** + **3.5–6 500 output** → **≈17–26 500 total tokens** (`input + output`).
+
+**Monthly (3 lessons/day × 30 days ≈ 90 lessons):**
+
+- Core path: **≈1.6–2.4 million total tokens/month** per user  
+- Adding optional personalization on every lesson adds ~**±0.35–0.65 million**, so treat **≈2.0–3.1 million** as a stretch upper band for aggressive UI use.
+
+**If the learner only watches without quizzes**, expect mostly small post-watch (and maybe no Gemini if keys missing) → an order of magnitude **lower**.
+
+**Non-LLM cost:** playback itself does not consume Gemini tokens; **Deepgram/S3** relate to ingestion and CDN-style delivery, billed separately from Gemini.
+
+---
+
+## License / contribution
+No License gfys ╭∩╮( ＾◡＾)╭∩╮

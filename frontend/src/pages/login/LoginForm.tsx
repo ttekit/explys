@@ -11,7 +11,9 @@ import {
   getResponseErrorMessage,
   setStoredAccessToken,
 } from "../../lib/api";
+import type { UserData } from "../../context/UserContext";
 import { useUser } from "../../context/UserContext";
+import { userMayUseLearnerApp } from "../../lib/subscriptionAccess";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import { consumePendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
@@ -26,6 +28,17 @@ function safeReturnPath(state: unknown): string | undefined {
   if (!raw.startsWith("/") || raw.startsWith("//")) return undefined;
   if (raw === "/loginForm" || raw.startsWith("/loginForm?")) return undefined;
   return raw;
+}
+
+function postLoginNavigateTarget(
+  explicit: string | undefined,
+  profile: UserData | null,
+): string {
+  if (explicit) return explicit;
+  if (!profile) return "/subscribe";
+  if (profile.role === "teacher") return "/catalog";
+  if (userMayUseLearnerApp(profile)) return "/catalog";
+  return "/subscribe";
 }
 
 export default function LoginForm() {
@@ -82,13 +95,15 @@ export default function LoginForm() {
             access_token?: string;
           };
           const token = data.access_token;
-          const next = safeReturnPath(location.state) ?? "/catalog";
+          const fromState = safeReturnPath(location.state) ;
           if (!token) {
+            const next = postLoginNavigateTarget(fromState, null);
             toast.success(t.toastSignedIn);
             navigate(next);
           } else {
             setStoredAccessToken(token);
-            await refreshProfile();
+            const profile = await refreshProfile();
+            const next = postLoginNavigateTarget(fromState, profile);
             toast.success(t.toastSignedIn);
             navigate(next);
           }

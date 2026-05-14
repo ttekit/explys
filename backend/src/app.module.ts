@@ -14,6 +14,7 @@ import { TagsModule } from "./tags/tags.module";
 import { TopicsModule } from "./topics/topics.module";
 import { UsersModule } from "./users/users.module";
 import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
+import { RequireActiveSubscriptionGuard } from "./auth/guards/require-active-subscription.guard";
 import { PlacementTestModule } from "./placement-test/placement-test.module";
 import { IS_DEV_ENV } from "./common/utils/is-dev.utils";
 import { PrismaModule } from './prisma/prisma.module';
@@ -59,6 +60,7 @@ import { BillingModule } from "./billing/billing.module";
   controllers: [AppController],
   providers: [
     AppService,
+    { provide: APP_GUARD, useClass: RequireActiveSubscriptionGuard },
     { provide: APP_GUARD, useClass: GlobalApiTokenGuard },
   ],
 })

@@ -14,9 +14,13 @@ export function usePricingCheckout() {
       opts: { isLoggedIn: boolean },
     ) => {
       if (!opts.isLoggedIn) {
+        const loginFrom =
+          typeof window !== "undefined" ?
+            `${window.location.pathname}${window.location.search}`
+          : "/pricing";
         navigate("/loginForm", {
           replace: false,
-          state: { from: "/pricing" },
+          state: { from: loginFrom },
         });
         return;
       }

@@ -1,242 +1,483 @@
-import { Body, Injectable, InternalServerErrorException } from "@nestjs/common";
-import { PrismaService } from "src/prisma.service";
-import { CreateContentDto } from "./dto/create-content.dto";
 import {
-  DeleteObjectCommand,
-  FilterRuleName,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import {
+    DeleteObjectCommand,
+    PutObjectCommand,
+    S3Client,
+} from "@aws-sdk/client-s3";
+import { randomUUID } from "crypto";
+import { PrismaService } from "src/prisma.service";
+import { VideoCaptionsService } from "src/contents/video-captions.service";
+import { AddContentEpisodeDto } from "./dto/add-content-episode.dto";
+import { CreateContentDto } from "./dto/create-content.dto";
+import { ReorderContentPlaylistDto } from "./dto/reorder-content-playlist.dto";
+import { TeacherPatchContentVisibilityDto } from "./dto/teacher-patch-content-visibility.dto";
+import { TeacherUploadContentDto } from "./dto/teacher-upload-content.dto";
 import { UpdateContentDto } from "./dto/update-content.dto";
-import { InjectRedis } from "@nestjs-modules/ioredis";
-import { Redis } from "ioredis";
+import {
+    buildSafeS3ObjectKey,
+    publicS3ObjectUrl,
+} from "../common/s3-key.util";
+
 @Injectable()
 export class ContentsService {
-  private readonly s3Client: S3Client;
-  private readonly bucketName: string;
-  private readonly region: string;
+    private readonly s3Client: S3Client;
+    private readonly bucket: string;
+    private readonly region: string;
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly configService: ConfigService,
-    @InjectRedis() private readonly redis: Redis,
-  ) {
-    this.bucketName =
-      this.configService.getOrThrow<string>("AWS_S3_BUCKET_NAME");
-    this.region = this.configService.getOrThrow<string>("AWS_S3_REGION");
-    this.s3Client = new S3Client({
-      region: this.region,
-    });
-  }
-  private getRedisKey(id: number | string): string {
-    return `content:${id}`;
-  }
-
-  async createContent(
-    dto: CreateContentDto,
-    files: { video: Express.Multer.File[]; preview?: Express.Multer.File[] },
-  ) {
-    try {
-      const videoFile = files.video[0];
-      const previewFile = files.preview?.[0];
-
-      const timestamp = Date.now();
-      const videoKey = `videos/${timestamp}-${videoFile.originalname}`;
-      const previewKey = previewFile
-        ? `previews/${timestamp}-${previewFile.originalname}`
-        : null;
-
-      await this.s3Client.send(
-        new PutObjectCommand({
-          Bucket: this.bucketName,
-          Key: videoKey,
-          Body: videoFile.buffer,
-          ContentType: videoFile.mimetype,
-        }),
-      );
-
-      const videoUrl = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${videoKey}`;
-
-      let previewUrl: string | null = null;
-      if (previewFile && previewKey) {
-        await this.s3Client.send(
-          new PutObjectCommand({
-            Bucket: this.bucketName,
-            Key: previewKey,
-            Body: previewFile.buffer,
-            ContentType: previewFile.mimetype,
-          }),
-        );
-        previewUrl = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${previewKey}`;
-      }
-
-      const content = await this.prisma.content.create({
-        data: {
-          name: dto.name,
-          description: dto.description,
-          friendlyLink: dto.friendlyLink,
-          previewUrl: previewUrl,
-          category: {
-            create: {
-              ContentVideo: {
-                create: {
-                  videoLink: videoUrl,
-                  videoName: dto.name,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      const cacheData = JSON.stringify({ videoUrl, previewUrl });
-      await this.redis.set(`file:${content.id}`, cacheData, "EX", 3600); //TTL = 3600 seconds
-
-      return {
-        id: content.id,
-        url: videoUrl,
-        previewUrl: previewUrl,
-        name: content.name,
-      };
-    } catch (error) {
-      console.log("S3/Prisma Error:", error);
-      throw new InternalServerErrorException("Error uploading a file to S3");
-    }
-  }
-
-  async updateContent(
-    id: number,
-    dto: UpdateContentDto,
-    file?: Express.Multer.File,
-  ) {
-    const updateContent = await this.prisma.content.update({
-      where: { id },
-      data: {
-        ...dto,
-      },
-    });
-
-    if (file) {
-      const media = await this.prisma.contentVideo.findFirst({
-        where: {
-          contentId: id,
-        },
-      });
-
-      if (media && media.videoLink) {
-        const oldKey = media.videoLink.split("/").pop();
-
-        if (oldKey) {
-          await this.s3Client.send(
-            new DeleteObjectCommand({
-              Bucket: this.bucketName,
-              Key: oldKey,
-            }),
-          );
-        }
-      }
-
-      await this.s3Client.send(
-        new PutObjectCommand({
-          Bucket: this.bucketName,
-          Key: file.originalname,
-          Body: file.buffer,
-        }),
-      );
-
-      const newUrl = `https://${this.bucketName}.s3.${this.region}amazonaws.com/${file.originalname}`;
-
-      await this.prisma.contentVideo.updateMany({
-        where: { contentId: id },
-        data: { videoLink: newUrl },
-      });
-
-      await this.redis.set(this.getRedisKey(id), newUrl, "EX", 3600);
-    }
-
-    return updateContent;
-  }
-
-  async deleteContent(id: number) {
-    const content = await this.prisma.content.findUnique({
-      where: { id },
-      include: {
-        category: {
-          include: {
-            ContentVideo: true,
-          },
-        },
-      },
-    });
-
-    if (!content) {
-      throw new InternalServerErrorException("Content not found");
-    }
-    if (content) {
-      const existingVideo = await this.prisma.contentVideo.findFirst({
-        where: { contentId: content.id },
-      });
-
-      const videoLinks: string[] = [];
-      content.category.forEach((media) => {
-        media.ContentVideo.forEach((video) => {
-          if (video.videoLink) {
-            videoLinks.push(video.videoLink);
-          }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly configService: ConfigService,
+        private readonly videoCaptionsService: VideoCaptionsService,
+    ) {
+        this.bucket = this.configService.getOrThrow<string>("AWS_S3_BUCKET_NAME");
+        this.region =
+            this.configService.get<string>("AWS_S3_REGION") ??
+            this.configService.getOrThrow<string>("AWS_REGION");
+        this.s3Client = new S3Client({
+            region: this.region,
         });
-      });
+    }
 
-      const bucketName = this.configService.get<string>("AWS_S3_BUCKET_NAME");
-
-      for (const link of videoLinks) {
-        const fileKey = link.split("/").pop();
-        if (fileKey) {
-          await this.s3Client.send(
-            new DeleteObjectCommand({
-              Bucket: bucketName,
-              Key: fileKey,
+    async createContent(dto: CreateContentDto, file: Express.Multer.File) {
+        const key = buildSafeS3ObjectKey(file.originalname);
+        await this.s3Client.send(
+            new PutObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+                Body: file.buffer,
             }),
-          );
+        );
+        const videoUrl = publicS3ObjectUrl(this.bucket, this.region, key);
+
+        const created = await this.prisma.content.create({
+            data: {
+                name: dto.name,
+                description: dto.description,
+                friendlyLink: dto.friendlyLink,
+                category: {
+                    create: {
+                        playlistPosition: 0,
+                        ContentVideo: {
+                            create: {
+                                videoLink: videoUrl,
+                                videoName: dto.name,
+                                playlistPosition: 0,
+                            },
+                        },
+                    },
+                },
+            },
+            include: {
+                category: {
+                    include: {
+                        ContentVideo: true,
+                    },
+                },
+            },
+        });
+
+        const contentVideoId =
+            created.category[0]?.ContentVideo?.[0]?.id;
+        if (contentVideoId == null) {
+            throw new InternalServerErrorException(
+                "Created content is missing a ContentVideo id",
+            );
         }
-      }
 
-      await this.redis.del(`file:${content.id}`);
-
-      return this.prisma.content.delete({
-        where: { id },
-      });
-    }
-  }
-
-  async getAllContent() {
-    return await this.prisma.content.findMany();
-  }
-
-  async getContentById(id: number) {
-    const cached = await this.redis.get(this.getRedisKey(id));
-    if (cached) {
-      const data = JSON.parse(cached);
-      return {
-        id,
-        videoLink: data.videoUrl,
-        preview: data.preview,
-        fromCache: true,
-      };
+        return {
+            ...created,
+            contentVideoId,
+        };
     }
 
-    const content = await this.prisma.content.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        category: {
-          include: {
-            ContentVideo: true,
-          },
-        },
-      },
-    });
-    return content;
-  }
+    async updateContent(
+        id: number,
+        dto: UpdateContentDto,
+        file?: Express.Multer.File,
+    ) {
+        const updateContent = await this.prisma.content.update({
+            where: { id },
+            data: {
+                ...dto,
+            },
+        });
+
+        if (file) {
+            const contentMedia = await this.prisma.contentMedia.findFirst({
+                where: { categoryId: id },
+                orderBy: { playlistPosition: "asc" },
+            });
+
+            if (contentMedia) {
+                const existingVideo = await this.prisma.contentVideo.findFirst({
+                    where: { contentId: contentMedia.id },
+                    orderBy: { playlistPosition: "asc" },
+                });
+
+                if (existingVideo?.videoLink) {
+                    try {
+                        const url = new URL(existingVideo.videoLink);
+                        const oldKey = url.pathname.replace(/^\//, "");
+                        if (oldKey) {
+                            await this.s3Client.send(
+                                new DeleteObjectCommand({
+                                    Bucket: this.bucket,
+                                    Key: decodeURIComponent(oldKey),
+                                }),
+                            );
+                        }
+                    } catch {
+                        const fallbackKey = existingVideo.videoLink.split("/").pop();
+                        if (fallbackKey) {
+                            await this.s3Client.send(
+                                new DeleteObjectCommand({
+                                    Bucket: this.bucket,
+                                    Key: decodeURIComponent(fallbackKey),
+                                }),
+                            );
+                        }
+                    }
+                }
+
+                const key = buildSafeS3ObjectKey(file.originalname);
+                await this.s3Client.send(
+                    new PutObjectCommand({
+                        Bucket: this.bucket,
+                        Key: key,
+                        Body: file.buffer,
+                    }),
+                );
+
+                const newUrl = publicS3ObjectUrl(this.bucket, this.region, key);
+                await this.prisma.contentVideo.updateMany({
+                    where: { contentId: contentMedia.id },
+                    data: { videoLink: newUrl },
+                });
+            }
+        }
+
+        return updateContent;
+    }
+
+    deleteContent(id: number) {
+        return this.prisma.content.delete({
+            where: { id },
+        });
+    }
+
+    async getAllContent() {
+        return await this.prisma.content.findMany();
+    }
+
+    async getContentById(id: number) {
+        return await this.prisma.content.findUnique({
+            where: { id },
+        });
+    }
+
+    async getSeriesPlaylistByFriendlyLink(friendlyLink: string) {
+        const content = await this.prisma.content.findUnique({
+            where: { friendlyLink },
+            include: {
+                category: {
+                    orderBy: { playlistPosition: "asc" },
+                    include: {
+                        ContentVideo: {
+                            orderBy: { playlistPosition: "asc" },
+                        },
+                    },
+                },
+            },
+        });
+        if (!content) {
+            throw new NotFoundException(
+                `Content with friendly link "${friendlyLink}" not found`,
+            );
+        }
+        return content;
+    }
+
+    async reorderPlaylist(
+        contentId: number,
+        dto: ReorderContentPlaylistDto,
+    ): Promise<void> {
+        const content = await this.prisma.content.findUnique({
+            where: { id: contentId },
+            select: { id: true },
+        });
+        if (!content) {
+            throw new NotFoundException(`Content with ID ${contentId} not found`);
+        }
+        const existing = await this.prisma.contentMedia.findMany({
+            where: { categoryId: contentId },
+            select: { id: true },
+        });
+        const existingIds = new Set(existing.map((r) => r.id));
+        const ordered = dto.orderedContentMediaIds;
+        if (existingIds.size !== ordered.length) {
+            throw new BadRequestException(
+                "orderedContentMediaIds must include every episode slot for this series",
+            );
+        }
+        for (const id of ordered) {
+            if (!existingIds.has(id)) {
+                throw new BadRequestException(
+                    `ContentMedia ${id} does not belong to series ${contentId}`,
+                );
+            }
+        }
+        const unique = new Set(ordered);
+        if (unique.size !== ordered.length) {
+            throw new BadRequestException("Duplicate ContentMedia id in ordering");
+        }
+        const offset = 1_000_000;
+        await this.prisma.$transaction(async (tx) => {
+            for (let i = 0; i < ordered.length; i++) {
+                await tx.contentMedia.update({
+                    where: { id: ordered[i]! },
+                    data: { playlistPosition: offset + i },
+                });
+            }
+            for (let i = 0; i < ordered.length; i++) {
+                await tx.contentMedia.update({
+                    where: { id: ordered[i]! },
+                    data: { playlistPosition: i },
+                });
+            }
+        });
+    }
+
+    async addEpisode(
+        contentId: number,
+        dto: AddContentEpisodeDto,
+        file: Express.Multer.File,
+    ) {
+        const content = await this.prisma.content.findUnique({
+            where: { id: contentId },
+            select: { id: true },
+        });
+        if (!content) {
+            throw new NotFoundException(`Content with ID ${contentId} not found`);
+        }
+        const maxRow = await this.prisma.contentMedia.aggregate({
+            where: { categoryId: contentId },
+            _max: { playlistPosition: true },
+        });
+        const playlistPosition = (maxRow._max.playlistPosition ?? -1) + 1;
+        const key = buildSafeS3ObjectKey(file.originalname);
+        await this.s3Client.send(
+            new PutObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+                Body: file.buffer,
+            }),
+        );
+        const videoUrl = publicS3ObjectUrl(this.bucket, this.region, key);
+        const createdMedia = await this.prisma.contentMedia.create({
+            data: {
+                categoryId: contentId,
+                playlistPosition,
+                ContentVideo: {
+                    create: {
+                        videoLink: videoUrl,
+                        videoName: dto.videoName,
+                        videoDescription: dto.videoDescription ?? null,
+                        playlistPosition: 0,
+                    },
+                },
+            },
+            include: {
+                ContentVideo: true,
+            },
+        });
+        const contentVideoId = createdMedia.ContentVideo[0]?.id;
+        if (contentVideoId == null) {
+            throw new InternalServerErrorException(
+                "Created episode is missing a ContentVideo id",
+            );
+        }
+        return { contentVideoId, contentMediaId: createdMedia.id };
+    }
+
+    private async requireTeacherAccount(userId: number): Promise<void> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { role: true },
+        });
+        if (!user || user.role !== "teacher") {
+            throw new ForbiddenException(
+                "Only teacher accounts can use this resource.",
+            );
+        }
+    }
+
+    private buildTeacherFriendlyLink(userId: number): string {
+        const tail = randomUUID().replace(/-/g, "").slice(0, 16);
+        return `t-${userId}-${tail}`;
+    }
+
+    /**
+     * Teacher profile upload: one series with one clip; auto captions + tags (no separate regen for teachers).
+     */
+    async createTeacherUpload(
+        userId: number,
+        dto: TeacherUploadContentDto,
+        file: Express.Multer.File,
+    ) {
+        await this.requireTeacherAccount(userId);
+        let friendlyLink = "";
+        for (let attempt = 0; attempt < 12; attempt++) {
+            friendlyLink = this.buildTeacherFriendlyLink(userId);
+            const clash = await this.prisma.content.findUnique({
+                where: { friendlyLink },
+                select: { id: true },
+            });
+            if (!clash) {
+                break;
+            }
+            if (attempt === 11) {
+                throw new InternalServerErrorException(
+                    "Could not allocate a unique link. Try again.",
+                );
+            }
+        }
+        const key = buildSafeS3ObjectKey(file.originalname);
+        await this.s3Client.send(
+            new PutObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+                Body: file.buffer,
+            }),
+        );
+        const videoUrl = publicS3ObjectUrl(this.bucket, this.region, key);
+        const name = dto.name.trim();
+        const visibility = dto.visibility.trim();
+        if (visibility !== "public" && visibility !== "unlisted") {
+            throw new BadRequestException('visibility must be "public" or "unlisted"');
+        }
+        const created = await this.prisma.content.create({
+            data: {
+                name,
+                description: "",
+                friendlyLink,
+                ownerUserId: userId,
+                visibility,
+                category: {
+                    create: {
+                        playlistPosition: 0,
+                        ContentVideo: {
+                            create: {
+                                videoLink: videoUrl,
+                                videoName: name,
+                                playlistPosition: 0,
+                            },
+                        },
+                    },
+                },
+            },
+            include: {
+                category: {
+                    include: {
+                        ContentVideo: true,
+                    },
+                },
+            },
+        });
+        const contentVideoId =
+            created.category[0]?.ContentVideo?.[0]?.id;
+        if (contentVideoId == null) {
+            throw new InternalServerErrorException(
+                "Created content is missing a ContentVideo id",
+            );
+        }
+        const captionsRow =
+            await this.videoCaptionsService.generateCaptions(contentVideoId);
+        return {
+            ...created,
+            contentVideoId,
+            captionsReady: captionsRow != null,
+        };
+    }
+
+    async findTeacherMySeries(userId: number) {
+        await this.requireTeacherAccount(userId);
+        const rows = await this.prisma.content.findMany({
+            where: { ownerUserId: userId },
+            orderBy: { createAt: "desc" },
+            include: {
+                category: {
+                    orderBy: { playlistPosition: "asc" },
+                    take: 1,
+                    include: {
+                        ContentVideo: {
+                            orderBy: { playlistPosition: "asc" },
+                            take: 1,
+                            include: {
+                                videoCaption: {
+                                    select: { subtitlesFileLink: true },
+                                },
+                            },
+                        },
+                        stats: true,
+                    },
+                },
+            },
+        });
+        return rows.map((c) => {
+            const slot = c.category[0];
+            const vid = slot?.ContentVideo?.[0];
+            const stats = slot?.stats;
+            return {
+                contentId: c.id,
+                name: c.name,
+                friendlyLink: c.friendlyLink,
+                visibility: c.visibility,
+                contentVideoId: vid?.id ?? null,
+                captionsReady: Boolean(
+                    vid?.videoCaption?.subtitlesFileLink?.trim(),
+                ),
+                systemTags: stats?.systemTags ?? [],
+                userTags: stats?.userTags ?? [],
+                processingComplexity: stats?.processingComplexity ?? null,
+            };
+        });
+    }
+
+    async patchTeacherContentVisibility(
+        userId: number,
+        contentId: number,
+        dto: TeacherPatchContentVisibilityDto,
+    ) {
+        await this.requireTeacherAccount(userId);
+        const owned = await this.prisma.content.findFirst({
+            where: { id: contentId, ownerUserId: userId },
+            select: { id: true },
+        });
+        if (!owned) {
+            throw new NotFoundException(
+                "Series not found or not owned by this account.",
+            );
+        }
+        const visibility = dto.visibility.trim();
+        if (visibility !== "public" && visibility !== "unlisted") {
+            throw new BadRequestException('visibility must be "public" or "unlisted"');
+        }
+        return this.prisma.content.update({
+            where: { id: contentId },
+            data: { visibility },
+            select: {
+                id: true,
+                name: true,
+                friendlyLink: true,
+                visibility: true,
+            },
+        });
+    }
 }

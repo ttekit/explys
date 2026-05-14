@@ -14,10 +14,7 @@ export interface ProfileHeaderModel {
 }
 
 function initialsFromName(name: string): string {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+  const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -55,7 +52,7 @@ export function ProfileHeader({ user }: { user: ProfileHeaderModel }) {
             <button
               type="button"
               title="Profile photo (coming soon)"
-              className="absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border border-border bg-secondary text-foreground shadow-md"
+              className="absolute hover:cursor-pointer -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border border-border bg-secondary text-foreground shadow-md"
             >
               <Edit2 className="size-4" />
             </button>
@@ -98,10 +95,7 @@ export function ProfileHeader({ user }: { user: ProfileHeaderModel }) {
 
           <div className="hidden shrink-0 lg:block">
             <div className="relative">
-              <ChameleonMascot size="lg" mood="happy" />
-              <div className="absolute -bottom-2 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-border bg-card px-3 py-1 text-xs font-medium shadow-lg">
-                Keep going!
-              </div>
+              <img src="/Icon.svg" className="w-21 h-25 mr-6 animate-float" />
             </div>
           </div>
         </div>
