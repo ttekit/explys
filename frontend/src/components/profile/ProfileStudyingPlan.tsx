@@ -10,12 +10,9 @@ import {
   Loader2,
 } from "lucide-react";
 import type { UserData } from "../../context/UserContext";
-import { useLandingLocale } from "../../context/LandingLocaleContext";
 import { useRegenerateStudyingPlan } from "../../hooks/useRegenerateStudyingPlan";
 import { buildLearningPlanModel } from "../../lib/learningPlan";
 import { LearningPlanPhasesSection } from "../learning/LearningPlanPhasesSection";
-import { LEARNING_PLAN_UK_DEFAULTS } from "../../locales/learningPlanUkDefaults";
-import { renderLightMarkdown } from "../../lib/renderLightMarkdown";
 
 function renderIntroMarkdownish(text: string) {
   const parts = text.split(/\*\*(.*?)\*\*/g);
@@ -29,39 +26,30 @@ function renderIntroMarkdownish(text: string) {
 }
 
 export function ProfileStudyingPlan({ user }: { user: UserData }) {
-  const { locale } = useLandingLocale();
-  const plan = useMemo(
-    () =>
-      buildLearningPlanModel(
-        user,
-        locale === "uk" ? LEARNING_PLAN_UK_DEFAULTS : undefined,
-      ),
-    [user, locale],
-  );
+  const plan = useMemo(() => buildLearningPlanModel(user), [user]);
   const { regenerate, isRegenerating } = useRegenerateStudyingPlan();
-  const { messages } = useLandingLocale();
-  const lp = messages.learningPlan;
 
   if (!user.hasCompletedPlacement) {
     return (
       <div className="space-y-4">
         <div>
           <h2 className="font-display text-xl font-semibold tracking-tight">
-            {lp.title}
+            Studying plan
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {lp.profileIncompleteLead}
+            Your roadmap appears after you finish the entry test.
           </p>
         </div>
         <div className="rounded-2xl border border-border bg-card/60 p-6">
           <p className="text-sm text-muted-foreground">
-            {lp.profileIncompleteBody}
+            Open the catalog and complete the placement questionnaire. We’ll
+            then tailor phases, weekly habits, and goals to your level.
           </p>
           <Link
             to="/catalog"
             className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
           >
-            {lp.goCatalog}
+            Go to catalog
             <ArrowRight className="size-4" />
           </Link>
         </div>
@@ -74,10 +62,11 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="font-display text-xl font-semibold tracking-tight">
-            {lp.title}
+            Studying plan
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {lp.profileDescription}
+            Your goal and timeline, with phased steps and a weekly rhythm you
+            can follow in the catalog.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -91,13 +80,13 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
               <Loader2 className="size-3.5 animate-spin text-primary" aria-hidden
               />
             : <RefreshCw className="size-3.5 text-primary" aria-hidden />}
-            {isRegenerating ? lp.regenerating : lp.regenerateCta}
+            {isRegenerating ? "Regenerating…" : "Regenerate studying plan"}
           </button>
           <Link
             to="/learning-plan"
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground/85 transition-colors hover:bg-muted/60"
           >
-            {lp.openFullPage}
+            Full page
             <ExternalLink className="size-3.5 opacity-70" />
           </Link>
         </div>
@@ -108,7 +97,7 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
           <div className="mb-2 flex items-center gap-2 text-primary">
             <Target className="size-4" />
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {lp.goalLabel}
+              Goal
             </span>
           </div>
           <p className="font-semibold leading-snug">{plan.goal}</p>
@@ -117,7 +106,7 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
           <div className="mb-2 flex items-center gap-2 text-primary">
             <Calendar className="size-4" />
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {lp.timeLabel}
+              Time to achieve
             </span>
           </div>
           <p className="font-semibold leading-snug">{plan.horizon}</p>
@@ -138,19 +127,16 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
       <div className="rounded-2xl border border-border bg-card/70 p-5 md:p-6">
         <h3 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold">
           <ListChecks className="size-5 text-primary" />
-          {lp.weeklyRhythm}
+          Weekly rhythm
         </h3>
         <ul className="space-y-2 text-sm md:text-[15px]">
-          {plan.weeklyHabits.map((h, hi) => (
-            <li
-              key={`${hi}-${h.slice(0, 24)}`}
-              className="flex items-start gap-2"
-            >
+          {plan.weeklyHabits.map((h) => (
+            <li key={h} className="flex gap-2">
               <span
                 className="mt-2 size-1 shrink-0 rounded-full bg-emerald-500/90"
                 aria-hidden
               />
-              {renderLightMarkdown(h)}
+              {h}
             </li>
           ))}
         </ul>
@@ -160,7 +146,7 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
         to="/catalog"
         className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
       >
-        {lp.continueInCatalog}
+        Continue in catalog
         <ArrowRight className="size-4" />
       </Link>
     </div>

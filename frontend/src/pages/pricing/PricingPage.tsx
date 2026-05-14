@@ -39,7 +39,7 @@ export default function PricingPage() {
             Pricing
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">{heroSubtitle}</p>
-          {checkoutOk && !import.meta.env.DEV ?
+          {checkoutOk ?
             <p
               className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-200"
               role="status"

@@ -38,22 +38,6 @@ function parseCefrStep(learnerCefr: string | null | undefined): number | null {
   return null;
 }
 
-const B1_STEP_INDEX = CEFR_STEPS.indexOf("B1");
-
-/**
- * Open-ended “2–3 sentences” video summary is omitted for Pre-A1–A2.
- * B1+ learners keep the task. Unknown / unparseable level keeps prior behavior (include).
- */
-export function shouldIncludeOpenSummaryComprehensionTask(
-  learnerCefr: string | null | undefined,
-): boolean {
-  const idx = parseCefrStep(learnerCefr ?? null);
-  if (idx == null) {
-    return true;
-  }
-  return idx >= B1_STEP_INDEX;
-}
-
 /** Normalized CEFR label for storage (e.g. A1), or null if level cannot be parsed. */
 export function normalizedLearnerCefrBand(
   learnerCefr: string | null | undefined,

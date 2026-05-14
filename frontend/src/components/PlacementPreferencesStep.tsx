@@ -7,8 +7,6 @@ import Button from "./Button";
 import LabelRegister from "./LabelRegister";
 import { apiFetch, readApiErrorBody } from "../lib/api";
 import { useUser, type UserData } from "../context/UserContext";
-import { useLandingLocale } from "../context/LandingLocaleContext";
-import { formatMessage } from "../lib/formatMessage";
 
 type GenreOption = { value: number; label: string };
 type HobbyOption = { value: string; label: string };
@@ -97,8 +95,6 @@ export default function PlacementPreferencesStep({
   onSuccess: (updatedProfile: UserData | null) => void;
 }) {
   const { refreshProfile } = useUser();
-  const { messages } = useLandingLocale();
-  const s = messages.placementFlow.student;
   const [genreOptions, setGenreOptions] = useState<GenreOption[]>([]);
   const [hobbies, setHobbies] = useState<string[]>(() => [
     ...(user.hobbies ?? []),
@@ -123,25 +119,25 @@ export default function PlacementPreferencesStep({
           setGenreOptions(data.map((g) => ({ value: g.id, label: g.name })));
         }
       } catch {
-        if (!cancelled) toast.error(s.loadGenresError);
+        if (!cancelled) toast.error("Could not load genres.");
       }
     };
     void load();
     return () => {
       cancelled = true;
     };
-  }, [s.loadGenresError]);
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFieldError(null);
     const hobbiesPayload = hobbies.map((h) => h.trim()).filter(Boolean);
     if (hobbiesPayload.length < 1) {
-      setFieldError(s.errorHobbies);
+      setFieldError("Add at least one hobby.");
       return;
     }
     if (favoriteGenres.length < 1) {
-      setFieldError(s.errorGenres);
+      setFieldError("Choose at least one genre you prefer.");
       return;
     }
 
@@ -162,7 +158,7 @@ export default function PlacementPreferencesStep({
       const nextProfile = await refreshProfile();
       onSuccess(nextProfile);
     } catch {
-      toast.error(s.saveErrorToast);
+      toast.error("Could not save preferences.");
     } finally {
       setSaving(false);
     }
@@ -202,51 +198,54 @@ export default function PlacementPreferencesStep({
     >
       <div>
         <h2 className="font-display text-lg font-semibold tracking-tight">
-          {s.title}
+          Your tastes first
         </h2>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          {s.lead}
+          Tell us what you enjoy so we can tailor the placement experience. Then
+          you&apos;ll take the short entry test.
         </p>
       </div>
 
       <div className="flex flex-col gap-1">
-        <LabelRegister isRequired={true}>{s.hobbies}</LabelRegister>
+        <LabelRegister isRequired={true}>Hobbies</LabelRegister>
         <CreatableSelect<HobbyOption, true>
           isMulti
           isClearable
           options={[]}
           value={hobbiesToOptions(hobbies)}
           onChange={onHobbiesChange}
-          placeholder={s.hobbiesPlaceholder}
+          placeholder="Type a hobby, then press Enter"
           formatCreateLabel={(input) => {
             const t = input.trim();
-            return t ? formatMessage(s.addChipNamed, { name: t }) : s.addChip;
+            return t ? `Add \"${t}\"` : "Add";
           }}
-          noOptionsMessage={() => s.hobbyNoOptions}
+          noOptionsMessage={() =>
+            "Start typing a hobby, then press Enter to add it."
+          }
           styles={selectDark}
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <LabelRegister isRequired={true}>{s.genresPrefer}</LabelRegister>
+        <LabelRegister isRequired={true}>Genres you prefer</LabelRegister>
         <Select<GenreOption, true>
           isMulti
           options={optionsForFavorite}
           value={favoriteValue}
           onChange={onFavoriteChange}
-          placeholder={s.genresPreferPlaceholder}
+          placeholder="Choose genres"
           styles={selectDark}
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <LabelRegister isRequired={false}>{s.genresAvoid}</LabelRegister>
+        <LabelRegister isRequired={false}>Genres you avoid</LabelRegister>
         <Select<GenreOption, true>
           isMulti
           options={optionsForHated}
           value={hatedValue}
           onChange={onHatedChange}
-          placeholder={s.genresAvoidPlaceholder}
+          placeholder="Optional"
           styles={selectDark}
         />
       </div>
@@ -258,7 +257,7 @@ export default function PlacementPreferencesStep({
       ) : null}
 
       <Button type="submit" disabled={saving} className="!mt-2">
-        {saving ? s.saving : s.continueCta}
+        {saving ? "Saving…" : "Continue to entry test"}
       </Button>
     </form>
   );

@@ -418,7 +418,32 @@ export function renderPlacementHtml(
       color: var(--primary);
       line-height: 1;
     }
-    .score-pct { color: var(--muted-fg); margin-bottom: 0.5rem; font-size: 0.9375rem; }
+    .score-pct { color: var(--muted-fg); margin-bottom: 1rem; font-size: 0.9375rem; }
+    .level-badge {
+      display: inline-flex;
+      align-items: stretch;
+      gap: 0;
+      border-radius: 0.75rem;
+      border: 1px solid color-mix(in oklch, var(--primary) 22%, transparent);
+      background: color-mix(in oklch, var(--primary) 10%, transparent);
+      overflow: hidden;
+      text-align: left;
+    }
+    .level-seg {
+      padding: 0.65rem 1.25rem;
+    }
+    .level-bar {
+      width: 1px;
+      align-self: stretch;
+      background: var(--border);
+    }
+    .level-lbl {
+      font-size: 0.8rem;
+      color: var(--muted-fg);
+      margin-bottom: 0.15rem;
+    }
+    .level-code { font-weight: 700; color: var(--primary); font-size: 1rem; }
+    .level-prof { font-weight: 600; color: var(--foreground); font-size: 1rem; }
     .res-msg {
       color: var(--muted-fg);
       font-size: 0.9rem;
@@ -573,6 +598,17 @@ export function renderPlacementHtml(
         </div>
         <div class="score-big" id="scoreFract">0/0</div>
         <div class="score-pct" id="scorePct"></div>
+        <div class="level-badge">
+          <div class="level-seg">
+            <div class="level-lbl">Your level</div>
+            <div class="level-code" id="lvlCode"></div>
+          </div>
+          <div class="level-bar"></div>
+          <div class="level-seg">
+            <div class="level-lbl">Proficiency</div>
+            <div class="level-prof" id="lvlLabel"></div>
+          </div>
+        </div>
       </div>
       <div class="summary-card" id="summaryCard" hidden>
         <h3>What you practiced</h3>

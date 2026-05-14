@@ -1,20 +1,5 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-} from '@nestjs/swagger';
-import type { Request } from 'express';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { jwtSubToUserId } from 'src/auth/jwt-subject.util';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ContentRecommendationsService } from './content-recommendations.service';
 
 @ApiTags('content-recommendations')
@@ -23,18 +8,6 @@ export class ContentRecommendationsController {
   constructor(
     private readonly contentRecommendationsService: ContentRecommendationsService,
   ) {}
-
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('me')
-  @ApiOperation({
-    summary:
-      'Rank videos for the signed-in learner (same scoring as legacy for-user/:id)',
-  })
-  recommendationsForSignedInLearner(@Req() req: Request & { user: unknown }) {
-    const userId = jwtSubToUserId(req.user);
-    return this.contentRecommendationsService.getRecommendationsForUser(userId);
-  }
 
   @Get('for-user/:userId')
   @ApiOperation({

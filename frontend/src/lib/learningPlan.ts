@@ -1,5 +1,4 @@
 import type { UserData } from "../context/UserContext";
-import { formatMessage } from "./formatMessage";
 
 /** Used when the learner did not set a custom goal during registration. */
 export const DEFAULT_LEARNING_GOAL = "Improve language";
@@ -500,109 +499,6 @@ export type LearningPlanModel = {
   weeklyHabits: string[];
 };
 
-/** Template strings for “To complete this phase” when using localized defaults. */
-export type LocalizedPhasePassLines = {
-  completeVideos: string;
-  finishLesson: string;
-  streak: string;
-  videoDepth: string;
-  vocab: string;
-  goalAlign: string;
-};
-
-export type LocalizedDefaultPhaseCard = {
-  title: string;
-  summary: string;
-  actions: readonly [string, string, string];
-};
-
-export type LocalizedDefaultPhasesCopy = {
-  phases: readonly [
-    LocalizedDefaultPhaseCard,
-    LocalizedDefaultPhaseCard,
-    LocalizedDefaultPhaseCard,
-    LocalizedDefaultPhaseCard,
-  ];
-  passLines: LocalizedPhasePassLines;
-  weeklyHabits?: readonly [string, string, string];
-};
-
-function localizedWeeklyHabitsFromTemplates(
-  user: UserData,
-  templates: readonly [string, string, string],
-): string[] {
-  const budget = horizonBudgetFromLabel(
-    effectiveTimeHorizon(user.timeToAchieve),
-  );
-  const sessions = String(
-    Math.max(2, Math.round(budget.structuredStudyWeeks / 6)),
-  );
-  const weeks = String(budget.structuredStudyWeeks);
-  return [
-    formatMessage(templates[0], { sessions, weeks }),
-    formatMessage(templates[1], {}),
-    formatMessage(templates[2], {}),
-  ];
-}
-
-function richPassConditionsForPhaseUiLocalized(
-  options: {
-    phaseIndex: number;
-    budget: HorizonBudget;
-    tier: CoarseLevelTier;
-    learningGoal: string;
-  },
-  lines: LocalizedPhasePassLines,
-): string[] {
-  const { phaseIndex, budget, tier, learningGoal } = options;
-  const streak = streakTargetForPhaseUi(phaseIndex, budget.structuredStudyWeeks);
-  const videos = videosPassedPlanTargetForPhaseUi(phaseIndex);
-  const words = vocabularyTargetForPhaseUi(tier, phaseIndex);
-  const distinct = DISTINCT_PASSED_LESSONS_PER_PHASE_STEP;
-  return [
-    formatMessage(lines.completeVideos, { count: String(distinct) }),
-    lines.finishLesson,
-    formatMessage(lines.streak, { streak: String(streak) }),
-    formatMessage(lines.videoDepth, {
-      videos: String(videos),
-      distinct: String(distinct),
-    }),
-    formatMessage(lines.vocab, { words: String(words) }),
-    formatMessage(lines.goalAlign, { learningGoal }),
-  ];
-}
-
-function buildDefaultPhasesFromCopy(
-  user: UserData,
-  copy: LocalizedDefaultPhasesCopy,
-): LearningPlanPhase[] {
-  const goal = effectiveLearningGoal(user.learningGoal);
-  const horizon = effectiveTimeHorizon(user.timeToAchieve);
-  const budget = horizonBudgetFromLabel(horizon);
-  const levelRaw =
-    user.englishLevel?.trim() && user.englishLevel !== "choose" ?
-      user.englishLevel.trim()
-    : "";
-  const tier = coarseLevelTierFromProfile(levelRaw);
-  const vars = { horizon, learningGoal: goal };
-  return [0, 1, 2, 3].map((phaseIndex) => {
-    const card = copy.phases[phaseIndex];
-    const title = formatMessage(card.title, vars);
-    const summary = formatMessage(card.summary, vars);
-    const actions = card.actions.map((a) => formatMessage(a, vars));
-    return {
-      title,
-      summary,
-      actions,
-      passConditions: richPassConditionsForPhaseUiLocalized(
-        { phaseIndex, budget, tier, learningGoal: goal },
-        copy.passLines,
-      ),
-      tasks: buildPlanTasksForPhaseUi({ phaseIndex, budget, tier }),
-    };
-  });
-}
-
 export function weeklyHabitsFromStoredStudyingPlanJson(
   raw: unknown,
 ): string[] | null {
@@ -645,13 +541,7 @@ export function parseStudyingPlanPhases(raw: unknown): LearningPlanPhase[] | nul
 }
 
 /** Default phases when `studyingPlanPhases` is not stored yet. */
-export function buildDefaultPhasesForUser(
-  user: UserData,
-  copy?: LocalizedDefaultPhasesCopy,
-): LearningPlanPhase[] {
-  if (copy) {
-    return buildDefaultPhasesFromCopy(user, copy);
-  }
+export function buildDefaultPhasesForUser(user: UserData): LearningPlanPhase[] {
   const goal = effectiveLearningGoal(user.learningGoal);
   const horizon = effectiveTimeHorizon(user.timeToAchieve);
   const budget = horizonBudgetFromLabel(horizon);
@@ -728,13 +618,10 @@ export function buildDefaultPhasesForUser(
   ];
 }
 
-export function resolvePhasesForUser(
-  user: UserData,
-  copy?: LocalizedDefaultPhasesCopy,
-): LearningPlanPhase[] {
+export function resolvePhasesForUser(user: UserData): LearningPlanPhase[] {
   const parsed = parseStudyingPlanPhases(user.studyingPlanPhases);
   if (parsed) return parsed;
-  return buildDefaultPhasesForUser(user, copy);
+  return buildDefaultPhasesForUser(user);
 }
 
 function clampPhaseIndex(index: number, phaseCount: number): number {
@@ -746,10 +633,7 @@ function clampPhaseIndex(index: number, phaseCount: number): number {
  * Builds a template learning plan from profile + resolved goal/horizon.
  * Uses saved `studyingPlanPhases` JSON when present; otherwise default phases.
  */
-export function buildLearningPlanModel(
-  user: UserData,
-  copy?: LocalizedDefaultPhasesCopy,
-): LearningPlanModel {
+export function buildLearningPlanModel(user: UserData): LearningPlanModel {
   const goal = effectiveLearningGoal(user.learningGoal);
   const horizon = effectiveTimeHorizon(user.timeToAchieve);
   const level =
@@ -762,7 +646,7 @@ export function buildLearningPlanModel(
       ` Lean on interests like ${user.hobbies.slice(0, 3).join(", ")} when choosing videos — motivation matters as much as minutes watched.`
     : "";
 
-  const phases = resolvePhasesForUser(user, copy);
+  const phases = resolvePhasesForUser(user);
   /** From API: derived from distinct videos with passing quiz (not user-editable). */
   const storedIndex =
     user.activeStudyingPhaseIndex != null &&
@@ -771,15 +655,6 @@ export function buildLearningPlanModel(
     : 0;
   const activePhaseIndex = clampPhaseIndex(storedIndex, phases.length);
 
-  const storedWeekly = weeklyHabitsFromStoredStudyingPlanJson(
-    user.studyingPlanPhases,
-  );
-  const weeklyHabits =
-    storedWeekly ??
-    (copy?.weeklyHabits ?
-      localizedWeeklyHabitsFromTemplates(user, copy.weeklyHabits)
-    : defaultWeeklyHabitsForUser(user));
-
   return {
     goal,
     horizon,
@@ -787,6 +662,8 @@ export function buildLearningPlanModel(
     intro: `Your focus: **${goal}**. Over **${horizon}**, steady practice beats occasional marathons. The catalog adapts to **${level}**; use it consistently and you’ll see listening, vocabulary, and grammar reinforce each other.${hobbyLine}`,
     phases,
     activePhaseIndex,
-    weeklyHabits,
+    weeklyHabits:
+      weeklyHabitsFromStoredStudyingPlanJson(user.studyingPlanPhases) ??
+      defaultWeeklyHabitsForUser(user),
   };
 }

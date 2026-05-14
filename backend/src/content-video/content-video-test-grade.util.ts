@@ -1,8 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-/** Validity window for signed quiz payloads (lesson comprehension + weekly review). */
-export const GRADING_TOKEN_TTL_MS = 30 * 60 * 1000;
-
 export type McqCategory = "grammar" | "vocabulary" | "comprehension";
 
 export type GradingItem =
@@ -26,12 +23,6 @@ export type ParsedGradingPayload = {
   contentVideoId: number;
   userId: number | null;
   items: GradingItem[];
-  /** Present when this token was issued for an error-fixing (remediation) test pass. */
-  isErrorFixingTest?: boolean;
-  /** Weekly review uses `contentVideoId` 0 and this discriminator. */
-  quizKind?: "lesson" | "weekly_review" | "weekly_review_practice";
-  /** UTC Monday `YYYY-MM-DD`; required when `quizKind` is `weekly_review` or practice replay. */
-  weeklyReviewWeekStart?: string;
 };
 
 export type SkillBucketStats = {
@@ -70,18 +61,6 @@ export function createGradingToken(
     contentVideoId: payload.contentVideoId,
     userId: payload.userId,
     items,
-    ...(payload.isErrorFixingTest === true ?
-      { isErrorFixingTest: true as const }
-    : {}),
-    ...((payload.quizKind === "weekly_review" ||
-      payload.quizKind === "weekly_review_practice") &&
-    typeof payload.weeklyReviewWeekStart === "string" &&
-    payload.weeklyReviewWeekStart.length >= 10 ?
-      {
-        quizKind: payload.quizKind,
-        weeklyReviewWeekStart: payload.weeklyReviewWeekStart,
-      }
-    : {}),
   };
   const json = JSON.stringify(body);
   const b = Buffer.from(json, "utf8");
@@ -180,55 +159,12 @@ export function parseGradingToken(
         return null;
       }
     }
-    const isEft =
-      p.isErrorFixingTest === true
-        ? true
-        : undefined;
-    const quizKindParsed =
-      p.quizKind === "weekly_review"
-        ? ("weekly_review" as const)
-        : p.quizKind === "weekly_review_practice"
-          ? ("weekly_review_practice" as const)
-          : undefined;
-    if (
-      quizKindParsed === "weekly_review" ||
-      quizKindParsed === "weekly_review_practice"
-    ) {
-      if (typeof p.weeklyReviewWeekStart !== "string") {
-        return null;
-      }
-      const ws = p.weeklyReviewWeekStart.trim();
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(ws)) {
-        return null;
-      }
-      if (p.contentVideoId !== 0) {
-        return null;
-      }
-      for (const it of items) {
-        if (it.kind === "open") {
-          return null;
-        }
-      }
-    }
     return {
       v: 3,
       exp: p.exp,
       contentVideoId: p.contentVideoId,
       userId: p.userId ?? null,
       items,
-      ...(isEft ? { isErrorFixingTest: true as const } : {}),
-      ...(quizKindParsed === "weekly_review" ?
-        {
-          quizKind: "weekly_review" as const,
-          weeklyReviewWeekStart: p.weeklyReviewWeekStart!.trim(),
-        }
-      : {}),
-      ...(quizKindParsed === "weekly_review_practice" ?
-        {
-          quizKind: "weekly_review_practice" as const,
-          weeklyReviewWeekStart: p.weeklyReviewWeekStart!.trim(),
-        }
-      : {}),
     };
   }
 

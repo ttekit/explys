@@ -23,8 +23,6 @@ export type StudyingPlanGenerationInput = {
   timeHorizon: string;
   englishLevel: string;
   hobbies: string[];
-  /** Language for learner-facing strings in the saved JSON */
-  locale: "en" | "uk";
 };
 
 const PHASE_COUNT = 4;
@@ -86,27 +84,9 @@ export class StudyingPlanGeminiClient {
       `- **No** calendar-span or phase-duration lines in passConditions (no “at least X days/weeks in this phase”, no “90% of horizon”, no structured-window pacing prose).`,
     ];
 
-    const learnerLanguageInstructions =
-      input.locale === "uk" ?
-        [
-          "",
-          "OUTPUT LANGUAGE — UKRAINIAN (required):",
-          "- Every learner-facing string in the JSON (**title**, **summary**, each **actions** line, each **passConditions** line, each **weeklyHabits** line) MUST be written in **natural Ukrainian**.",
-          '- Keep JSON field names exactly as specified (English keys). Preserve ** markdown bold (**…**) where useful.',
-          "- task **kind** values must remain exact ASCII slugs: distinct_videos_passed, streak_days, vocabulary_terms_added, watch_time_minutes, min_phase_calendar_days.",
-          "- Numeric thresholds and % signs stay as digits; learner text around them stays Ukrainian.",
-          "- Do NOT output those learner-visible strings in English when locale is Ukrainian.",
-        ].join("\n")
-      : [
-          "",
-          "OUTPUT LANGUAGE — ENGLISH:",
-          "- Write all learner-facing strings in English.",
-        ].join("\n");
-
     const prompt = [
-      "You write a structured roadmap for ONE adult learner who studies English via video lessons with comprehension checks (multiple choice + short summary).",
+      "You write a structured English learning roadmap for one adult learner using video lessons with comprehension checks (multiple choice + short summary).",
       `Return ONLY valid JSON (no markdown) with this exact top-level shape: { "phases": [ exactly ${PHASE_COUNT} objects ], "weeklyHabits": [ exactly ${WEEKLY_HABITS_COUNT} strings ] }. Use the key name **weeklyHabits** exactly.`,
-      learnerLanguageInstructions,
       "",
       `Each phase object MUST have: "title" (string, <= 90 chars), "summary" (string, 1-2 sentences), "actions" (array of 3-5 short actionable strings), "passConditions" (array of 5-7 strings), "tasks" (array of structured task objects — see TASK SCHEMA below).`,
       "",

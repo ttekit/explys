@@ -1,15 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import {
-  cefrStretchForKeyVocabulary,
-  shouldIncludeOpenSummaryComprehensionTask,
-} from "./cefr-vocabulary-target.util";
+import { cefrStretchForKeyVocabulary } from "./cefr-vocabulary-target.util";
 
 export type KeyVocabularyItem = {
   word: string;
   definition: string;
   example: string;
-  /** One-word gloss in the learner’s native language when profile has `nativeLanguage`. */
-  nativeGloss?: string;
 };
 
 export type McqCategory = "grammar" | "vocabulary" | "comprehension";
@@ -52,13 +47,9 @@ export type ComprehensionTestsGenerationContext = {
   learningGoal: string;
   timeToAchieve: string;
   hobbies: string[];
-  /** From profile `AdditionalUserData.nativeLanguage` — used for one-word glosses. */
-  learnerNativeLanguage: string | null;
-  /** Remediation pass: focus on retesting skills that were missed earlier. */
-  isErrorFixingTest?: boolean;
 };
 
-const EXPECTED_MCQ_COUNT = 9;
+const EXPECTED_TEST_COUNT = 10;
 const KEY_VOCAB_COUNT = 10;
 
 @Injectable()
@@ -110,27 +101,6 @@ export class ContentVideoComprehensionTestsGeminiClient {
             .join("\n")
         : "(none — first attempt or no recorded misses for this user on this clip.)";
 
-    const includeOpenSummary = shouldIncludeOpenSummaryComprehensionTask(
-      input.learnerCefr,
-    );
-    const expectedTotalTests =
-      includeOpenSummary ? EXPECTED_MCQ_COUNT + 1 : EXPECTED_MCQ_COUNT;
-
-    const errorFixingBlock =
-      input.isErrorFixingTest === true ?
-        [
-          "ERROR-FIXING / REMEDIATION MODE (mandatory):",
-          "This quiz is issued after the learner accumulated many incorrect answers. Treat it as a dedicated remediation test.",
-          "- At least 6 of the 9 MCQs MUST explicitly retarget the same skill areas as PRIOR MISSES below (new stems and options; never copy past question text).",
-          "- If PRIOR MISSES is sparse, still favour grammar/vocabulary/comprehension patterns clearly weak from context and push for careful, deliberate items.",
-          "- Tone: supportive short explanations in \"explanation\" fields; goal is confidence repair, not trick questions.",
-          includeOpenSummary ?
-            "- The open summary still follows the usual rubric; keep it on what the video is mainly about."
-          : "- Do NOT include an open-ended summary question; this learner band uses multiple-choice only.",
-          "",
-        ].join("\n")
-      : "";
-
     const hobbyLine =
       input.hobbies.length > 0
         ? input.hobbies.slice(0, 6).join(", ")
@@ -143,147 +113,61 @@ export class ContentVideoComprehensionTestsGeminiClient {
         ].join("\n")
       : "No transcript is available. Use only the title and description; keep questions general and do not invent specific facts.";
 
-    const nativeLabel = input.learnerNativeLanguage?.trim() || "";
-    const nativeGlossRules =
-      nativeLabel.length > 0 ?
-        [
-          "",
-          `LEARNER NATIVE LANGUAGE (for key vocabulary only): ${nativeLabel}`,
-          'Each keyVocabulary object MUST include "nativeGloss": a SINGLE word in that language — the best one-word equivalent or gloss for the English headword.',
-          "- One token only: no spaces, no commas, no phrases (hyphenated compounds in that language are allowed as one token).",
-          "- If no good one-word mapping exists, output the closest single standard dictionary lemma anyway.",
-          '- If the native language equals English, still output nativeGloss as one concise English noun/verb/etc. gloss (not the full "definition" text).',
-          "",
-        ].join("\n")
-      : [
-          "",
-          "LEARNER NATIVE LANGUAGE: unknown — omit the nativeGloss field on every keyVocabulary object (or set it to an empty string).",
-          "Do not guess the learner's L1.",
-          "",
-        ].join("\n");
-
-    const summaryRubricLine =
-      includeOpenSummary ?
-        "Prefer MCQs, the open-summary rubric, and key vocabulary items that help toward the stated goal when the clip content allows."
-      : "Prefer MCQs and key vocabulary items that help toward the stated goal when the clip content allows (no written summary task).";
-
-    const prompt = includeOpenSummary ?
-      [
-        "You create an English learning assessment for a video: multiple-choice (grammar, vocabulary, comprehension), ONE open-ended summary question, AND a key vocabulary list.",
-        `Return ONLY valid JSON with this exact top-level shape (no extra keys): { "tests": [ exactly ${expectedTotalTests} items ], "keyVocabulary": [ exactly ${KEY_VOCAB_COUNT} items ] }`,
-        "",
-        errorFixingBlock,
-        `=== tests (exactly ${expectedTotalTests}) ===`,
-        "Include exactly ONE item with questionType \"open\" and category \"open\": ask the learner to describe in 2–3 sentences what the video was mainly about. No options or correctIndex for open.",
-        `Include exactly ${EXPECTED_MCQ_COUNT} items with questionType \"multiple_choice\". Each MCQ MUST be:`,
-        '{"id":"t1","questionType":"multiple_choice","category":"grammar"|"vocabulary"|"comprehension","question":"...","options":["A","B","C","D"],"correctIndex":0,"explanation":"..."}',
-        'Open item MUST be: {"id":"t_open","questionType":"open","category":"open","question":"... 2-3 sentences ...","explanation":"What a good answer should mention (short rubric for teachers/learners)."}',
-        "",
-        "MCQ categories (strict counts among the 9 MCQs):",
-        '- 3 with category "grammar" (tense/aspect, articles, prepositions, agreement) — grounded in transcript or title/description.',
-        '- 3 with category "vocabulary" (word meaning in context, collocation, phrasal verb) — quote or paraphrase from transcript when available.',
-        '- 3 with category "comprehension" (detail, inference, main idea except the open summary).',
-        "",
-        "Field \"explanation\" on MCQs: 1–3 sentences — why the correct option is right.",
-        "correctIndex is 0-based. Four options per MCQ.",
-        "",
-        "PRIOR MISSES — retest 2–3 similar skills in NEW wording (never copy stems):",
-        weakSpots,
-        "",
-        "LEARNER STUDYING PLAN (from profile — use when the transcript supports it; never invent video facts):",
-        `- Stated goal: ${input.learningGoal}`,
-        `- Target time horizon: ${input.timeToAchieve}`,
-        `- Interests / hobbies: ${hobbyLine}`,
-        `Apply: ${summaryRubricLine} Use hobbies as light thematic hooks only when the video touches related ideas. Shorter horizons → favour high-utility chunks and scenarios the learner can reuse soon; longer horizons → you may include slightly broader topic words still grounded in the transcript. Questions stay transcript-grounded.`,
-        "",
-        `=== keyVocabulary (exactly ${KEY_VOCAB_COUNT} item) ===`,
-        nativeGlossRules,
-        nativeLabel.length > 0 ?
-          'Each: {"word":"...","definition":"...","example":"...","nativeGloss":"..."}'
-        : 'Each: {"word":"...","definition":"...","example":"..."}',
-        "KEY VOCABULARY — LEVEL (mandatory):",
-        stretch.instruction,
-        `Target band label for glosses: ${stretch.vocabularyTargetBand} (not the learner’s comfort band).`,
-        "- Words or multi-word chunks from the transcript (or title/description if no transcript).",
-        "- Prioritise items whose semantics map onto LEARNER_TOPIC_STRENGTHS (known topic areas): new labels should connect to those domains when the video supports it.",
-        "- Align several key vocabulary picks with LEARNER STUDYING PLAN (goal / interests) when transcript evidence exists; otherwise stay with neutral lesson language.",
-        "- Avoid only picking the easiest, below-target high-frequency words when the clip contains suitable stretch items; definitions/examples must suit the target band above.",
-        "- Generated in this same response as the tests.",
-        "",
-        "LEARNER LEVEL (whole quiz difficulty / tone — MCQs can stay near this level; keyVocabulary follows the stretch rule above):",
-        level,
-        "",
-        "LEARNER SAVED VOCABULARY:",
-        vocabList,
-        "",
-        "VIDEO_THEME_TAGS:",
-        videoThemes,
-        "",
-        "LEARNER_TOPIC_STRENGTHS:",
-        themeStrength,
-        "",
-        transcriptBlock,
-        "",
-        `Video title: ${input.videoName}`,
-        `Description: ${input.videoDescription?.trim() || "N/A"}`,
-      ].join("\n")
-    : [
-        "You create an English learning assessment for a video: multiple-choice ONLY (grammar, vocabulary, comprehension) — NO open-ended or written-summary questions — AND a key vocabulary list.",
-        `Return ONLY valid JSON with this exact top-level shape (no extra keys): { "tests": [ exactly ${expectedTotalTests} items ], "keyVocabulary": [ exactly ${KEY_VOCAB_COUNT} items ] }`,
-        "",
-        errorFixingBlock,
-        `=== tests (exactly ${expectedTotalTests}) ===`,
-        `Include exactly ${EXPECTED_MCQ_COUNT} items, ALL with questionType \"multiple_choice\". Each MUST be:`,
-        '{"id":"t1","questionType":"multiple_choice","category":"grammar"|"vocabulary"|"comprehension","question":"...","options":["A","B","C","D"],"correctIndex":0,"explanation":"..."}',
-        "",
-        "MCQ categories (strict counts among the 9 MCQs):",
-        '- 3 with category "grammar" (tense/aspect, articles, prepositions, agreement) — grounded in transcript or title/description.',
-        '- 3 with category "vocabulary" (word meaning in context, collocation, phrasal verb) — quote or paraphrase from transcript when available.',
-        '- 3 with category "comprehension" (detail, inference, main idea / gist in multiple-choice form).',
-        "",
-        "Field \"explanation\" on MCQs: 1–3 sentences — why the correct option is right.",
-        "correctIndex is 0-based. Four options per MCQ.",
-        "",
-        "PRIOR MISSES — retest 2–3 similar skills in NEW wording (never copy stems):",
-        weakSpots,
-        "",
-        "LEARNER STUDYING PLAN (from profile — use when the transcript supports it; never invent video facts):",
-        `- Stated goal: ${input.learningGoal}`,
-        `- Target time horizon: ${input.timeToAchieve}`,
-        `- Interests / hobbies: ${hobbyLine}`,
-        `Apply: ${summaryRubricLine} Use hobbies as light thematic hooks only when the video touches related ideas. Shorter horizons → favour high-utility chunks and scenarios the learner can reuse soon; longer horizons → you may include slightly broader topic words still grounded in the transcript. Questions stay transcript-grounded.`,
-        "",
-        `=== keyVocabulary (exactly ${KEY_VOCAB_COUNT} item) ===`,
-        nativeGlossRules,
-        nativeLabel.length > 0 ?
-          'Each: {"word":"...","definition":"...","example":"...","nativeGloss":"..."}'
-        : 'Each: {"word":"...","definition":"...","example":"..."}',
-        "KEY VOCABULARY — LEVEL (mandatory):",
-        stretch.instruction,
-        `Target band label for glosses: ${stretch.vocabularyTargetBand} (not the learner’s comfort band).`,
-        "- Words or multi-word chunks from the transcript (or title/description if no transcript).",
-        "- Prioritise items whose semantics map onto LEARNER_TOPIC_STRENGTHS (known topic areas): new labels should connect to those domains when the video supports it.",
-        "- Align several key vocabulary picks with LEARNER STUDYING PLAN (goal / interests) when transcript evidence exists; otherwise stay with neutral lesson language.",
-        "- Avoid only picking the easiest, below-target high-frequency words when the clip contains suitable stretch items; definitions/examples must suit the target band above.",
-        "- Generated in this same response as the tests.",
-        "",
-        "LEARNER LEVEL (whole quiz difficulty / tone — MCQs can stay near this level; keyVocabulary follows the stretch rule above):",
-        level,
-        "",
-        "LEARNER SAVED VOCABULARY:",
-        vocabList,
-        "",
-        "VIDEO_THEME_TAGS:",
-        videoThemes,
-        "",
-        "LEARNER_TOPIC_STRENGTHS:",
-        themeStrength,
-        "",
-        transcriptBlock,
-        "",
-        `Video title: ${input.videoName}`,
-        `Description: ${input.videoDescription?.trim() || "N/A"}`,
-      ].join("\n");
+    const prompt = [
+      "You create an English learning assessment for a video: multiple-choice (grammar, vocabulary, comprehension), ONE open-ended summary question, AND a key vocabulary list.",
+      `Return ONLY valid JSON with this exact top-level shape (no extra keys): { "tests": [ exactly ${EXPECTED_TEST_COUNT} items ], "keyVocabulary": [ exactly ${KEY_VOCAB_COUNT} items ] }`,
+      "",
+      `=== tests (exactly ${EXPECTED_TEST_COUNT}) ===`,
+      "Include exactly ONE item with questionType \"open\" and category \"open\": ask the learner to describe in 2–3 sentences what the video was mainly about. No options or correctIndex for open.",
+      `Include exactly ${EXPECTED_TEST_COUNT - 1} items with questionType \"multiple_choice\". Each MCQ MUST be:`,
+      '{"id":"t1","questionType":"multiple_choice","category":"grammar"|"vocabulary"|"comprehension","question":"...","options":["A","B","C","D"],"correctIndex":0,"explanation":"..."}',
+      'Open item MUST be: {"id":"t_open","questionType":"open","category":"open","question":"... 2-3 sentences ...","explanation":"What a good answer should mention (short rubric for teachers/learners)."}',
+      "",
+      "MCQ categories (strict counts among the 9 MCQs):",
+      '- 3 with category "grammar" (tense/aspect, articles, prepositions, agreement) — grounded in transcript or title/description.',
+      '- 3 with category "vocabulary" (word meaning in context, collocation, phrasal verb) — quote or paraphrase from transcript when available.',
+      '- 3 with category "comprehension" (detail, inference, main idea except the open summary).',
+      "",
+      "Field \"explanation\" on MCQs: 1–3 sentences — why the correct option is right.",
+      "correctIndex is 0-based. Four options per MCQ.",
+      "",
+      "PRIOR MISSES — retest 2–3 similar skills in NEW wording (never copy stems):",
+      weakSpots,
+      "",
+      "LEARNER STUDYING PLAN (from profile — use when the transcript supports it; never invent video facts):",
+      `- Stated goal: ${input.learningGoal}`,
+      `- Target time horizon: ${input.timeToAchieve}`,
+      `- Interests / hobbies: ${hobbyLine}`,
+      "Apply: Prefer MCQs, the open-summary rubric, and key vocabulary items that help toward the stated goal when the clip content allows. Use hobbies as light thematic hooks only when the video touches related ideas. Shorter horizons → favour high-utility chunks and scenarios the learner can reuse soon; longer horizons → you may include slightly broader topic words still grounded in the transcript. Questions stay transcript-grounded.",
+      "",
+      `=== keyVocabulary (exactly ${KEY_VOCAB_COUNT} item) ===`,
+      'Each: {"word":"...","definition":"...","example":"..."}',
+      "KEY VOCABULARY — LEVEL (mandatory):",
+      stretch.instruction,
+      `Target band label for glosses: ${stretch.vocabularyTargetBand} (not the learner’s comfort band).`,
+      "- Words or multi-word chunks from the transcript (or title/description if no transcript).",
+      "- Prioritise items whose semantics map onto LEARNER_TOPIC_STRENGTHS (known topic areas): new labels should connect to those domains when the video supports it.",
+      "- Align several key vocabulary picks with LEARNER STUDYING PLAN (goal / interests) when transcript evidence exists; otherwise stay with neutral lesson language.",
+      "- Avoid only picking the easiest, below-target high-frequency words when the clip contains suitable stretch items; definitions/examples must suit the target band above.",
+      "- Generated in this same response as the tests.",
+      "",
+      "LEARNER LEVEL (whole quiz difficulty / tone — MCQs can stay near this level; keyVocabulary follows the stretch rule above):",
+      level,
+      "",
+      "LEARNER SAVED VOCABULARY:",
+      vocabList,
+      "",
+      "VIDEO_THEME_TAGS:",
+      videoThemes,
+      "",
+      "LEARNER_TOPIC_STRENGTHS:",
+      themeStrength,
+      "",
+      transcriptBlock,
+      "",
+      `Video title: ${input.videoName}`,
+      `Description: ${input.videoDescription?.trim() || "N/A"}`,
+    ].join("\n");
 
     try {
       const response = await fetch(apiUrl, {
@@ -318,13 +202,10 @@ export class ContentVideoComprehensionTestsGeminiClient {
         return null;
       }
       const tests = normalizeTests(parsed.tests);
-      if (!isValidTestSet(tests, includeOpenSummary)) {
+      if (!isValidTestSet(tests)) {
         return null;
       }
-      let keyVocabularyRaw = normalizeKeyVocabulary(
-        parsed.keyVocabulary,
-        input.learnerNativeLanguage,
-      );
+      let keyVocabularyRaw = normalizeKeyVocabulary(parsed.keyVocabulary);
       if (keyVocabularyRaw.length < KEY_VOCAB_COUNT) {
         keyVocabularyRaw = fallbackKeyVocabulary({
           transcriptPlain: input.transcriptPlain,
@@ -337,7 +218,6 @@ export class ContentVideoComprehensionTestsGeminiClient {
           learningGoal: input.learningGoal,
           timeToAchieve: input.timeToAchieve,
           hobbies: input.hobbies,
-          learnerNativeLanguage: input.learnerNativeLanguage,
         });
       }
       return { tests, keyVocabulary: keyVocabularyRaw };
@@ -347,13 +227,8 @@ export class ContentVideoComprehensionTestsGeminiClient {
   }
 }
 
-function isValidTestSet(
-  tests: ComprehensionTestItem[],
-  includeOpenSummary: boolean,
-): boolean {
-  const expectedTotal = includeOpenSummary ? EXPECTED_MCQ_COUNT + 1 : EXPECTED_MCQ_COUNT;
-  const expectedOpen = includeOpenSummary ? 1 : 0;
-  if (tests.length !== expectedTotal) {
+function isValidTestSet(tests: ComprehensionTestItem[]): boolean {
+  if (tests.length !== EXPECTED_TEST_COUNT) {
     return false;
   }
   let mcq = 0;
@@ -365,7 +240,7 @@ function isValidTestSet(
       mcq += 1;
     }
   }
-  return mcq === EXPECTED_MCQ_COUNT && open === expectedOpen;
+  return mcq === EXPECTED_TEST_COUNT - 1 && open === 1;
 }
 
 function normalizeTests(raw: unknown[]): ComprehensionTestItem[] {
@@ -441,26 +316,10 @@ function normalizeTests(raw: unknown[]): ComprehensionTestItem[] {
   return out;
 }
 
-/**
- * Keeps a single orthographic word for L1 glosses (first token if the model returns a phrase).
- */
-function clampSingleWordNativeGloss(raw: string): string {
-  const t = raw.replace(/\s+/g, " ").trim().replace(/[.,;:!?。．、，]+$/u, "");
-  if (!t) {
-    return "";
-  }
-  const first = t.split(/\s+/)[0] ?? "";
-  return first.slice(0, 48);
-}
-
-export function normalizeKeyVocabulary(
-  raw: unknown,
-  learnerNativeLanguage: string | null = null,
-): KeyVocabularyItem[] {
+export function normalizeKeyVocabulary(raw: unknown): KeyVocabularyItem[] {
   if (!Array.isArray(raw)) {
     return [];
   }
-  const mayKeepNative = Boolean(learnerNativeLanguage?.trim());
   const out: KeyVocabularyItem[] = [];
   for (const item of raw) {
     if (typeof item !== "object" || item === null) {
@@ -488,19 +347,6 @@ export function normalizeKeyVocabulary(
     }
     const example =
       typeof o.example === "string" ? o.example.trim().slice(0, 320) : "";
-    let nativeGloss: string | undefined;
-    if (mayKeepNative) {
-      const glossRaw =
-        typeof o.nativeGloss === "string"
-          ? o.nativeGloss
-          : typeof o.nativeTranslation === "string"
-            ? o.nativeTranslation
-            : "";
-      const g = clampSingleWordNativeGloss(glossRaw);
-      if (g.length > 0) {
-        nativeGloss = g;
-      }
-    }
     out.push({
       word,
       definition,
@@ -508,7 +354,6 @@ export function normalizeKeyVocabulary(
         example.length > 0
           ? example
           : `Notice how "${word}" fits the speaker's message in this clip.`,
-      ...(nativeGloss ? { nativeGloss } : {}),
     });
   }
   return out.slice(0, KEY_VOCAB_COUNT);
@@ -545,8 +390,6 @@ export function fallbackKeyVocabulary(ctx: {
   learningGoal?: string;
   timeToAchieve?: string;
   hobbies?: string[];
-  /** Unused for offline glosses — keeps call sites aligned with Gemini context. */
-  learnerNativeLanguage?: string | null;
 }): KeyVocabularyItem[] {
   const plain = ctx.transcriptPlain?.trim() ?? "";
   const title = ctx.videoName?.trim() ?? "";
@@ -684,7 +527,7 @@ function pickTranscriptContentWords(text: string, max: number): string[] {
 }
 
 /**
- * 9 MCQ (3 grammar, 3 vocabulary, 3 comprehension), optional open summary when learner ≥ B1 — when Gemini is unavailable.
+ * 9 MCQ (3 grammar, 3 vocabulary, 3 comprehension) + 1 open — when Gemini is unavailable.
  */
 export function fallbackComprehensionTests(ctx: {
   videoName: string;
@@ -695,7 +538,6 @@ export function fallbackComprehensionTests(ctx: {
   learningGoal?: string;
   timeToAchieve?: string;
   hobbies?: string[];
-  isErrorFixingTest?: boolean;
 }): ComprehensionTestItem[] {
   const label = ctx.videoName.slice(0, 80) || "this lesson";
   const plain = ctx.transcriptPlain?.trim() ?? "";
@@ -708,66 +550,43 @@ export function fallbackComprehensionTests(ctx: {
   const horizon = ctx.timeToAchieve?.trim() || "your plan horizon";
   const firstWeak = ctx.priorWeakSpots[0];
   const grammarWeak = ctx.priorWeakSpots.find((w) => w.category === "grammar");
-  const vocabWeak = ctx.priorWeakSpots.find((w) => w.category === "vocabulary");
-  const remediation = ctx.isErrorFixingTest === true;
 
   const mcq: ComprehensionTestItem[] = [];
 
   mcq.push(
-    remediation && vocabWeak
+    firstWeak?.category === "comprehension"
       ? {
           questionType: "multiple_choice" as const,
           id: "c1",
           category: "comprehension" as const,
-          question: `Remediation — vocabulary in context (“${vocabWeak.stemSnippet.slice(0, 130)}…”): which paraphrase best fits what the speaker meant?`,
+          question: `You missed a similar idea before (“${firstWeak.stemSnippet.slice(0, 140)}…”). What is the safest paraphrase of the speaker’s main focus?`,
           options: [
-            "The sense tied to how the word works in this clip",
-            "A random dictionary sense not supported here",
-            "The opposite of what was said",
-            "Only the title of the channel",
+            "A clear, topic-relevant idea that fits the video",
+            "A detail that contradicts the clip",
+            "A guess unrelated to the content",
+            "Only music credits, not ideas",
           ],
           correctIndex: 0,
-          explanation: "Pick the reading grounded in context, not a generic gloss.",
+          explanation:
+            "Choose the option that matches what the lesson is actually about.",
         }
-      : firstWeak &&
-          (firstWeak.category === "comprehension" || remediation)
-        ? {
-            questionType: "multiple_choice" as const,
-            id: "c1",
-            category: "comprehension" as const,
-            question:
-              remediation ?
-                `Error-fix practice — earlier misses touched (“${firstWeak.stemSnippet.slice(0, 140)}…”). What is the safest idea grounded in this lesson?`
-              : `You missed a similar idea before (“${firstWeak.stemSnippet.slice(0, 140)}…”). What is the safest paraphrase of the speaker’s main focus?`,
-            options: [
-              "A clear, topic-relevant idea that fits the video",
-              "A detail that contradicts the clip",
-              "A guess unrelated to the content",
-              "Only music credits, not ideas",
-            ],
-            correctIndex: 0,
-            explanation:
-              "Choose the option that matches what the lesson is actually about.",
-          }
-        : {
-            questionType: "multiple_choice" as const,
-            id: "c1",
-            category: "comprehension" as const,
-            question:
-              remediation ?
-                `Slow check — ${plain.length >= 40 ? `in this video, what does “${v0}” most likely refer to?` : `what is “${label}” mainly about?`}`
-              : plain.length >= 40
-                ? `In this video, what does “${v0}” most likely refer to?`
-                : `What is “${label}” mainly about?`,
-            options: [
-              "Something central to the lesson topic",
-              "An unrelated object",
-              "A random character from fiction",
-              "Only background music",
-            ],
-            correctIndex: 0,
-            explanation: "The best answer ties the phrase to the lesson topic.",
-          },
+      : {
+          questionType: "multiple_choice" as const,
+          id: "c1",
+          category: "comprehension" as const,
+          question:
+            plain.length >= 40
+              ? `In this video, what does “${v0}” most likely refer to?`
+              : `What is “${label}” mainly about?`,
+          options: [
+            "Something central to the lesson topic",
+            "An unrelated object",
+            "A random character from fiction",
+            "Only background music",
+          ],
+          correctIndex: 0,
+          explanation: "The best answer ties the phrase to the lesson topic.",
+        },
   );
 
   mcq.push({
@@ -920,11 +739,5 @@ export function fallbackComprehensionTests(ctx: {
     explanation: `Rubric: topic + one specific detail from the clip; optional one-line link to "${goal.slice(0, 60)}" only if the video actually supports it.`,
   };
 
-  const includeOpenSummary = shouldIncludeOpenSummaryComprehensionTask(
-    ctx.learnerCefr,
-  );
-  if (!includeOpenSummary) {
-    return mcq;
-  }
   return [...mcq, openItem];
 }
