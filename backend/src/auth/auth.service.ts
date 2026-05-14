@@ -117,23 +117,37 @@ export class AuthService {
     const generatedStudents: GeneratedStudent[] = [];
 
     // 2. Генерация аккаунтов для учеников
+    // 2. Генерация аккаунтов для учеников
     if (dto.role === "teacher" && Array.isArray(dto.studentNames)) {
       for (const pupil of dto.studentNames) {
-        // Генерация почты и временного пароля
         const randomId = Math.floor(1000 + Math.random() * 9000);
 
-        const [name, surname] = pupil.split(" ");
-        const studentEmail = `${name?.toLowerCase()}.${surname?.toLowerCase()}.${randomId}@alcorythm.com`;
-        //const studentEmail = `${pupil.name.toLowerCase()}.${pupil.surname.toLowerCase()}.${randomId}@alcorythm.com`;
+        // Безопасно достаем данные, даже если это объект или строка
+        let firstName = "student";
+        let lastName = randomId.toString();
+
+        if (typeof pupil === "object" && pupil !== null) {
+          firstName = pupil.name || "student";
+          lastName = pupil.surname || randomId.toString();
+        } else if (typeof pupil === "string") {
+          const parts = pupil.split(" ");
+          firstName = parts[0] || "student";
+          lastName = parts[1] || randomId.toString();
+        }
+
+        const studentEmail =
+          `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${randomId}@alcorythm.com`.replace(
+            /\s+/g,
+            "",
+          );
         const tempPassword = Math.random().toString(36).slice(-8);
         const hashedStudentPassword = await bcrypt.hash(tempPassword, 10);
 
-        // Создаем ученика и привязываем к учителю через teacherId
-        const newStudent = await prisma.user.create({
+        await prisma.user.create({
           data: {
             email: studentEmail.toLowerCase(),
             password: hashedStudentPassword,
-            name: pupil,
+            name: `${firstName} ${lastName}`.trim(),
             role: "STUDENT",
             method: "CREDENTIALS",
             teacherId: mainUser.id,
@@ -141,13 +155,12 @@ export class AuthService {
         });
 
         generatedStudents.push({
-          name: newStudent.name,
+          name: `${firstName} ${lastName}`.trim(),
           email: studentEmail,
           password: tempPassword,
         });
       }
     }
-
     await this.alcorythmService.analyzeUserLevel(mainUser.id);
 
     const payload = { sub: mainUser.id, email: mainUser.email };
@@ -170,7 +183,6 @@ export class AuthService {
         "You have successfully registered. Please confirm your email. A message has been sent to your mailing address.",
     };
   }
-  // В файле auth.service.ts
 
   public async confirmEmail(token: string) {
     // 1. Ищем токен в правильной таблице (Token), а не в User

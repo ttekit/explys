@@ -1,26 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router";
 
 export default function EmailConfirmedPage() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<"loading" | "success" | "error">(
-    "loading",
-  );
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const token = searchParams.get("token");
+  
+  const initialized = useRef(false);
 
   useEffect(() => {
-    const confirmEmail = async () => {
-      if (!token) {
-        setStatus("error");
-        return;
-      }
+    if (!token) {
+      setStatus("error");
+      return;
+    }
+    if (initialized.current) return;
+    initialized.current = true;
 
+    const confirmEmail = async () => {
       try {
         const response = await fetch(
           `http://localhost:4200/auth/confirm-email?token=${token}`,
-          {
-            method: "GET",
-          },
+          { method: "GET" }
         );
 
         if (response.ok) {
@@ -41,7 +41,7 @@ export default function EmailConfirmedPage() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f111a] text-white">
       <div className="text-center p-8 bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl max-w-md mx-auto">
         {status === "loading" && (
-          <p className="text-gray-400">Підтверджуємо пошту...</p>
+          <p className="text-gray-400 animate-pulse">Підтверджуємо вашу пошту...</p>
         )}
 
         {status === "success" && (
@@ -49,10 +49,8 @@ export default function EmailConfirmedPage() {
             <div className="bg-green-500/20 text-green-400 inline-flex size-16 items-center justify-center rounded-full text-3xl font-bold mb-6">
               ✓
             </div>
-            <h1 className="text-3xl font-bold mb-4">Пошту підтверджено!</h1>
-            <p className="text-gray-400 mb-8 leading-relaxed">
-              Тепер ваш акаунт повністю активований.
-            </p>
+            <h1 className="text-3xl font-bold mb-4">Готово!</h1>
+            <p className="text-gray-400 mb-8">Пошту успішно підтверджено. Тепер ви можете увійти в систему.</p>
           </>
         )}
 
@@ -61,10 +59,8 @@ export default function EmailConfirmedPage() {
             <div className="bg-red-500/20 text-red-400 inline-flex size-16 items-center justify-center rounded-full text-3xl font-bold mb-6">
               ✕
             </div>
-            <h1 className="text-3xl font-bold mb-4">Помилка!</h1>
-            <p className="text-gray-400 mb-8 leading-relaxed">
-              Токен недійсний або термін його дії вичерпано.
-            </p>
+            <h1 className="text-3xl font-bold mb-4">Помилка</h1>
+            <p className="text-gray-400 mb-8">Токен недійсний, або ви вже підтвердили пошту раніше.</p>
           </>
         )}
 

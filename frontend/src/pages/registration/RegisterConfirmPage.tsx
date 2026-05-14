@@ -18,27 +18,40 @@ export default function EmailConfirmationPage() {
 
   const checkStatus = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch("http://localhost:4200/auth/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      navigate("/loginForm", {
+        state: {
+          message: "Пошту успішно підтверджено! Тепер ви можете увійти.",
         },
       });
-
-      if (!response.ok) return false;
-
-      const data = await response.json();
-      if (data.isVerified) {
-        navigate("/registrationDetails");
-        return true;
-      }
-      return false;
+      return true;
     } catch (error) {
       console.error("Помилка:", error);
       return false;
     }
   };
+  // const checkStatus = async () => {
+  //   try {
+  //     const token = localStorage.getItem("accessToken");
+  //     const response = await fetch("http://localhost:4200/auth/profile", {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+
+  //     if (!response.ok) return false;
+
+  //     const data = await response.json();
+  //     if (data.isVerified) {
+  //       navigate("/registrationDetails");
+  //       return true;
+  //     }
+  //     return false;
+  //   } catch (error) {
+  //     console.error("Помилка:", error);
+  //     return false;
+  //   }
+  // };
 
   const handleContinue = async () => {
     setIsChecking(true);
@@ -57,11 +70,14 @@ export default function EmailConfirmationPage() {
     setIsResending(true);
 
     try {
-      const response = await fetch("http://localhost:4200/auth/resend-confirmation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const response = await fetch(
+        "http://localhost:4200/auth/resend-confirmation",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        },
+      );
 
       const result = await response.json();
 

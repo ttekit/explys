@@ -95,7 +95,7 @@ export default function LoginForm() {
         } else {
           const message = await getResponseErrorMessage(response);
           if (message.includes("Email not verified")) {
-            navigate("/auth/confirm-email", {
+            navigate("/email-confirmation", {
               state: { email: loginData.email },
             });
             return;

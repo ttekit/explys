@@ -12,13 +12,11 @@ import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import { cn } from "../../lib/utils";
 import { buildRegisterBody } from "../../lib/registerUser";
 import { setStoredAccessToken } from "../../lib/api";
-import { setPendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 
 export default function RegistrationPreferences() {
   const { messages, locale } = useLandingLocale();
   const t = messages.auth.registration.step3;
-  const alerts = messages.auth.registration.step3Alerts;
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
 
@@ -88,17 +86,20 @@ export default function RegistrationPreferences() {
     } as Partial<FormData>);
   };
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
             buildRegisterBody({
               ...formData,
@@ -111,30 +112,25 @@ export default function RegistrationPreferences() {
 
       if (response.ok) {
         setStoredAccessToken(null);
-        if (formData.role === "student" || formData.role === "adult") {
-          setPendingRegistrationLoginWelcome();
-          navigate("/loginForm", {
-            replace: true,
-            state: { from: "/catalog", registrationComplete: true },
-          });
-        } else {
-          navigate("/loginForm");
-        }
+        navigate("/email-confirmation", {
+          replace: true,
+          state: { email: formData.email },
+        });
       } else {
         const errorData = await response.json();
         console.error("Registration Error Details:", errorData);
 
         const errorMessage = Array.isArray(errorData.message)
-          ? errorData.message.join(", ")
+          ? errorData.message[0]
           : errorData.message;
 
-        alert(
-          `${alerts.failedPrefix} ${errorMessage || alerts.failedFallback}`,
-        );
+        setError(errorMessage || "Щось пішло не так");
       }
     } catch (error) {
-      console.error("Network or parsing error:", error);
-      alert(alerts.network);
+      console.error("Network error:", error);
+      setError("Помилка мережі. Перевірте з'єднання з сервером.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -266,12 +262,26 @@ export default function RegistrationPreferences() {
               })}
             </div>
           </div>
+          {error && (
+            <div className="bg-red-900/20 border border-red-500 text-red-500 p-4 rounded-xl text-sm font-medium animate-in fade-in zoom-in duration-200">
+              {error}
+            </div>
+          )}
 
           <Button
             type="submit"
-            className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+            disabled={isLoading}
+            className={`w-full rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)] ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            {t.register}
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="animate-spin">⏳</span> {t.register}...
+              </span>
+            ) : (
+              t.register
+            )}
           </Button>
         </form>
       </AuthSplitLayout>

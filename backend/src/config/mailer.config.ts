@@ -8,19 +8,19 @@ export const getMailerConfig = async (
   transport: {
     host: configService.getOrThrow<string>("MAIL_HOST"),
     port: configService.getOrThrow<number>("MAIL_PORT"),
-    secure: false, //!isDev(configService),
+    secure: true, //!isDev(configService),
     //pool: true,
     auth: {
       user: configService.getOrThrow<string>("MAIL_LOGIN"),
       pass: configService.getOrThrow<string>("MAIL_PASSWORD"),
     },
-    debug: true, // Включи это! Ты увидишь в консоли, на чем именно стопор
+    debug: true,
     logger: true,
     tls: {
       rejectUnauthorized: false,
     },
   },
   defaults: {
-    from: `"Explys Team " ${configService.getOrThrow<string>("MAIL_LOGIN")}`,
+    from: `"Explys Team " ${configService.getOrThrow<string>("MAIL_FROM")}`,
   },
 });

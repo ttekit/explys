@@ -109,8 +109,8 @@ export default function RegistrationMain() {
     const email = String(fd.get("email") ?? "").trim();
     const password = String(fd.get("password") ?? "");
     const confirmPassword = String(fd.get("confirmPassword") ?? "");
-    updateFormData({ name, email, password, confirmPassword });
 
+    updateFormData({ name, email, password, confirmPassword });
     if (!name) {
       setErrorText(err.usernameRequired);
       return;
@@ -127,6 +127,7 @@ export default function RegistrationMain() {
       setErrorText(err.passwordRequired);
       return;
     }
+
     if (!isValidPassword(password)) {
       if (password.length < 8) {
         setErrorText(err.passwordMin8);
@@ -151,6 +152,7 @@ export default function RegistrationMain() {
       setErrorText(err.passwordWeak);
       return;
     }
+
     if (!confirmPassword) {
       setErrorText(err.confirmRequired);
       return;
@@ -159,35 +161,9 @@ export default function RegistrationMain() {
       setErrorText(err.passwordsNoMatch);
       return;
     }
+
     setErrorText(null);
-    //navigate("/registrationDetails");
-    try {
-      const response = await fetch("http://localhost:4200/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          passwordRepeat: confirmPassword,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        setErrorText(result.message || "Помилка реєстрації");
-        return;
-      }
-
-      if (result.access_token) {
-        localStorage.setItem("accessToken", result.access_token);
-      }
-      navigate("/email-confirmation", { state: { email } });
-    } catch (error) {
-      console.error("Помилка:", error);
-      setErrorText("Сервер не відповідає. Перевірте з'єднання.");
-    }
+    navigate("/registrationDetails");
   };
 
   const handleBack = () => {

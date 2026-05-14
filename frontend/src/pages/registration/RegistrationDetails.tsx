@@ -66,6 +66,9 @@ export default function RegistrationDetails() {
   const [topicsLoading, setTopicsLoading] = useState(true);
   const [topicsLoadError, setTopicsLoadError] = useState<string | null>(null);
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const credentialMsgs = useMemo(
     () => ({
       credentialEmail: err.credentialEmail,
@@ -74,6 +77,22 @@ export default function RegistrationDetails() {
     }),
     [err.credentialEmail, err.credentialPassword],
   );
+  const handleSubmit = async (data: any) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await registerUser(data, credentialMsgs, error || "");
+      window.location.href = "/dashboard";
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || "Щось пішло не так";
+      setError(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage);
+
+      console.error("Registration error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -180,6 +199,8 @@ export default function RegistrationDetails() {
   const handleNext = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError(null);
+    setError(null);
+
     if (formData.role === "choose") {
       setEmptyError(true);
       return;
@@ -197,20 +218,33 @@ export default function RegistrationDetails() {
         setFormError(err.teacherGrades);
         return;
       }
+      setIsLoading(true);
       setIsSubmitting(true);
-      const result = await registerUser(formData, credentialMsgs, netReg);
-      setIsSubmitting(false);
-      if (result.success) {
-        const students = result.generatedStudents;
-        if (students?.length) {
-          navigate("/registrationSuccess", {
-            state: { generatedStudents: students },
-          });
+
+      try {
+        const result: any = await registerUser(
+          formData,
+          credentialMsgs,
+          netReg,
+        );
+        if (result && !result.error) {
+          const students = result.generatedStudents;
+          if (students?.length) {
+            navigate("/registrationSuccess", {
+              state: { generatedStudents: students },
+            });
+          } else {
+            navigate("/loginForm");
+          }
         } else {
-          navigate("/loginForm");
+          setError(result?.message || "Помилка реєстрації");
         }
-      } else {
-        setFormError(result.message);
+      } catch (err: any) {
+        const msg = err.response?.data?.message || "Щось пішло не так";
+        setError(Array.isArray(msg) ? msg[0] : msg);
+      } finally {
+        setIsLoading(false);
+        setIsSubmitting(false);
       }
       return;
     }
@@ -261,7 +295,9 @@ export default function RegistrationDetails() {
               </div>
 
               <div className="space-y-2">
-                <LabelRegister isRequired={true}>{t.studentGrades}</LabelRegister>
+                <LabelRegister isRequired={true}>
+                  {t.studentGrades}
+                </LabelRegister>
                 <SelectRegister
                   name="teacherGrades"
                   value={formData.teacherGrades}
@@ -271,7 +307,9 @@ export default function RegistrationDetails() {
               </div>
 
               <div className="space-y-2">
-                <LabelRegister isRequired={false}>{t.learningTopics}</LabelRegister>
+                <LabelRegister isRequired={false}>
+                  {t.learningTopics}
+                </LabelRegister>
                 <MultiSelect<
                   LearningTopicOption,
                   true,
@@ -301,7 +339,9 @@ export default function RegistrationDetails() {
 
               <div className="border-border border-t pt-6">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <LabelRegister isRequired={false}>{t.pupilsList}</LabelRegister>
+                  <LabelRegister isRequired={false}>
+                    {t.pupilsList}
+                  </LabelRegister>
                   <button
                     type="button"
                     onClick={addPupil}
@@ -371,24 +411,36 @@ export default function RegistrationDetails() {
               </div>
             </section>
           )}
-
-          {emptyError && (
-            <ValidateError>{err.selectRole}</ValidateError>
-          )}
+          {emptyError && <ValidateError>{err.selectRole}</ValidateError>}
           {formError && <ValidateError>{formError}</ValidateError>}
+          {error && (
+            <div className="bg-red-900/20 border border-red-500 text-red-500 p-4 rounded-xl text-sm font-medium animate-in fade-in zoom-in duration-200">
+              {error}
+            </div>
+          )}
 
           <div className="flex flex-col gap-3 sm:flex-row-reverse sm:items-stretch">
             <Button
               type="submit"
-              disabled={isSubmitting}
-              className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
+              disabled={isLoading || isSubmitting}
+              className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {formData.role === "teacher" ? t.register : t.next}
+              {isLoading || isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">⏳</span> {t.register}...
+                </span>
+              ) : formData.role === "teacher" ? (
+                t.register
+              ) : (
+                t.next
+              )}
             </Button>
+
             <Button
               type="button"
+              disabled={isLoading || isSubmitting}
               onClick={() => navigate("/registrationMain")}
-              className="text-sm font-medium bg-transparent text-foreground/70 hover:text-white py-2.5 px-6 transition-all rounded-[15px] hover:bg-muted-foreground/10 hover:cursor-pointer"
+              className="text-sm font-medium bg-transparent text-foreground/70 hover:text-white py-2.5 px-6 transition-all rounded-[15px] hover:bg-muted-foreground/10 hover:cursor-pointer disabled:opacity-50"
             >
               {t.previous}
             </Button>

@@ -105,27 +105,20 @@ export class EmailConfirmationService {
         },
       });
     }
-    // const verificationToken = await this.prismaService.token.upsert({
-    //   where: {
-    //     email: email,
-    //   },
-    //   update: {
-    //     token: token,
-    //     expiresIn: expiresIn,
-    //     type: TokenType.VERIFICATION,
-    //   },
-    //   create: {
-    //     email: email,
-    //     token: token,
-    //     expiresIn: expiresIn,
-    //     type: TokenType.VERIFICATION,
-    //   },
-    // });
-    const verificationToken = await this.prismaService.token.create({
-      data: {
-        email,
-        token,
-        expiresIn,
+    
+    const verificationToken = await this.prismaService.token.upsert({
+      where: {
+        email: email,
+      },
+      update: {
+        token: token,
+        expiresIn: expiresIn,
+        type: TokenType.VERIFICATION,
+      },
+      create: {
+        email: email,
+        token: token,
+        expiresIn: expiresIn,
         type: TokenType.VERIFICATION,
       },
     });
