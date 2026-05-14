@@ -12,11 +12,9 @@ import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import { cn } from "../../lib/utils";
 import { buildRegisterBody } from "../../lib/registerUser";
 import { setStoredAccessToken } from "../../lib/api";
-import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { setPendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 
 export default function RegistrationPreferences() {
-  const { messages, locale } = useLandingLocale();
-  const t = messages.auth.registration.step3;
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
 
@@ -86,20 +84,17 @@ export default function RegistrationPreferences() {
     } as Partial<FormData>);
   };
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
 
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(
             buildRegisterBody({
               ...formData,
@@ -121,25 +116,21 @@ export default function RegistrationPreferences() {
         } else {
           navigate("/loginForm");
         }
-        navigate("/email-confirmation", {
-          replace: true,
-          state: { email: formData.email },
-        });
       } else {
         const errorData = await response.json();
         console.error("Registration Error Details:", errorData);
 
         const errorMessage = Array.isArray(errorData.message)
-          ? errorData.message[0]
+          ? errorData.message.join(", ")
           : errorData.message;
 
-        setError(errorMessage || "Щось пішло не так");
+        alert(
+          `Registration failed: ${errorMessage || "Internal Server Error"}`,
+        );
       }
     } catch (error) {
-      console.error("Network error:", error);
-      setError("Помилка мережі. Перевірте з'єднання з сервером.");
-    } finally {
-      setIsLoading(false);
+      console.error("Network or parsing error:", error);
+      alert("Network error. Please check if your backend server is running.");
     }
   };
 
@@ -148,28 +139,32 @@ export default function RegistrationPreferences() {
   }
 
   return (
-    <div lang={locale === "uk" ? "uk" : "en"}>
+    <>
       <AuthSplitLayout
         progressStep={3}
         progressTotal={3}
-        rightTitle={t.rightTitle}
-        rightSubtitle={t.rightSubtitle}
+        rightTitle="Almost there!"
+        rightSubtitle="A few preferences help us tune what you'll watch next."
       >
         <Link
           to="/registrationDetails"
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          {t.back}
+          Back
         </Link>
 
         <div className="mb-6 flex items-center gap-3">
-          <img src="/Icon.svg" className="w-12 h-15" alt="" />
+          <img src="/Icon.svg" className="w-12 h-15" />
           <div>
             <h1 className="font-display text-2xl font-bold">
-              {formData.role === "student" ? t.titleStudent : t.titleAdult}
+              {formData.role === "student"
+                ? "Student preferences"
+                : "Your preferences"}
             </h1>
-            <p className="text-sm text-muted-foreground">{t.lead}</p>
+            <p className="text-sm text-muted-foreground">
+              Choose genres we should lean toward—and ones to hide.
+            </p>
           </div>
         </div>
 
@@ -178,36 +173,39 @@ export default function RegistrationPreferences() {
             <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
               <div>
                 <h2 className="font-display text-lg font-semibold">
-                  {t.goalTitle}{" "}
+                  Your learning goal{" "}
                   <span className="font-normal text-muted-foreground">
-                    {t.optional}
+                    (optional)
                   </span>
                 </h2>
-                <p className="text-sm text-muted-foreground">{t.goalLead}</p>
+                <p className="text-sm text-muted-foreground">
+                  Share what you&apos;re working toward if you like — you can skip
+                  this and continue.
+                </p>
               </div>
               <div className="space-y-2">
                 <LabelRegister isRequired={false}>
-                  {t.pointOfLearning}
+                  Point of learning
                 </LabelRegister>
                 <InputText
                   name="learningGoal"
                   value={formData.learningGoal ?? ""}
                   onChange={handleLearningFieldsChange}
                   type="text"
-                  placeholder={t.placeholderGoal}
+                  placeholder="e.g. Travel to the UK"
                   autoComplete="off"
                 />
               </div>
               <div className="space-y-2">
                 <LabelRegister isRequired={false}>
-                  {t.timeToAchieve}
+                  Time to achieve
                 </LabelRegister>
                 <InputText
                   name="timeToAchieve"
                   value={formData.timeToAchieve ?? ""}
                   onChange={handleLearningFieldsChange}
                   type="text"
-                  placeholder={t.placeholderTime}
+                  placeholder="e.g. 3 months"
                   autoComplete="off"
                 />
               </div>
@@ -215,8 +213,10 @@ export default function RegistrationPreferences() {
           )}
 
           <div className="space-y-3">
-            <LabelRegister isRequired={false}>{t.genresLove}</LabelRegister>
-            <p className="text-sm text-muted-foreground">{t.genresLoveHint}</p>
+            <LabelRegister isRequired={false}>Genres you love</LabelRegister>
+            <p className="text-sm text-muted-foreground">
+              We&apos;ll recommend more from genres you pick here.
+            </p>
             <div className="flex flex-wrap gap-2">
               {genreOptions.map((genre) => {
                 const inactive = hatedIds.includes(genre.value);
@@ -244,8 +244,10 @@ export default function RegistrationPreferences() {
           </div>
 
           <div className="space-y-3">
-            <LabelRegister isRequired={false}>{t.genresAvoid}</LabelRegister>
-            <p className="text-sm text-muted-foreground">{t.genresAvoidHint}</p>
+            <LabelRegister isRequired={false}>Genres to avoid</LabelRegister>
+            <p className="text-sm text-muted-foreground">
+              We&apos;ll filter out selections from these buckets.
+            </p>
             <div className="flex flex-wrap gap-2">
               {genreOptions.map((genre) => {
                 const inactive = favoriteIds.includes(genre.value);
@@ -271,29 +273,15 @@ export default function RegistrationPreferences() {
               })}
             </div>
           </div>
-          {error && (
-            <div className="bg-red-900/20 border border-red-500 text-red-500 p-4 rounded-xl text-sm font-medium animate-in fade-in zoom-in duration-200">
-              {error}
-            </div>
-          )}
 
           <Button
             type="submit"
-            disabled={isLoading}
-            className={`w-full rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)] ${
-              isLoading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
           >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="animate-spin">⏳</span> {t.register}...
-              </span>
-            ) : (
-              t.register
-            )}
+            Register
           </Button>
         </form>
       </AuthSplitLayout>
-    </div>
+    </>
   );
 }

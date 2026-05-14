@@ -31,7 +31,6 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "jsx": "react"
     // "rootDir": "./src"
     // "noEmit": true,
     // "allowImportingTsExtensions": true

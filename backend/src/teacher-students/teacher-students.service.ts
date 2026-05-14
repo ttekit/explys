@@ -3,7 +3,6 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { UserRole } from '@generated/prisma/enums';
 
 export type TeacherStudentQuizRow = {
   id: number;
@@ -66,7 +65,7 @@ export class TeacherStudentsService {
       where: { id: teacherId },
       select: { role: true },
     });
-    if (!me || me.role !== UserRole.TEACHER) {
+    if (!me || me.role !== 'teacher') {
       throw new ForbiddenException('Only teachers can view student results.');
     }
 

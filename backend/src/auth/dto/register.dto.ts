@@ -1,102 +1,73 @@
-import {
-  IsEmail,
-  IsString,
-  IsOptional,
-  IsArray,
-  MinLength,
-  IsNotEmpty,
-  MaxLength,
-  Validate,
-} from "class-validator";
-import { IsPasswordsMatchingConstraint } from "src/common/decorators/is-password-matching-constraint.decorator";
+import { IsEmail, IsString, IsOptional, IsArray, MinLength } from 'class-validator';
 
 export class RegisterDto {
-  @IsString({ message: "Email must be a string" })
-  @IsEmail({}, { message: "Please provide a valid email address" })
-  @IsNotEmpty({ message: "Email is required" })
+  @IsEmail()
   email: string;
 
-  @IsString({ message: "Password must be a string" })
-  @IsNotEmpty({ message: "Password is required" })
-  @MinLength(8, {
-    message: "Password is too short - minimum 8 characters required",
-  })
-  @MaxLength(20, {
-    message: "Password is too long - maximum 20 characters allowed",
-  })
+  @IsString()
+  @MinLength(6)
   password: string;
 
-  @IsString({ message: "Password must be a string" })
-  @IsNotEmpty({ message: "Password is required" })
-  @MinLength(8, {
-    message: "Password is too short - minimum 8 characters required",
-  })
-  @MaxLength(20, {
-    message: "Password is too long - maximum 20 characters allowed",
-  })
-  @Validate(IsPasswordsMatchingConstraint, { message: "Password don`t match" })
-  passwordRepeat: string;
-
-  @IsString({ message: "Name must be a valid string" })
+  @IsString()
   name: string;
 
   @IsOptional()
-  @IsString({ message: "Role must be a string" })
+  @IsString()
   role?: string;
 
   @IsOptional()
-  @IsArray({ message: "Student names must be an array" })
+  @IsArray()
   studentNames?: any;
 
   @IsOptional()
-  @IsString({ message: "Teacher grades must be a string" })
+  @IsString()
   teacherGrades?: string;
 
   @IsOptional()
-  @IsArray({ message: "Teacher topics must be an array" })
+  @IsArray()
   teacherTopics?: string[];
 
   @IsOptional()
-  @IsString({ message: "English level must be a valid string" })
+  @IsString()
   englishLevel?: string;
 
   @IsOptional()
-  @IsString({ message: "Education info must be a string" })
+  @IsString()
   education?: string;
 
   @IsOptional()
-  @IsArray({ message: "Hobbies must be an array of strings" })
+  @IsArray()
   hobbies?: string[];
 
   @IsOptional()
-  @IsString({ message: "Work field must be a string" })
+  @IsString()
   workField?: string;
 
   @IsOptional()
-  @IsString({ message: "Native language must be a string" })
+  @IsString()
   nativeLanguage?: string;
 
   @IsOptional()
-  @IsArray({ message: "Known languages must be an array" })
+  @IsArray()
   knownLanguages?: string[];
 
   @IsOptional()
   knownLanguageLevels?: any;
 
   @IsOptional()
-  @IsString({ message: "Student grade must be a string" })
+  @IsString()
   studentGrade?: string;
 
   @IsOptional()
-  @IsArray({ message: "Problem topics must be an array" })
+  @IsArray()
   studentProblemTopics?: string[];
 
   @IsOptional()
-  @IsArray({ message: "Favorite genres must be an array of IDs" })
+  @IsArray()
   favoriteGenres?: number[];
 
   @IsOptional()
-  @IsArray({ message: "Hated genres must be an array of IDs" })
+  @IsArray()
   hatedGenres?: number[];
 
   /** Adult: main motivation / destination (e.g. travel to GB). */

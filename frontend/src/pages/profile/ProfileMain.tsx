@@ -102,8 +102,7 @@ export default function ProfileMain() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id || (activeTab !== "overview" && activeTab !== "activity"))
-      return;
+    if (!user?.id || (activeTab !== "overview" && activeTab !== "activity")) return;
     let cancelled = false;
     void (async () => {
       const r = await apiFetch("/auth/profile/learning-stats", {
@@ -173,9 +172,7 @@ export default function ProfileMain() {
 
   const tabs = useMemo(() => {
     if (user?.role === "teacher") {
-      const withoutStudying = LEARNER_TABS.filter(
-        (t) => t.id !== "studying-plan",
-      );
+      const withoutStudying = LEARNER_TABS.filter((t) => t.id !== "studying-plan");
       return [
         withoutStudying[0],
         {
@@ -287,7 +284,7 @@ export default function ProfileMain() {
         <CatalogSidebar
           categories={[]}
           selectedCategory="All"
-          onSelectCategory={() => {}}
+          onSelectCategory={() => { }}
           onSelectLevel={() => { }}
           reserveTopNavSpace={false}
           welcomeName={
@@ -350,11 +347,7 @@ export default function ProfileMain() {
               {activeTab === "videos" ? <ProfileTeacherVideos /> : null}
               {activeTab === "progress" ? <ProfileProgress /> : null}
               {activeTab === "achievements" ? <ProfileAchievements /> : null}
-              {activeTab === "activity" ? (
-                <ProfileActivity
-                  weeklyActivity={learningStats?.weeklyActivity}
-                />
-              ) : null}
+              {activeTab === "activity" ? <ProfileActivity weeklyActivity={learningStats?.weeklyActivity} /> : null}
               {activeTab === "settings" ? (
                 <ProfileSettings
                   user={user}

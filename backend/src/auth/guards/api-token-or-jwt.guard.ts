@@ -30,7 +30,7 @@ export class ApiTokenOrJwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthedRequest>();
     const expectedApiToken = this.configService.get<string>("API_TOKEN");
     const receivedApi = request.header("x-api-token");
- 
+
     const authHeader = request.headers.authorization;
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.slice("Bearer ".length).trim();
