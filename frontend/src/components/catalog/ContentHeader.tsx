@@ -65,7 +65,10 @@ export default function ContentHeader({
   return (
     <>
       <header className="fixed top-0 z-999 flex h-18 w-full items-center justify-between border-b border-border bg-[--header-background] px-3 font-display backdrop-blur-md md:px-4">
-        <div className="flex min-w-0 shrink items-center gap-2 sm:gap-3">
+        <Link
+          to="/"
+          className="flex min-w-0 shrink items-center gap-2 rounded-lg sm:gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
           <img
             src="/Icon.svg"
             alt=""
@@ -74,7 +77,7 @@ export default function ContentHeader({
           <p className="truncate text-2xl font-bold sm:text-3xl md:text-[35px]">
             Explys
           </p>
-        </div>
+        </Link>
 
         <nav
           className={cn(

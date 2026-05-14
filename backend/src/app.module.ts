@@ -10,13 +10,19 @@ import { ContentMediaModule } from "./content/content-media/content-media.module
 import { ContentStatsModule } from "./content/content-stats/content-stats.module";
 import { ContentVideoModule } from "./content/content-video/content-video.module";
 import { ContentsModule } from "./contents/contents.module";
-import { PrismaModule } from "./prisma.module";
 import { TagsModule } from "./tags/tags.module";
 import { TopicsModule } from "./topics/topics.module";
 import { UsersModule } from "./users/users.module";
 import { GlobalApiTokenGuard } from "./auth/global-api-token.guard";
 import { RequireActiveSubscriptionGuard } from "./auth/guards/require-active-subscription.guard";
 import { PlacementTestModule } from "./placement-test/placement-test.module";
+import { IS_DEV_ENV } from "./common/utils/is-dev.utils";
+import { PrismaModule } from './prisma/prisma.module';
+import { ProviderModule } from './auth/provider/provider.module';
+import { MailModule } from './common/mail/mail.module';
+import { EmailConfirmationModule } from './auth/email-confirmation/email-confirmation.module';
+import { PasswordRecoveryModule } from './auth/password-recovery/password-recovery.module';
+import { TwoFactorAuthModule } from './auth/two-factor-auth/two-factor-auth.module';
 import { AdminAnalyticsModule } from "./admin-analytics/admin-analytics.module";
 import { AdminUsersModule } from "./admin-users/admin-users.module";
 import { TeacherStudentsModule } from "./teacher-students/teacher-students.module";
@@ -25,7 +31,9 @@ import { BillingModule } from "./billing/billing.module";
 @Module({
   imports: [
     ConfigModule.forRoot({
+      //ignoreEnvFile: !IS_DEV_ENV,
       isGlobal: true,
+      envFilePath: '.env'
     }),
     PrismaModule,
     AuthModule,
@@ -39,6 +47,11 @@ import { BillingModule } from "./billing/billing.module";
     CategoriesModule,
     TopicsModule,
     PlacementTestModule,
+    ProviderModule,
+    MailModule,
+    EmailConfirmationModule,
+    PasswordRecoveryModule,
+    TwoFactorAuthModule,
     AdminAnalyticsModule,
     AdminUsersModule,
     TeacherStudentsModule,

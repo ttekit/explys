@@ -135,7 +135,23 @@ export class UsersService {
             );
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        let hashedPassword = null;
+
+        if (password) {
+            hashedPassword = await bcrypt.hash(password, 10);
+        }
+
+        const userData: any = {
+            email,
+            name,
+            method: createUserDto.method,
+            additionalUserData: {
+                create: additionalDataPayload,
+            },
+        }
+        if(hashedPassword){
+            userData.password = hashedPassword;
+        }
 
         let created: any;
         try {
@@ -199,7 +215,7 @@ export class UsersService {
         });
     }
 
-    async findOne(id: number) {
+    async findById(id: number) {
         const user = await this.prisma.user.findUnique({
             where: { id },
             select: this.userSelect,
@@ -211,10 +227,21 @@ export class UsersService {
 
         return user;
     }
+    async FindByEmail(email: string) {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                email: email.toLowerCase()
+            },
+            include: {
+                accounts: true,
+            }
+        })
+        return user
+    }
 
     async update(id: number, updateUserDto: UpdateUserDto) {
         const prisma = this.prisma as any;
-        await this.findOne(id);
+        await this.findById(id);
 
         const {
             favoriteGenres,
@@ -381,7 +408,7 @@ export class UsersService {
     }
 
     async remove(id: number) {
-        await this.findOne(id);
+        await this.findById(id);
 
         return this.prisma.user.delete({
             where: { id },
