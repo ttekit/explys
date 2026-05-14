@@ -1,17 +1,11 @@
 import {
   Award,
   BookOpen,
-  Clock,
   Crown,
   Flame,
-  Heart,
   Lock,
   Star,
-  Target,
-  Trophy,
-  Zap,
 } from "lucide-react";
-import { ChameleonMascot } from "../ChameleonMascot";
 import { ProfileCard } from "./ProfileCard";
 import { useUser } from "../../context/UserContext";
 

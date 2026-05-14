@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -14,6 +14,7 @@ import {
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { formatMessage } from "../../lib/formatMessage";
 import {
   resolveStripePublishableKey,
   stripeKeyMode,
@@ -24,7 +25,8 @@ export default function SubscribePage() {
   const navigate = useNavigate();
   const { user, isLoading, logout } = useUser();
   const { startCheckout, checkoutLoading } = usePricingCheckout();
-  const { locale } = useLandingLocale();
+  const { locale, messages } = useLandingLocale();
+  const sub = messages.subscription;
   const [stripeMode, setStripeMode] = useState<"test" | "live" | null>(null);
 
   const devSkip = subscriptionEnforcementDisabled();
@@ -52,16 +54,11 @@ export default function SubscribePage() {
     );
   }, []);
 
-  const title = useMemo(
-    () => "Choose your plan · Explys",
-    [],
-  );
-
   return (
     <div className="min-h-screen bg-background font-display text-foreground antialiased">
       <SEO
-        title={title}
-        description="Subscribe to unlock every Explys lesson and placement flow."
+        title={sub.seoTitle}
+        description={sub.seoDescription}
         canonicalUrl={resolveCanonicalUrl("/subscribe")}
         ogLocale={locale === "uk" ? "uk_UA" : "en_US"}
         ogLocaleAlternate={locale === "uk" ? "en_US" : "uk_UA"}
@@ -77,11 +74,10 @@ export default function SubscribePage() {
           </div>
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-              Pick your subscription
+              {sub.title}
             </h1>
             <p className="mx-auto mt-3 max-w-xl text-muted-foreground text-lg">
-              You need an active plan to open the catalog, lessons, and entry
-              test. Choose Light, Smart, or Family — then continue learning.
+              {sub.subtitle}
             </p>
           </div>
           {stripeMode ?
@@ -93,9 +89,7 @@ export default function SubscribePage() {
               }
               role="status"
             >
-              {stripeMode === "test" ?
-                "Stripe is in test mode (no real charges)."
-              : "Stripe live mode."}
+              {stripeMode === "test" ? sub.stripeTest : sub.stripeLive}
             </p>
           : null}
           {devSkip ?
@@ -103,9 +97,9 @@ export default function SubscribePage() {
               className="mx-auto max-w-lg rounded-xl border border-primary/35 bg-primary/10 px-4 py-3 text-primary text-sm"
               role="status"
             >
-              Dev mode: subscription enforcement is off (
-              <code className="font-mono text-xs">VITE_SKIP_SUBSCRIPTION_ENFORCEMENT</code>
-              ).
+              {formatMessage(sub.devModeBanner, {
+                env: "VITE_SKIP_SUBSCRIPTION_ENFORCEMENT",
+              })}
             </p>
           : null}
         </div>
@@ -119,15 +113,14 @@ export default function SubscribePage() {
               className="mx-auto w-full !grid-cols-1 md:!grid-cols-2 xl:!grid-cols-4 xl:gap-6"
             />
             <p className="mx-auto mt-10 max-w-md text-center text-muted-foreground text-xs">
-              Payments via Stripe. For schools and teams see{" "}
+              {sub.paymentsNote}
               <Link
                 to="/pricing"
                 className="text-primary underline-offset-4 hover:underline"
               >
-                pricing
+                {sub.pricingLinkLabel}
               </Link>
-              {" "}
-              or contact sales from the Teacher plan card.
+              {sub.teacherPlanNote}
             </p>
           </>
         : (
@@ -135,7 +128,7 @@ export default function SubscribePage() {
             to="/catalog"
             className="mx-auto rounded-xl bg-primary px-8 py-3 font-semibold text-primary-foreground"
           >
-            Continue to catalog
+            {sub.continueCatalog}
           </Link>
         )}
 
@@ -148,13 +141,13 @@ export default function SubscribePage() {
               navigate("/loginForm");
             }}
           >
-            Sign out
+            {sub.signOut}
           </button>
           <Link
             to="/pricing"
             className="underline-offset-4 hover:text-foreground hover:underline"
           >
-            Compare plans publicly
+            {sub.comparePlans}
           </Link>
         </div>
       </main>

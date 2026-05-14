@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useUser } from "../context/UserContext";
+import { useLandingLocale } from "../context/LandingLocaleContext";
 import {
   subscriptionEnforcementDisabled,
   userMayUseLearnerApp,
@@ -12,6 +13,7 @@ import {
 export default function RequireSubscriberAccess() {
   const { user, isLoading } = useUser();
   const location = useLocation();
+  const { messages } = useLandingLocale();
 
   if (subscriptionEnforcementDisabled()) {
     return <Outlet />;
@@ -20,7 +22,7 @@ export default function RequireSubscriberAccess() {
   if (isLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-muted-foreground text-sm">Loading…</p>
+        <p className="text-muted-foreground text-sm">{messages.common.loading}</p>
       </div>
     );
   }

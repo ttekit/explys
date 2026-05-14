@@ -35,18 +35,19 @@ import { ProfileSubscriptions } from "../../components/profile/ProfileSubscripti
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 
-const LEARNER_TABS = [
-  { id: "overview" as const, label: "Overview", icon: BarChart3 },
-  { id: "studying-plan" as const, label: "Studying plan", icon: ClipboardList },
-  { id: "subscriptions" as const, label: "Subscriptions", icon: CreditCard },
-  { id: "progress" as const, label: "Progress", icon: BookOpen },
-  { id: "achievements" as const, label: "Achievements", icon: Trophy },
-  { id: "activity" as const, label: "Activity", icon: Clock },
-  { id: "settings" as const, label: "Settings", icon: Settings },
+type TabId = (typeof LEARNER_TAB_IDS)[number]["id"] | "students" | "videos";
+
+const LEARNER_TAB_IDS = [
+  { id: "overview" as const, icon: BarChart3 },
+  { id: "studying-plan" as const, icon: ClipboardList },
+  { id: "subscriptions" as const, icon: CreditCard },
+  { id: "progress" as const, icon: BookOpen },
+  { id: "achievements" as const, icon: Trophy },
+  { id: "activity" as const, icon: Clock },
+  { id: "settings" as const, icon: Settings },
 ] as const;
-
-type TabId = (typeof LEARNER_TABS)[number]["id"] | "students" | "videos";
 
 function normalizeRole(role: string): ProfileHeaderRole {
   if (role === "student" || role === "teacher") return role;
@@ -63,6 +64,9 @@ type LearningStatsPayload = {
 
 export default function ProfileMain() {
   const { user, isLoading, isLoggedIn, refreshProfile } = useUser();
+  const { messages, locale } = useLandingLocale();
+  const p = messages.profile;
+  const headerLocale = locale === "uk" ? "uk-UA" : "en-US";
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
@@ -90,7 +94,7 @@ export default function ProfileMain() {
       if (Number.isNaN(d.getTime()) || cancelled) return;
       setJoinMeta({
         userId: uid,
-        label: d.toLocaleDateString("en-US", {
+        label: d.toLocaleDateString(headerLocale, {
           month: "long",
           year: "numeric",
         }),
@@ -99,7 +103,7 @@ export default function ProfileMain() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
+  }, [user?.id, headerLocale]);
 
   useEffect(() => {
     if (!user?.id || (activeTab !== "overview" && activeTab !== "activity")) return;
@@ -146,7 +150,7 @@ export default function ProfileMain() {
       email: user.email,
       avatarUrl: user.avatarUrl,
       role: normalizeRole(user.role),
-      level: user.englishLevel?.trim() || "—",
+      level: user.englishLevel?.trim() || p.levelDash,
       joinDateLabel,
       streakDays: (user as any).currentStreak || 0,
     };
@@ -164,32 +168,44 @@ export default function ProfileMain() {
           ? s.averageScore
           : null,
       weeklyActivity: s?.weeklyActivity ?? [...DEFAULT_WEEKLY_ACTIVITY],
-      levelLabel: user.englishLevel?.trim() || "A1",
+      levelLabel: user.englishLevel?.trim() || p.levelLabelFallback,
       xp: user.xp || 0,
       appLevel: Math.floor((user.xp || 0) / 1000) + 1,
     };
   }, [user, learningStats]);
 
   const tabs = useMemo(() => {
+    const base = LEARNER_TAB_IDS.map((row) => ({
+      id: row.id,
+      icon: row.icon,
+      label:
+        row.id === "overview" ? p.tabOverview
+        : row.id === "studying-plan" ? p.tabStudyingPlan
+        : row.id === "subscriptions" ? p.tabSubscriptions
+        : row.id === "progress" ? p.tabProgress
+        : row.id === "achievements" ? p.tabAchievements
+        : row.id === "activity" ? p.tabActivity
+        : p.tabSettings,
+    }));
     if (user?.role === "teacher") {
-      const withoutStudying = LEARNER_TABS.filter((t) => t.id !== "studying-plan");
+      const withoutStudying = base.filter((t) => t.id !== "studying-plan");
       return [
         withoutStudying[0],
         {
           id: "students" as const,
-          label: "Students",
+          label: p.tabStudents,
           icon: GraduationCap,
         },
         {
           id: "videos" as const,
-          label: "Videos",
+          label: p.tabVideos,
           icon: Video,
         },
         ...withoutStudying.slice(1),
       ];
     }
-    return [...LEARNER_TABS];
-  }, [user?.role]);
+    return base;
+  }, [p, user?.role]);
 
   useEffect(() => {
     if (!user) return;
@@ -232,13 +248,13 @@ export default function ProfileMain() {
     return (
       <>
         <SEO
-          title="Profile"
-          description="Your Explys learner or teacher profile."
+          title={p.seoTitle}
+          description={p.seoDescription}
           canonicalUrl={resolveCanonicalUrl("/profileMain")}
           noindex
         />
         <div className="flex min-h-dvh items-center justify-center text-muted-foreground">
-          Loading profile…
+          {p.loading}
         </div>
       </>
     );
@@ -248,18 +264,18 @@ export default function ProfileMain() {
     return (
       <>
         <SEO
-          title="Profile"
-          description="Your Explys learner or teacher profile."
+          title={p.seoTitle}
+          description={p.seoDescription}
           canonicalUrl={resolveCanonicalUrl("/profileMain")}
           noindex
         />
         <div className="m-4 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-destructive">
-          <p className="font-medium">Please sign in to view your profile.</p>
+          <p className="font-medium">{p.signInPrompt}</p>
           <Link
             to="/loginForm"
             className="mt-3 inline-block text-primary underline-offset-4 hover:underline"
           >
-            Go to login
+            {p.goToLogin}
           </Link>
         </div>
       </>
@@ -275,8 +291,8 @@ export default function ProfileMain() {
   return (
     <div className="min-h-dvh bg-background font-display antialiased">
       <SEO
-        title="Profile"
-        description="Your Explys learner or teacher profile."
+        title={p.seoTitle}
+        description={p.seoDescription}
         canonicalUrl={resolveCanonicalUrl("/profileMain")}
         noindex
       />
@@ -307,7 +323,7 @@ export default function ProfileMain() {
             <div
               className="mt-8 flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1"
               role="tablist"
-              aria-label="Profile sections"
+              aria-label={p.tabListAria}
             >
               {tabs.map((tab) => {
                 const Icon = tab.icon;

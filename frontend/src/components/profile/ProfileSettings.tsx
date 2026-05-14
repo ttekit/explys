@@ -416,22 +416,22 @@ export function ProfileSettings({
               description: "Get reminded to practice every day",
             },
             {
-              key: "weeklyReport",
+              key: "weeklyReport" as const,
               label: "Weekly progress report",
               description: "Receive a summary of your weekly progress",
             },
             {
-              key: "achievements",
+              key: "achievements" as const,
               label: "Achievement alerts",
               description: "Get notified when you unlock achievements",
             },
             {
-              key: "newContent",
+              key: "newContent" as const,
               label: "New content alerts",
               description: "Be notified when new videos are added",
             },
             {
-              key: "marketing",
+              key: "marketing" as const,
               label: "Marketing emails",
               description: "Receive tips, offers, and updates",
             },
