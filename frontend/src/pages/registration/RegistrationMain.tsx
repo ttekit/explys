@@ -9,8 +9,12 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
 
 export default function RegistrationMain() {
+  const { messages, locale } = useLandingLocale();
+  const t = messages.auth.registration.step1;
+  const err = messages.auth.registration.errors;
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
 
@@ -31,23 +35,23 @@ export default function RegistrationMain() {
   ) => {
     if (type === "password") {
       if (value.length < 8) {
-        setErrorText("Password must be at least 8 characters.");
+        setErrorText(err.passwordMin8);
         return false;
       }
       if (!/[A-Z]/.test(value)) {
-        setErrorText("Password must contain at least one uppercase letter.");
+        setErrorText(err.passwordUpper);
         return false;
       }
       if (!/[a-z]/.test(value)) {
-        setErrorText("Password must contain at least one lowercase letter.");
+        setErrorText(err.passwordLower);
         return false;
       }
       if (!/\d/.test(value)) {
-        setErrorText("Password must contain at least one number.");
+        setErrorText(err.passwordNumber);
         return false;
       }
       if (!/[@$!%*?&]/.test(value)) {
-        setErrorText("Password must contain at least one of: @ $ ! % * ? &");
+        setErrorText(err.passwordSpecial);
         return false;
       }
     }
@@ -55,21 +59,21 @@ export default function RegistrationMain() {
     if (type === "confirmPassword") {
       const pw = passwordToCompare ?? formData.password;
       if (value !== pw) {
-        setErrorText("Passwords do not match.");
+        setErrorText(err.passwordsNoMatch);
         return false;
       }
     }
 
     if (type === "email") {
       if (!/^\S+@\S+\.\S+$/.test(value)) {
-        setErrorText("Invalid email format.");
+        setErrorText(err.emailInvalid);
         return false;
       }
     }
 
     if (type === "other") {
       if (value.trim() === "") {
-        setErrorText("Please fill in all required fields.");
+        setErrorText(err.fillRequired);
         return false;
       }
     }
@@ -108,51 +112,51 @@ export default function RegistrationMain() {
     updateFormData({ name, email, password, confirmPassword });
 
     if (!name) {
-      setErrorText("Username is required.");
+      setErrorText(err.usernameRequired);
       return;
     }
     if (!email) {
-      setErrorText("Email is required.");
+      setErrorText(err.emailRequired);
       return;
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setErrorText("Invalid email format.");
+      setErrorText(err.emailInvalid);
       return;
     }
     if (!password) {
-      setErrorText("Password is required.");
+      setErrorText(err.passwordRequired);
       return;
     }
     if (!isValidPassword(password)) {
       if (password.length < 8) {
-        setErrorText("Password must be at least 8 characters.");
+        setErrorText(err.passwordMin8);
         return;
       }
       if (!/[A-Z]/.test(password)) {
-        setErrorText("Password must contain at least one uppercase letter.");
+        setErrorText(err.passwordUpper);
         return;
       }
       if (!/[a-z]/.test(password)) {
-        setErrorText("Password must contain at least one lowercase letter.");
+        setErrorText(err.passwordLower);
         return;
       }
       if (!/\d/.test(password)) {
-        setErrorText("Password must contain at least one number.");
+        setErrorText(err.passwordNumber);
         return;
       }
       if (!/[@$!%*?&]/.test(password)) {
-        setErrorText("Password must contain at least one of: @ $ ! % * ? &");
+        setErrorText(err.passwordSpecial);
         return;
       }
-      setErrorText("Password does not meet the requirements.");
+      setErrorText(err.passwordWeak);
       return;
     }
     if (!confirmPassword) {
-      setErrorText("Please confirm your password.");
+      setErrorText(err.confirmRequired);
       return;
     }
     if (password !== confirmPassword) {
-      setErrorText("Passwords do not match.");
+      setErrorText(err.passwordsNoMatch);
       return;
     }
     setErrorText(null);
@@ -179,140 +183,141 @@ export default function RegistrationMain() {
   return (
     <>
       <SEO
-        title="Create account"
-        description="Register for Explys to start learning English with personalized video lessons."
+        title={t.seoTitle}
+        description={t.seoDescription}
         canonicalUrl={resolveCanonicalUrl("/registrationMain")}
         noindex
+        ogLocale={locale === "uk" ? "uk_UA" : "en_US"}
       />
-      <AuthSplitLayout
-      progressStep={1}
-      progressTotal={3}
-      rightTitle="Welcome to Explys!"
-      rightSubtitle="Join thousands of learners improving their English through personalized video content."
-    >
-      <div className="mb-1 flex items-center gap-3">
-        <img src="/Icon.svg" className="w-15 h-18 mr-4" />
-        <h1 className="font-display text-2xl font-bold">Join Explys</h1>
-      </div>
-      <p className="mb-8 text-muted-foreground">
-        Create your account and start your personalized learning journey
-      </p>
-
-      <form onSubmit={handleNext} tabIndex={0} className="space-y-5">
-        <div className="space-y-2">
-          <LabelRegister isRequired={true}>Username</LabelRegister>
-          <InputText
-            name="name"
-            value={formData.name}
-            onChange={(e) => handleChange(e, "other")}
-            type="text"
-            placeholder="Choose a username"
-            autoComplete="username"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <LabelRegister isRequired={true}>Email</LabelRegister>
-          <InputText
-            name="email"
-            value={formData.email}
-            onChange={(e) => handleChange(e, "email")}
-            type="email"
-            placeholder="you@example.com"
-            autoComplete="email"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <LabelRegister isRequired={true}>Password</LabelRegister>
-            <button
-              type="button"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              aria-pressed={showPassword}
-              className="text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => setShowPassword((prev) => !prev)}
-            >
-              {showPassword ? (
-                <EyeOff className="size-5 opacity-70" />
-              ) : (
-                <Eye className="size-5 opacity-70" />
-              )}
-            </button>
+      <div lang={locale === "uk" ? "uk" : "en"}>
+        <AuthSplitLayout
+          progressStep={1}
+          progressTotal={3}
+          rightTitle={t.rightTitle}
+          rightSubtitle={t.rightSubtitle}
+        >
+          <div className="mb-1 flex items-center gap-3">
+            <img src="/Icon.svg" className="w-15 h-18 mr-4" alt="" />
+            <h1 className="font-display text-2xl font-bold">{t.title}</h1>
           </div>
-          <InputText
-            name="password"
-            value={formData.password}
-            onChange={(e) => handleChange(e, "password")}
-            type={showPassword ? "text" : "password"}
-            placeholder="Create a password"
-            autoComplete="new-password"
-          />
-        </div>
+          <p className="mb-8 text-muted-foreground">{t.lead}</p>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <LabelRegister isRequired={true}>Confirm password</LabelRegister>
-            <button
-              type="button"
-              aria-label={
-                showConfirmPassword
-                  ? "Hide confirm password"
-                  : "Show confirm password"
-              }
-              aria-pressed={showConfirmPassword}
-              className="text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => setShowConfirmPassword((prev) => !prev)}
+          <form onSubmit={handleNext} tabIndex={0} className="space-y-5">
+            <div className="space-y-2">
+              <LabelRegister isRequired={true}>{t.username}</LabelRegister>
+              <InputText
+                name="name"
+                value={formData.name}
+                onChange={(e) => handleChange(e, "other")}
+                type="text"
+                placeholder={t.placeholderUsername}
+                autoComplete="username"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <LabelRegister isRequired={true}>{t.email}</LabelRegister>
+              <InputText
+                name="email"
+                value={formData.email}
+                onChange={(e) => handleChange(e, "email")}
+                type="email"
+                placeholder={t.placeholderEmail}
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <LabelRegister isRequired={true}>{t.password}</LabelRegister>
+                <button
+                  type="button"
+                  aria-label={showPassword ? t.hidePassword : t.showPassword}
+                  aria-pressed={showPassword}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-5 opacity-70" />
+                  ) : (
+                    <Eye className="size-5 opacity-70" />
+                  )}
+                </button>
+              </div>
+              <InputText
+                name="password"
+                value={formData.password}
+                onChange={(e) => handleChange(e, "password")}
+                type={showPassword ? "text" : "password"}
+                placeholder={t.placeholderPassword}
+                autoComplete="new-password"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <LabelRegister isRequired={true}>{t.confirmPassword}</LabelRegister>
+                <button
+                  type="button"
+                  aria-label={
+                    showConfirmPassword
+                      ? t.hideConfirmPassword
+                      : t.showConfirmPassword
+                  }
+                  aria-pressed={showConfirmPassword}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="size-5 opacity-70" />
+                  ) : (
+                    <Eye className="size-5 opacity-70" />
+                  )}
+                </button>
+              </div>
+              <InputText
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={(e) => handleChange(e, "confirmPassword")}
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder={t.placeholderConfirm}
+                autoComplete="new-password"
+              />
+            </div>
+
+            {errorText && <ValidateError>{errorText}</ValidateError>}
+
+            <Button
+              type="submit"
+              className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
             >
-              {showConfirmPassword ? (
-                <EyeOff className="size-5 opacity-70" />
-              ) : (
-                <Eye className="size-5 opacity-70" />
-              )}
-            </button>
+              {t.continue}
+              <ArrowRight className="size-4" />
+            </Button>
+          </form>
+
+          <div className="mt-6 flex flex-col gap-4">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              onClick={handleBack}
+            >
+              <ArrowLeft className="size-4" />
+              {t.backHome}
+            </Link>
           </div>
-          <InputText
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={(e) => handleChange(e, "confirmPassword")}
-            type={showConfirmPassword ? "text" : "password"}
-            placeholder="Confirm password"
-            autoComplete="new-password"
-          />
-        </div>
 
-        {errorText && <ValidateError>{errorText}</ValidateError>}
-
-        <Button
-          type="submit"
-          className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
-        >
-          Continue
-          <ArrowRight className="size-4" />
-        </Button>
-      </form>
-
-      <div className="mt-6 flex flex-col gap-4">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          onClick={handleBack}
-        >
-          <ArrowLeft className="size-4" />
-          Back home
-        </Link>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            {t.haveAccount}{" "}
+            <Link
+              to="/loginForm"
+              className="font-medium text-primary hover:underline"
+            >
+              {t.logIn}
+            </Link>
+          </p>
+        </AuthSplitLayout>
       </div>
-
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
-        <Link
-          to="/loginForm"
-          className="font-medium text-primary hover:underline"
-        >
-          Log in
-        </Link>
-      </p>
-    </AuthSplitLayout>
     </>
   );
 }
