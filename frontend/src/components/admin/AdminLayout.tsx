@@ -1,5 +1,4 @@
 import { Link, NavLink, Outlet } from "react-router";
-import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -19,21 +18,36 @@ import { cn } from "../../lib/utils";
 import { ChameleonMascot } from "../ChameleonMascot";
 import { SEO } from "../SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
+import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { useMemo, useState } from "react";
 
-const sidebarLinks = [
-  { icon: LayoutDashboard, label: "Dashboard", to: "/admin", end: true },
-  { icon: Users, label: "Users", to: "/admin/users" },
-  { icon: Video, label: "Videos", to: "/admin/videos" },
-  { icon: FileQuestion, label: "Tests", to: "/admin/tests" },
-  { icon: GraduationCap, label: "Teachers", to: "/admin/teachers" },
-  { icon: BookOpen, label: "Topics", to: "/admin/topics" },
-  { icon: BarChart3, label: "Analytics", to: "/admin/analytics" },
-  { icon: Settings, label: "Settings", to: "/admin/settings" },
+const NAV_LINK_DEFS = [
+  { icon: LayoutDashboard, labelKey: "navDashboard" as const, to: "/admin", end: true },
+  { icon: Users, labelKey: "navUsers" as const, to: "/admin/users" },
+  { icon: Video, labelKey: "navVideos" as const, to: "/admin/videos" },
+  { icon: FileQuestion, labelKey: "navTests" as const, to: "/admin/tests" },
+  { icon: GraduationCap, labelKey: "navTeachers" as const, to: "/admin/teachers" },
+  { icon: BookOpen, labelKey: "navTopics" as const, to: "/admin/topics" },
+  { icon: BarChart3, labelKey: "navAnalytics" as const, to: "/admin/analytics" },
+  { icon: Settings, labelKey: "navSettings" as const, to: "/admin/settings" },
 ] as const;
 
 export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { messages } = useLandingLocale();
+  const a = messages.admin;
+  const c = messages.common;
+  const sidebarLinks = useMemo(
+    () =>
+      NAV_LINK_DEFS.map((d) => ({
+        icon: d.icon,
+        to: d.to,
+        end: "end" in d ? d.end : false,
+        label: a[d.labelKey],
+      })),
+    [a],
+  );
 
   const navCls = ({
     isActive,
@@ -53,8 +67,8 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEO
-        title="Admin"
-        description="Explys administration. Private area, not for search indexing."
+        title={a.seoTitle}
+        description={a.seoDescription}
         canonicalUrl={resolveCanonicalUrl("/admin")}
         noindex
       />
@@ -63,7 +77,7 @@ export default function AdminLayout() {
         className="fixed top-4 left-4 z-50 flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card shadow-sm lg:hidden"
         onClick={() => setMobileMenuOpen((o) => !o)}
         aria-expanded={mobileMenuOpen}
-        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+        aria-label={mobileMenuOpen ? c.closeMenu : c.openMenu}
       >
         {mobileMenuOpen ? (
           <X className="h-5 w-5 text-foreground" />
@@ -89,7 +103,7 @@ export default function AdminLayout() {
             <div className="min-w-0">
               <span className="font-display text-xl font-bold">Explys</span>
               <span className="ml-2 rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">
-                Admin
+                {a.badge}
               </span>
             </div>
           )}
@@ -99,7 +113,7 @@ export default function AdminLayout() {
           type="button"
           onClick={() => setCollapsed(!collapsed)}
           className="absolute top-20 -right-3 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card transition-colors hover:bg-muted"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? c.expandSidebar : c.collapseSidebar}
         >
           {collapsed ? (
             <ChevronRight className="h-3 w-3" />
@@ -113,7 +127,7 @@ export default function AdminLayout() {
             <NavLink
               key={link.to}
               to={link.to}
-              end={"end" in link ? link.end : false}
+              end={link.end === true}
               className={({ isActive }) =>
                 navCls({ isActive, collapsedWidth: collapsed })
               }
@@ -133,7 +147,7 @@ export default function AdminLayout() {
             )}
           >
             <LogOut className="h-5 w-5 shrink-0" />
-            {!collapsed && <span>Exit admin</span>}
+            {!collapsed && <span>{a.backToSite}</span>}
           </Link>
         </div>
       </aside>
@@ -151,7 +165,7 @@ export default function AdminLayout() {
                 <NavLink
                   key={link.to}
                   to={link.to}
-                  end={"end" in link ? link.end : false}
+                  end={link.end === true}
                   onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
                     cn(
@@ -173,7 +187,7 @@ export default function AdminLayout() {
                   className="flex items-center gap-3 rounded-lg px-4 py-3 text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <LogOut className="h-5 w-5" />
-                  <span>Exit admin</span>
+                  <span>{a.backToSite}</span>
                 </Link>
               </div>
             </nav>

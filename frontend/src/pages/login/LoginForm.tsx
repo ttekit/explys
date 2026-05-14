@@ -53,6 +53,8 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { refreshProfile } = useUser();
+  const { messages } = useLandingLocale();
+  const t = messages.auth.login;
 
   useEffect(() => {
     const s = location.state as {

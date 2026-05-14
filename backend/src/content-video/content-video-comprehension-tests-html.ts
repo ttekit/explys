@@ -203,12 +203,26 @@ export function renderComprehensionTestsIframeHtml(
     #resultPanel.on { display: block; }
     #resultPanel .score { font-size: 1.25rem; font-weight: 700; color: var(--ok); }
     #resultPanel ul { margin: 0.5rem 0 0; padding-left: 1.1rem; }
+    .remediation-banner {
+      margin: 0 0 1rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid rgba(14, 165, 233, 0.45);
+      background: rgba(14, 165, 233, 0.12);
+      font-size: 0.85rem;
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>${escapeHtml(result.videoName)}</h1>
     <p class="meta">${meta}</p>
+    ${
+      result.isErrorFixingTest ?
+        `<p class="remediation-banner" role="status"><strong>Error-fixing quiz</strong> — this run targets skills you recently missed. Take your time; submit when ready.</p>`
+      : ""
+    }
     <p class="hint">Includes grammar, vocabulary, comprehension, and one short written summary. Use <em>Check</em>, then <strong>Save results &amp; update my topic knowledge</strong> (add <code>?userId=…</code> to the iframe URL to update scores).</p>
     ${questionsHtml}
     <div class="bar">
