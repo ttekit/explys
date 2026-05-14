@@ -15,6 +15,7 @@ import {
   knowledgeDeltasFromSkillBuckets,
   legacyComprehensionGrammarStats,
   parseGradingToken,
+  GRADING_TOKEN_TTL_MS,
   scoreMcqBuckets,
   totalCorrectAndQuestions,
   type GradingItem,
@@ -48,12 +49,13 @@ import {
   effectiveTimeHorizon,
 } from "./studying-plan.util";
 
-const GRADING_TTL_MS = 2 * 60 * 60 * 1000;
-
 /** Stored on each attempt row; aligns with coarse "passed" KPI in admin dashboards. */
 const COMPREHENSION_PASS_SCORE_PCT = 70;
 
 const MAX_PRIOR_WEAK_SPOTS = 8;
+
+/** After this many incorrect items (cumulative per user), schedule an error-fixing test. */
+const MISTAKES_BEFORE_ERROR_FIX_TEST = 10;
 
 export type GenerateComprehensionTestsResult = {
   contentVideoId: number;
@@ -62,7 +64,7 @@ export type GenerateComprehensionTestsResult = {
   tests: ComprehensionTestItem[];
   /** Same Gemini payload as comprehension tests — grounded in transcript, tuned to level + themes. */
   keyVocabulary: KeyVocabularyItem[];
-  /** HMAC token (≈2h) to submit answers without re-running the model. */
+  /** HMAC token to submit answers without re-running the model (see {@link GRADING_TOKEN_TTL_MS}). */
   gradingToken: string;
   /** Profile English / CEFR when `userId` was sent and the user exists. */
   learnerCefr: string | null;
@@ -72,6 +74,8 @@ export type GenerateComprehensionTestsResult = {
   vocabularyTermsUsed: number;
   /** Up to 50 terms from the user’s list used for this test (empty if anonymous / none). */
   vocabularyTerms: string[];
+  /** True when this quiz was generated in remediation mode (after many misses). */
+  isErrorFixingTest: boolean;
 };
 
 export type SubmitComprehensionTestResult = {
@@ -94,6 +98,8 @@ export type SubmitComprehensionTestResult = {
   openEndedFeedback: string | null;
   /** 1–10 from the model when the open summary was graded; null if offline/heuristic/no open item. */
   writtenSummaryScore: number | null;
+  /** True when this submission closed an error-fixing (remediation) attempt. */
+  errorFixingTestCompleted?: boolean;
 };
 
 function weakSpotStemHash(category: string, stemSnippet: string): string {
@@ -206,7 +212,17 @@ export class ContentVideoComprehensionTestsService {
       learningGoal,
       timeToAchieve,
       hobbies,
+      nativeLanguage,
     } = await this.loadLearnerContext(userId);
+
+    let isErrorFixingTest = false;
+    if (userId != null) {
+      const u = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { errorFixingTestPending: true },
+      });
+      isErrorFixingTest = u?.errorFixingTestPending === true;
+    }
 
     const priorWeakSpots = await this.loadPriorWeakSpots(
       userId,
@@ -241,6 +257,8 @@ export class ContentVideoComprehensionTestsService {
         learningGoal,
         timeToAchieve,
         hobbies,
+        nativeLanguage,
+        isErrorFixingTest,
       );
     let keyVocabulary = rawKeyVocab;
     if (!keyVocabulary.length) {
@@ -255,6 +273,7 @@ export class ContentVideoComprehensionTestsService {
         learningGoal,
         timeToAchieve,
         hobbies,
+        learnerNativeLanguage: nativeLanguage,
       });
     }
 
@@ -268,6 +287,7 @@ export class ContentVideoComprehensionTestsService {
       cefr,
       vocabularyTerms,
       userId,
+      isErrorFixingTest,
     });
   }
 
@@ -308,6 +328,8 @@ export class ContentVideoComprehensionTestsService {
     learningGoal: string,
     timeToAchieve: string,
     hobbies: string[],
+    nativeLanguage: string | null,
+    isErrorFixingTest: boolean,
   ): Promise<{
     source: "gemini" | "fallback";
     tests: ComprehensionTestItem[];
@@ -325,6 +347,8 @@ export class ContentVideoComprehensionTestsService {
       learningGoal,
       timeToAchieve,
       hobbies,
+      learnerNativeLanguage: nativeLanguage,
+      ...(isErrorFixingTest ? { isErrorFixingTest: true as const } : {}),
     };
     const geminiBundle = await this.gemini.generateTests(ctx);
     if (geminiBundle?.tests.length) {
@@ -345,6 +369,7 @@ export class ContentVideoComprehensionTestsService {
         learningGoal,
         timeToAchieve,
         hobbies,
+        ...(isErrorFixingTest ? { isErrorFixingTest: true as const } : {}),
       }),
       keyVocabulary: fallbackKeyVocabulary({
         transcriptPlain,
@@ -357,6 +382,7 @@ export class ContentVideoComprehensionTestsService {
         learningGoal,
         timeToAchieve,
         hobbies,
+        learnerNativeLanguage: nativeLanguage,
       }),
     };
   }
@@ -371,9 +397,10 @@ export class ContentVideoComprehensionTestsService {
     cefr: string | null;
     vocabularyTerms: string[];
     userId: number | null;
+    isErrorFixingTest: boolean;
   }): GenerateComprehensionTestsResult {
     const secret = this.config.getOrThrow<string>("JWT_SECRET");
-    const exp = Date.now() + GRADING_TTL_MS;
+    const exp = Date.now() + GRADING_TOKEN_TTL_MS;
     const items: GradingItem[] = p.tests.map((t) =>
       t.questionType === "open"
         ? {
@@ -391,7 +418,13 @@ export class ContentVideoComprehensionTestsService {
           },
     );
     const gradingToken = createGradingToken(
-      { contentVideoId: p.contentVideoId, userId: p.userId, exp, items },
+      {
+        contentVideoId: p.contentVideoId,
+        userId: p.userId,
+        exp,
+        items,
+        ...(p.isErrorFixingTest ? { isErrorFixingTest: true as const } : {}),
+      },
       secret,
     );
     return {
@@ -405,6 +438,7 @@ export class ContentVideoComprehensionTestsService {
       usedTranscript: p.usedTranscript,
       vocabularyTermsUsed: p.vocabularyTerms.length,
       vocabularyTerms: p.vocabularyTerms.slice(0, 50),
+      isErrorFixingTest: p.isErrorFixingTest,
     };
   }
 
@@ -497,6 +531,9 @@ export class ContentVideoComprehensionTestsService {
       p.userId,
     );
 
+    const completedErrorFixingTest =
+      p.userId != null && p.isErrorFixingTest === true;
+
     if (p.userId != null) {
       await this.recordWeakSpotsFromSubmit(
         p.userId,
@@ -520,6 +557,14 @@ export class ContentVideoComprehensionTestsService {
           })
           .catch(() => undefined);
       }
+      if (completedErrorFixingTest) {
+        await this.prisma.user.update({
+          where: { id: p.userId },
+          data: { errorFixingTestPending: false },
+        });
+      }
+      const wrongCount = total - correct;
+      await this.applyComprehensionMistakeBank(p.userId, wrongCount);
     }
 
     const knowledgeUpdates: SubmitComprehensionTestResult["knowledgeUpdates"] =
@@ -600,6 +645,9 @@ export class ContentVideoComprehensionTestsService {
         vocabularyTerms: vocabSubmit,
         openEndedFeedback,
         writtenSummaryScore,
+        ...(completedErrorFixingTest ?
+          { errorFixingTestCompleted: true as const }
+        : {}),
       };
     }
     for (const topicId of topicIds) {
@@ -680,7 +728,37 @@ export class ContentVideoComprehensionTestsService {
       vocabularyTerms: vocabSubmit,
       openEndedFeedback,
       writtenSummaryScore,
+      ...(completedErrorFixingTest ?
+        { errorFixingTestCompleted: true as const }
+      : {}),
     };
+  }
+
+  /** Banks incorrect answers; each full threshold of 10 sets `errorFixingTestPending`. */
+  private async applyComprehensionMistakeBank(
+    userId: number,
+    wrongCount: number,
+  ): Promise<void> {
+    if (wrongCount <= 0) {
+      return;
+    }
+    const row = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { comprehensionWrongBank: true },
+    });
+    if (!row) {
+      return;
+    }
+    const bank = row.comprehensionWrongBank + wrongCount;
+    const crossed = Math.floor(bank / MISTAKES_BEFORE_ERROR_FIX_TEST);
+    const remainder = bank % MISTAKES_BEFORE_ERROR_FIX_TEST;
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        comprehensionWrongBank: remainder,
+        ...(crossed > 0 ? { errorFixingTestPending: true } : {}),
+      },
+    });
   }
 
   private normalizeSubmitAnswers(
@@ -841,11 +919,13 @@ export class ContentVideoComprehensionTestsService {
     learningGoal: string;
     timeToAchieve: string;
     hobbies: string[];
+    nativeLanguage: string | null;
   }> {
     const planDefaults = {
       learningGoal: effectiveLearningGoal(null),
       timeToAchieve: effectiveTimeHorizon(null),
       hobbies: [] as string[],
+      nativeLanguage: null as string | null,
     };
     if (userId == null) {
       return {
@@ -865,6 +945,7 @@ export class ContentVideoComprehensionTestsService {
             learningGoal: true,
             timeToAchieve: true,
             hobbies: true,
+            nativeLanguage: true,
           },
         },
       },
@@ -879,6 +960,10 @@ export class ContentVideoComprehensionTestsService {
     }
 
     const extra = user.additionalUserData;
+    const nativeLanguage =
+      extra?.nativeLanguage?.trim() ?
+        extra.nativeLanguage.trim()
+      : null;
     const learningGoal = effectiveLearningGoal(extra?.learningGoal);
     const timeToAchieve = effectiveTimeHorizon(extra?.timeToAchieve);
     const hobbies = Array.isArray(extra?.hobbies)
@@ -926,6 +1011,7 @@ export class ContentVideoComprehensionTestsService {
       learningGoal,
       timeToAchieve,
       hobbies,
+      nativeLanguage,
     };
   }
 

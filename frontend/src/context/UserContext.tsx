@@ -48,6 +48,11 @@ export interface UserData {
   xp: number;
   level: number;
   achievements: string[];
+  /**
+   * When true, next comprehension quiz is generated as remediation toward recent misses.
+   * From JWT profile `GET /auth/profile`.
+   */
+  errorFixingTestPending?: boolean;
 }
 
 /** Registration used `"choose"` as a sentinel for unfilled selects; strip so UI shows blanks. */
@@ -131,6 +136,8 @@ function normalizeProfile(raw: unknown): UserData | null {
     xp: Number(r.xp) || 0,
     level: Number(r.level) || 1,
     achievements: Array.isArray(r.achievements) ? r.achievements : [],
+    errorFixingTestPending:
+      r.errorFixingTestPending === true || r.errorFixingTestPending === 1,
   };
 }
 

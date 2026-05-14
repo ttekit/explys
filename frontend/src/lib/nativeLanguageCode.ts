@@ -70,3 +70,26 @@ export function nativeLanguageToIso639_1(native: string | undefined): string | u
   }
   return undefined;
 }
+
+/**
+ * ISO 639-1 target language for `/content-video/vocabulary-hints` (MyMemory gloss).
+ * Prefers profile native language when it maps to a non-English locale; if not, Ukrainian UI
+ * still requests Ukrainian gloss so learners see слова підказкою рідною мовою.
+ */
+export function vocabularyHintsTargetLang(
+  nativeLanguageTrimmed: string | undefined,
+  uiLocale: "en" | "uk",
+): string | null {
+  const fromProfile = nativeLanguageToIso639_1(nativeLanguageTrimmed);
+  if (
+    fromProfile !== undefined &&
+    fromProfile.length === 2 &&
+    fromProfile !== "en"
+  ) {
+    return fromProfile;
+  }
+  if (uiLocale === "uk") {
+    return "uk";
+  }
+  return null;
+}

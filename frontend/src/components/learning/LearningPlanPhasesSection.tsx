@@ -7,6 +7,7 @@ import {
 import { cn } from "../../lib/utils";
 import { formatMessage } from "../../lib/formatMessage";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { renderLightMarkdown } from "../../lib/renderLightMarkdown";
 
 type Props = {
   plan: LearningPlanModel;
@@ -73,12 +74,15 @@ export function LearningPlanPhasesSection({ plan, headingClassName }: Props) {
                   </p>
                   <ul className="space-y-1.5 text-sm text-foreground/90">
                     {passLines.map((line, i) => (
-                      <li key={`pass-${idx}-${i}`} className="flex gap-2">
+                      <li
+                        key={`pass-${idx}-${i}`}
+                        className="flex items-start gap-2"
+                      >
                         <span
                           className="mt-1.5 size-1 shrink-0 rounded-full bg-emerald-500/80"
                           aria-hidden
                         />
-                        {line}
+                        {renderLightMarkdown(line)}
                       </li>
                     ))}
                   </ul>
@@ -88,13 +92,16 @@ export function LearningPlanPhasesSection({ plan, headingClassName }: Props) {
                 {ph.suggestedFocus}
               </p>
               <ul className="space-y-1.5 text-sm text-foreground/90">
-                {phase.actions.map((a) => (
-                  <li key={a} className="flex gap-2">
+                {phase.actions.map((a, ai) => (
+                  <li
+                    key={`act-${idx}-${ai}`}
+                    className="flex items-start gap-2"
+                  >
                     <span
                       className="mt-1.5 size-1 shrink-0 rounded-full bg-primary/70"
                       aria-hidden
                     />
-                    {a}
+                    {renderLightMarkdown(a)}
                   </li>
                 ))}
               </ul>

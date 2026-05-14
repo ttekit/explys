@@ -30,6 +30,9 @@ export default function SubscribePage() {
   const [stripeMode, setStripeMode] = useState<"test" | "live" | null>(null);
 
   const devSkip = subscriptionEnforcementDisabled();
+  const devSkipBannerDetail = import.meta.env.DEV
+    ? "vite dev"
+    : "VITE_SKIP_SUBSCRIPTION_ENFORCEMENT";
 
   useEffect(() => {
     if (devSkip) return;
@@ -98,7 +101,7 @@ export default function SubscribePage() {
               role="status"
             >
               {formatMessage(sub.devModeBanner, {
-                env: "VITE_SKIP_SUBSCRIPTION_ENFORCEMENT",
+                env: devSkipBannerDetail,
               })}
             </p>
           : null}

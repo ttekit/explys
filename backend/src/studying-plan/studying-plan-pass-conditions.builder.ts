@@ -9,20 +9,45 @@ import {
 import { standardPhasePassConditionLines } from "./studying-plan-json.util";
 import type { PlanTask } from "./studying-plan-json.util";
 
+export type StudyingPlanTextLocale = "en" | "uk";
+
+function standardPhasePassConditionLinesLocalized(
+  locale: StudyingPlanTextLocale,
+): string[] {
+  if (locale === "uk") {
+    return [
+      `Пройди перевірки розуміння на **70%** і вище на **${DISTINCT_PASSED_LESSONS_PER_PHASE_STEP}** різних відео з каталогу (кожне відео зараховується один раз після успіху).`,
+      "Заверш повний урок для кожного відео — зокрема тест із варіантами відповідей і коротке запитання на підсумок, якщо воно є.",
+    ];
+  }
+  return standardPhasePassConditionLines();
+}
+
 export function richPassConditionsForPhase(options: {
   phaseIndex: number;
   budget: HorizonBudget;
   tier: CoarseLevelTier;
   learningGoal: string;
+  locale?: StudyingPlanTextLocale;
 }): string[] {
   const { phaseIndex, budget, tier, learningGoal } = options;
-  const base = standardPhasePassConditionLines();
+  const locale: StudyingPlanTextLocale = options.locale ?? "en";
+  const base = standardPhasePassConditionLinesLocalized(locale);
 
   const streak = streakTargetForPhase(phaseIndex, budget.structuredStudyWeeks);
   const videos = videosPassedPlanTargetForPhase(phaseIndex);
   const words = vocabularyTargetForPhase(tier, phaseIndex);
 
   const out = [...base];
+  if (locale === "uk") {
+    out.push(
+      `Досягни серії навчання **${streak}** днів підряд хоча б раз (кожен день із змістовною практикою в каталозі зараховується).`,
+      `Пройди **щонайменше ${videos}** різних відео з **≥70%** на перевірках розуміння (застосунок переходить далі після **${DISTINCT_PASSED_LESSONS_PER_PHASE_STEP}** успішних відео — **${videos}** орієнтир для глибини цього етапу).`,
+      `Вивчи або закріпи **~${words}** нових слів із уроків (збережені слова + повторення в застосунку).`,
+      `Тримай відео й вікторини в руслі мети: **${learningGoal}**.`,
+    );
+    return out;
+  }
   out.push(
     `Reach a **${streak}-day** study streak at least once (each day with meaningful catalog practice counts).`,
     `Pass **at least ${videos}** distinct videos at **≥70%** on comprehension checks (the app advances after **${DISTINCT_PASSED_LESSONS_PER_PHASE_STEP}** distinct passes — treat **${videos}** as your depth target for this phase).`,

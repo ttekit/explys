@@ -89,7 +89,7 @@ export default function VideoPage() {
   const [videos, setVideos] = useState<ContentVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true); // collapsed by default (icon-only mode)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // collapsed by default (icon-only mode)
   const [placementDocHtml, setPlacementDocHtml] = useState<string | null>(null);
   const [placementDocError, setPlacementDocError] = useState<string | null>(
     null,
@@ -126,10 +126,12 @@ export default function VideoPage() {
         if (profile && userMayUseLearnerApp(profile)) {
           const { pathname, search } = stripCheckoutSuccessSearch();
           void navigate({ pathname, search }, { replace: true });
-          toast.success(messages.catalogBrowse.stripeThanksToast, {
-            id: STRIPE_CHECKOUT_CATALOG_TOAST_ID,
-            duration: 6000,
-          });
+          if (!import.meta.env.DEV) {
+            toast.success(messages.catalogBrowse.stripeThanksToast, {
+              id: STRIPE_CHECKOUT_CATALOG_TOAST_ID,
+              duration: 6000,
+            });
+          }
           return;
         }
         await new Promise((r) => setTimeout(r, 500));
@@ -137,10 +139,12 @@ export default function VideoPage() {
       if (!cancelled) {
         const { pathname, search } = stripCheckoutSuccessSearch();
         void navigate({ pathname, search }, { replace: true });
-        toast.error(
-          messages.catalogBrowse.stripeConfirmError,
-          { duration: 8000, id: `${STRIPE_CHECKOUT_CATALOG_TOAST_ID}-err` },
-        );
+        if (!import.meta.env.DEV) {
+          toast.error(
+            messages.catalogBrowse.stripeConfirmError,
+            { duration: 8000, id: `${STRIPE_CHECKOUT_CATALOG_TOAST_ID}-err` },
+          );
+        }
       }
     })();
 
@@ -175,6 +179,7 @@ export default function VideoPage() {
     user?.nativeLanguage,
     user?.workField,
     user?.education,
+    user?.englishLevel,
   ]);
 
   const showPlacementPrepOverlay =
@@ -552,7 +557,11 @@ export default function VideoPage() {
                   user.role === "adult" ? (
                     <PlacementPreTestStep
                       user={user}
-                      onSuccess={() => undefined}
+                      onSuccess={(detail) => {
+                        if (detail?.skippedPlacementTest) {
+                          navigate("/learning-plan", { replace: true });
+                        }
+                      }}
                     />
                   ) : (
                     <PlacementPreferencesStep

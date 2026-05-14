@@ -11,19 +11,25 @@ model User {
   id                    Int           @id @default(autoincrement())
   name                  String
   email                 String        @unique
-  password              String
-  role                  String        @default("adult")
+  password              String?
+  role                  UserRole      @default(REGULAR)
   hasCompletedPlacement Boolean       @default(false) @map("has_completed_placement")
+  lastLogin             DateTime?
+  createdAt             DateTime      @default(now()) @map("update_at")
   /// Serialized placement questionnaire (correct keys) until test is completed — must match iframe payload.
   placementTestDraft    Json?         @map("placement_test_draft")
-  lastLogin             DateTime?
-  createdAt             DateTime      @default(now())
   /// When true, login and profile are blocked until an admin clears this flag.
   isSuspended           Boolean       @default(false) @map("is_suspended")
   teacherId             Int?          @map("teacher_id")
   teacher               User?         @relation("UserTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
   students              User[]        @relation("UserTeacher")
   settings              UserSettings?
+
+  isVerified        Boolean    @default(false) @map("is_verified")
+  isTwoFactorEnable Boolean    @default(false) @map("is_two_factor_enable")
+  method            AuthMethod
+
+  accounts Account[]
 
   statistic                 UserStatistic?
   languageData              UserLanguageData[]
@@ -46,6 +52,13 @@ model User {
 
   xp           Int               @default(0)
   level        Int               @default(1)
+  /// Wrong answers banked toward an “error fixing” remediation quiz (see comprehension tests).
+  comprehensionWrongBank Int @default(0) @map("comprehension_wrong_bank")
+  /// When true, the next generated comprehension test on any lesson is a remediation-focused run.
+  errorFixingTestPending Boolean @default(false) @map("error_fixing_test_pending")
+  /// `YYYY-MM-DD` (UTC Monday) when the learner last submitted the weekly review quiz.
+  weeklyReviewCompletedWeekStart String? @map("weekly_review_completed_week_start")
+  weeklyReviewLastScorePct         Float? @map("weekly_review_last_score_pct")
   achievements UserAchievement[]
 
   teacherOwnedContents Content[] @relation("TeacherOwnedContent")
@@ -62,6 +75,50 @@ model UserAchievement {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, achievementId])
+}
+
+model Account {
+  id Int @id @default(autoincrement())
+
+  type     String
+  provider String
+
+  refreshToken String? @map("refresh_token")
+  accessToken  String? @map("access_token")
+  expiresAt    Int     @map("expires_at")
+
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int   @map("user_id")
+}
+
+model Token {
+  id Int @id @default(autoincrement())
+
+  email     String    @unique
+  token     String    @unique
+  type      TokenType
+  expiresIn DateTime  @map("expiresIn")
+
+  @@map("tokens")
+}
+
+enum UserRole {
+  REGULAR
+  STUDENT
+  TEACHER
+  ADULT
+  ADMIN
+}
+
+enum AuthMethod {
+  CREDENTIALS
+  GOOGLE
+}
+
+enum TokenType {
+  VERIFICATION
+  TWO_FACTOR
+  PASSWORD_RESET
 }
 
 model AdditionalUserData {
@@ -227,7 +284,6 @@ model UserVocabulary {
   @@index([userId, language])
   @@map("user_vocabulary")
 }
-
 /// One-row-per-day idempotent completion signal for admin metrics (JWT watch-complete).
 model PlacementAttempt {
   id           Int      @id @default(autoincrement())
