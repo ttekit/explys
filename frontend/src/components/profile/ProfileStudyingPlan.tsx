@@ -2,15 +2,17 @@ import { Link } from "react-router";
 import { useMemo } from "react";
 import {
   ArrowRight,
-  BookOpen,
   Calendar,
   ExternalLink,
   ListChecks,
   Target,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 import type { UserData } from "../../context/UserContext";
+import { useRegenerateStudyingPlan } from "../../hooks/useRegenerateStudyingPlan";
 import { buildLearningPlanModel } from "../../lib/learningPlan";
-import { cn } from "../../lib/utils";
+import { LearningPlanPhasesSection } from "../learning/LearningPlanPhasesSection";
 
 function renderIntroMarkdownish(text: string) {
   const parts = text.split(/\*\*(.*?)\*\*/g);
@@ -25,6 +27,7 @@ function renderIntroMarkdownish(text: string) {
 
 export function ProfileStudyingPlan({ user }: { user: UserData }) {
   const plan = useMemo(() => buildLearningPlanModel(user), [user]);
+  const { regenerate, isRegenerating } = useRegenerateStudyingPlan();
 
   if (!user.hasCompletedPlacement) {
     return (
@@ -66,13 +69,27 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
             can follow in the catalog.
           </p>
         </div>
-        <Link
-          to="/learning-plan"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground/85 transition-colors hover:bg-muted/60"
-        >
-          Full page
-          <ExternalLink className="size-3.5 opacity-70" />
-        </Link>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void regenerate()}
+            disabled={isRegenerating}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card/50 px-3 py-2 text-sm font-medium text-foreground/85 transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-60"
+          >
+            {isRegenerating ?
+              <Loader2 className="size-3.5 animate-spin text-primary" aria-hidden
+              />
+            : <RefreshCw className="size-3.5 text-primary" aria-hidden />}
+            {isRegenerating ? "Regenerating…" : "Regenerate studying plan"}
+          </button>
+          <Link
+            to="/learning-plan"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground/85 transition-colors hover:bg-muted/60"
+          >
+            Full page
+            <ExternalLink className="size-3.5 opacity-70" />
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -104,39 +121,7 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
       </div>
 
       <div>
-        <h3 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold">
-          <BookOpen className="size-5 text-primary" />
-          Phases
-        </h3>
-        <ol className="space-y-3">
-          {plan.phases.map((phase, idx) => (
-            <li
-              key={phase.title}
-              className={cn(
-                "rounded-xl border border-border bg-card/60 p-4 md:p-5",
-              )}
-            >
-              <div className="mb-2 flex flex-wrap items-baseline gap-2">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
-                  {idx + 1}
-                </span>
-                <span className="font-display font-semibold">{phase.title}</span>
-              </div>
-              <p className="mb-3 text-sm text-muted-foreground">{phase.summary}</p>
-              <ul className="space-y-1.5 text-sm text-foreground/90">
-                {phase.actions.map((a) => (
-                  <li key={a} className="flex gap-2">
-                    <span
-                      className="mt-1.5 size-1 shrink-0 rounded-full bg-primary/70"
-                      aria-hidden
-                    />
-                    {a}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ol>
+        <LearningPlanPhasesSection plan={plan} />
       </div>
 
       <div className="rounded-2xl border border-border bg-card/70 p-5 md:p-6">

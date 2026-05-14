@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import {
   apiFetch,
   getApiBase,
@@ -7,20 +7,28 @@ import {
   getStoredAccessToken,
 } from "../../lib/api";
 import { useUser } from "../../context/UserContext";
+import {
+  subscriptionEnforcementDisabled,
+  userMayUseLearnerApp,
+} from "../../lib/subscriptionAccess";
 import PlacementPreferencesStep from "../../components/PlacementPreferencesStep";
 import PlacementPreTestStep, {
   adultNeedsPlacementPrepFields,
 } from "../../components/PlacementPreTestStep";
-import { ChameleonMascot } from "../../components/ChameleonMascot";
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 import { CatalogHero } from "../../components/catalog/CatalogHero";
 import { CatalogSidebar } from "../../components/catalog/CatalogSidebar";
 import { CatalogVideoRow } from "../../components/catalog/CatalogVideoRow";
+import {
+  CatalogSpotlight,
+  type CatalogSpotlightItem,
+} from "../../components/catalog/CatalogSpotlight";
 import type { CatalogCardVideo } from "../../components/catalog/CatalogVideoCard";
 import { cn } from "../../lib/utils";
 import { Frown } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface ContentVideo {
   id: number;
@@ -57,6 +65,20 @@ function placementPatchApiOrigin(html: string, apiOrigin: string): string {
   );
 }
 
+/** Toast id avoids duplicate banners if the effect runs twice (e.g. React Strict Mode). */
+const STRIPE_CHECKOUT_CATALOG_TOAST_ID = "stripe-checkout-catalog-welcome";
+
+function stripCheckoutSuccessSearch(): { pathname: string; search: string } {
+  const pathname = window.location.pathname;
+  const p = new URLSearchParams(window.location.search);
+  if (p.get("checkout") !== "success") {
+    return { pathname, search: window.location.search };
+  }
+  p.delete("checkout");
+  const q = p.toString();
+  return { pathname, search: q ? `?${q}` : "" };
+}
+
 export default function VideoPage() {
   const [videos, setVideos] = useState<ContentVideo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,10 +89,59 @@ export default function VideoPage() {
     null,
   );
   const navigate = useNavigate();
+  const location = useLocation();
+  const [spotlightOpen, setSpotlightOpen] = useState(false);
   const { user, isLoading: userLoading, refreshProfile } = useUser();
   const { messages, locale } = useLandingLocale();
   const catalogSeo = messages.catalogPage;
   const placementCompleteHandled = useRef(false);
+
+  const catalogCheckoutReturn = useMemo(() => {
+    return new URLSearchParams(location.search).get("checkout") === "success";
+  }, [location.search]);
+
+  const activatingSubscriptionOverlay =
+    catalogCheckoutReturn &&
+    !subscriptionEnforcementDisabled() &&
+    !!user &&
+    !userMayUseLearnerApp(user);
+
+  useEffect(() => {
+    if (!catalogCheckoutReturn) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      const maxAttempts = 24;
+      for (let i = 0; i < maxAttempts; i++) {
+        if (cancelled) return;
+        const profile = await refreshProfile();
+        if (cancelled) return;
+        if (profile && userMayUseLearnerApp(profile)) {
+          const { pathname, search } = stripCheckoutSuccessSearch();
+          void navigate({ pathname, search }, { replace: true });
+          toast.success("Thanks for joining us — we're glad you're here.", {
+            id: STRIPE_CHECKOUT_CATALOG_TOAST_ID,
+            duration: 6000,
+          });
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 500));
+      }
+      if (!cancelled) {
+        const { pathname, search } = stripCheckoutSuccessSearch();
+        void navigate({ pathname, search }, { replace: true });
+        toast.error(
+          "We could not confirm your subscription yet. Try refreshing the page.",
+          { duration: 8000, id: `${STRIPE_CHECKOUT_CATALOG_TOAST_ID}-err` },
+        );
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [catalogCheckoutReturn, navigate, refreshProfile]);
 
   const accessToken = getStoredAccessToken();
   const needsPlacement =
@@ -110,36 +181,6 @@ export default function VideoPage() {
       return;
     }
     const onMessage = (ev: MessageEvent) => {
-      // #region agent log
-      if (ev.data?.type === "placement_diag") {
-        try {
-          if (typeof console !== "undefined" && console.log) {
-            console.log("[placement:parent]", ev.data.step, ev.data.data ?? {});
-          }
-        } catch {
-          /* */
-        }
-        fetch(
-          "http://127.0.0.1:7658/ingest/d719e046-fe6c-4322-a0e2-5351c6126712",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Debug-Session-Id": "0c8a48",
-            },
-            body: JSON.stringify({
-              sessionId: "0c8a48",
-              hypothesisId: "IFRAME",
-              location: "VideosPage.tsx:message",
-              message: String(ev.data?.step ?? "placement_diag"),
-              data: (ev.data?.data as object) ?? {},
-              timestamp: Date.now(),
-            }),
-          },
-        ).catch(() => { });
-        return;
-      }
-      // #endregion
       if (ev.data?.type === "placement_exit") {
         navigate("/");
         return;
@@ -239,6 +280,56 @@ export default function VideoPage() {
     fetchVideos();
   }, []);
 
+  /** Open Spotlight from sidebar on other routes via Link `state.openSpotlight` */
+  useEffect(() => {
+    const raw = location.state as { openSpotlight?: boolean } | null | undefined;
+    if (raw?.openSpotlight) {
+      setSpotlightOpen(true);
+      void navigate(
+        {
+          pathname: location.pathname,
+          search: location.search,
+        },
+        { replace: true, state: {} },
+      );
+    }
+  }, [location.state, location.pathname, location.search, navigate]);
+
+  /** Cmd/Ctrl + K opens Spotlight from catalog shell (closing handled inside Spotlight modal) */
+  useEffect(() => {
+    if (needsPlacement || showPlacementPrepOverlay || showPlacementTest) return;
+    if (spotlightOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      if (e.key.toLowerCase() !== "k") return;
+      const t = e.target as HTMLElement | null;
+      const inField = t?.closest?.(
+        "input, textarea, select, [contenteditable]",
+      );
+      if (inField) return;
+      e.preventDefault();
+      setSpotlightOpen(true);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [
+    needsPlacement,
+    showPlacementPrepOverlay,
+    showPlacementTest,
+    spotlightOpen,
+  ]);
+
+  const spotlightVideos: CatalogSpotlightItem[] = useMemo(() => {
+    return videos.map((v) => ({
+      id: v.id,
+      title: v.videoName,
+      category: v.content.category.name,
+      description: v.videoDescription ?? null,
+      thumbnailUrl: v.thumbnailUrl,
+      videoLink: v.videoLink,
+    }));
+  }, [videos]);
+
   const categoryNames = useMemo(() => {
     const names = videos.map((v) => v.content.category.name);
     return [...new Set(names)];
@@ -293,6 +384,18 @@ export default function VideoPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased flex-col">
+      {activatingSubscriptionOverlay ?
+        <div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-3 bg-background/85 backdrop-blur-sm"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="size-8 animate-spin rounded-full border-2 border-muted-foreground border-t-primary" />
+          <p className="text-muted-foreground text-sm">
+            Activating your subscription…
+          </p>
+        </div>
+      : null}
       <SEO
         title={catalogSeo.title}
         description={catalogSeo.description}
@@ -311,6 +414,8 @@ export default function VideoPage() {
             englishLevel={user?.englishLevel || undefined}
             collapsed={sidebarCollapsed}
             onCollapsedChange={setSidebarCollapsed}
+            catalogSpotlightOpen={spotlightOpen}
+            onOpenCatalogSpotlight={() => setSpotlightOpen(true)}
           />
 
           <main
@@ -474,6 +579,16 @@ export default function VideoPage() {
             </div>
           )}
         </div>
+      ) : null}
+
+      {!needsPlacement &&
+      !showPlacementPrepOverlay &&
+      !showPlacementTest ? (
+        <CatalogSpotlight
+          open={spotlightOpen}
+          onClose={() => setSpotlightOpen(false)}
+          videos={spotlightVideos}
+        />
       ) : null}
     </div>
   );

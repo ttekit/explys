@@ -48,6 +48,20 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth('JWT-auth')
+  @Post('profile/regenerate-studying-plan')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Regenerate saved studying plan (phases, pass conditions, weekly habits) from profile',
+  })
+  @ApiResponse({ status: 200, description: 'Profile returned with updated plan JSON.' })
+  regenerateStudyingPlan(@Request() req: any) {
+    const userId = Number(req.user.sub);
+    return this.authService.regenerateStudyingPlan(userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('profile/learning-stats')
   @ApiOperation({
     summary:

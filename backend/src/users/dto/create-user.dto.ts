@@ -10,6 +10,9 @@ import {
   IsNumber,
   IsObject,
   IsIn,
+  IsInt,
+  Min,
+  Allow,
 } from "class-validator";
 
 export class CreateUserDto {
@@ -83,4 +86,14 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   timeToAchieve?: string;
+
+  /** Full v2 object `{ version: 2, phases, weeklyHabits }`; validated in UsersService. */
+  @IsOptional()
+  @Allow()
+  studyingPlanPhases?: unknown;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  activeStudyingPhaseIndex?: number;
 }

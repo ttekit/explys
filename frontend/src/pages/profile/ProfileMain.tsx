@@ -334,7 +334,12 @@ export default function ProfileMain() {
               {activeTab === "achievements" ? <ProfileAchievements /> : null}
               {activeTab === "activity" ? <ProfileActivity weeklyActivity={learningStats?.weeklyActivity} /> : null}
               {activeTab === "settings" ? (
-                <ProfileSettings user={user} onSaved={refreshProfile} />
+                <ProfileSettings
+                  user={user}
+                  onSaved={async () => {
+                    await refreshProfile();
+                  }}
+                />
               ) : null}
             </div>
           </div>

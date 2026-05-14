@@ -111,7 +111,7 @@ export default function RegistrationPreferences() {
           setPendingRegistrationLoginWelcome();
           navigate("/loginForm", {
             replace: true,
-            state: { from: "/catalog", registrationComplete: true },
+            state: { from: "/subscribe", registrationComplete: true },
           });
         } else {
           navigate("/loginForm");
