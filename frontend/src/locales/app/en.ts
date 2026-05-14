@@ -520,11 +520,33 @@ export const appEn = {
       "Open the catalog and complete the placement questionnaire. We'll then tailor phases, weekly habits, and goals to your level.",
     profileDescription:
       "Your goal and timeline, with phased steps and a weekly rhythm you can follow in the catalog.",
+    profileGoalHorizonLead:
+      "Update what you’re aiming for and your deadline — saving refreshes your personalised studying plan.",
+    profileSaveGoalHorizonCta: "Save goal & timeline",
+    profileSavingGoalHorizon: "Saving and updating plan…",
+    profileGoalSavedAndPlanRegeneratedToast:
+      "Goal, timeline, and studying plan updated.",
+    profileGoalSavedPlanRegenerateFailedToast:
+      "Goal and timeline were saved, but the studying plan could not be refreshed. Try again from the full learning plan page.",
+    profileGoalHorizonSaveError: "Could not save goal or timeline.",
     openFullPage: "Full page",
     continueInCatalog: "Continue in catalog",
     seoTitle: "Learning plan · Explys",
     seoDescription:
       "Your personalized study roadmap, phases, and weekly habits.",
+    achievabilityTitleTemplate: "Goal vs timeline · {horizon}",
+    timeToAchieveUnitDays: "Days",
+    timeToAchieveUnitMonths: "Months",
+    timeToAchieveUnitYears: "Years",
+    timeToAchieveUnitSelectAria: "Time unit",
+    achievabilitySummaryExcellent:
+      "Overall: **very achievable** within **{horizon}** with steady catalog practice.",
+    achievabilitySummaryModerate:
+      "Overall: **possible** within **{horizon}**, but it will take disciplined weekly work.",
+    achievabilitySummaryUnlikely:
+      "Overall: **unlikely on this timeline alone** if you keep only **{horizon}** — allow more time or shrink your first milestone.",
+    achievabilitySummaryUnlikelyExtend:
+      "Overall: **unlikely on this timeline alone** if you keep only **{horizon}** — allow more time or shrink your first milestone. Consider extending your horizon to **at least {months} months**.",
   },
 
   learningPlanPhases: {

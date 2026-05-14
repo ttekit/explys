@@ -11,6 +11,7 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool as any);
 const prisma = new PrismaClient({ adapter });
 
+// 📚 Expanded English Proficiency Topics & Tags
 const englishProficiencyTopics = {
   "english_proficiency_topics": {
     "foundational": [
@@ -23,7 +24,11 @@ const englishProficiencyTopics = {
       "Weather",
       "Directions",
       "Colors",
-      "Family"
+      "Family",
+      "Shapes",
+      "Prepositions",
+      "Pronouns",
+      "Measurement"
     ],
     "daily_life": [
       "Routines",
@@ -35,7 +40,12 @@ const englishProficiencyTopics = {
       "Clothing",
       "Commuting",
       "Transport",
-      "Fitness"
+      "Fitness",
+      "Parenting",
+      "Gardening",
+      "Groceries",
+      "Delivery",
+      "Home-Maintenance"
     ],
     "social_emotional": [
       "Hobbies",
@@ -52,7 +62,12 @@ const englishProficiencyTopics = {
       "Opinions",
       "Advice",
       "Invitations",
-      "Plans"
+      "Plans",
+      "Dating",
+      "Empathy",
+      "Conflicts",
+      "Boundaries",
+      "Moods"
     ],
     "leisure_culture": [
       "Movies",
@@ -69,7 +84,12 @@ const englishProficiencyTopics = {
       "Art",
       "Photography",
       "Internet",
-      "Social-Media"
+      "Social-Media",
+      "Theater",
+      "Festivals",
+      "Concerts",
+      "Streaming",
+      "Architecture"
     ],
     "professional_academic": [
       "Jobs",
@@ -86,7 +106,12 @@ const englishProficiencyTopics = {
       "Presentations",
       "Feedback",
       "Deadlines",
-      "Money"
+      "Money",
+      "Leadership",
+      "Networking",
+      "Remote-Work",
+      "Startups",
+      "Resumes"
     ],
     "abstract_complex": [
       "News",
@@ -103,7 +128,12 @@ const englishProficiencyTopics = {
       "Negotiation",
       "Comparison",
       "Hypotheticals",
-      "Philosophy"
+      "Philosophy",
+      "Globalization",
+      "Artificial-Intelligence",
+      "Human-Rights",
+      "Climate-Change",
+      "Psychology"
     ],
     "situational": [
       "Emergencies",
@@ -115,7 +145,12 @@ const englishProficiencyTopics = {
       "Gifts",
       "Appointments",
       "Driving",
-      "Safety"
+      "Safety",
+      "Hospital",
+      "Police",
+      "Pharmacy",
+      "Customs",
+      "Vet"
     ],
     "fluency_markers": [
       "Idioms",
@@ -127,7 +162,12 @@ const englishProficiencyTopics = {
       "Style",
       "Persuasion",
       "Speculation",
-      "Culture-Shock"
+      "Culture-Shock",
+      "Phrasal-Verbs",
+      "Collocations",
+      "Proverbs",
+      "Politeness",
+      "Hedging"
     ]
   }
 };
@@ -135,23 +175,20 @@ const englishProficiencyTopics = {
 async function main() {
   console.log('🌱 Starting seed...');
 
+  // --- 1. SEED TAGS ---
   const allTags: string[] = [];
-
   Object.values(englishProficiencyTopics.english_proficiency_topics).forEach((category: string[]) => {
     allTags.push(...category);
   });
 
   const uniqueTags = [...new Set(allTags)];
-
   console.log(`📝 Found ${uniqueTags.length} unique tags to seed`);
 
   const createdTags: { id: number; name: string }[] = [];
   for (const tagName of uniqueTags) {
     try {
       const tag = await prisma.tag.create({
-        data: {
-          name: tagName,
-        },
+        data: { name: tagName },
       });
       createdTags.push(tag);
       console.log(`✅ Created tag: ${tagName}`);
@@ -160,11 +197,10 @@ async function main() {
       console.log(`⚠️  Tag "${tagName}" might already exist, skipping... (${message})`);
     }
   }
-
   console.log(`🎉 Successfully seeded ${createdTags.length} tags!`);
 
+  // --- 2. SEED CATEGORIES ---
   console.log('🏷️  Creating sample categories...');
-
   const categories = [
     { name: 'Foundational' },
     { name: 'Daily Life' },
@@ -189,22 +225,31 @@ async function main() {
       console.log(`⚠️  Category "${categoryData.name}" might already exist, skipping... (${message})`);
     }
   }
-
   console.log(`🎉 Successfully seeded ${createdCategories.length} categories!`);
 
+  // --- 3. SEED GENRES (Expanded) ---
   console.log('🎭 Creating sample genres...');
-
   const genres = [
     { name: 'Action' },
     { name: 'Adventure' },
+    { name: 'Animation' }, // New
     { name: 'Comedy' },
+    { name: 'Crime' },     // New
+    { name: 'Documentary' },// New
     { name: 'Drama' },
+    { name: 'Family' },    // New
+    { name: 'Fantasy' },
+    { name: 'History' },   // New
     { name: 'Horror' },
+    { name: 'Musical' },   // New
+    { name: 'Mystery' },
+    { name: 'Noir' },      // New
     { name: 'Romance' },
     { name: 'Sci-Fi' },
+    { name: 'Sports' },    // New
     { name: 'Thriller' },
-    { name: 'Fantasy' },
-    { name: 'Mystery' },
+    { name: 'War' },       // New
+    { name: 'Western' },   // New
   ];
 
   const createdGenres: { id: number; name: string }[] = [];
@@ -220,11 +265,10 @@ async function main() {
       console.log(`⚠️  Genre "${genreData.name}" might already exist, skipping... (${message})`);
     }
   }
-
   console.log(`🎉 Successfully seeded ${createdGenres.length} genres!`);
 
+  // --- 4. SEED TOPICS (Expanded Templates) ---
   console.log('📚 Creating sample topics...');
-
   const categoryByName = new Map<string, { id: number; name: string }>();
   const allExistingCategories = await prisma.category.findMany();
   for (const category of allExistingCategories) {
@@ -238,6 +282,7 @@ async function main() {
     language: string;
     tagNames: string[];
   }> = [
+    // Original Templates
     { name: 'Basic Greetings and Introductions', categoryName: 'Foundational', complexity: 1, language: 'en', tagNames: ['Greetings', 'Introductions'] },
     { name: 'Numbers, Time and Directions', categoryName: 'Foundational', complexity: 1.1, language: 'en', tagNames: ['Numbers', 'Time', 'Directions'] },
     { name: 'Family and Daily Communication', categoryName: 'Foundational', complexity: 1.2, language: 'en', tagNames: ['Family', 'Identification'] },
@@ -261,6 +306,24 @@ async function main() {
     { name: 'Idioms and Slang in Context', categoryName: 'Fluency Markers', complexity: 3, language: 'en', tagNames: ['Idioms', 'Slang', 'Culture-Shock'] },
     { name: 'Persuasion and Emphasis Techniques', categoryName: 'Fluency Markers', complexity: 3.1, language: 'en', tagNames: ['Persuasion', 'Emphasis', 'Style'] },
     { name: 'Transitions, Clarification and Summarizing', categoryName: 'Fluency Markers', complexity: 2.7, language: 'en', tagNames: ['Transitions', 'Clarification', 'Summarizing'] },
+
+    // New Expanded Templates
+    { name: 'Shapes, Colors, and Describing Objects', categoryName: 'Foundational', complexity: 1.1, language: 'en', tagNames: ['Shapes', 'Colors', 'Measurement'] },
+    { name: 'Using Prepositions and Pronouns Correctly', categoryName: 'Foundational', complexity: 1.2, language: 'en', tagNames: ['Prepositions', 'Pronouns', 'Identification'] },
+    { name: 'Parenting and Household Management', categoryName: 'Daily Life', complexity: 1.6, language: 'en', tagNames: ['Parenting', 'Chores', 'Home-Maintenance'] },
+    { name: 'Groceries, Gardening, and Home Deliveries', categoryName: 'Daily Life', complexity: 1.5, language: 'en', tagNames: ['Groceries', 'Gardening', 'Delivery'] },
+    { name: 'Dating, Boundaries, and Interpersonal Conflict', categoryName: 'Social & Emotional', complexity: 2.2, language: 'en', tagNames: ['Dating', 'Boundaries', 'Conflicts'] },
+    { name: 'Expressing Moods and Practicing Empathy', categoryName: 'Social & Emotional', complexity: 2.0, language: 'en', tagNames: ['Moods', 'Empathy', 'Feelings'] },
+    { name: 'Theater, Concerts, and Festivals', categoryName: 'Leisure & Culture', complexity: 2.1, language: 'en', tagNames: ['Theater', 'Concerts', 'Festivals'] },
+    { name: 'Streaming Services and Modern Media', categoryName: 'Leisure & Culture', complexity: 2.2, language: 'en', tagNames: ['Streaming', 'Internet', 'Social-Media'] },
+    { name: 'Writing Resumes and Professional Networking', categoryName: 'Professional & Academic', complexity: 2.5, language: 'en', tagNames: ['Resumes', 'Networking', 'Jobs'] },
+    { name: 'Leadership and Managing Remote Teams', categoryName: 'Professional & Academic', complexity: 2.7, language: 'en', tagNames: ['Leadership', 'Remote-Work', 'Workplace'] },
+    { name: 'Startup Culture and Scaling Businesses', categoryName: 'Professional & Academic', complexity: 2.8, language: 'en', tagNames: ['Startups', 'Money', 'Projects'] },
+    { name: 'Artificial Intelligence and Future Technology', categoryName: 'Abstract & Complex', complexity: 3.2, language: 'en', tagNames: ['Artificial-Intelligence', 'Technology', 'Ethics'] },
+    { name: 'Climate Change, Globalization, and Human Rights', categoryName: 'Abstract & Complex', complexity: 3.3, language: 'en', tagNames: ['Climate-Change', 'Globalization', 'Human-Rights'] },
+    { name: 'Navigating Hospitals, Police, and Pharmacies', categoryName: 'Situational', complexity: 2.3, language: 'en', tagNames: ['Hospital', 'Police', 'Pharmacy'] },
+    { name: 'Mastering Phrasal Verbs and Collocations', categoryName: 'Fluency Markers', complexity: 3.1, language: 'en', tagNames: ['Phrasal-Verbs', 'Collocations', 'Style'] },
+    { name: 'Politeness, Hedging, and Common Proverbs', categoryName: 'Fluency Markers', complexity: 3.0, language: 'en', tagNames: ['Politeness', 'Hedging', 'Proverbs'] }
   ];
 
   let createdTopicsCount = 0;
@@ -292,7 +355,6 @@ async function main() {
   }
 
   console.log(`🎉 Successfully seeded ${createdTopicsCount} topics!`);
-
   console.log('🌱 Seed completed successfully!');
 }
 

@@ -522,11 +522,33 @@ export const appUk = {
       "Відкрий каталог і пройди коротке вхідне тестування. Тоді ми підлаштуємо етапи, тижневі звички та мету під твій рівень.",
     profileDescription:
       "Твоя мета й горизонт часу з поетапними кроками та тижневим ритмом — за ним зручно працювати в каталозі.",
+    profileGoalHorizonLead:
+      "Онови, до чого рухаєшся й який у тебе дедлайн — після збереження персональний навчальний план оновиться.",
+    profileSaveGoalHorizonCta: "Зберегти мету й строк",
+    profileSavingGoalHorizon: "Збереження й оновлення плану…",
+    profileGoalSavedAndPlanRegeneratedToast:
+      "Мету, строк і навчальний план оновлено.",
+    profileGoalSavedPlanRegenerateFailedToast:
+      "Мету й строк збережено, але навчальний план не вдалося оновити. Спробуй ще раз на повній сторінці навчального плану.",
+    profileGoalHorizonSaveError: "Не вдалося зберегти мету або строк.",
     openFullPage: "Повна сторінка",
     continueInCatalog: "Далі в каталозі",
     seoTitle: "Навчальний план · Explys",
     seoDescription:
       "Твій персональний маршрут навчання, етапи та тижневі звички.",
+    achievabilityTitleTemplate: "Мета й термін · {horizon}",
+    timeToAchieveUnitDays: "Дні",
+    timeToAchieveUnitMonths: "Місяці",
+    timeToAchieveUnitYears: "Роки",
+    timeToAchieveUnitSelectAria: "Одиниця часу",
+    achievabilitySummaryExcellent:
+      "Загалом: **дуже досяжно** протягом **{horizon}** за умови стабільної практики в каталозі.",
+    achievabilitySummaryModerate:
+      "Загалом: **можливо** у межах **{horizon}**, але знадобиться дисциплінована щотижнева робота.",
+    achievabilitySummaryUnlikely:
+      "Загалом: **малоймовірно**, якщо лишити лише **{horizon}** — варто дати більше часу або зменшити перший рубіж мети.",
+    achievabilitySummaryUnlikelyExtend:
+      "Загалом: **малоймовірно**, якщо лишити лише **{horizon}** — варто дати більше часу або зменшити перший рубіж мети. Розглянь збільшення терміну хоча б до **{months}** місяців.",
   },
 
   learningPlanPhases: {

@@ -1,6 +1,7 @@
 import Button from "../../components/Button";
 import LabelRegister from "../../components/LabelRegister";
 import InputText from "../../components/InputText";
+import { TimeToAchieveField } from "../../components/TimeToAchieveField";
 import { Link, useNavigate } from "react-router";
 import { useContext, FormEvent, useState, useEffect, ChangeEvent } from "react";
 import {
@@ -19,6 +20,7 @@ export default function RegistrationPreferences() {
   const { messages, locale } = useLandingLocale();
   const t = messages.auth.registration.step3;
   const alerts = messages.auth.registration.step3Alerts;
+  const lpLearn = messages.learningPlan;
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
 
@@ -197,13 +199,21 @@ export default function RegistrationPreferences() {
                 <LabelRegister isRequired={false}>
                   {t.timeToAchieve}
                 </LabelRegister>
-                <InputText
-                  name="timeToAchieve"
+                <TimeToAchieveField
+                  id="registration-time-to-achieve"
                   value={formData.timeToAchieve ?? ""}
-                  onChange={handleLearningFieldsChange}
-                  type="text"
-                  placeholder={t.placeholderTime}
-                  autoComplete="off"
+                  allowEmpty
+                  onChange={(serialized) =>
+                    updateFormData({
+                      timeToAchieve: serialized,
+                    } as Partial<FormData>)
+                  }
+                  unitLabels={{
+                    day: lpLearn.timeToAchieveUnitDays,
+                    month: lpLearn.timeToAchieveUnitMonths,
+                    year: lpLearn.timeToAchieveUnitYears,
+                    unitSelectAria: lpLearn.timeToAchieveUnitSelectAria,
+                  }}
                 />
               </div>
             </div>

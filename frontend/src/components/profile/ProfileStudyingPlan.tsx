@@ -1,21 +1,27 @@
 import { Link } from "react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import {
   ArrowRight,
   Calendar,
   ExternalLink,
   ListChecks,
-  Target,
-  RefreshCw,
   Loader2,
+  Save,
+  Target,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import type { UserData } from "../../context/UserContext";
+import { useUser } from "../../context/UserContext";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
-import { useRegenerateStudyingPlan } from "../../hooks/useRegenerateStudyingPlan";
+import { apiFetch, getResponseErrorMessage } from "../../lib/api";
 import { buildLearningPlanModel } from "../../lib/learningPlan";
 import { LearningPlanPhasesSection } from "../learning/LearningPlanPhasesSection";
+import { LearningPlanAchievabilityNote } from "../learning/LearningPlanAchievabilityNote";
 import { LEARNING_PLAN_UK_DEFAULTS } from "../../locales/learningPlanUkDefaults";
 import { renderLightMarkdown } from "../../lib/renderLightMarkdown";
+import InputText from "../InputText";
+import { TimeToAchieveField } from "../TimeToAchieveField";
+import { canonicalTimeToAchieveFromProfile } from "../../lib/timeToAchieve";
 
 function renderIntroMarkdownish(text: string) {
   const parts = text.split(/\*\*(.*?)\*\*/g);
@@ -29,18 +35,87 @@ function renderIntroMarkdownish(text: string) {
 }
 
 export function ProfileStudyingPlan({ user }: { user: UserData }) {
-  const { locale } = useLandingLocale();
-  const plan = useMemo(
-    () =>
-      buildLearningPlanModel(
-        user,
-        locale === "uk" ? LEARNING_PLAN_UK_DEFAULTS : undefined,
-      ),
-    [user, locale],
-  );
-  const { regenerate, isRegenerating } = useRegenerateStudyingPlan();
-  const { messages } = useLandingLocale();
+  const { refreshProfile } = useUser();
+  const { locale, messages } = useLandingLocale();
+  const regStep3 = messages.auth.registration.step3;
   const lp = messages.learningPlan;
+
+  const [learningGoal, setLearningGoal] = useState(user.learningGoal ?? "");
+  const [timeToAchieve, setTimeToAchieve] = useState(() =>
+    canonicalTimeToAchieveFromProfile(user.timeToAchieve),
+  );
+  const [savingGoalHorizon, setSavingGoalHorizon] = useState(false);
+
+  useEffect(() => {
+    setLearningGoal(user.learningGoal ?? "");
+    setTimeToAchieve(canonicalTimeToAchieveFromProfile(user.timeToAchieve));
+  }, [user.learningGoal, user.timeToAchieve]);
+
+  const planPreview = useMemo(() => {
+    const patched: UserData = {
+      ...user,
+      learningGoal: learningGoal.trim(),
+      timeToAchieve: canonicalTimeToAchieveFromProfile(timeToAchieve),
+    };
+    return buildLearningPlanModel(
+      patched,
+      locale === "uk" ? LEARNING_PLAN_UK_DEFAULTS : undefined,
+      locale === "uk" ? "uk" : "en",
+    );
+  }, [user, learningGoal, timeToAchieve, locale]);
+
+  const goalHorizonUnchanged =
+    learningGoal.trim() === (user.learningGoal ?? "").trim() &&
+    canonicalTimeToAchieveFromProfile(timeToAchieve) ===
+      canonicalTimeToAchieveFromProfile(user.timeToAchieve);
+
+  async function saveGoalAndHorizon(): Promise<void> {
+    const trimmedGoal = learningGoal.trim();
+    const trimmedTime = canonicalTimeToAchieveFromProfile(timeToAchieve);
+    setSavingGoalHorizon(true);
+    try {
+      const id = Number(user.id);
+      const res = await apiFetch(`/users/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          learningGoal: trimmedGoal,
+          timeToAchieve: trimmedTime,
+        }),
+      });
+      if (!res.ok) {
+        toast.error(await getResponseErrorMessage(res));
+        return;
+      }
+      const regRes = await apiFetch(
+        "/auth/profile/regenerate-studying-plan",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ locale }),
+        },
+      );
+      if (!regRes.ok) {
+        const serverMsg = (await getResponseErrorMessage(regRes)).trim();
+        toast.error(
+          serverMsg ?
+            `${serverMsg} — ${lp.profileGoalSavedPlanRegenerateFailedToast}`
+          : lp.profileGoalSavedPlanRegenerateFailedToast,
+        );
+        await refreshProfile();
+        return;
+      }
+      toast.success(lp.profileGoalSavedAndPlanRegeneratedToast);
+      await refreshProfile();
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error ? err.message : lp.profileGoalHorizonSaveError,
+      );
+    } finally {
+      setSavingGoalHorizon(false);
+    }
+  }
 
   if (!user.hasCompletedPlacement) {
     return (
@@ -80,59 +155,96 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
             {lp.profileDescription}
           </p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => void regenerate()}
-            disabled={isRegenerating}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card/50 px-3 py-2 text-sm font-medium text-foreground/85 transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-60"
-          >
-            {isRegenerating ?
-              <Loader2 className="size-3.5 animate-spin text-primary" aria-hidden
-              />
-            : <RefreshCw className="size-3.5 text-primary" aria-hidden />}
-            {isRegenerating ? lp.regenerating : lp.regenerateCta}
-          </button>
-          <Link
-            to="/learning-plan"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground/85 transition-colors hover:bg-muted/60"
-          >
-            {lp.openFullPage}
-            <ExternalLink className="size-3.5 opacity-70" />
-          </Link>
-        </div>
+        <Link
+          to="/learning-plan"
+          className="inline-flex shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground/85 transition-colors hover:bg-muted/60"
+        >
+          {lp.openFullPage}
+          <ExternalLink className="size-3.5 opacity-70" />
+        </Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card/70 p-5">
-          <div className="mb-2 flex items-center gap-2 text-primary">
-            <Target className="size-4" />
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {lp.goalLabel}
-            </span>
+      <div className="rounded-2xl border border-border bg-card/70 p-5 md:p-6">
+        <p className="mb-4 text-sm text-muted-foreground">
+          {lp.profileGoalHorizonLead}
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label
+              htmlFor="profile-learning-goal"
+              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+            >
+              <Target className="size-4 text-primary" />
+              {regStep3.pointOfLearning}
+            </label>
+            <InputText
+              id="profile-learning-goal"
+              name="learningGoal"
+              value={learningGoal}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setLearningGoal(e.target.value)
+              }
+              type="text"
+              placeholder={regStep3.placeholderGoal}
+              autoComplete="off"
+            />
           </div>
-          <p className="font-semibold leading-snug">{plan.goal}</p>
+          <div className="space-y-2">
+            <label
+              htmlFor="profile-time-to-achieve"
+              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+            >
+              <Calendar className="size-4 text-primary" />
+              {regStep3.timeToAchieve}
+            </label>
+            <TimeToAchieveField
+              id="profile-time-to-achieve"
+              value={timeToAchieve}
+              onChange={setTimeToAchieve}
+              unitLabels={{
+                day: lp.timeToAchieveUnitDays,
+                month: lp.timeToAchieveUnitMonths,
+                year: lp.timeToAchieveUnitYears,
+                unitSelectAria: lp.timeToAchieveUnitSelectAria,
+              }}
+            />
+          </div>
         </div>
-        <div className="rounded-2xl border border-border bg-card/70 p-5">
-          <div className="mb-2 flex items-center gap-2 text-primary">
-            <Calendar className="size-4" />
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {lp.timeLabel}
-            </span>
-          </div>
-          <p className="font-semibold leading-snug">{plan.horizon}</p>
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={() => void saveGoalAndHorizon()}
+            disabled={savingGoalHorizon || goalHorizonUnchanged}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+          >
+            {savingGoalHorizon ?
+              <Loader2 className="size-4 animate-spin" aria-hidden
+              />
+            : <Save className="size-4" aria-hidden />}
+            {savingGoalHorizon ?
+              lp.profileSavingGoalHorizon
+            : lp.profileSaveGoalHorizonCta}
+          </button>
         </div>
       </div>
 
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 md:p-6">
-        <h3 className="font-display text-lg font-semibold">{plan.headline}</h3>
+        <h3 className="font-display text-lg font-semibold">
+          {planPreview.headline}
+        </h3>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-[15px]">
-          {renderIntroMarkdownish(plan.intro)}
+          {renderIntroMarkdownish(planPreview.intro)}
         </p>
+        <LearningPlanAchievabilityNote
+          horizon={planPreview.horizon}
+          score={planPreview.achievabilityScore}
+          suggestedMonths={planPreview.achievabilitySuggestedMonths}
+          copy={lp}
+        />
       </div>
 
       <div>
-        <LearningPlanPhasesSection plan={plan} />
+        <LearningPlanPhasesSection plan={planPreview} />
       </div>
 
       <div className="rounded-2xl border border-border bg-card/70 p-5 md:p-6">
@@ -141,7 +253,7 @@ export function ProfileStudyingPlan({ user }: { user: UserData }) {
           {lp.weeklyRhythm}
         </h3>
         <ul className="space-y-2 text-sm md:text-[15px]">
-          {plan.weeklyHabits.map((h, hi) => (
+          {planPreview.weeklyHabits.map((h, hi) => (
             <li
               key={`${hi}-${h.slice(0, 24)}`}
               className="flex items-start gap-2"

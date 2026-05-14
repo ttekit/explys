@@ -335,6 +335,87 @@ function horizonBudgetFromLabel(label: string): HorizonBudget {
   };
 }
 
+const AMBITIOUS_GOAL_PATTERN =
+  /shakespeare|шекспір|шекспир|шекспира|tolstoy|dostoev|literature|віктор\s*гюго|novel|poetry|поезі|поэз|c2|native-like|like a native|перекладач|interpreter|fluent in|вільно\s+говор|читати\s+класик/i;
+
+const MODERATE_GOAL_PATTERN =
+  /ielts|toefl|\bb2\b|\bb1\b|\bc1\b|exam|interview|робота|career|business|університет|university|presentation/i;
+
+function goalAmbitionWeight(goal: string): number {
+  const g = goal.trim();
+  if (!g) return 1;
+  if (AMBITIOUS_GOAL_PATTERN.test(g)) return 4;
+  if (MODERATE_GOAL_PATTERN.test(g)) return 2;
+  return 1;
+}
+
+function tierReadinessWeight(tier: CoarseLevelTier): number {
+  const table: Record<CoarseLevelTier, number> = {
+    beginner: 1,
+    elementary: 2,
+    intermediate: 3,
+    advanced: 4,
+  };
+  return table[tier];
+}
+
+/** Timeline ease weight for achievability only (longer horizons score higher). */
+function timelineEaseWeightForAchievability(days: number): number {
+  return Math.min(8, Math.max(1, Math.round(days / 60)));
+}
+
+const ACHIEVABILITY_RAW_MIN = -10;
+const ACHIEVABILITY_RAW_MAX = 18;
+
+/**
+ * Rough feasibility score from profile goal, stated horizon, and English tier.
+ * Intended for UX hints only. **0 ≈ nearly impossible on paper; 10 ≈ very easy on paper**
+ * (still requires consistent practice).
+ *
+ * @param user - Profile fields used by `buildLearningPlanModel`
+ * @returns Integer in 0..10 inclusive
+ */
+export function computeAchievabilityScore(user: UserData): number {
+  const goal = effectiveLearningGoal(user.learningGoal);
+  const horizonLabel = effectiveTimeHorizon(user.timeToAchieve);
+  const days = approximateHorizonDaysForUi(horizonLabel);
+  const levelRaw =
+    user.englishLevel?.trim() && user.englishLevel !== "choose" ?
+      user.englishLevel.trim()
+    : "";
+  const tier = coarseLevelTierFromProfile(levelRaw);
+  const readiness = tierReadinessWeight(tier);
+  const ambition = goalAmbitionWeight(goal);
+  const timeEase = timelineEaseWeightForAchievability(days);
+  let raw = readiness * 2 + timeEase * 1.75 - ambition * 3.25;
+  if (ambition >= 4 && tier === "beginner") {
+    if (days < 365) raw -= 2;
+    if (days < 240) raw -= 2;
+  }
+  const clamped = Math.max(
+    ACHIEVABILITY_RAW_MIN,
+    Math.min(ACHIEVABILITY_RAW_MAX, raw),
+  );
+  return Math.round(
+    ((clamped - ACHIEVABILITY_RAW_MIN) /
+      (ACHIEVABILITY_RAW_MAX - ACHIEVABILITY_RAW_MIN)) *
+      10,
+  );
+}
+
+/**
+ * Suggested minimum horizon in whole months when the score is low (paired with UI copy).
+ *
+ * @param user - Profile fields
+ * @returns At least 6 months, capped at 36
+ */
+export function suggestExtendedHorizonMonths(user: UserData): number {
+  const horizonLabel = effectiveTimeHorizon(user.timeToAchieve);
+  const days = approximateHorizonDaysForUi(horizonLabel);
+  const doubled = Math.min(Math.round(days * 2), 1095);
+  return Math.max(6, Math.min(36, Math.round(doubled / 30.44)));
+}
+
 function coarseLevelTierFromProfile(englishLevel: string): CoarseLevelTier {
   const s = englishLevel.toLowerCase();
   if (/c2|\bproficiency\b|\bproficient\b|\bmastery\b|\bnative\b/.test(s)) {
@@ -494,6 +575,10 @@ export type LearningPlanModel = {
   horizon: string;
   headline: string;
   intro: string;
+  /** Heuristic 0–10: 0 ≈ nearly impossible on paper, 10 ≈ very easy on paper (UX hint only). */
+  achievabilityScore: number;
+  /** When score is under 5, suggested minimum months (rough doubling of stated horizon, capped). */
+  achievabilitySuggestedMonths: number | null;
   phases: LearningPlanPhase[];
   /** Mirrors server index; always in range for `phases.length`. */
   activePhaseIndex: number;
@@ -749,18 +834,49 @@ function clampPhaseIndex(index: number, phaseCount: number): number {
 export function buildLearningPlanModel(
   user: UserData,
   copy?: LocalizedDefaultPhasesCopy,
+  summaryLocale: "en" | "uk" = "en",
 ): LearningPlanModel {
   const goal = effectiveLearningGoal(user.learningGoal);
   const horizon = effectiveTimeHorizon(user.timeToAchieve);
+  const rawLevel = user.englishLevel?.trim();
+  const levelKnown = Boolean(rawLevel) && rawLevel !== "choose";
   const level =
-    user.englishLevel?.trim() && user.englishLevel !== "choose" ?
-      user.englishLevel.trim()
+    levelKnown && rawLevel ?
+      rawLevel
+    : summaryLocale === "uk" ?
+      "твій поточний рівень"
     : "your current level";
 
   const hobbyLine =
     user.hobbies && user.hobbies.length > 0 ?
       ` Lean on interests like ${user.hobbies.slice(0, 3).join(", ")} when choosing videos — motivation matters as much as minutes watched.`
     : "";
+
+  const hobbyLineUk =
+    user.hobbies && user.hobbies.length > 0 ?
+      formatMessage(
+        " Спирайся на інтереси на кшталт **{hobbies}**, обираючи відео — мотивація не менш важлива за хвилини перегляду.",
+        { hobbies: user.hobbies.slice(0, 3).join(", ") },
+      )
+    : "";
+
+  const headline =
+    summaryLocale === "uk" ?
+      formatMessage("План на найближчі {horizon}", { horizon })
+    : `Plan for the next ${horizon}`;
+
+  const intro =
+    summaryLocale === "uk" ?
+      formatMessage(
+        "Твій фокус: **{learningGoal}**. Протягом **{horizon}** регулярні заняття важливіші за рідкі «марафони». Каталог підлаштовується під **{level}**; користуйся ним стабільно — слухання, лексика й граматика підсилюватимуть одне одного.{hobbyLine}",
+        {
+          learningGoal: goal,
+          horizon,
+          level,
+          hobbyLine: hobbyLineUk,
+        },
+      )
+    : `Your focus: **${goal}**. Over **${horizon}**, steady practice beats occasional marathons. The catalog adapts to **${level}**; use it consistently and you’ll see listening, vocabulary, and grammar reinforce each other.${hobbyLine}`;
 
   const phases = resolvePhasesForUser(user, copy);
   /** From API: derived from distinct videos with passing quiz (not user-editable). */
@@ -780,11 +896,17 @@ export function buildLearningPlanModel(
       localizedWeeklyHabitsFromTemplates(user, copy.weeklyHabits)
     : defaultWeeklyHabitsForUser(user));
 
+  const achievabilityScore = computeAchievabilityScore(user);
+  const achievabilitySuggestedMonths =
+    achievabilityScore < 5 ? suggestExtendedHorizonMonths(user) : null;
+
   return {
     goal,
     horizon,
-    headline: `Plan for the next ${horizon}`,
-    intro: `Your focus: **${goal}**. Over **${horizon}**, steady practice beats occasional marathons. The catalog adapts to **${level}**; use it consistently and you’ll see listening, vocabulary, and grammar reinforce each other.${hobbyLine}`,
+    headline,
+    intro,
+    achievabilityScore,
+    achievabilitySuggestedMonths,
     phases,
     activePhaseIndex,
     weeklyHabits,

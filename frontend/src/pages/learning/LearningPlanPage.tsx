@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import ContentHeader from "../../components/catalog/ContentHeader";
 import { LearningPlanPhasesSection } from "../../components/learning/LearningPlanPhasesSection";
+import { LearningPlanAchievabilityNote } from "../../components/learning/LearningPlanAchievabilityNote";
 import { useUser } from "../../context/UserContext";
 import { useRegenerateStudyingPlan } from "../../hooks/useRegenerateStudyingPlan";
 import { buildLearningPlanModel } from "../../lib/learningPlan";
@@ -43,6 +44,7 @@ export default function LearningPlanPage() {
         buildLearningPlanModel(
           user,
           locale === "uk" ? LEARNING_PLAN_UK_DEFAULTS : undefined,
+          locale === "uk" ? "uk" : "en",
         )
       : null,
     [user, locale],
@@ -135,6 +137,12 @@ export default function LearningPlanPage() {
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">
                 {renderIntroMarkdownish(plan.intro)}
               </p>
+              <LearningPlanAchievabilityNote
+                horizon={plan.horizon}
+                score={plan.achievabilityScore}
+                suggestedMonths={plan.achievabilitySuggestedMonths}
+                copy={lp}
+              />
             </div>
 
             <div className="mb-10">
