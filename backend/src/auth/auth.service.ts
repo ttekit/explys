@@ -1,25 +1,27 @@
 import {
   Injectable,
-  BadRequestException,
   UnauthorizedException,
+  ConflictException,
+  InternalServerErrorException,
   NotFoundException,
   ForbiddenException,
-} from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { AlcorythmService } from '../alcorythm/alcorythm.service';
-import {
-  activeStudyingPhaseFromPassedLessons,
-  phaseCountFromStoredPhases,
-} from '../content-video/studying-plan-phase-progress.util';
-import { StudyingPlanRegenerationService } from '../studying-plan/studying-plan-regeneration.service';
-import type { StudyingPlanTextLocale } from '../studying-plan/studying-plan-pass-conditions.builder';
-import { UserVocabularyService } from 'src/user-vocabulary/user-vocabulary.service';
-import { getUtcMondayWeekRange } from 'src/datetime/utc-monday-week.util';
-import { WeeklyReviewService } from 'src/weekly-review/weekly-review.service';
+  BadRequestException,
+} from "@nestjs/common";
+import { PrismaService } from "src/prisma.service";
+import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcrypt";
+import { RegisterDto } from "./dto/register.dto";
+import { LoginDto } from "./dto/login.dto";
+import { AlcorythmService } from "../alcorythm/alcorythm.service";
+import { UsersService } from "src/users/users.service";
+import { AuthMethod, TokenType, User } from "@generated/prisma/client";
+import { Request, Response } from "express";
+import { ConfigService } from "@nestjs/config";
+import { ProviderService } from "./provider/provider.service";
+import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
+import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
+import { UpdatePasswordDto } from "./dto/update-password.dto";
+import { UpdateEmailDto } from "./dto/update-email.dto";
 
 // Экспортируем интерфейс, чтобы контроллер мог его видеть
 export interface GeneratedStudent {
@@ -34,32 +36,32 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly alcorythmService: AlcorythmService,
-    private readonly studyingPlanRegeneration: StudyingPlanRegenerationService,
-    private readonly userVocabulary: UserVocabularyService,
-    private readonly weeklyReview: WeeklyReviewService,
-  ) { }
+    private readonly userService: UsersService,
+    private readonly configService: ConfigService,
+    private readonly providerService: ProviderService,
+    private readonly emailConfirmationService: EmailConfirmationService,
+    private readonly twoFactorAuthService: TwoFactorAuthService,
+  ) {}
 
-  async register(dto: RegisterDto) {
+  async register(req: Request, dto: RegisterDto) {
     const prisma = this.prisma as any;
 
-    // Проверка существования пользователя
-    const userExists = await prisma.user.findUnique({
-      where: { email: dto.email },
-      select: { id: true },
-    });
+    const userExists = await this.userService.FindByEmail(
+      dto.email.toLowerCase(),
+    );
 
     if (userExists) {
-      throw new BadRequestException(
-        'Unable to register with the provided information',
+      throw new ConflictException(
+        "User with this email already exists. Please use another email or log in",
       );
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     const trimmedLearningGoal =
-      typeof dto.learningGoal === 'string' ? dto.learningGoal.trim() : '';
+      typeof dto.learningGoal === "string" ? dto.learningGoal.trim() : "";
     const trimmedTimeToAchieve =
-      typeof dto.timeToAchieve === 'string' ? dto.timeToAchieve.trim() : '';
+      typeof dto.timeToAchieve === "string" ? dto.timeToAchieve.trim() : "";
 
     // ПОФИКШЕНО: Используем явную проверку && для сужения типа (Type Narrowing)
     const additionalDataPayload: any = {
@@ -80,23 +82,27 @@ export class AuthService {
       timeToAchieve: trimmedTimeToAchieve || null,
 
       // Исправленная логика favoriteGenres
-      favoriteGenres: (dto.favoriteGenres && dto.favoriteGenres.length > 0)
-        ? { connect: dto.favoriteGenres.map(id => ({ id })) }
-        : undefined,
+      favoriteGenres:
+        dto.favoriteGenres && dto.favoriteGenres.length > 0
+          ? { connect: dto.favoriteGenres.map((id) => ({ id })) }
+          : undefined,
 
       // Исправленная логика hatedGenres
-      hatedGenres: (dto.hatedGenres && dto.hatedGenres.length > 0)
-        ? { connect: dto.hatedGenres.map(id => ({ id })) }
-        : undefined,
+      hatedGenres:
+        dto.hatedGenres && dto.hatedGenres.length > 0
+          ? { connect: dto.hatedGenres.map((id) => ({ id })) }
+          : undefined,
     };
 
+    console.log(additionalDataPayload);
     // 1. Создаем учителя (основного пользователя)
     const mainUser = await prisma.user.create({
       data: {
-        email: dto.email,
+        email: dto.email.toLowerCase(),
         password: hashedPassword,
         name: dto.name,
-        role: dto.role || 'adult',
+        role: (dto.role?.toUpperCase() || "ADULT") as any,
+        method: "CREDENTIALS",
         additionalUserData: {
           create: additionalDataPayload,
         },
@@ -111,36 +117,57 @@ export class AuthService {
     const generatedStudents: GeneratedStudent[] = [];
 
     // 2. Генерация аккаунтов для учеников
-    if (dto.role === 'teacher' && Array.isArray(dto.studentNames)) {
+    // 2. Генерация аккаунтов для учеников
+    if (dto.role === "teacher" && Array.isArray(dto.studentNames)) {
       for (const pupil of dto.studentNames) {
-        // Генерация почты и временного пароля
         const randomId = Math.floor(1000 + Math.random() * 9000);
-        const studentEmail = `${pupil.name.toLowerCase()}.${pupil.surname.toLowerCase()}.${randomId}@alcorythm.com`;
+
+        // Безопасно достаем данные, даже если это объект или строка
+        let firstName = "student";
+        let lastName = randomId.toString();
+
+        if (typeof pupil === "object" && pupil !== null) {
+          firstName = pupil.name || "student";
+          lastName = pupil.surname || randomId.toString();
+        } else if (typeof pupil === "string") {
+          const parts = pupil.split(" ");
+          firstName = parts[0] || "student";
+          lastName = parts[1] || randomId.toString();
+        }
+
+        const studentEmail =
+          `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${randomId}@alcorythm.com`.replace(
+            /\s+/g,
+            "",
+          );
         const tempPassword = Math.random().toString(36).slice(-8);
         const hashedStudentPassword = await bcrypt.hash(tempPassword, 10);
 
-        // Создаем ученика и привязываем к учителю через teacherId 
-        const newStudent = await prisma.user.create({
+        await prisma.user.create({
           data: {
-            email: studentEmail,
+            email: studentEmail.toLowerCase(),
             password: hashedStudentPassword,
-            name: `${pupil.name} ${pupil.surname}`,
-            role: 'student',
+            name: `${firstName} ${lastName}`.trim(),
+            role: "STUDENT",
+            method: "CREDENTIALS",
             teacherId: mainUser.id,
           },
         });
 
         generatedStudents.push({
-          name: newStudent.name,
+          name: `${firstName} ${lastName}`.trim(),
           email: studentEmail,
           password: tempPassword,
         });
       }
     }
-
     await this.alcorythmService.analyzeUserLevel(mainUser.id);
 
     const payload = { sub: mainUser.id, email: mainUser.email };
+
+    //await this.saveSession(req, mainUser);
+
+    await this.emailConfirmationService.sendVerificationToken(mainUser);
 
     return {
       access_token: await this.jwtService.signAsync(payload),
@@ -150,36 +177,134 @@ export class AuthService {
         name: mainUser.name,
       },
       // Возвращаем данные учеников учителю
-      generatedStudents: generatedStudents.length > 0 ? generatedStudents : undefined,
+      generatedStudents:
+        generatedStudents.length > 0 ? generatedStudents : undefined,
+      message:
+        "You have successfully registered. Please confirm your email. A message has been sent to your mailing address.",
     };
   }
 
-  async login(dto: LoginDto) {
+  public async confirmEmail(token: string) {
+    // 1. Ищем токен в правильной таблице (Token), а не в User
+    const existingToken = await this.prisma.token.findUnique({
+      where: {
+        token: token,
+      },
+    });
+
+    // 2. Если токен не найден в базе
+    if (!existingToken) {
+      throw new BadRequestException(
+        "Невірний або прострочений токен підтвердження",
+      );
+    }
+
+    // 3. Ищем пользователя по email, который привязан к этому токену
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        password: true,
-        role: true,
-        hasCompletedPlacement: true,
-        isSuspended: true,
+      where: {
+        email: existingToken.email,
       },
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new BadRequestException("Користувача не знайдено");
+    }
+
+    // 4. Обновляем статус пользователя на "Подтвержденный"
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isVerified: true,
+        // verificationToken: null убрали, так как такого поля в User нет
+      },
+    });
+
+    // 5. Удаляем сам токен из таблицы Token, чтобы его нельзя было юзать дважды
+    await this.prisma.token.delete({
+      where: { id: existingToken.id },
+    });
+
+    return { message: "Email успішно підтверджено" };
+  }
+  public async resendConfirmationEmail(email: string) {
+    // 1. Шукаємо користувача в базі за email
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) {
+      throw new NotFoundException("Користувача з таким email не знайдено");
+    }
+
+    // 2. Перевіряємо, можливо він вже підтвердив пошту
+    if (user.isVerified) {
+      throw new BadRequestException(
+        "Цей email вже підтверджено. Ви можете увійти в систему.",
+      );
+    }
+
+    // 3. Генеруємо новий токен і відправляємо лист
+    // (використовуємо той самий сервіс, що і при реєстрації)
+    await this.emailConfirmationService.sendVerificationToken(user);
+
+    return { message: "Новий лист підтвердження надіслано успішно" };
+  }
+
+  async login(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email.toLowerCase(),
+      },
+    });
+    // const user = await this.prisma.user.findUnique({
+    //   where: { email: dto.email },
+    //   select: {
+    //     id: true,
+    //     email: true,
+    //     name: true,
+    //     password: true,
+    //     isVerified: true,
+    //     isTwoFactorEnable: true,
+    //     role: true,
+    //     hasCompletedPlacement: true,
+    //     isSuspended: true,
+    //   },
+    // });
+
+    if (!user || !user.password) {
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid email or password");
+    }
+
+    if (!user.isVerified) {
+      await this.emailConfirmationService.sendVerificationToken(user);
+      throw new UnauthorizedException(
+        "Email not verified. Please check your mail to confirm your account.",
+      );
+    }
+
+    if (user.isTwoFactorEnable) {
+      if (!dto.code) {
+        await this.twoFactorAuthService.sendTwoFactorToken(user.email);
+
+        return {
+          message:
+            "Please check your email. Two-factor authentication code is required.",
+        };
+      }
+      await this.twoFactorAuthService.validateTwoFactorToken(
+        user.email,
+        dto.code,
+      );
     }
 
     if (user.isSuspended) {
-      throw new ForbiddenException('Account suspended');
+      throw new ForbiddenException("Account suspended");
     }
 
     const payload = { sub: user.id, email: user.email };
@@ -196,26 +321,164 @@ export class AuthService {
     };
   }
 
+  async updatePassword(userId: number, dto: UpdatePasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException("Неверный текущий пароль");
+    }
+
+    const hashedNewPassword = await bcrypt.hash(dto.newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    return { message: "Password successfully updated" };
+  }
+  async updateEmail(userId: number, dto: UpdateEmailDto) {
+    // Проверяем, не занята ли почта
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.newEmail },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException("Email already in use");
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { email: dto.newEmail },
+    });
+
+    return { message: "Email updated successfully" };
+  }
+
+  public async extractProfileFromCode(
+    req: Request,
+    provider: string,
+    code: string,
+  ) {
+    const providerInstance = this.providerService.findByService(provider);
+
+    if (!providerInstance) {
+      throw new NotFoundException(`Provider ${provider} not found`);
+    }
+
+    const profile = await providerInstance.findUserByCode(code);
+
+    const account = await this.prisma.account.findFirst({
+      where: {
+        id: profile.id,
+        provider: profile.provider,
+      },
+    });
+
+    let user = account?.userId
+      ? await this.userService.findById(account.userId)
+      : null;
+
+    if (user) {
+      return this.saveSession(req, user);
+    }
+
+    user = await this.userService.create({
+      email: profile.email,
+      password: "",
+      name: profile.name,
+      picture: profile.picture,
+      method: AuthMethod[profile.provider.toUpperCase()],
+      //method: profile.provider.toUpperCase() as AuthMethod,
+    });
+
+    if (!account) {
+      await this.prisma.account.create({
+        data: {
+          userId: user?.id,
+          type: "oauth",
+          provider: profile.provider,
+          accessToken: profile.access_token,
+          refreshToken: profile.refresh_token,
+          expiresAt: profile.expires_at ?? 0,
+        },
+      });
+    }
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+    return this.saveSession(req, user);
+  }
+
+  public async logout(req: Request, res: Response): Promise<void> {
+    return new Promise((resolve, reject) => {
+      req.session.destroy((err) => {
+        if (err) {
+          return reject(
+            new InternalServerErrorException(
+              "'Could not end the session. Either the server is unreachable or the session is already invalid.'",
+            ),
+          );
+        }
+        res.clearCookie(this.configService.getOrThrow<string>("SESSION_NAME"));
+
+        resolve();
+      });
+    });
+  }
+
+  public async saveSession(req: Request, user: Partial<User>) {
+    return new Promise((resolve, reject) => {
+      if (!user || !user.id) {
+        throw new UnauthorizedException(
+          "User not found or session data is missing",
+        );
+      }
+      req.session.userId = user.id.toString();
+
+      req.session.save((err) => {
+        if (err) {
+          return reject(
+            new InternalServerErrorException(
+              "Failed to save session. Please check if session parameters are configured correctly.",
+            ),
+          );
+        }
+        resolve({
+          user,
+        });
+      });
+    });
+  }
+
   async getProfile(userId: number) {
-    const [user, passedLessons] = await Promise.all([
-      this.prisma.user.findUnique({
-        where: { id: userId },
-        select: {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
         id: true,
         name: true,
         email: true,
+        isVerified: true,
         role: true,
-        teacherId: true,
         hasCompletedPlacement: true,
-        errorFixingTestPending: true,
         isSuspended: true,
         subscriptionPlan: true,
         subscriptionStatus: true,
         stripeSubscriptionId: true,
         currentStreak: true,
-        xp: true,
-        level: true,
-        achievements: { select: { achievementId: true, unlockedAt: true } },
         settings: {
           select: {
             playbackSpeed: true,
@@ -231,77 +494,60 @@ export class AuthService {
             hobbies: true,
             learningGoal: true,
             timeToAchieve: true,
-            studyingPlanPhases: true,
-            activePhaseEnteredAt: true,
             favoriteGenres: { select: { id: true } },
             hatedGenres: { select: { id: true } },
           },
         },
       },
-    }),
-      this.prisma.comprehensionTestAttempt.findMany({
-        where: { userId, passed: true },
-        distinct: ['contentVideoId'],
-        select: { contentVideoId: true },
-      }),
-    ]);
+    });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
     if (user.isSuspended) {
-      throw new ForbiddenException('Account suspended');
+      throw new ForbiddenException("Account suspended");
     }
     const extra = user.additionalUserData;
-    const phaseCount = phaseCountFromStoredPhases(extra?.studyingPlanPhases, 4);
-    const activeStudyingPhaseIndex = activeStudyingPhaseFromPassedLessons(
-      passedLessons.length,
-      phaseCount,
-    );
     return {
       id: user.id,
       name: user.name,
       email: user.email,
+      isVerified: user.isVerified,
       role: user.role,
-      teacherId: user.teacherId ?? null,
       hasCompletedPlacement: user.hasCompletedPlacement,
-      errorFixingTestPending: user.errorFixingTestPending === true,
       currentStreak: user.currentStreak ?? 0,
-      englishLevel: extra?.englishLevel ?? '',
-      education: extra?.education ?? '',
-      workField: extra?.workField ?? '',
-      nativeLanguage: extra?.nativeLanguage ?? '',
+      englishLevel: extra?.englishLevel ?? "",
+      education: extra?.education ?? "",
+      workField: extra?.workField ?? "",
+      nativeLanguage: extra?.nativeLanguage ?? "",
       hobbies: extra?.hobbies ?? [],
-      learningGoal: extra?.learningGoal ?? '',
-      timeToAchieve: extra?.timeToAchieve ?? '',
-      studyingPlanPhases: extra?.studyingPlanPhases ?? null,
-      activePhaseEnteredAt:
-        extra?.activePhaseEnteredAt != null ?
-          extra.activePhaseEnteredAt.toISOString()
-        : null,
-      activeStudyingPhaseIndex,
+      learningGoal: extra?.learningGoal ?? "",
+      timeToAchieve: extra?.timeToAchieve ?? "",
       favoriteGenres: extra?.favoriteGenres?.map((g) => g.id) ?? [],
       hatedGenres: extra?.hatedGenres?.map((g) => g.id) ?? [],
       playbackSpeed: user.settings?.playbackSpeed ?? null,
-      videoQuality: user.settings?.currentResolution ?? '',
-      subscriptionPlan: user.subscriptionPlan ?? '',
-      subscriptionStatus: user.subscriptionStatus ?? '',
-      stripeSubscriptionId: user.stripeSubscriptionId ?? '',
-      xp: user.xp,
-      level: user.level,
-      achievements: user.achievements.map((a: any) => a.achievementId),
+      videoQuality: user.settings?.currentResolution ?? "",
+      subscriptionPlan: user.subscriptionPlan ?? "",
+      subscriptionStatus: user.subscriptionStatus ?? "",
+      stripeSubscriptionId: user.stripeSubscriptionId ?? "",
     };
   }
 
-  /** locale: learner-visible plan language (stored JSON copy). Default en. */
-  async regenerateStudyingPlan(
-    userId: number,
-    locale: StudyingPlanTextLocale = 'en',
-  ) {
-    await this.studyingPlanRegeneration.regenerateForUser(userId, locale);
-    return this.getProfile(userId);
+  /** Monday 00:00 UTC through Sunday (current ISO week). */
+  private utcWeekRange(): { weekStart: Date; weekEndExclusive: Date } {
+    const now = new Date();
+    const day = (d: Date) => d.getUTCDay();
+    const x = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
+    const dow = day(x);
+    const offset = dow === 0 ? -6 : 1 - dow;
+    x.setUTCDate(x.getUTCDate() + offset);
+    x.setUTCHours(0, 0, 0, 0);
+    const weekEndExclusive = new Date(x);
+    weekEndExclusive.setUTCDate(weekEndExclusive.getUTCDate() + 7);
+    return { weekStart: x, weekEndExclusive };
   }
 
-  /** Monday 00:00 UTC through Sunday (current ISO week). */
   /**
    * Dashboard numbers + weekly watch minutes (Mon–Sun, UTC week containing today).
    */
@@ -311,124 +557,43 @@ export class AuthService {
       select: { isSuspended: true },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
     if (user.isSuspended) {
-      throw new ForbiddenException('Account suspended');
+      throw new ForbiddenException("Account suspended");
     }
 
-    const { weekStart, weekEndExclusive } = getUtcMondayWeekRange();
-
-    const [
-      watchSum,
-      distinctVideos,
-      quizAgg,
-      weekSessions,
-      weekQuizzesPassed,
-      weekVocabAdded,
-      bestQuizPassedAttempt,
-      bestQuizAnyAttempt,
-      activitySessions,
-      activityAttempts,
-      activityAchievements,
-      activityVocab,
-      weekQuizAvg,
-    ] = await Promise.all([
-      this.prisma.watchSession.aggregate({
-        where: { userId },
-        _sum: { secondsWatched: true },
-      }),
-      this.prisma.watchSession.findMany({
-        where: { userId, completed: true },
-        select: { contentVideoId: true },
-        distinct: ['contentVideoId'],
-      }),
-      this.prisma.comprehensionTestAttempt.aggregate({
-        where: { userId },
-        _avg: { scorePct: true },
-        _count: { _all: true },
-      }),
-      this.prisma.watchSession.findMany({
-        where: {
-          userId,
-          endedAt: {
-            gte: weekStart,
-            lt: weekEndExclusive,
-          },
-        },
-        select: { endedAt: true, secondsWatched: true, contentVideoId: true },
-      }),
-      this.prisma.comprehensionTestAttempt.count({
-        where: {
-          userId,
-          passed: true,
-          createdAt: { gte: weekStart, lt: weekEndExclusive },
-        },
-      }),
-      this.prisma.userVocabulary.count({
-        where: {
-          userId,
-          createdAt: { gte: weekStart, lt: weekEndExclusive },
-        },
-      }),
-      this.prisma.comprehensionTestAttempt.findFirst({
-        where: { userId, passed: true },
-        orderBy: { scorePct: 'desc' },
-        select: {
-          scorePct: true,
-          contentVideo: { select: { videoName: true } },
-        },
-      }),
-      this.prisma.comprehensionTestAttempt.findFirst({
-        where: { userId },
-        orderBy: { scorePct: 'desc' },
-        select: {
-          scorePct: true,
-          contentVideo: { select: { videoName: true } },
-        },
-      }),
-      this.prisma.watchSession.findMany({
-        where: { userId },
-        orderBy: { endedAt: 'desc' },
-        take: 35,
-        select: {
-          endedAt: true,
-          completed: true,
-          secondsWatched: true,
-          contentVideo: { select: { videoName: true } },
-        },
-      }),
-      this.prisma.comprehensionTestAttempt.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        take: 35,
-        select: {
-          createdAt: true,
-          scorePct: true,
-          passed: true,
-          contentVideo: { select: { videoName: true } },
-        },
-      }),
-      this.prisma.userAchievement.findMany({
-        where: { userId },
-        orderBy: { unlockedAt: 'desc' },
-        take: 35,
-        select: { unlockedAt: true, achievementId: true },
-      }),
-      this.prisma.userVocabulary.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        take: 35,
-        select: { createdAt: true, term: true },
-      }),
-      this.prisma.comprehensionTestAttempt.aggregate({
-        where: {
-          userId,
-          createdAt: { gte: weekStart, lt: weekEndExclusive },
-        },
-        _avg: { scorePct: true },
-      }),
-    ]);
+    const [watchSum, distinctVideos, quizAgg, weekSessions] = await Promise.all(
+      [
+        this.prisma.watchSession.aggregate({
+          where: { userId },
+          _sum: { secondsWatched: true },
+        }),
+        this.prisma.watchSession.findMany({
+          where: { userId, completed: true },
+          select: { contentVideoId: true },
+          distinct: ["contentVideoId"],
+        }),
+        this.prisma.comprehensionTestAttempt.aggregate({
+          where: { userId },
+          _avg: { scorePct: true },
+          _count: { _all: true },
+        }),
+        (() => {
+          const { weekStart, weekEndExclusive } = this.utcWeekRange();
+          return this.prisma.watchSession.findMany({
+            where: {
+              userId,
+              endedAt: {
+                gte: weekStart,
+                lt: weekEndExclusive,
+              },
+            },
+            select: { endedAt: true, secondsWatched: true },
+          });
+        })(),
+      ],
+    );
 
     const totalSeconds = watchSum?._sum?.secondsWatched ?? 0;
     const totalWatchTimeMin = Math.round(Number(totalSeconds) / 60);
@@ -438,12 +603,12 @@ export class AuthService {
     const testsCompleted = quizAgg?._count?._all ?? 0;
     const rawAvg = quizAgg?._avg?.scorePct;
     const averageScore =
-      typeof rawAvg === 'number' && Number.isFinite(rawAvg)
+      typeof rawAvg === "number" && Number.isFinite(rawAvg)
         ? Math.round(rawAvg * 10) / 10
         : null;
 
     const minutesMonSun = [0, 0, 0, 0, 0, 0, 0];
-    const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     for (const s of weekSessions) {
       if (!s.endedAt) continue;
       const d = s.endedAt as Date;
@@ -457,141 +622,12 @@ export class AuthService {
       minutes: Math.ceil(minutesMonSun[i]),
     }));
 
-    const weekVideoIds = new Set(
-      weekSessions.map((s) => s.contentVideoId).filter((id) => typeof id === 'number'),
-    );
-    const thisWeekVideosWatched = weekVideoIds.size;
-
-    type ActivityKind =
-      | 'video_completed'
-      | 'video_watched'
-      | 'quiz'
-      | 'achievement'
-      | 'vocabulary';
-
-    const rawEvents: Array<{
-      kind: ActivityKind;
-      atMs: number;
-      videoTitle?: string;
-      scorePct?: number;
-      passed?: boolean;
-      achievementId?: string;
-      term?: string;
-      secondsWatched?: number;
-    }> = [];
-
-    for (const s of activitySessions) {
-      rawEvents.push({
-        kind: s.completed ? 'video_completed' : 'video_watched',
-        atMs: s.endedAt.getTime(),
-        videoTitle: s.contentVideo.videoName,
-        secondsWatched: s.secondsWatched ?? 0,
-      });
-    }
-    for (const a of activityAttempts) {
-      rawEvents.push({
-        kind: 'quiz',
-        atMs: a.createdAt.getTime(),
-        videoTitle: a.contentVideo.videoName,
-        scorePct:
-          typeof a.scorePct === 'number' && Number.isFinite(a.scorePct)
-            ? Math.round(a.scorePct * 10) / 10
-            : undefined,
-        passed: a.passed,
-      });
-    }
-    for (const u of activityAchievements) {
-      rawEvents.push({
-        kind: 'achievement',
-        atMs: u.unlockedAt.getTime(),
-        achievementId: u.achievementId,
-      });
-    }
-    for (const v of activityVocab) {
-      rawEvents.push({
-        kind: 'vocabulary',
-        atMs: v.createdAt.getTime(),
-        term: v.term,
-      });
-    }
-
-    rawEvents.sort((x, y) => y.atMs - x.atMs);
-    const seen = new Set<string>();
-    const activityHistory: Array<{
-      kind: ActivityKind;
-      at: string;
-      videoTitle?: string;
-      scorePct?: number;
-      passed?: boolean;
-      achievementId?: string;
-      term?: string;
-      secondsWatched?: number;
-    }> = [];
-
-    for (const e of rawEvents) {
-      let key: string;
-      if (e.kind === 'quiz') {
-        key = `${e.kind}:${e.atMs}:${e.videoTitle ?? ''}:${e.scorePct ?? 0}`;
-      } else if (e.kind === 'achievement') {
-        key = `${e.kind}:${e.achievementId ?? ''}:${e.atMs}`;
-      } else if (e.kind === 'vocabulary') {
-        key = `${e.kind}:${e.term ?? ''}:${e.atMs}`;
-      } else {
-        key = `${e.kind}:${e.atMs}:${e.videoTitle ?? ''}`;
-      }
-      if (seen.has(key)) {
-        continue;
-      }
-      seen.add(key);
-      activityHistory.push({
-        kind: e.kind,
-        at: new Date(e.atMs).toISOString(),
-        videoTitle: e.videoTitle,
-        scorePct: e.scorePct,
-        passed: e.passed,
-        achievementId: e.achievementId,
-        term: e.term,
-        secondsWatched: e.secondsWatched,
-      });
-      if (activityHistory.length >= 28) {
-        break;
-      }
-    }
-
-    const bestQuizRow = bestQuizPassedAttempt ?? bestQuizAnyAttempt;
-    const rawBestScore = bestQuizRow?.scorePct;
-    const bestQuiz =
-      bestQuizRow &&
-        rawBestScore != null &&
-        Number.isFinite(Number(rawBestScore))
-        ? {
-          title: bestQuizRow.contentVideo?.videoName?.trim() ?? '',
-          scorePct:
-            Math.round(Number(rawBestScore) * 10) / 10,
-        }
-        : null;
-
-    const rawWeekAvg = weekQuizAvg._avg?.scorePct;
-    const thisWeekAverageScore =
-      typeof rawWeekAvg === 'number' && Number.isFinite(rawWeekAvg)
-        ? Math.round(rawWeekAvg * 10) / 10
-        : null;
-
-    const weeklyReview = await this.weeklyReview.getDashboardSummary(userId);
-
     return {
       totalWatchTimeMin,
       videosCompleted,
       testsCompleted,
       averageScore,
       weeklyActivity,
-      thisWeekVideosWatched,
-      thisWeekQuizzesPassed: weekQuizzesPassed,
-      thisWeekWordsLearned: weekVocabAdded,
-      thisWeekAverageScore,
-      bestQuiz,
-      activityHistory,
-      weeklyReview,
     };
   }
 
@@ -614,10 +650,10 @@ export class AuthService {
       select: { isSuspended: true },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
     if (user.isSuspended) {
-      throw new ForbiddenException('Account suspended');
+      throw new ForbiddenException("Account suspended");
     }
 
     const rows = await this.prisma.userLanguageData.findMany({
@@ -663,22 +699,5 @@ export class AuthService {
       .sort((a, b) => b.score - a.score);
 
     return { tags };
-  }
-
-  /**
-   * Saved vocabulary progress for the learner’s current study language (`UserVocabulary`).
-   */
-  async getProfileVocabularyProgress(userId: number) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { isSuspended: true },
-    });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (user.isSuspended) {
-      throw new ForbiddenException('Account suspended');
-    }
-    return this.userVocabulary.getProgressSummary(userId);
   }
 }

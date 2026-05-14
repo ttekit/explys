@@ -16,6 +16,7 @@ export type RegisterResult =
 export type RegisterCredentialErrorMessages = {
   credentialEmail: string;
   credentialPassword: string;
+  passwordsDontMatch: string;
 };
 
 /** Matches backend `@IsEmail` + `@MinLength(6)`; returns a user-facing error or `null`. */
@@ -23,12 +24,23 @@ export function getRegisterCredentialsError(
   formData: FormData,
   msgs: RegisterCredentialErrorMessages,
 ): string | null {
-  const email = formData.email.trim();
+  const email = formData.email.trim().toLowerCase();
+
+  const hasUpperCase = /[A-Z]/.test(email);
+
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return msgs.credentialEmail;
   }
-  if (!formData.password || formData.password.length < 6) {
+
+  if (hasUpperCase) {
+    return "пошта повиина містити тыльки малі літери";
+  }
+
+  if (!formData.password || formData.password.length < 8) {
     return msgs.credentialPassword;
+  }
+  if (formData.password !== formData.confirmPassword) {
+    return msgs.passwordsDontMatch;
   }
   return null;
 }
@@ -54,6 +66,7 @@ export function buildRegisterBody(formData: FormData): Record<string, unknown> {
     name: formData.name.trim(),
     email: formData.email.trim(),
     password: formData.password,
+    passwordRepeat: formData.confirmPassword,
   };
 
   if (formData.role && formData.role !== CHOOSE) {
@@ -66,7 +79,13 @@ export function buildRegisterBody(formData: FormData): Record<string, unknown> {
       body.teacherGrades = grades;
     }
     body.teacherTopics = formData.teacherTopics ?? [];
-    body.studentNames = teacherPupils;
+    body.studentNames = teacherPupils
+      ? teacherPupils.map((pupil: any) => {
+          if (typeof pupil === "string") return pupil;
+
+          return `${pupil.name} ${pupil.surname || ""}`.trim();
+        })
+      : [];
   }
   // else: do not send studentNames / teacher* — avoids `""` on a JSON column
 
@@ -106,7 +125,10 @@ export async function registerUser(
   if (creds) {
     return { success: false, message: creds };
   }
-  const body = buildRegisterBody(formData);
+  const body = {
+    ...buildRegisterBody(formData),
+    isTwoFactorEnabled: false,
+  };
   let response: Response;
   try {
     response = await apiFetch("/auth/register", {

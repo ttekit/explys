@@ -153,7 +153,8 @@ export default function ProfileMain() {
   }, [user?.id, headerLocale]);
 
   useEffect(() => {
-    if (!user?.id || (activeTab !== "overview" && activeTab !== "activity")) return;
+    if (!user?.id || (activeTab !== "overview" && activeTab !== "activity"))
+      return;
     let cancelled = false;
     void (async () => {
       const r = await apiFetch("/auth/profile/learning-stats", {
@@ -277,7 +278,9 @@ export default function ProfileMain() {
         : p.tabSettings,
     }));
     if (user?.role === "teacher") {
-      const withoutStudying = base.filter((t) => t.id !== "studying-plan");
+      const withoutStudying = base.filter(
+        (t) => t.id !== "studying-plan",
+      );
       return [
         withoutStudying[0],
         {
@@ -389,7 +392,7 @@ export default function ProfileMain() {
         <CatalogSidebar
           categories={[]}
           selectedCategory="All"
-          onSelectCategory={() => { }}
+          onSelectCategory={() => {}}
           onSelectLevel={() => { }}
           reserveTopNavSpace={false}
           welcomeName={

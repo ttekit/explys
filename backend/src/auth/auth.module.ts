@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { AlcorythmModule } from "../alcorythm/alcorythm.module";
@@ -8,16 +8,28 @@ import { AuthService } from "./auth.service";
 import { ApiTokenOrJwtAuthGuard } from "./guards/api-token-or-jwt.guard";
 import { ApiTokenOnlyGuard } from "./guards/api-token-only.guard";
 import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
-import { StudyingPlanGeminiClient } from "../studying-plan/studying-plan-gemini.client";
-import { StudyingPlanRegenerationService } from "../studying-plan/studying-plan-regeneration.service";
-import { UserVocabularyModule } from "../user-vocabulary/user-vocabulary.module";
-import { WeeklyReviewModule } from "../weekly-review/weekly-review.module";
+import { UsersService } from "src/users/users.service";
+import { ProviderModule } from "./provider/provider.module";
+import { getProvidersConfig } from "src/config/providers.config";
+import { EmailConfirmationModule } from "./email-confirmation/email-confirmation.module";
+import { MailService } from "src/common/mail/mail.service";
+import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
+import { GoogleRecaptchaModule } from "@nestlab/google-recaptcha";
+import { getRecaptchaConfig } from "src/config/recaptcha.config";
 
 @Module({
   imports: [
+    GoogleRecaptchaModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: getRecaptchaConfig,
+      inject: [ConfigService],
+    }),
+    ProviderModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: getProvidersConfig,
+      inject: [ConfigService],
+    }),
     AlcorythmModule,
-    UserVocabularyModule,
-    WeeklyReviewModule,
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],
@@ -27,6 +39,7 @@ import { WeeklyReviewModule } from "../weekly-review/weekly-review.module";
       }),
       inject: [ConfigService],
     }),
+    forwardRef(() => EmailConfirmationModule),
   ],
   controllers: [AuthController],
   providers: [
@@ -35,8 +48,9 @@ import { WeeklyReviewModule } from "../weekly-review/weekly-review.module";
     ApiTokenOrJwtAuthGuard,
     ApiTokenOnlyGuard,
     UserSelfOrApiGuard,
-    StudyingPlanGeminiClient,
-    StudyingPlanRegenerationService,
+    UsersService,
+    MailService,
+    TwoFactorAuthService,
   ],
   exports: [
     JwtModule,
