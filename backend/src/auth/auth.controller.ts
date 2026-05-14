@@ -1,144 +1,189 @@
-import { Controller, Post, Body, UseGuards, Get, Request, HttpCode, HttpStatus, Query } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { WeeklyReviewService } from 'src/weekly-review/weekly-review.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { RegenerateStudyingPlanDto } from './dto/regenerate-studying-plan.dto';
-import { AuthGuard } from './auth.guard';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Req,
+  Request as ReqDecorator,
+  Param,
+  Res,
+  Query,
+  BadRequestException,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import { AuthService } from "./auth.service";
+import { RegisterDto } from "./dto/register.dto";
+import { LoginDto } from "./dto/login.dto";
+import { AuthGuard } from "./auth.guard";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiBearerAuth,
+  ApiQuery,
+} from "@nestjs/swagger";
+import { AuthProviderGuard } from "./guards/provider.guard";
+import { ProviderService } from "./provider/provider.service";
+import { ConfigService } from "@nestjs/config";
+import type { Request, Response } from "express";
+import { Recaptcha } from "@nestlab/google-recaptcha";
+import { UpdatePasswordDto } from "./dto/update-password.dto";
+import { UpdateEmailDto } from "./dto/update-email.dto";
 
-@ApiTags('auth')
-@Controller('auth')
+@ApiTags("auth")
+@Controller("auth")
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly weeklyReview: WeeklyReviewService,
-  ) { }
+    private readonly providerService: ProviderService,
+    private readonly configService: ConfigService,
+  ) {}
 
-  @Post('register')
+  @Recaptcha()
+  @Post("register")
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User successfully registered.' })
+  @ApiOperation({ summary: "Register a new user" })
+  @ApiResponse({ status: 201, description: "User successfully registered." })
   @ApiResponse({
     status: 400,
     description:
-      'Bad request or unable to register with the provided information.',
+      "Bad request or unable to register with the provided information.",
   })
   @ApiBody({ type: RegisterDto })
-  register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(@Req() req: Request, @Body() registerDto: RegisterDto) {
+    return await this.authService.register(req, registerDto);
   }
 
-  @Post('login')
+  @Recaptcha()
+  @Post("login")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Log in a user' })
-  @ApiResponse({ status: 200, description: 'User successfully logged in.' })
-  @ApiResponse({ status: 400, description: 'Bad Request.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiOperation({ summary: "Log in a user" })
+  @ApiResponse({ status: 200, description: "User successfully logged in." })
+  @ApiResponse({ status: 400, description: "Bad Request." })
+  @ApiResponse({ status: 401, description: "Unauthorized." })
   @ApiBody({ type: LoginDto })
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto) {
+    return await this.authService.login(loginDto);
+  }
+
+  @Post("resend-confirmation")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Resend email confirmation" })
+  @ApiBody({ schema: { properties: { email: { type: "string" } } } })
+  async resendConfirmation(@Body("email") email: string) {
+    return await this.authService.resendConfirmationEmail(email);
+  }
+
+  @Get("confirm-email")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Confirm user email via token" })
+  @ApiQuery({ name: "token", type: "string" })
+  async confirmEmail(
+    @Query("token") token: string,
+    //@Res() res: Response
+  ) {
+    await this.authService.confirmEmail(token);
+    // const frontendUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:5173";
+    // return res.redirect(`${frontendUrl}/email-success`);
+    return {
+      success: true,
+      message: "Email successfully confirmed",
+    };
   }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('profile')
-  @ApiOperation({ summary: 'Get user profile (requires authentication)' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved successfully.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  getProfile(@Request() req: any) {
+  @Post("update-password")
+  async updatePassword(@Req() req: any, @Body() dto: UpdatePasswordDto) {
+    console.log("Расшифрованный токен:", req.user);
+    return await this.authService.updatePassword(req.user.sub, dto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post("update-email")
+  async updateEmail(@Req() req: any, @Body() dto: UpdateEmailDto) {
+    return this.authService.updateEmail(req.user.sub, dto);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth("JWT-auth")
+  @Get("profile")
+  @ApiOperation({ summary: "Get user profile (requires authentication)" })
+  @ApiResponse({
+    status: 200,
+    description: "User profile retrieved successfully.",
+  })
+  @ApiResponse({ status: 401, description: "Unauthorized." })
+  getProfile(@Req() req: any) {
     const userId = Number(req.user.sub);
     return this.authService.getProfile(userId);
   }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Post('profile/regenerate-studying-plan')
-  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth("JWT-auth")
+  @Get("profile/learning-stats")
   @ApiOperation({
     summary:
-      'Regenerate saved studying plan (phases, pass conditions, weekly habits) from profile',
+      "Learning dashboard stats (watch time, quizzes, Mon–Sun weekly activity UTC)",
   })
-  @ApiBody({ required: false, type: RegenerateStudyingPlanDto })
-  @ApiResponse({ status: 200, description: 'Profile returned with updated plan JSON.' })
-  regenerateStudyingPlan(
-    @Request() req: any,
-    @Body() body?: RegenerateStudyingPlanDto,
-  ) {
-    const userId = Number(req.user.sub);
-    const locale = body?.locale === 'uk' ? 'uk' : 'en';
-    return this.authService.regenerateStudyingPlan(userId, locale);
-  }
-
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('profile/learning-stats')
-  @ApiOperation({
-    summary:
-      'Learning dashboard stats (watch time, quizzes, Mon–Sun weekly activity UTC)',
-  })
-  @ApiResponse({ status: 200, description: 'Stats retrieved.' })
-  getLearningStats(@Request() req: any) {
+  @ApiResponse({ status: 200, description: "Stats retrieved." })
+  getLearningStats(@Req() req: any) {
     const userId = Number(req.user.sub);
     return this.authService.getLearningStats(userId);
   }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('profile/knowledge-tags')
+  @ApiBearerAuth("JWT-auth")
+  @Get("profile/knowledge-tags")
   @ApiOperation({
     summary:
-      'Topic-tag knowledge (listening / vocabulary / grammar means from UserLanguageData)',
+      "Topic-tag knowledge (listening / vocabulary / grammar means from UserLanguageData)",
   })
-  @ApiResponse({ status: 200, description: 'Tag aggregates returned.' })
-  getKnowledgeTags(@Request() req: any) {
+  @ApiResponse({ status: 200, description: "Tag aggregates returned." })
+  getKnowledgeTags(@Req() req: any) {
     const userId = Number(req.user.sub);
     return this.authService.getKnowledgeTagProgress(userId);
   }
 
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('profile/vocabulary-progress')
-  @ApiOperation({
-    summary:
-      'Saved vocabulary buckets for the learner’s study language (UserVocabulary mastery)',
-  })
-  @ApiResponse({ status: 200, description: 'Vocabulary aggregates returned.' })
-  getVocabularyProgress(@Request() req: any) {
-    const userId = Number(req.user.sub);
-    return this.authService.getProfileVocabularyProgress(userId);
+  @Get("/oauth/callback/:provider")
+  @UseGuards(AuthProviderGuard)
+  public async callback(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Query("code") code: string,
+    @Param("provider") provider: string,
+  ) {
+    if (!code) {
+      throw new BadRequestException("");
+    }
+
+    await this.authService.extractProfileFromCode(req, provider, code);
+
+    req.session.save((err) => {
+      if (err) {
+        console.error("Error save session in Redis:", err);
+        throw new InternalServerErrorException("Failed to save session");
+      }
+
+      const redirectUrl = `${this.configService.getOrThrow<string>("ALLOWED_ORIGIN")}/dashboard/settings`;
+      res.redirect(redirectUrl);
+    });
+
+    return res.redirect(
+      `${this.configService.getOrThrow<string>("ALLOWED_ORIGIN")}/dashboard/settings`,
+    );
   }
 
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('weekly-review/tests')
-  @ApiOperation({
-    summary:
-      'Weekly review quiz (MCQ) grounded in lessons watched this UTC week',
-  })
-  @ApiResponse({ status: 200, description: 'Tests payload or blocked reason.' })
-  getWeeklyReviewTests(
-    @Request() req: any,
-    @Query('rerun') rerun?: string,
-  ) {
-    const userId = Number(req.user.sub);
-    const practiceReplay =
-      rerun === '1' ||
-      (typeof rerun === 'string' && rerun.trim().toLowerCase() === 'true');
-    return this.weeklyReview.generateTests(userId, { practiceReplay });
-  }
+  @UseGuards(AuthProviderGuard)
+  @Get("/oauth/connect/:provider")
+  public async connect(@Param("provider") provider: string) {
+    const providerInstance = this.providerService.findByService(provider);
 
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Post('weekly-review/tests/submit')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Submit weekly review answers (once per UTC week)' })
-  @ApiResponse({ status: 200, description: 'Score and XP.' })
-  submitWeeklyReview(
-    @Request() req: any,
-    @Body() body: { token: string; answers: Record<string, number | string> },
-  ) {
-    const userId = Number(req.user.sub);
-    return this.weeklyReview.submit(userId, body);
+    return {
+      url: providerInstance!.getAuthUrl(),
+    };
   }
 }

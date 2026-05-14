@@ -101,7 +101,7 @@ export default function RegistrationMain() {
     }
   };
 
-  const handleNext = (e: FormEvent<HTMLFormElement>) => {
+  const handleNext = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formEl = e.currentTarget;
     const fd = new FormData(formEl);
@@ -109,8 +109,8 @@ export default function RegistrationMain() {
     const email = String(fd.get("email") ?? "").trim();
     const password = String(fd.get("password") ?? "");
     const confirmPassword = String(fd.get("confirmPassword") ?? "");
-    updateFormData({ name, email, password, confirmPassword });
 
+    updateFormData({ name, email, password, confirmPassword });
     if (!name) {
       setErrorText(err.usernameRequired);
       return;
@@ -127,6 +127,7 @@ export default function RegistrationMain() {
       setErrorText(err.passwordRequired);
       return;
     }
+
     if (!isValidPassword(password)) {
       if (password.length < 8) {
         setErrorText(err.passwordMin8);
@@ -151,6 +152,7 @@ export default function RegistrationMain() {
       setErrorText(err.passwordWeak);
       return;
     }
+
     if (!confirmPassword) {
       setErrorText(err.confirmRequired);
       return;
@@ -159,6 +161,7 @@ export default function RegistrationMain() {
       setErrorText(err.passwordsNoMatch);
       return;
     }
+
     setErrorText(null);
     navigate("/registrationDetails");
   };
@@ -256,7 +259,9 @@ export default function RegistrationMain() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <LabelRegister isRequired={true}>{t.confirmPassword}</LabelRegister>
+                <LabelRegister isRequired={true}>
+                  {t.confirmPassword}
+                </LabelRegister>
                 <button
                   type="button"
                   aria-label={

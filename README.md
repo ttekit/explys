@@ -1,4 +1,4 @@
-# Explys (`eng_curses`)
+# Explys
 
 Monorepo for **Explys**: personalized English learning through curated video clips, captions, quizzes, vocabulary support, placements, Stripe subscriptions, and an admin toolkit.
 
@@ -174,5 +174,4 @@ Optionally (+1 smaller call/day): **vocabulary personalization** (~20 lemmas) wh
 ---
 
 ## License / contribution
-
-No License gfys
+No License gfys ╭∩╮( ＾◡＾)╭∩╮
