@@ -11,9 +11,6 @@ import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 import { cn } from "../../lib/utils";
 
-/**
- * Full playlist view for one series (`Content`), ordered by backend playlist positions.
- */
 export default function CatalogSeriesPage() {
   const { friendlyLink: friendlyLinkParam } = useParams<{
     friendlyLink: string;
@@ -88,7 +85,7 @@ export default function CatalogSeriesPage() {
       />
 
       <header className="sticky top-0 z-10 border-b border-border bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4 lg:px-8">
           <Link
             to="/catalog"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -99,69 +96,95 @@ export default function CatalogSeriesPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-8 pb-24">
-        {loading ?
+      <main className="mx-auto max-w-6xl px-4 py-8 pb-24 lg:px-8">
+        {loading ? (
           <p className="text-sm text-muted-foreground">Loading playlist…</p>
-        : error ?
+        ) : error ? (
           <p className="text-sm text-destructive">{error}</p>
-        : payload ?
+        ) : payload ? (
           <>
-            <div className="mb-8 flex gap-3">
+            <div className="mb-10 flex gap-4">
               <div
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary"
                 aria-hidden
               >
-                <ListVideo className="h-6 w-6" />
+                <ListVideo className="h-7 w-7" />
               </div>
               <div>
-                <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+                <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
                   {payload.name}
                 </h1>
-                {payload.description?.trim() ?
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {payload.description?.trim() ? (
+                  <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
                     {payload.description}
                   </p>
-                : null}
-                <p className="mt-2 text-xs text-muted-foreground">
+                ) : null}
+                <p className="mt-2 text-sm font-medium text-muted-foreground">
                   {payload.episodes.length}{" "}
                   {payload.episodes.length === 1 ? "episode" : "episodes"}
                 </p>
               </div>
             </div>
 
-            <ol className="space-y-2">
-              {payload.episodes.map((ep) => (
-                <li key={ep.contentVideoId}>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {payload.episodes.map((ep) => {
+                const thumb = (ep as { thumbnailUrl?: string }).thumbnailUrl;
+                const videoLink = (ep as { videoLink?: string }).videoLink;
+
+                return (
                   <Link
+                    key={ep.contentVideoId}
                     to={`/content/${ep.contentVideoId}`}
-                    className={cn(
-                      "flex gap-4 rounded-2xl border border-border bg-card/40 px-4 py-3 transition-colors",
-                      "hover:border-primary/40 hover:bg-card/70",
-                    )}
+                    className="group flex cursor-pointer flex-col gap-3 rounded-2xl p-2 transition-all duration-300 hover:bg-muted/50"
                   >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-semibold text-foreground">
-                      {ep.index}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-foreground">
+                    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-zinc-800 shadow-sm">
+                      {thumb ? (
+                        <img
+                          src={thumb}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          alt=""
+                        />
+                      ) : videoLink ? (
+                        <video
+                          src={`${videoLink}#t=0.1`}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          preload="metadata"
+                          muted
+                          playsInline
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-zinc-900">
+                          <Play className="h-8 w-8 text-zinc-700" />
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-md">
+                          <Play className="h-6 w-6 fill-white text-white" />
+                        </div>
+                      </div>
+
+                      <div className="absolute bottom-2 right-2 rounded bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+                        EPISODE {ep.index}
+                      </div>
+                    </div>
+
+                    <div className="px-1 pb-2">
+                      <h4 className="line-clamp-1 font-bold leading-snug text-foreground transition-colors group-hover:text-primary">
                         {ep.videoName}
-                      </p>
-                      {ep.videoDescription?.trim() ?
-                        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                      </h4>
+                      {ep.videoDescription?.trim() ? (
+                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                           {ep.videoDescription}
                         </p>
-                      : null}
+                      ) : null}
                     </div>
-                    <span className="flex shrink-0 items-center text-primary">
-                      <Play className="h-5 w-5" aria-hidden />
-                      <span className="sr-only">Open lesson</span>
-                    </span>
                   </Link>
-                </li>
-              ))}
-            </ol>
+                );
+              })}
+            </div>
           </>
-        : null}
+        ) : null}
       </main>
     </div>
   );
