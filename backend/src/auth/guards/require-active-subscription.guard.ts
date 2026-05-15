@@ -15,6 +15,7 @@ import {
   isSubscriptionEnforcementDisabled,
 } from "../../billing/subscription-access.util";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
+import { UserRole } from "@generated/prisma/enums";
 
 /**
  * Requires an active Stripe-backed subscription for learner JWT calls.
@@ -112,7 +113,7 @@ export class RequireActiveSubscriptionGuard implements CanActivate {
       throw new UnauthorizedException("User not found");
     }
 
-    if (user.role === "teacher" || user.teacherId != null) {
+    if (user.role === UserRole.TEACHER || user.teacherId != null) {
       return true;
     }
 

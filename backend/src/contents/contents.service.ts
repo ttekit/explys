@@ -24,6 +24,7 @@ import {
     buildSafeS3ObjectKey,
     publicS3ObjectUrl,
 } from "../common/s3-key.util";
+import { UserRole } from "@generated/prisma/enums";
 
 @Injectable()
 export class ContentsService {
@@ -311,7 +312,7 @@ export class ContentsService {
             where: { id: userId },
             select: { role: true },
         });
-        if (!user || user.role !== "teacher") {
+        if (!user || user.role !== UserRole.TEACHER) {
             throw new ForbiddenException(
                 "Only teacher accounts can use this resource.",
             );

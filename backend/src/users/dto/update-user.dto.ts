@@ -1,7 +1,5 @@
 import { ApiPropertyOptional, OmitType, PartialType } from "@nestjs/swagger";
-import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
-import { CreateUserDto } from "./create-user.dto";
+import { Transform, Type } from "class-transformer";
 import {
   IsBoolean,
   IsEmail,
@@ -10,9 +8,7 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
-
-import { ApiPropertyOptional, PartialType } from "@nestjs/swagger";
-import { Transform, Type } from "class-transformer";
+import { CreateUserDto } from "./create-user.dto";
 
 /** User updates cannot set studying-plan phases or active phase (derived from quiz progress). */
 export class UpdateUserDto extends PartialType(
