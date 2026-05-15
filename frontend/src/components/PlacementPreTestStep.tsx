@@ -35,14 +35,61 @@ const selectFieldClass =
   "w-full rounded-lg border border-border bg-input px-3 py-2.5 text-base text-foreground shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60";
 
 /**
- * Returns a CEFR code when `englishLevel` is one of the supported placement targets.
+ * Returns a CEFR code when the profile already declares a level strong enough to skip the
+ * “English level” field on the prep step and proceed to the iframe entry test.
+ *
+ * Accepts plain codes (`B2`), codes embedded in labels (`Upper intermediate · B2`), and the same
+ * coarse wording the backend mirrors when inferring a band from profile (`Intermediate` → B1,
+ * `Advanced` → C1, etc.). Empty / `choose` / unrecognized strings → `""`.
  */
 function parseAdultProfileCefrTarget(
   level: string | undefined,
 ): AdultPlacementCefrLevel | "" {
-  const raw = level?.trim().toUpperCase() ?? "";
-  if (ADULT_PLACEMENT_CEFR_SET.has(raw)) {
-    return raw as AdultPlacementCefrLevel;
+  const trimmed = level?.trim() ?? "";
+  if (!trimmed) {
+    return "";
+  }
+  const lowered = trimmed.toLowerCase();
+  if (lowered === "choose") {
+    return "";
+  }
+  const embedded = trimmed.match(/\b(A1|A2|B1|B2|C1|C2)\b/i)?.[1]?.toUpperCase();
+  if (embedded && ADULT_PLACEMENT_CEFR_SET.has(embedded)) {
+    return embedded as AdultPlacementCefrLevel;
+  }
+  const upper = trimmed.toUpperCase();
+  if (ADULT_PLACEMENT_CEFR_SET.has(upper)) {
+    return upper as AdultPlacementCefrLevel;
+  }
+  if (/\bpre[-\s]?a1\b/i.test(trimmed)) {
+    return "A1";
+  }
+  if (/\bbeginner|elementary|starter\b/i.test(lowered)) {
+    return "A1";
+  }
+  if (/\ba2\b/i.test(lowered)) {
+    return "A2";
+  }
+  if (/\bb1\b/i.test(lowered)) {
+    return "B1";
+  }
+  if (/\bintermediate\b/i.test(lowered)) {
+    return "B1";
+  }
+  if (/\bb2\b/i.test(lowered)) {
+    return "B2";
+  }
+  if (/\badvanced\b/i.test(lowered)) {
+    return "C1";
+  }
+  if (/\bc1\b/i.test(lowered)) {
+    return "C1";
+  }
+  if (/\bproficient|mastery\b/i.test(lowered)) {
+    return "C2";
+  }
+  if (/\bc2\b/i.test(lowered)) {
+    return "C2";
   }
   return "";
 }
