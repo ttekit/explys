@@ -10,7 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { parseStudyingPlanV2Strict } from '../studying-plan/studying-plan-json.util';
 import { AlcorythmService } from '../alcorythm/alcorythm.service';
 import { Prisma } from '../generated/prisma/client';
-import { UserRole } from "@generated/prisma/enums";
+import { UserRole, AuthMethod } from "@generated/prisma/enums";
 
 function parseRoleFromDto(roleRaw: string | undefined): UserRole | undefined {
     if (roleRaw == null || typeof roleRaw !== "string") {
@@ -98,6 +98,8 @@ export class UsersService {
             activeStudyingPhaseIndex,
         } = createUserDto;
         const role = parseRoleFromDto(roleRaw);
+        const method =
+            createUserDto.method ?? AuthMethod.CREDENTIALS;
         const additionalDataPayload: any = {
             englishLevel,
             nativeLanguage,
@@ -150,26 +152,19 @@ export class UsersService {
             hashedPassword = await bcrypt.hash(password, 10);
         }
 
-        const userData: any = {
+        const coreUserFields = {
             email,
             name,
-            method: createUserDto.method,
-            additionalUserData: {
-                create: additionalDataPayload,
-            },
-        }
-        if(hashedPassword){
-            userData.password = hashedPassword;
-        }
+            password: hashedPassword,
+            method,
+            ...(role ? { role } : {}),
+        };
 
         let created: any;
         try {
             created = await prisma.user.create({
                 data: {
-                    email,
-                    password: hashedPassword,
-                    name,
-                    ...(role ? { role } : {}),
+                    ...coreUserFields,
                     additionalUserData: {
                         create: additionalDataPayload,
                     },
@@ -187,10 +182,7 @@ export class UsersService {
             if (message.includes('Unknown argument `knownLanguages`') || message.includes('Unknown argument `knownLanguageLevels`')) {
                 created = await prisma.user.create({
                     data: {
-                        email,
-                        password: hashedPassword,
-                        name,
-                        ...(role ? { role } : {}),
+                        ...coreUserFields,
                         additionalUserData: { create: additionalDataPayload },
                     },
                     select: this.userSelect,
@@ -205,10 +197,7 @@ export class UsersService {
 
             created = await prisma.user.create({
                 data: {
-                    email,
-                    password: hashedPassword,
-                    name,
-                    ...(role ? { role } : {}),
+                    ...coreUserFields,
                 },
                 select: this.userSelect,
             });
