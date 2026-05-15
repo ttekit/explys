@@ -1,18 +1,20 @@
 import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { ApiTokenOnlyGuard } from "src/auth/guards/api-token-only.guard";
+import { JwtAdminGuard } from "src/auth/guards/jwt-admin.guard";
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { UsersService } from "src/users/users.service";
 import { AdminUsersService } from "./admin-users.service";
 
 @ApiTags("admin-users")
 @Controller("admin/users")
-@UseGuards(ApiTokenOnlyGuard)
+@UseGuards(JwtAdminGuard)
+@ApiBearerAuth("JWT-auth")
 export class AdminUsersController {
   constructor(
     private readonly adminUsers: AdminUsersService,

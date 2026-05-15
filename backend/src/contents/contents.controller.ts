@@ -20,7 +20,7 @@ import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Express, Request } from "express";
 import { AuthGuard } from "src/auth/auth.guard";
 import { jwtSubToUserId } from "src/auth/jwt-subject.util";
-import { ApiTokenOnlyGuard } from "src/auth/guards/api-token-only.guard";
+import { JwtAdminGuard } from "src/auth/guards/jwt-admin.guard";
 import { AddContentEpisodeDto } from "src/contents/dto/add-content-episode.dto";
 import { ContentsService } from "./contents.service";
 import { CreateContentDto } from "src/contents/dto/create-content.dto";
@@ -137,7 +137,7 @@ export class ContentsController {
   }
 
   @Patch(":id/playlist")
-  @UseGuards(ApiTokenOnlyGuard)
+  @UseGuards(JwtAdminGuard)
   @ApiOperation({
     summary: "Reorder ContentMedia slots for a series (admin API token)",
   })
@@ -149,7 +149,7 @@ export class ContentsController {
   }
 
   @Post(":id/episodes")
-  @UseGuards(ApiTokenOnlyGuard)
+  @UseGuards(JwtAdminGuard)
   @UseInterceptors(
     FileInterceptor("file", {
       limits: { fileSize: CONTENT_VIDEO_MAX_FILE_BYTES },

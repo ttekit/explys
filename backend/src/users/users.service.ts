@@ -10,6 +10,19 @@ import * as bcrypt from 'bcrypt';
 import { parseStudyingPlanV2Strict } from '../studying-plan/studying-plan-json.util';
 import { AlcorythmService } from '../alcorythm/alcorythm.service';
 import { Prisma } from '../generated/prisma/client';
+import { UserRole } from "@generated/prisma/enums";
+
+function parseRoleFromDto(roleRaw: string | undefined): UserRole | undefined {
+    if (roleRaw == null || typeof roleRaw !== "string") {
+        return undefined;
+    }
+    const k = roleRaw.trim().toUpperCase();
+    if (k === "ADULT") return UserRole.ADULT;
+    if (k === "STUDENT") return UserRole.STUDENT;
+    if (k === "TEACHER") return UserRole.TEACHER;
+    if (k === "ADMIN") return UserRole.ADMIN;
+    return undefined;
+}
 
 function clampPhaseIndex(index: number, phaseCount: number): number {
     if (phaseCount <= 0) return 0;
@@ -84,11 +97,7 @@ export class UsersService {
             studyingPlanPhases,
             activeStudyingPhaseIndex,
         } = createUserDto;
-        const role =
-            roleRaw &&
-                ["adult", "student", "teacher"].includes(roleRaw)
-                ? roleRaw
-                : undefined;
+        const role = parseRoleFromDto(roleRaw);
         const additionalDataPayload: any = {
             englishLevel,
             nativeLanguage,
@@ -259,6 +268,15 @@ export class UsersService {
             currentResolution,
             ...dataToUpdate
         } = updateUserDto as any;
+
+        if (dataToUpdate.role !== undefined && dataToUpdate.role !== null) {
+            const coerced = parseRoleFromDto(String(dataToUpdate.role));
+            if (coerced !== undefined) {
+                dataToUpdate.role = coerced;
+            } else {
+                delete dataToUpdate.role;
+            }
+        }
 
         if (
             dataToUpdate.password !== undefined &&

@@ -37,10 +37,10 @@ export function userHasPaidSubscription(user: UserData | null): boolean {
   return s === "active" || s === "trialing";
 }
 
-/** Teachers and roster-linked students bypass the consumer paywall. */
+/** Teachers, admins, and roster-linked students bypass the consumer paywall. */
 export function userExemptFromSubscription(user: UserData | null): boolean {
   if (!user) return false;
-  if (user.role === "teacher") return true;
+  if (user.role === "teacher" || user.role === "admin") return true;
   if (user.teacherId != null) return true;
   return false;
 }

@@ -160,6 +160,7 @@ export const appEn = {
     roleAdult: "Adult learner",
     roleStudent: "Student",
     roleTeacher: "Teacher",
+    roleAdmin: "Administrator",
     photoSoonAria: "Profile photo (coming soon)",
     learnerFallback: "Learner",
     joinedLine: "Joined {date}",

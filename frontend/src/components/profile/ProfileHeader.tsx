@@ -2,7 +2,7 @@ import { Calendar, Edit2, Flame } from "lucide-react";
 import { formatMessage } from "../../lib/formatMessage";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 
-export type ProfileHeaderRole = "adult" | "student" | "teacher";
+export type ProfileHeaderRole = "adult" | "student" | "teacher" | "admin";
 
 export interface ProfileHeaderModel {
   name: string;
@@ -28,6 +28,7 @@ export function ProfileHeader({ user }: { user: ProfileHeaderModel }) {
   const roleLabel =
     user.role === "teacher" ? h.roleTeacher
     : user.role === "student" ? h.roleStudent
+    : user.role === "admin" ? h.roleAdmin
     : h.roleAdult;
 
   return (

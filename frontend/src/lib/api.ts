@@ -210,5 +210,5 @@ export async function adminApiFetch(
   path: string,
   init: FetchOpts = {},
 ): Promise<Response> {
-  return apiFetch(path, { ...init, token: null });
+  return apiFetch(path, init);
 }

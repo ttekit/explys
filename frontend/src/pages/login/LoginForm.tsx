@@ -36,6 +36,7 @@ function postLoginNavigateTarget(
 ): string {
   if (explicit) return explicit;
   if (!profile) return "/subscribe";
+  if (profile.role === "admin") return "/admin";
   if (profile.role === "teacher") return "/catalog";
   if (userMayUseLearnerApp(profile)) return "/catalog";
   return "/subscribe";

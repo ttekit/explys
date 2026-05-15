@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Mail,
   Search,
+  Shield,
   Trash2,
   UserPlus,
   Users,
@@ -33,27 +34,44 @@ import {
   deleteAdminUser,
   fetchAdminUsers,
   matchesLevelFilter,
+  normalizeUserRoleCode,
   patchAdminUser,
   userLevelBadge,
 } from "../../lib/adminUsersApi";
 
-type KnownRole = "adult" | "student" | "teacher";
+type KnownRole = "adult" | "student" | "teacher" | "admin";
 
 const roleIcons: Record<KnownRole, typeof Briefcase> = {
   adult: Briefcase,
   student: Users,
   teacher: GraduationCap,
+  admin: Shield,
 };
 
 const roleBadge: Record<KnownRole, string> = {
   adult: "bg-blue-500/20 text-blue-400",
   student: "bg-green-500/20 text-green-400",
   teacher: "bg-amber-500/20 text-amber-400",
+  admin: "bg-purple-500/20 text-purple-400",
 };
 
 function roleKey(r: string): KnownRole | null {
-  if (r === "adult" || r === "student" || r === "teacher") return r;
+  const k = normalizeUserRoleCode(r);
+  if (
+    k === "adult" ||
+    k === "student" ||
+    k === "teacher" ||
+    k === "admin"
+  ) {
+    return k;
+  }
   return null;
+}
+
+function roleDisplayLabel(role: string): string {
+  const k = normalizeUserRoleCode(role);
+  if (!k) return role.trim() || "—";
+  return k.charAt(0).toUpperCase() + k.slice(1);
 }
 
 function mailtoHref(email: string, name: string): string {
@@ -124,7 +142,8 @@ export default function AdminUsersPage() {
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesRole =
-        roleFilter === "all" || user.role === roleFilter;
+        roleFilter === "all" ||
+        normalizeUserRoleCode(user.role) === roleFilter;
       const matchesLevel = matchesLevelFilter(user, levelFilter);
       return matchesSearch && matchesRole && matchesLevel;
     });
@@ -133,9 +152,14 @@ export default function AdminUsersPage() {
   const stats = useMemo(() => {
     return {
       total: users.length,
-      adults: users.filter((u) => u.role === "adult").length,
-      students: users.filter((u) => u.role === "student").length,
-      teachers: users.filter((u) => u.role === "teacher").length,
+      adults: users.filter((u) => normalizeUserRoleCode(u.role) === "adult")
+        .length,
+      students: users.filter((u) => normalizeUserRoleCode(u.role) === "student")
+        .length,
+      teachers: users.filter((u) => normalizeUserRoleCode(u.role) === "teacher")
+        .length,
+      admins: users.filter((u) => normalizeUserRoleCode(u.role) === "admin")
+        .length,
     };
   }, [users]);
 
@@ -373,6 +397,7 @@ export default function AdminUsersPage() {
                 <option value="adult">Adult</option>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
               </AdminSelectNative>
             </div>
           </div>
@@ -466,6 +491,7 @@ export default function AdminUsersPage() {
                 <option value="adult">Adult</option>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
               </AdminSelectNative>
             </div>
           </div>
@@ -538,7 +564,7 @@ export default function AdminUsersPage() {
         </AdminCard>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {[
           {
             label: "Total",
@@ -566,6 +592,13 @@ export default function AdminUsersPage() {
             icon: GraduationCap,
             box: "bg-amber-500/10",
             icolor: "text-amber-400",
+          },
+          {
+            label: "Admins",
+            value: loading ? "…" : stats.admins,
+            icon: Shield,
+            box: "bg-purple-500/10",
+            icolor: "text-purple-400",
           },
         ].map((s) => (
           <AdminCard key={s.label}>
@@ -608,6 +641,7 @@ export default function AdminUsersPage() {
                 <option value="adult">Adult</option>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
               </AdminSelectNative>
               <AdminSelectNative
                 className="min-w-[120px]"
@@ -710,7 +744,7 @@ export default function AdminUsersPage() {
                         className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium capitalize ${rb}`}
                       >
                         <RI className="h-3 w-3" />
-                        {user.role}
+                        {roleDisplayLabel(user.role)}
                       </span>
                     </td>
                     <td className="p-4">

@@ -121,12 +121,19 @@ export class AuthService {
       learningGoal: trimmedLearningGoal || null,
       timeToAchieve: trimmedTimeToAchieve || null,
     };
+    const allowedRegisterRoles = new Set(["ADULT", "STUDENT", "TEACHER"]);
+    const requestedRole = String(dto.role ?? "")
+      .trim()
+      .toUpperCase();
+    const roleLabel = allowedRegisterRoles.has(requestedRole)
+      ? requestedRole
+      : "ADULT";
     const mainUser = await prisma.user.create({
       data: {
         email: dto.email.toLowerCase(),
         password: hashedPassword,
         name: dto.name,
-        role: (dto.role?.toUpperCase() || "ADULT") as any,
+        role: roleLabel as any,
         method: "CREDENTIALS",
         isVerified: outboundMailDisabled,
         additionalUserData: {

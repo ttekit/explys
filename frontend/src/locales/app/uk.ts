@@ -161,6 +161,7 @@ export const appUk = {
     roleAdult: "Дорослий учень",
     roleStudent: "Учень",
     roleTeacher: "Викладач",
+    roleAdmin: "Адміністратор",
     photoSoonAria: "Фото профілю (незабаром)",
     learnerFallback: "Учень",
     joinedLine: "З нами з {date}",

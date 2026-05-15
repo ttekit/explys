@@ -160,6 +160,7 @@ export default function VideoPage() {
     !!accessToken &&
     !!user &&
     user.role !== "teacher" &&
+    user.role !== "admin" &&
     !user.hasCompletedPlacement;
 
   /** Derive phase synchronously so we never flash the wrong overlay (effect + stale initial state). */

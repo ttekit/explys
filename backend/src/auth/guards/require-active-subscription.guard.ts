@@ -109,7 +109,7 @@ export class RequireActiveSubscriptionGuard implements CanActivate {
       throw new UnauthorizedException("User not found");
     }
 
-    if (user.role === UserRole.TEACHER || user.teacherId != null) {
+    if (user.role === UserRole.TEACHER || user.role === UserRole.ADMIN || user.teacherId != null) {
       return true;
     }
 

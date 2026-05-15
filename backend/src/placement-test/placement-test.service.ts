@@ -33,6 +33,7 @@ import {
   PlacementTestPayload,
   ThemesFile,
 } from "./placement-test.types";
+import { UserRole } from "@generated/prisma/enums";
 import { renderPlacementHtml } from "./placement-html.template";
 
 @Injectable()
@@ -99,10 +100,12 @@ export class PlacementTestService {
     if (!user) {
       throw new NotFoundException("User not found");
     }
-    const isTeacher = user.role === "teacher";
+    const isTeacher = user.role === UserRole.TEACHER;
+    const isAdmin = user.role === UserRole.ADMIN;
     return {
       hasCompletedPlacement: user.hasCompletedPlacement,
-      shouldShowEntryTest: !isTeacher && !user.hasCompletedPlacement,
+      shouldShowEntryTest:
+        !isTeacher && !isAdmin && !user.hasCompletedPlacement,
     };
   }
 

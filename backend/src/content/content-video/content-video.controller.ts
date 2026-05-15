@@ -18,7 +18,7 @@ import { ConfigService } from "@nestjs/config";
 import { ApiOperation, ApiProduces, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthGuard } from "src/auth/auth.guard";
-import { ApiTokenOnlyGuard } from "src/auth/guards/api-token-only.guard";
+import { JwtAdminGuard } from "src/auth/guards/jwt-admin.guard";
 import { jwtSubToUserId } from "src/auth/jwt-subject.util";
 import { renderComprehensionTestsIframeHtml } from "src/content-video/content-video-comprehension-tests-html";
 import { ContentVideoComprehensionTestsService } from "src/content-video/content-video-comprehension-tests.service";
@@ -149,7 +149,7 @@ export class ContentVideoController {
   }
 
   @Post(":id/regenerate-tags")
-  @UseGuards(ApiTokenOnlyGuard)
+  @UseGuards(JwtAdminGuard)
   @ApiOperation({
     summary: "Regenerate theme labels (userTags) from captions",
     description:
@@ -160,7 +160,7 @@ export class ContentVideoController {
   }
 
   @Post(":id/regenerate-genres")
-  @UseGuards(ApiTokenOnlyGuard)
+  @UseGuards(JwtAdminGuard)
   @ApiOperation({
     summary: "Regenerate CEFR / level bands (systemTags) from captions",
     description:
@@ -171,7 +171,7 @@ export class ContentVideoController {
   }
 
   @Post(":id/regenerate-captions")
-  @UseGuards(ApiTokenOnlyGuard)
+  @UseGuards(JwtAdminGuard)
   @ApiOperation({
     summary: "Regenerate WebVTT captions",
     description:
@@ -209,7 +209,7 @@ export class ContentVideoController {
   }
 
   @Get(":id/subtitles")
-  @UseGuards(ApiTokenOnlyGuard)
+  @UseGuards(JwtAdminGuard)
   @ApiOperation({
     summary: "Plain WebVTT (admin API token)",
     description:

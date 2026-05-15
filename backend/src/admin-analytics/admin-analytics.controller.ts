@@ -1,11 +1,12 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
-import { ApiTokenOnlyGuard } from "src/auth/guards/api-token-only.guard";
+import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { JwtAdminGuard } from "src/auth/guards/jwt-admin.guard";
 import { AdminAnalyticsService } from "./admin-analytics.service";
 
 @ApiTags("admin-analytics")
 @Controller("admin/analytics")
-@UseGuards(ApiTokenOnlyGuard)
+@UseGuards(JwtAdminGuard)
+@ApiBearerAuth("JWT-auth")
 export class AdminAnalyticsController {
   constructor(private readonly adminAnalytics: AdminAnalyticsService) {}
 

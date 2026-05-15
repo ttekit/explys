@@ -7,6 +7,7 @@ import { AuthGuard } from "./auth.guard";
 import { AuthService } from "./auth.service";
 import { ApiTokenOrJwtAuthGuard } from "./guards/api-token-or-jwt.guard";
 import { ApiTokenOnlyGuard } from "./guards/api-token-only.guard";
+import { JwtAdminGuard } from "./guards/jwt-admin.guard";
 import { UserSelfOrApiGuard } from "./guards/user-self-or-api.guard";
 import { UsersService } from "src/users/users.service";
 import { ProviderModule } from "./provider/provider.module";
@@ -40,6 +41,7 @@ import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service"
     AuthGuard,
     ApiTokenOrJwtAuthGuard,
     ApiTokenOnlyGuard,
+    JwtAdminGuard,
     UserSelfOrApiGuard,
     UsersService,
     MailService,
@@ -51,6 +53,7 @@ import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service"
     AuthGuard,
     ApiTokenOrJwtAuthGuard,
     ApiTokenOnlyGuard,
+    JwtAdminGuard,
     UserSelfOrApiGuard,
   ],
 })

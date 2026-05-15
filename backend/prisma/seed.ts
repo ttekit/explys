@@ -1,8 +1,13 @@
 import "dotenv/config";
-import { PrismaClient } from "../src/generated/prisma/client";
+import * as bcrypt from "bcrypt";
+import { AuthMethod, PrismaClient, UserRole } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { getDatabaseUrl } from "../src/config/database-url";
+
+/** Dev-only credentials; override with SEED_TEMP_ADMIN_EMAIL / SEED_TEMP_ADMIN_PASSWORD. */
+const TEMP_ADMIN_EMAIL_DEFAULT = "temp-admin@localhost.local";
+const TEMP_ADMIN_PASSWORD_DEFAULT = "TempAdmin1!";
 
 const pool = new Pool({
   connectionString: getDatabaseUrl(),
@@ -174,6 +179,42 @@ const englishProficiencyTopics = {
 
 async function main() {
   console.log('🌱 Starting seed...');
+
+  const tempAdminEmail = (
+    process.env.SEED_TEMP_ADMIN_EMAIL ?? TEMP_ADMIN_EMAIL_DEFAULT
+  ).toLowerCase();
+  const tempAdminPassword =
+    process.env.SEED_TEMP_ADMIN_PASSWORD ?? TEMP_ADMIN_PASSWORD_DEFAULT;
+  const tempAdminHash = await bcrypt.hash(tempAdminPassword, 10);
+  await prisma.user.upsert({
+    where: { email: tempAdminEmail },
+    create: {
+      email: tempAdminEmail,
+      name: "Temp Admin",
+      password: tempAdminHash,
+      role: UserRole.ADMIN,
+      method: AuthMethod.CREDENTIALS,
+      isVerified: true,
+      hasCompletedPlacement: true,
+      isTwoFactorEnable: false,
+      isSuspended: false,
+    },
+    update: {
+      name: "Temp Admin",
+      password: tempAdminHash,
+      role: UserRole.ADMIN,
+      method: AuthMethod.CREDENTIALS,
+      isVerified: true,
+      hasCompletedPlacement: true,
+      isTwoFactorEnable: false,
+      isSuspended: false,
+    },
+  });
+  console.log(
+    "👤 Temp admin upserted:",
+    tempAdminEmail,
+    "(set SEED_TEMP_ADMIN_EMAIL / SEED_TEMP_ADMIN_PASSWORD to override; remove or rotate before production)",
+  );
 
   // --- 1. SEED TAGS ---
   const allTags: string[] = [];

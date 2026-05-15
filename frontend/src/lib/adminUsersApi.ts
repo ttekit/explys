@@ -22,11 +22,16 @@ export async function fetchAdminUsers(): Promise<AdminUserRow[]> {
   return (await res.json()) as AdminUserRow[];
 }
 
+/** Lowercase role codes aligned with `parseRoleFromDto` / profile normalization. */
+export function normalizeUserRoleCode(role: string): string {
+  return role.trim().toLowerCase();
+}
+
 export type CreateAdminUserPayload = {
   email: string;
   password: string;
   name: string;
-  role?: "adult" | "student" | "teacher";
+  role?: "adult" | "student" | "teacher" | "admin";
   englishLevel?: string;
 };
 
@@ -36,7 +41,10 @@ export async function createAdminUser(
   const res = await adminApiFetch("/admin/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      method: "CREDENTIALS",
+    }),
   });
   if (!res.ok) {
     throw new Error(await readApiErrorBody(res));
@@ -48,7 +56,7 @@ export type PatchAdminUserPayload = {
   name?: string;
   email?: string;
   password?: string;
-  role?: "adult" | "student" | "teacher";
+  role?: "adult" | "student" | "teacher" | "admin";
   englishLevel?: string;
   isSuspended?: boolean;
 };

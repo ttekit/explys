@@ -35,6 +35,7 @@ import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 import AnalyticsLayout from "./components/AnalyticsLayout";
 import RequireAuth from "./components/RequireAuth";
+import RequireAdmin from "./components/RequireAdmin";
 import RequireSubscriberAccess from "./components/RequireSubscriberAccess";
 import SubscribePage from "./pages/subscription/SubscribePage";
 
@@ -58,16 +59,21 @@ const router = createBrowserRouter([
           { path: "/subscribe", element: <SubscribePage /> },
           {
             path: "/admin",
-            element: <AdminLayout />,
+            element: <RequireAdmin />,
             children: [
-              { index: true, element: <AdminDashboardPage /> },
-              { path: "users", element: <AdminUsersPage /> },
-              { path: "videos", element: <AdminVideosPage /> },
-              { path: "tests", element: <AdminTestsPage /> },
-              { path: "teachers", element: <AdminTeachersPage /> },
-              { path: "topics", element: <AdminTopicsPage /> },
-              { path: "analytics", element: <AdminAnalyticsPage /> },
-              { path: "settings", element: <AdminSettingsPage /> },
+              {
+                element: <AdminLayout />,
+                children: [
+                  { index: true, element: <AdminDashboardPage /> },
+                  { path: "users", element: <AdminUsersPage /> },
+                  { path: "videos", element: <AdminVideosPage /> },
+                  { path: "tests", element: <AdminTestsPage /> },
+                  { path: "teachers", element: <AdminTeachersPage /> },
+                  { path: "topics", element: <AdminTopicsPage /> },
+                  { path: "analytics", element: <AdminAnalyticsPage /> },
+                  { path: "settings", element: <AdminSettingsPage /> },
+                ],
+              },
             ],
           },
           { path: "/level-test", element: <LevelTestPage /> },
