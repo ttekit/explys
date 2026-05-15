@@ -22,6 +22,7 @@ import { EmailConfirmationService } from "./email-confirmation/email-confirmatio
 import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
 import { UpdatePasswordDto } from "./dto/update-password.dto";
 import { UpdateEmailDto } from "./dto/update-email.dto";
+import { isOutboundMailDisabled } from "src/common/utils/outbound-mail-disabled.util";
 
 // Экспортируем интерфейс, чтобы контроллер мог его видеть
 export interface GeneratedStudent {
@@ -80,6 +81,7 @@ export class AuthService {
 
   async register(req: Request, dto: RegisterDto) {
     const prisma = this.prisma as any;
+    const outboundMailDisabled = isOutboundMailDisabled(this.configService);
 
     const userExists = await this.userService.FindByEmail(
       dto.email.toLowerCase(),
@@ -126,6 +128,7 @@ export class AuthService {
         name: dto.name,
         role: (dto.role?.toUpperCase() || "ADULT") as any,
         method: "CREDENTIALS",
+        isVerified: outboundMailDisabled,
         additionalUserData: {
           create: this.pickDefinedFields(additionalDataPayload) as Record<
             string,
@@ -194,6 +197,7 @@ export class AuthService {
             role: "STUDENT",
             method: "CREDENTIALS",
             teacherId: mainUser.id,
+            isVerified: outboundMailDisabled,
           },
         });
 
@@ -210,7 +214,9 @@ export class AuthService {
 
     //await this.saveSession(req, mainUser);
 
-    await this.emailConfirmationService.sendVerificationToken(mainUser);
+    if (!outboundMailDisabled) {
+      await this.emailConfirmationService.sendVerificationToken(mainUser);
+    }
 
     return {
       access_token: await this.jwtService.signAsync(payload),
@@ -222,8 +228,9 @@ export class AuthService {
       // Возвращаем данные учеников учителю
       generatedStudents:
         generatedStudents.length > 0 ? generatedStudents : undefined,
-      message:
-        "You have successfully registered. Please confirm your email. A message has been sent to your mailing address.",
+      message: outboundMailDisabled
+        ? "You have successfully registered."
+        : "You have successfully registered. Please confirm your email. A message has been sent to your mailing address.",
     };
   }
 
@@ -286,6 +293,12 @@ export class AuthService {
       );
     }
 
+    if (isOutboundMailDisabled(this.configService)) {
+      throw new BadRequestException(
+        "Підтвердження email поштою вимкнено на цьому сервері. Увійдіть у систему — обліковий запис буде активовано автоматично.",
+      );
+    }
+
     // 3. Генеруємо новий токен і відправляємо лист
     // (використовуємо той самий сервіс, що і при реєстрації)
     await this.emailConfirmationService.sendVerificationToken(user);
@@ -325,10 +338,17 @@ export class AuthService {
     }
 
     if (!user.isVerified) {
-      await this.emailConfirmationService.sendVerificationToken(user);
-      throw new UnauthorizedException(
-        "Email not verified. Please check your mail to confirm your account.",
-      );
+      if (isOutboundMailDisabled(this.configService)) {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { isVerified: true },
+        });
+      } else {
+        await this.emailConfirmationService.sendVerificationToken(user);
+        throw new UnauthorizedException(
+          "Email not verified. Please check your mail to confirm your account.",
+        );
+      }
     }
 
     if (user.isTwoFactorEnable) {
