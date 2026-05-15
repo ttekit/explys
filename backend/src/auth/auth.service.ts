@@ -43,6 +43,41 @@ export class AuthService {
     private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
+  private async filterExistingGenreIds(ids: number[] | undefined): Promise<number[]> {
+    if (!ids?.length) {
+      return [];
+    }
+    const numericUnique = [
+      ...new Set(
+        ids
+          .map((raw) => {
+            const n =
+              typeof raw === "number" && Number.isFinite(raw)
+                ? Math.trunc(raw)
+                : parseInt(String(raw).trim(), 10);
+            return Number.isFinite(n) && n > 0 ? n : NaN;
+          })
+          .filter((n): n is number => !Number.isNaN(n)),
+      ),
+    ];
+    if (!numericUnique.length) {
+      return [];
+    }
+    const rows = await this.prisma.genre.findMany({
+      where: { id: { in: numericUnique } },
+      select: { id: true },
+    });
+    return rows.map((g) => g.id);
+  }
+
+  private pickDefinedFields(
+    record: Record<string, unknown>,
+  ): Record<string, unknown> {
+    return Object.fromEntries(
+      Object.entries(record).filter(([, v]) => v !== undefined),
+    );
+  }
+
   async register(req: Request, dto: RegisterDto) {
     const prisma = this.prisma as any;
 
@@ -63,8 +98,12 @@ export class AuthService {
     const trimmedTimeToAchieve =
       typeof dto.timeToAchieve === "string" ? dto.timeToAchieve.trim() : "";
 
-    // ПОФИКШЕНО: Используем явную проверку && для сужения типа (Type Narrowing)
-    const additionalDataPayload: any = {
+    const favoriteGenreIds = await this.filterExistingGenreIds(
+      dto.favoriteGenres,
+    );
+    const hatedGenreIds = await this.filterExistingGenreIds(dto.hatedGenres);
+
+    const additionalDataPayload: Record<string, unknown> = {
       englishLevel: dto.englishLevel,
       education: dto.education,
       hobbies: dto.hobbies || [],
@@ -76,26 +115,10 @@ export class AuthService {
       teacherTopics: dto.teacherTopics || [],
       studentGrade: dto.studentGrade,
       studentProblemTopics: dto.studentProblemTopics || [],
-      studentNames: dto.studentNames, // Json массив из схемы [cite: 14]
-
+      studentNames: dto.studentNames,
       learningGoal: trimmedLearningGoal || null,
       timeToAchieve: trimmedTimeToAchieve || null,
-
-      // Исправленная логика favoriteGenres
-      favoriteGenres:
-        dto.favoriteGenres && dto.favoriteGenres.length > 0
-          ? { connect: dto.favoriteGenres.map((id) => ({ id })) }
-          : undefined,
-
-      // Исправленная логика hatedGenres
-      hatedGenres:
-        dto.hatedGenres && dto.hatedGenres.length > 0
-          ? { connect: dto.hatedGenres.map((id) => ({ id })) }
-          : undefined,
     };
-
-    console.log(additionalDataPayload);
-    // 1. Создаем учителя (основного пользователя)
     const mainUser = await prisma.user.create({
       data: {
         email: dto.email.toLowerCase(),
@@ -104,7 +127,10 @@ export class AuthService {
         role: (dto.role?.toUpperCase() || "ADULT") as any,
         method: "CREDENTIALS",
         additionalUserData: {
-          create: additionalDataPayload,
+          create: this.pickDefinedFields(additionalDataPayload) as Record<
+            string,
+            unknown
+          >,
         },
       },
       select: {
@@ -113,6 +139,23 @@ export class AuthService {
         name: true,
       },
     });
+    if (favoriteGenreIds.length > 0 || hatedGenreIds.length > 0) {
+      const genreUpdate: Record<string, unknown> = {};
+      if (favoriteGenreIds.length > 0) {
+        genreUpdate.favoriteGenres = {
+          connect: favoriteGenreIds.map((id) => ({ id })),
+        };
+      }
+      if (hatedGenreIds.length > 0) {
+        genreUpdate.hatedGenres = {
+          connect: hatedGenreIds.map((id) => ({ id })),
+        };
+      }
+      await prisma.additionalUserData.update({
+        where: { userId: mainUser.id },
+        data: genreUpdate as Record<string, unknown>,
+      });
+    }
 
     const generatedStudents: GeneratedStudent[] = [];
 

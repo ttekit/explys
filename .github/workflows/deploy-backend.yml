@@ -1,0 +1,45 @@
+# Deploys Nest backend to your VPS over SSH after pushes to `main` touch `backend/`.
+#
+# GitHub repository → Settings → Secrets and variables → Actions, add:
+#   SSH_HOST        — server hostname or IP
+#   SSH_USER        — SSH login (e.g. deploy, ubuntu)
+#   SSH_PRIVATE_KEY — full PEM private key for that user (recommended: dedicated deploy key)
+# Optional:
+#   SSH_PORT        — only if SSH is not on 22; set this secret or edit the `port` input below.
+#
+# Server: clone repo to ~/explys so `~/explys/backend` exists; pm2 process name `explys-backend`.
+# Ensure `git pull` works non-interactively (HTTPS token, SSH deploy key, or credential helper).
+
+name: Deploy backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-explys-backend
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: SSH deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Pull, build, restart PM2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            cd ~/explys/backend
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart explys-backend

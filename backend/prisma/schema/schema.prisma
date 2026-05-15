@@ -15,7 +15,7 @@ model User {
   role                  UserRole      @default(REGULAR)
   hasCompletedPlacement Boolean       @default(false) @map("has_completed_placement")
   lastLogin             DateTime?
-  createdAt             DateTime      @default(now()) @map("update_at")
+  createdAt             DateTime      @default(now())
   /// Serialized placement questionnaire (correct keys) until test is completed — must match iframe payload.
   placementTestDraft    Json?         @map("placement_test_draft")
   /// When true, login and profile are blocked until an admin clears this flag.
