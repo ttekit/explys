@@ -10,7 +10,8 @@ import * as bcrypt from 'bcrypt';
 import { parseStudyingPlanV2Strict } from '../studying-plan/studying-plan-json.util';
 import { AlcorythmService } from '../alcorythm/alcorythm.service';
 import { Prisma } from '../generated/prisma/client';
-import { UserRole, AuthMethod } from "@generated/prisma/enums";
+import type { AuthMethod } from "@generated/prisma/enums";
+import { UserRole } from "@generated/prisma/enums";
 
 function parseRoleFromDto(roleRaw: string | undefined): UserRole | undefined {
     if (roleRaw == null || typeof roleRaw !== "string") {
@@ -22,6 +23,11 @@ function parseRoleFromDto(roleRaw: string | undefined): UserRole | undefined {
     if (k === "TEACHER") return UserRole.TEACHER;
     if (k === "ADMIN") return UserRole.ADMIN;
     return undefined;
+}
+
+function resolveAuthMethodForCreate(dto: CreateUserDto): AuthMethod {
+    const raw = String(dto.method ?? "").trim().toUpperCase();
+    return raw === "GOOGLE" ? "GOOGLE" : "CREDENTIALS";
 }
 
 function clampPhaseIndex(index: number, phaseCount: number): number {
@@ -98,8 +104,7 @@ export class UsersService {
             activeStudyingPhaseIndex,
         } = createUserDto;
         const role = parseRoleFromDto(roleRaw);
-        const method =
-            createUserDto.method ?? AuthMethod.CREDENTIALS;
+        const resolvedAuthMethod = resolveAuthMethodForCreate(createUserDto);
         const additionalDataPayload: any = {
             englishLevel,
             nativeLanguage,
@@ -156,7 +161,6 @@ export class UsersService {
             email,
             name,
             password: hashedPassword,
-            method,
             ...(role ? { role } : {}),
         };
 
@@ -165,6 +169,7 @@ export class UsersService {
             created = await prisma.user.create({
                 data: {
                     ...coreUserFields,
+                    method: resolvedAuthMethod,
                     additionalUserData: {
                         create: additionalDataPayload,
                     },
@@ -183,6 +188,7 @@ export class UsersService {
                 created = await prisma.user.create({
                     data: {
                         ...coreUserFields,
+                        method: resolvedAuthMethod,
                         additionalUserData: { create: additionalDataPayload },
                     },
                     select: this.userSelect,
@@ -198,6 +204,7 @@ export class UsersService {
             created = await prisma.user.create({
                 data: {
                     ...coreUserFields,
+                    method: resolvedAuthMethod,
                 },
                 select: this.userSelect,
             });

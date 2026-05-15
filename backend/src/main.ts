@@ -16,6 +16,10 @@ import session from "express-session";
 import { ms, StringValue } from "./common/utils/ms.util";
 import { parseBoolean } from "./common/utils/parse-boolean.util";
 
+function normalizeCorsOriginEntry(entry: string): string {
+  return entry.trim().replace(/\/+$/, "");
+}
+
 function resolveCorsOrigin():
   | boolean
   | string
@@ -32,20 +36,37 @@ function resolveCorsOrigin():
     if (!raw?.trim()) {
       throw new Error("CORS_ORIGINS must be set when NODE_ENV=production");
     }
-    return raw.split(",").map((s) => s.trim());
+    return raw
+      .split(",")
+      .map((s) => normalizeCorsOriginEntry(s))
+      .filter(Boolean);
   }
 
   if (!raw?.trim()) {
     return true;
   }
 
-  return raw.split(",").map((s) => s.trim());
+  return raw
+    .split(",")
+    .map((s) => normalizeCorsOriginEntry(s))
+    .filter(Boolean);
 }
 
 async function bootstrap() {
+  /**
+   * Default Express/Nest JSON limit is small (~100kb). Larger payloads (e.g. studying-plan JSON)
+   * otherwise fail with 413. Proxies (nginx, Cloudflare) may enforce their own limits too — if the
+   * browser shows "CORS" + 413, the edge often omitted `Access-Control-Allow-Origin` on the error.
+   */
+  const jsonBodyLimit = process.env.HTTP_JSON_BODY_LIMIT?.trim() || "500mb";
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
+    bodyParser: false,
   });
+  app.useBodyParser("json", { limit: jsonBodyLimit });
+  app.useBodyParser("urlencoded", { extended: true, limit: jsonBodyLimit });
+
   const config = app.get(ConfigService);
   const redis = new IORedis("redis://localhost:6379");
   //const redis = new IORedis(config.getOrThrow('REDIS_URL'))
