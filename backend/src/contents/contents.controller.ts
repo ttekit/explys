@@ -21,13 +21,13 @@ import { Express, Request } from "express";
 import { AuthGuard } from "src/auth/auth.guard";
 import { jwtSubToUserId } from "src/auth/jwt-subject.util";
 import { ApiTokenOnlyGuard } from "src/auth/guards/api-token-only.guard";
-import { AddContentEpisodeDto } from "./dto/add-content-episode.dto";
+import { AddContentEpisodeDto } from "src/contents/dto/add-content-episode.dto";
 import { ContentsService } from "./contents.service";
-import { CreateContentDto } from "./dto/create-content.dto";
-import { ReorderContentPlaylistDto } from "./dto/reorder-content-playlist.dto";
-import { TeacherPatchContentVisibilityDto } from "./dto/teacher-patch-content-visibility.dto";
-import { TeacherUploadContentDto } from "./dto/teacher-upload-content.dto";
-import { UpdateContentDto } from "./dto/update-content.dto";
+import { CreateContentDto } from "src/contents/dto/create-content.dto";
+import { ReorderContentPlaylistDto } from "src/contents/dto/reorder-content-playlist.dto";
+import { TeacherPatchContentVisibilityDto } from "src/contents/dto/teacher-patch-content-visibility.dto";
+import { TeacherUploadContentDto } from "src/contents/dto/teacher-upload-content.dto";
+import { UpdateContentDto } from "src/contents/dto/update-content.dto";
 
 /** MP4 uploads; override with CONTENT_VIDEO_MAX_FILE_BYTES (bytes). Default 100 MiB. */
 function contentVideoMaxFileBytes(): number {

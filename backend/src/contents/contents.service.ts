@@ -14,12 +14,12 @@ import {
 import { randomUUID } from "crypto";
 import { PrismaService } from "src/prisma.service";
 import { VideoCaptionsService } from "src/contents/video-captions.service";
-import { AddContentEpisodeDto } from "./dto/add-content-episode.dto";
-import { CreateContentDto } from "./dto/create-content.dto";
-import { ReorderContentPlaylistDto } from "./dto/reorder-content-playlist.dto";
-import { TeacherPatchContentVisibilityDto } from "./dto/teacher-patch-content-visibility.dto";
-import { TeacherUploadContentDto } from "./dto/teacher-upload-content.dto";
-import { UpdateContentDto } from "./dto/update-content.dto";
+import { AddContentEpisodeDto } from "src/contents/dto/add-content-episode.dto";
+import { CreateContentDto } from "src/contents/dto/create-content.dto";
+import { ReorderContentPlaylistDto } from "src/contents/dto/reorder-content-playlist.dto";
+import { TeacherPatchContentVisibilityDto } from "src/contents/dto/teacher-patch-content-visibility.dto";
+import { TeacherUploadContentDto } from "src/contents/dto/teacher-upload-content.dto";
+import { UpdateContentDto } from "src/contents/dto/update-content.dto";
 import {
     buildSafeS3ObjectKey,
     publicS3ObjectUrl,
