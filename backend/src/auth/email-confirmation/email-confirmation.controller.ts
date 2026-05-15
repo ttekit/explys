@@ -43,7 +43,7 @@ export class EmailConfirmationController {
     await this.emailConfirmationService.newVerification(req, { token });
 
     const frontendUrl =
-      this.configService.getOrThrow<string>("APPLICATION_URL");
+      this.configService.getOrThrow<string>("FRONTEND_URL");
     return res.redirect(`${frontendUrl}/registrationDetails`);
   }
 

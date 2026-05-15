@@ -16,14 +16,14 @@ export class MailService {
   ) {}
 
   public async sendConfirmationEmail(email: string, token: string) {
-    const domain = this.configService.getOrThrow<string>("FRONT_HOST");
+    const domain = this.configService.getOrThrow<string>("FRONTEND_URL");
     const html = await render(ConfirmationTemplate({ domain, token }));
 
     return this.sendMail(email, "Email confirmation", html);
   }
 
   public async sendPasswordResetEmail(email: string, token: string) {
-    const domain = this.configService.getOrThrow<string>("FRONT_HOST");
+    const domain = this.configService.getOrThrow<string>("FRONTEND_URL");
     const html = await render(ResetPasswordTemplate({ domain, token }));
 
     return this.sendMail(email, "Reset password", html);

@@ -168,13 +168,9 @@ export class AuthController {
         throw new InternalServerErrorException("Failed to save session");
       }
 
-      const redirectUrl = `${this.configService.getOrThrow<string>("ALLOWED_ORIGIN")}/dashboard/settings`;
+      const redirectUrl = `${this.configService.getOrThrow<string>("FRONTEND_URL")}/dashboard/settings`;
       res.redirect(redirectUrl);
     });
-
-    return res.redirect(
-      `${this.configService.getOrThrow<string>("ALLOWED_ORIGIN")}/dashboard/settings`,
-    );
   }
 
   @UseGuards(AuthProviderGuard)

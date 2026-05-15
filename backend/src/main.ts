@@ -43,8 +43,6 @@ function resolveCorsOrigin():
 }
 
 async function bootstrap() {
-  console.log('CLIENT SECRET:', process.env.GOOGLE_CLIENT_SECRET);
-
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
   });
@@ -59,7 +57,7 @@ async function bootstrap() {
   app.useStaticAssets(join(process.cwd(), "public"), { prefix: "/dev/" });
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    origin: resolveCorsOrigin(),
     exposedHeaders: ["set-cookie"],
     credentials: true,
   });
