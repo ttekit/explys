@@ -10,7 +10,12 @@ export type GeneratedStudentAccount = {
 };
 
 export type RegisterResult =
-  | { success: true; generatedStudents?: GeneratedStudentAccount[] }
+  | {
+      success: true;
+      generatedStudents?: GeneratedStudentAccount[];
+      /** JWT from `POST /auth/register` when registration succeeds. */
+      accessToken?: string;
+    }
   | { success: false; message: string };
 
 export type RegisterCredentialErrorMessages = {
@@ -145,9 +150,11 @@ export async function registerUser(
   if (response.ok) {
     clearRegistrationDraft();
     let generatedStudents: GeneratedStudentAccount[] | undefined;
+    let accessToken: string | undefined;
     try {
       const data = (await response.json()) as {
         generatedStudents?: GeneratedStudentAccount[];
+        access_token?: string;
       };
       if (
         Array.isArray(data.generatedStudents) &&
@@ -155,10 +162,16 @@ export async function registerUser(
       ) {
         generatedStudents = data.generatedStudents;
       }
+      if (
+        typeof data.access_token === "string" &&
+        data.access_token.length > 0
+      ) {
+        accessToken = data.access_token;
+      }
     } catch {
       // ignore body parse
     }
-    return { success: true, generatedStudents };
+    return { success: true, generatedStudents, accessToken };
   }
   return { success: false, message: await readApiErrorBody(response) };
 }

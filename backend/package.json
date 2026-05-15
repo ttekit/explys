@@ -65,6 +65,7 @@
     "dev": "nest start --watch",
     "build": "nest build",
     "test": "jest",
+    "deploy": "npx prisma generate && npx prisma db push && npm run build && pm2 restart explys-backend",
     "seed": "npx ts-node prisma/seed.ts",
     "postbuild": "node -e \"require('fs').cpSync('src/generated','dist/generated',{recursive:true,force:true})\""
   }

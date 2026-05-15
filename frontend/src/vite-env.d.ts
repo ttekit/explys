@@ -19,6 +19,11 @@ interface ImportMetaEnv {
   readonly VITE_LOG_API_ERRORS?: string;
   /** Skip subscription gates when `true`, `1`, or `yes` (pairs with backend `SKIP_SUBSCRIPTION_ENFORCEMENT`). */
   readonly VITE_SKIP_SUBSCRIPTION_ENFORCEMENT?: string;
+  /**
+   * Injected in `vite.config.ts` from `DEV_MODE` or `VITE_DEV_MODE` in `.env`.
+   * `1` / `true` / `yes` → relax subscription; `0` / `false` / `no` → enforce like production.
+   */
+  readonly VITE_APP_SUBSCRIPTION_DEV_MODE?: string;
   /** Optional; Stripe publishable key (pk_test_… / pk_live_…). Mirrored backend: `STRIPE_PUBLISHABLE_KEY` + GET /billing/stripe-publishable-key */
   readonly VITE_STRIPE_PUBLISHABLE_KEY?: string;
 }

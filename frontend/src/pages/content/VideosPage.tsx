@@ -14,6 +14,7 @@ import {
 import PlacementPreferencesStep from "../../components/PlacementPreferencesStep";
 import PlacementPreTestStep, {
   adultNeedsPlacementPrepFields,
+  studentNeedsPlacementPreferencesOverlay,
 } from "../../components/PlacementPreTestStep";
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
@@ -167,8 +168,14 @@ export default function VideoPage() {
     if (user.role === "adult") {
       return adultNeedsPlacementPrepFields(user) ? "preferences" : "test";
     }
+    if (user.role === "student") {
+      return studentNeedsPlacementPreferencesOverlay(user)
+        ? "preferences"
+        : "test";
+    }
     const hasPrefs =
-      (user.hobbies?.length ?? 0) > 0 && (user.favoriteGenres?.length ?? 0) > 0;
+      (user.hobbies?.length ?? 0) > 0 &&
+      (user.favoriteGenres?.length ?? 0) > 0;
     return hasPrefs ? "test" : "preferences";
   }, [
     needsPlacement,
@@ -176,6 +183,7 @@ export default function VideoPage() {
     user?.hobbies,
     user?.favoriteGenres,
     user?.role,
+    user?.teacherId,
     user?.nativeLanguage,
     user?.workField,
     user?.education,
@@ -549,7 +557,9 @@ export default function VideoPage() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   {user?.role === "adult"
                     ? messages.catalogBrowse.beforeEntryAdult
-                    : messages.catalogBrowse.beforeEntryStudent}
+                    : user?.role === "student" && user?.teacherId == null
+                      ? messages.catalogBrowse.beforeEntryIndependentStudent
+                      : messages.catalogBrowse.beforeEntryStudent}
                 </p>
               </div>
               <div className="flex-1 pb-6">

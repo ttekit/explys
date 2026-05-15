@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Link, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import ContentHeader from "../../components/catalog/ContentHeader";
 import PricingCards from "../../components/pricing/PricingCards";
 import { useUser } from "../../context/UserContext";
@@ -7,13 +7,16 @@ import { usePricingCheckout } from "../../hooks/usePricingCheckout";
 import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { userMayUseLearnerApp } from "../../lib/subscriptionAccess";
 
 export default function PricingPage() {
   const [searchParams] = useSearchParams();
-  const { isLoggedIn } = useUser();
+  const navigate = useNavigate();
+  const { isLoggedIn, user, logout } = useUser();
   const { startCheckout, checkoutLoading } = usePricingCheckout();
   const { messages, locale } = useLandingLocale();
   const pricingMeta = messages.pricingPage;
+  const showPaywallLogout = Boolean(user && !userMayUseLearnerApp(user));
 
   const checkoutOk = searchParams.get("checkout") === "success";
 
@@ -71,6 +74,21 @@ export default function PricingPage() {
           Payments are processed securely by Stripe. By continuing you agree to
           our terms for your selected plan.
         </p>
+
+        {showPaywallLogout ?
+          <div className="mx-auto mt-10 flex justify-center border-border border-t pt-8">
+            <button
+              type="button"
+              className="text-muted-foreground text-sm underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              onClick={() => {
+                logout();
+                navigate("/loginForm");
+              }}
+            >
+              {messages.footer.links.logout}
+            </button>
+          </div>
+        : null}
       </main>
     </div>
   );

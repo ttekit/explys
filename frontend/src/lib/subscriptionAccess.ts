@@ -1,14 +1,28 @@
 import type { UserData } from "../context/UserContext";
 
+function readSubscriptionDevModeRaw(): string {
+  return (import.meta.env.VITE_APP_SUBSCRIPTION_DEV_MODE ?? "0")
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * `DEV_MODE=1` (or `true` / `yes`): subscription gates behave like local dev (relaxed).
+ * `DEV_MODE=0`: product-like enforcement from the SPA’s perspective.
+ * Set in `.env` as `DEV_MODE` or `VITE_DEV_MODE` (see `vite.config.ts`).
+ */
+export function subscriptionDevModeEnabled(): boolean {
+  const raw = readSubscriptionDevModeRaw();
+  return raw === "1" || raw === "true" || raw === "yes";
+}
+
 /**
  * When true, learner routes do not require an active Stripe subscription.
- * `vite dev` enables this automatically so local work does not wait on webhooks
- * or show post-checkout “confirming payment” UI; production builds never set `DEV`.
- * For staging/prod frontends, set `VITE_SKIP_SUBSCRIPTION_ENFORCEMENT` to match
- * backend `SKIP_SUBSCRIPTION_ENFORCEMENT`.
+ * Driven by `DEV_MODE` / `VITE_DEV_MODE` (defaults: `1` under `vite dev`, `0` for production builds).
+ * When `DEV_MODE=0`, optional `VITE_SKIP_SUBSCRIPTION_ENFORCEMENT` can still bypass (staging).
  */
 export function subscriptionEnforcementDisabled(): boolean {
-  if (import.meta.env.DEV) {
+  if (subscriptionDevModeEnabled()) {
     return true;
   }
   const v = (import.meta.env.VITE_SKIP_SUBSCRIPTION_ENFORCEMENT ?? "")

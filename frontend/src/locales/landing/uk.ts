@@ -358,7 +358,7 @@ export const landingUk = {
       step3: {
         rightTitle: "Майже готово!",
         rightSubtitle:
-          "Кілька вподобань допоможуть підібрати, що ви дивитимете далі.",
+          "Вкажіть мету й жанри, далі оберіть тарифний план.",
         back: "Назад",
         titleStudent: "Вподобання учня",
         titleAdult: "Ваші вподобання",
@@ -378,6 +378,7 @@ export const landingUk = {
         genresAvoidHint:
           "Ми відфільтруємо контент із цих категорій.",
         register: "Зареєструватися",
+        continueToPlans: "Далі до тарифів",
       },
       step3Alerts: {
         failedPrefix: "Реєстрація не вдалася:",
@@ -421,6 +422,7 @@ export const landingUk = {
       readyToStart: "Готові почати",
       logIn: "Увійти",
       register: "Реєстрація",
+      logout: "Вийти",
     },
   },
 } as const;

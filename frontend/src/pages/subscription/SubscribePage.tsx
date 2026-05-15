@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Link,
   useNavigate,
   useSearchParams,
 } from "react-router";
+import toast from "react-hot-toast";
 import PricingCards from "../../components/pricing/PricingCards";
 import { usePricingCheckout } from "../../hooks/usePricingCheckout";
 import { useUser } from "../../context/UserContext";
 import {
+  subscriptionDevModeEnabled,
   subscriptionEnforcementDisabled,
   userMayUseLearnerApp,
 } from "../../lib/subscriptionAccess";
@@ -15,10 +17,7 @@ import { SEO } from "../../components/SEO/SEO";
 import { resolveCanonicalUrl } from "../../lib/siteUrl";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 import { formatMessage } from "../../lib/formatMessage";
-import {
-  resolveStripePublishableKey,
-  stripeKeyMode,
-} from "../../lib/stripePublishable";
+import { consumePendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 
 export default function SubscribePage() {
   const [searchParams] = useSearchParams();
@@ -27,12 +26,18 @@ export default function SubscribePage() {
   const { startCheckout, checkoutLoading } = usePricingCheckout();
   const { locale, messages } = useLandingLocale();
   const sub = messages.subscription;
-  const [stripeMode, setStripeMode] = useState<"test" | "live" | null>(null);
+  const toastAccountCreated = messages.auth.login.toastAccountCreated;
 
   const devSkip = subscriptionEnforcementDisabled();
-  const devSkipBannerDetail = import.meta.env.DEV
-    ? "vite dev"
-    : "VITE_SKIP_SUBSCRIPTION_ENFORCEMENT";
+  const devSkipBannerDetail = (() => {
+    if (!devSkip) {
+      return "";
+    }
+    if (subscriptionDevModeEnabled()) {
+      return import.meta.env.DEV ? "vite dev · DEV_MODE=1" : "DEV_MODE=1";
+    }
+    return "VITE_SKIP_SUBSCRIPTION_ENFORCEMENT";
+  })();
 
   useEffect(() => {
     if (devSkip) return;
@@ -52,10 +57,11 @@ export default function SubscribePage() {
   }, [devSkip, isLoading, navigate, searchParams, user]);
 
   useEffect(() => {
-    void resolveStripePublishableKey().then((pk) =>
-      setStripeMode(stripeKeyMode(pk)),
-    );
-  }, []);
+    if (!consumePendingRegistrationLoginWelcome()) {
+      return;
+    }
+    toast.success(toastAccountCreated);
+  }, [toastAccountCreated]);
 
   return (
     <div className="min-h-screen bg-background font-display text-foreground antialiased">
@@ -83,18 +89,6 @@ export default function SubscribePage() {
               {sub.subtitle}
             </p>
           </div>
-          {stripeMode ?
-            <p
-              className={
-                stripeMode === "test" ?
-                  "mx-auto max-w-xl text-xs text-amber-600 dark:text-amber-400"
-                : "mx-auto max-w-xl text-xs text-muted-foreground"
-              }
-              role="status"
-            >
-              {stripeMode === "test" ? sub.stripeTest : sub.stripeLive}
-            </p>
-          : null}
           {devSkip ?
             <p
               className="mx-auto max-w-lg rounded-xl border border-primary/35 bg-primary/10 px-4 py-3 text-primary text-sm"
@@ -136,16 +130,18 @@ export default function SubscribePage() {
         )}
 
         <div className="mt-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-12 text-muted-foreground text-sm">
-          <button
-            type="button"
-            className="hover:text-foreground underline-offset-4 hover:underline"
-            onClick={() => {
-              logout();
-              navigate("/loginForm");
-            }}
-          >
-            {sub.signOut}
-          </button>
+          {user && !userMayUseLearnerApp(user) ?
+            <button
+              type="button"
+              className="hover:text-foreground underline-offset-4 hover:underline"
+              onClick={() => {
+                logout();
+                navigate("/loginForm");
+              }}
+            >
+              {sub.signOut}
+            </button>
+          : null}
           <Link
             to="/pricing"
             className="underline-offset-4 hover:text-foreground hover:underline"

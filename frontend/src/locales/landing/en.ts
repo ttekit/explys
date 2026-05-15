@@ -356,7 +356,7 @@ export const landingEn = {
       step3: {
         rightTitle: "Almost there!",
         rightSubtitle:
-          "A few preferences help us tune what you'll watch next.",
+          "Set your goal and genres, then pick a plan that fits you.",
         back: "Back",
         titleStudent: "Student preferences",
         titleAdult: "Your preferences",
@@ -376,6 +376,7 @@ export const landingEn = {
         genresAvoidHint:
           "We'll filter out selections from these buckets.",
         register: "Register",
+        continueToPlans: "Continue to plans",
       },
       step3Alerts: {
         failedPrefix: "Registration failed:",
@@ -419,6 +420,7 @@ export const landingEn = {
       readyToStart: "Ready to start",
       logIn: "Log in",
       register: "Register",
+      logout: "Log out",
     },
   },
 } as const;

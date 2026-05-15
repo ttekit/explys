@@ -3,7 +3,14 @@ import LabelRegister from "../../components/LabelRegister";
 import InputText from "../../components/InputText";
 import { TimeToAchieveField } from "../../components/TimeToAchieveField";
 import { Link, useNavigate } from "react-router";
-import { useContext, FormEvent, useState, useEffect, ChangeEvent } from "react";
+import {
+  useContext,
+  FormEvent,
+  useState,
+  useEffect,
+  ChangeEvent,
+  useMemo,
+} from "react";
 import {
   RegistrationContext,
   type FormData,
@@ -11,21 +18,37 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import { cn } from "../../lib/utils";
-import { buildRegisterBody } from "../../lib/registerUser";
+import { registerUser } from "../../lib/registerUser";
 import { apiFetch, setStoredAccessToken } from "../../lib/api";
 import { setPendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { useUser } from "../../context/UserContext";
 
 export default function RegistrationPreferences() {
   const { messages, locale } = useLandingLocale();
   const t = messages.auth.registration.step3;
   const alerts = messages.auth.registration.step3Alerts;
+  const registrationErrors = messages.auth.registration.errors;
   const lpLearn = messages.learningPlan;
   const context = useContext(RegistrationContext);
   if (!context) throw new Error("RegistrationContext is not available");
 
   const { formData, updateFormData } = context;
   const navigate = useNavigate();
+  const { refreshProfile } = useUser();
+
+  const credentialMsgs = useMemo(
+    () => ({
+      credentialEmail: registrationErrors.credentialEmail,
+      credentialPassword: registrationErrors.credentialPassword,
+      passwordsDontMatch: registrationErrors.passwordsNoMatch || "",
+    }),
+    [
+      registrationErrors.credentialEmail,
+      registrationErrors.credentialPassword,
+      registrationErrors.passwordsNoMatch,
+    ],
+  );
   const isTeacher = formData.role === "teacher";
   const isAdult = formData.role === "adult";
 
@@ -92,39 +115,18 @@ export default function RegistrationPreferences() {
     e.preventDefault();
 
     try {
-      const response = await apiFetch("/auth/register", {
-        method: "POST",
-        body: JSON.stringify(
-          buildRegisterBody({
-            ...formData,
-            favoriteGenres: formData.favoriteGenres ?? [],
-            hatedGenres: formData.hatedGenres ?? [],
-          }),
-        ),
-      });
+      const result = await registerUser(formData, credentialMsgs, alerts.network);
 
-      if (response.ok) {
-        setStoredAccessToken(null);
-        if (formData.role === "student" || formData.role === "adult") {
-          setPendingRegistrationLoginWelcome();
-          navigate("/loginForm", {
-            replace: true,
-            state: { from: "/subscribe", registrationComplete: true },
-          });
-        } else {
-          navigate("/loginForm");
+      if (result.success) {
+        const token = result.accessToken;
+        if (token) {
+          setStoredAccessToken(token);
+          await refreshProfile();
         }
+        setPendingRegistrationLoginWelcome();
+        navigate("/subscribe", { replace: true });
       } else {
-        const errorData = await response.json();
-        console.error("Registration Error Details:", errorData);
-
-        const errorMessage = Array.isArray(errorData.message)
-          ? errorData.message.join(", ")
-          : errorData.message;
-
-        alert(
-          `${alerts.failedPrefix} ${errorMessage || alerts.failedFallback}`,
-        );
+        alert(`${alerts.failedPrefix} ${result.message || alerts.failedFallback}`);
       }
     } catch (error) {
       console.error("Network or parsing error:", error);
@@ -273,7 +275,7 @@ export default function RegistrationPreferences() {
             type="submit"
             className="rounded-[15px] bg-primary px-6 py-4 text-sm font-semibold text-foreground/70 hover:bg-purple-hover hover:text-white transition-all hover:cursor-pointer shadow-[inset_0_4px_12px_rgba(0,0,0,0.6),inset_0_-2px_6px_rgba(255,255,255,0.3)]"
           >
-            {t.register}
+            {t.continueToPlans}
           </Button>
         </form>
       </AuthSplitLayout>

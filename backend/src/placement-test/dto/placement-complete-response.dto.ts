@@ -24,11 +24,11 @@ export class PlacementCompleteResponseDto {
   @ApiProperty({ example: true })
   ok: true;
 
-  /** CEFR code written to `englishLevel`, e.g. `B2` (Algorythm expects A1–C2 codes). */
+  /** CEFR code written to profile after confirmation clamp vs declared level (never above declared; max −1 step). */
   @ApiPropertyOptional({
     example: "B2",
     description:
-      "Main-line CEFR band code returned on `/auth/profile` as `englishLevel`.",
+      "Confirmed band saved as `/auth/profile` `englishLevel` (Algorythm expects A1–C2 codes).",
   })
   englishLevel?: string;
 

@@ -1,9 +1,14 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
+import { useUser } from "../../context/UserContext";
+import { userMayUseLearnerApp } from "../../lib/subscriptionAccess";
 
 export function LandingFooter() {
   const { messages } = useLandingLocale();
   const { footer } = messages;
+  const { user, logout } = useUser();
+  const navigate = useNavigate();
+  const showPaywallLogout = Boolean(user && !userMayUseLearnerApp(user));
 
   const footerSections: {
     title: string;
@@ -53,16 +58,29 @@ export function LandingFooter() {
                 {section.title}
               </h3>
               <ul className="space-y-2">
-                {section.links.map((item) => (
-                  <li key={item.label}>
-                    <Link
-                      to={item.to}
+                {section.title === footer.categories.account && showPaywallLogout ?
+                  <li key="logout">
+                    <button
+                      type="button"
                       className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                      onClick={() => {
+                        logout();
+                        void navigate("/");
+                      }}
                     >
-                      {item.label}
-                    </Link>
+                      {footer.links.logout}
+                    </button>
                   </li>
-                ))}
+                : section.links.map((item) => (
+                    <li key={item.label}>
+                      <Link
+                        to={item.to}
+                        className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
               </ul>
             </div>
           ))}

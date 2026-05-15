@@ -145,7 +145,7 @@ export class PlacementTestController {
   @ApiSecurity("api-token")
   @ApiOperation({
     summary:
-      "Complete placement: score answers vs server draft and persist CEFR (`englishLevel`).",
+      "Complete placement: confirm declared CEFR (never promote by raw score; max one band below declared).",
   })
   @ApiBody({
     type: CompletePlacementDto,

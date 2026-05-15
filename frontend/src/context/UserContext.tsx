@@ -71,6 +71,11 @@ function coerceHasCompletedPlacement(raw: unknown): boolean {
   return false;
 }
 
+function normalizeLearnerRole(raw: unknown): string {
+  const s = String(raw ?? "adult").trim().toLowerCase();
+  return s.length > 0 ? s : "adult";
+}
+
 function normalizeProfile(raw: unknown): UserData | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
@@ -78,7 +83,7 @@ function normalizeProfile(raw: unknown): UserData | null {
     id: String(r.id ?? ""),
     name: String(r.name ?? ""),
     email: String(r.email ?? ""),
-    role: String(r.role ?? "adult"),
+    role: normalizeLearnerRole(r.role),
     hasCompletedPlacement: coerceHasCompletedPlacement(r.hasCompletedPlacement),
     englishLevel: String(r.englishLevel ?? ""),
     education: stripChoosePlaceholder(r.education),

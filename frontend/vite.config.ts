@@ -14,7 +14,16 @@ export default defineConfig(({ mode }) => {
   const proxyBasicAuthHeader = basicUser
     ? `Basic ${Buffer.from(`${basicUser}:${basicPass}`, "utf8").toString("base64")}`
     : null;
+  /** `DEV_MODE` / `VITE_DEV_MODE`: `1` = relax subscription UI/gates; `0` = product-like enforcement. Default dev server `1`, production build `0`. */
+  const subscriptionDevModeResolved =
+    (env.DEV_MODE ?? env.VITE_DEV_MODE ?? "").trim() ||
+    (mode === "development" ? "1" : "0");
   return {
+    define: {
+      "import.meta.env.VITE_APP_SUBSCRIPTION_DEV_MODE": JSON.stringify(
+        subscriptionDevModeResolved,
+      ),
+    },
     plugins: [react(), tailwindcss()],
     server: {
       proxy: useApiProxy

@@ -7,6 +7,64 @@ export type PlacementLevelBand = {
   label: string;
 };
 
+/** Monotonic CEFR ladder for clamping placement outcomes to the learner’s declared band. */
+export const PLACEMENT_CEFR_ORDER = [
+  "A1",
+  "A2",
+  "B1",
+  "B2",
+  "C1",
+  "C2",
+] as const;
+
+export type PlacementCefrCode = (typeof PLACEMENT_CEFR_ORDER)[number];
+
+const PLACEMENT_BAND_LABELS: Record<PlacementCefrCode, string> = {
+  A1: "Beginner",
+  A2: "Elementary",
+  B1: "Intermediate",
+  B2: "Upper intermediate",
+  C1: "Advanced",
+  C2: "Proficient",
+};
+
+export function placementBandAtIndex(index: number): PlacementLevelBand {
+  const idx = Math.min(
+    PLACEMENT_CEFR_ORDER.length - 1,
+    Math.max(0, Math.round(index)),
+  );
+  const code = PLACEMENT_CEFR_ORDER[idx];
+  return { code, label: PLACEMENT_BAND_LABELS[code] };
+}
+
+export function indexOfPlacementCefrCode(
+  code: PlacementLevelBand["code"],
+): number {
+  return PLACEMENT_CEFR_ORDER.indexOf(code as PlacementCefrCode);
+}
+
+/**
+ * Entry test is confirmation-focused: questions target the learner’s declared band,
+ * and we never promote above it from test scores alone. If performance is weaker,
+ * we allow at most **one** CEFR step below the declared band (never more).
+ */
+export function confirmedPlacementBandFromDeclaredAndScore(
+  scored: PlacementLevelBand,
+  declared: PlacementLevelBand,
+): PlacementLevelBand {
+  const si = indexOfPlacementCefrCode(scored.code);
+  const di = indexOfPlacementCefrCode(declared.code);
+  if (si < 0 || di < 0) {
+    return declared;
+  }
+  if (si >= di) {
+    return declared;
+  }
+  const minAllowedIdx = Math.max(0, di - 1);
+  const finalIdx = Math.max(si, minAllowedIdx);
+  return placementBandAtIndex(finalIdx);
+}
+
 /** `englishLevel` string stored without label (Algorythm `getBaseLevel` expects "A1"…"C2"). */
 export function placementBandFromScore(
   score: number,

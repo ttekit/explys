@@ -124,8 +124,10 @@ export const appEn = {
     placementStepCounter: "1 / 2",
     beforeEntryTitle: "Before your entry test",
     beforeEntryAdult:
-      "Enter your job, education, hobbies, and native language — then your placement questionnaire starts.",
+      "Tell us about your work, education, and native language — then add hobbies and choose how you want to take the entry test.",
     beforeEntryStudent: "A few quick preferences — then your placement questionnaire.",
+    beforeEntryIndependentStudent:
+      "Add your role or studies, education, native language, and hobbies — then your placement questionnaire.",
     placementFooterBlurb:
       "Personalized English learning through adaptive video content — learn at your own pace.",
     placementCopyright: "© {year} Explys",
@@ -487,8 +489,6 @@ export const appEn = {
     title: "Pick your subscription",
     subtitle:
       "You need an active plan to open the catalog, lessons, and entry test. Choose Light, Smart, or Family — then continue learning.",
-    stripeTest: "Stripe is in test mode (no real charges).",
-    stripeLive: "Stripe live mode.",
     devModeBanner:
       "Dev mode: subscription enforcement is off ({env}).",
     backToCatalog: "Back to catalog",
@@ -692,10 +692,17 @@ export const appEn = {
       addChip: "Add",
       addChipNamed: 'Add "{name}"',
       hobbyNoOptions: "Start typing a hobby, then press Enter to add it.",
+      sectionAbout: "About you",
+      sectionInterests: "Interests",
+      sectionEnglish: "English level",
+      formIntro:
+        "These details personalize recommendations and calibrate your placement.",
     },
     student: {
       title: "Your tastes first",
       lead: "Tell us what you enjoy so we can tailor the placement experience. Then you'll take the short entry test.",
+      leadGenresSaved:
+        "You already chose genres when you registered — add hobbies below to continue.",
       hobbies: "Hobbies",
       hobbiesPlaceholder: "Type a hobby, then press Enter",
       genresPrefer: "Genres you prefer",

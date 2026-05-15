@@ -128,7 +128,7 @@ const selectDark = {
 };
 
 /**
- * Adults must fill job, education, hobbies, native language, and either choose a CEFR
+ * Adults must fill job, education, native language, hobbies, and either choose a CEFR
  * target (entry test) or complete the skip path (handled via `hasCompletedPlacement`).
  */
 export function adultNeedsPlacementPrepFields(user: UserData): boolean {
@@ -141,6 +141,31 @@ export function adultNeedsPlacementPrepFields(user: UserData): boolean {
     !(user.hobbies && user.hobbies.length > 0) ||
     !user.nativeLanguage?.trim() ||
     !parseAdultProfileCefrTarget(user.englishLevel)
+  );
+}
+
+/**
+ * Whether the catalog should show the student placement-preferences overlay (step before iframe test).
+ * Roster-linked students: hobbies + at least one favourite genre.
+ * Independent `student` accounts: same fields plus job, education, and native language (aligned with adult prep).
+ */
+export function studentNeedsPlacementPreferencesOverlay(
+  user: UserData,
+): boolean {
+  if (user.role !== "student") {
+    return false;
+  }
+  const hasGenres = (user.favoriteGenres?.length ?? 0) > 0;
+  const hasHobbies = (user.hobbies?.length ?? 0) > 0;
+  if (user.teacherId != null) {
+    return !hasHobbies || !hasGenres;
+  }
+  return (
+    !user.workField?.trim() ||
+    !user.education?.trim() ||
+    !user.nativeLanguage?.trim() ||
+    !hasHobbies ||
+    !hasGenres
   );
 }
 
@@ -240,83 +265,102 @@ export default function PlacementPreTestStep({
 
   return (
     <form
-      className="mx-auto flex w-full max-w-md flex-col gap-5 px-4 pt-2 [&_label]:text-foreground"
+      className="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 pt-2 [&_label]:text-foreground"
       onSubmit={(e) => void handleSubmit(e)}
     >
-      <div className="space-y-2">
-        <LabelRegister isRequired={true}>{a.job}</LabelRegister>
-        <InputText
-          name="workField"
-          value={job}
-          onChange={(e) => setJob(e.target.value)}
-          placeholder={a.jobPlaceholder}
-        />
-      </div>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        {a.formIntro}
+      </p>
 
-      <div className="space-y-2">
-        <LabelRegister isRequired={true}>{a.education}</LabelRegister>
-        <InputText
-          name="education"
-          value={education}
-          onChange={(e) => setEducation(e.target.value)}
-          placeholder={a.educationPlaceholder}
-        />
-      </div>
+      <section className="space-y-4 rounded-xl border border-border/50 bg-muted/15 p-4">
+        <h3 className="font-display text-sm font-semibold tracking-tight text-foreground">
+          {a.sectionAbout}
+        </h3>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <LabelRegister isRequired={true}>{a.job}</LabelRegister>
+            <InputText
+              name="workField"
+              value={job}
+              onChange={(e) => setJob(e.target.value)}
+              placeholder={a.jobPlaceholder}
+            />
+          </div>
+          <div className="space-y-2">
+            <LabelRegister isRequired={true}>{a.education}</LabelRegister>
+            <InputText
+              name="education"
+              value={education}
+              onChange={(e) => setEducation(e.target.value)}
+              placeholder={a.educationPlaceholder}
+            />
+          </div>
+          <div className="space-y-2">
+            <LabelRegister isRequired={true}>{a.nativeLanguage}</LabelRegister>
+            <InputText
+              name="nativeLanguage"
+              value={nativeLanguage}
+              onChange={(e) => setNativeLanguage(e.target.value)}
+              placeholder={a.nativeLanguagePlaceholder}
+            />
+          </div>
+        </div>
+      </section>
 
-      <div className="flex flex-col gap-1">
-        <LabelRegister isRequired={true}>{a.hobbies}</LabelRegister>
-        <CreatableSelect<HobbyOption, true>
-          isMulti
-          isClearable
-          options={[]}
-          value={hobbiesToOptions(hobbies)}
-          onChange={(sel) => setHobbies(normalizeHobbySelection(sel))}
-          placeholder={a.hobbiesPlaceholder}
-          formatCreateLabel={(input) => {
-            const t = input.trim();
-            return t ? formatMessage(a.addChipNamed, { name: t }) : a.addChip;
-          }}
-          noOptionsMessage={() => a.hobbyNoOptions}
-          styles={selectDark}
-        />
-      </div>
+      <section className="space-y-3 rounded-xl border border-border/50 bg-muted/15 p-4">
+        <h3 className="font-display text-sm font-semibold tracking-tight text-foreground">
+          {a.sectionInterests}
+        </h3>
+        <div className="flex flex-col gap-1">
+          <LabelRegister isRequired={true}>{a.hobbies}</LabelRegister>
+          <CreatableSelect<HobbyOption, true>
+            isMulti
+            isClearable
+            options={[]}
+            value={hobbiesToOptions(hobbies)}
+            onChange={(sel) => setHobbies(normalizeHobbySelection(sel))}
+            placeholder={a.hobbiesPlaceholder}
+            formatCreateLabel={(input) => {
+              const t = input.trim();
+              return t ? formatMessage(a.addChipNamed, { name: t }) : a.addChip;
+            }}
+            noOptionsMessage={() => a.hobbyNoOptions}
+            styles={selectDark}
+          />
+        </div>
+      </section>
 
-      <div className="space-y-2">
-        <LabelRegister isRequired={true}>{a.nativeLanguage}</LabelRegister>
-        <InputText
-          name="nativeLanguage"
-          value={nativeLanguage}
-          onChange={(e) => setNativeLanguage(e.target.value)}
-          placeholder={a.nativeLanguagePlaceholder}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <LabelRegister isRequired={true}>{a.englishLevel}</LabelRegister>
-        <select
-          name="englishLevel"
-          value={englishLevelChoice}
-          onChange={(e) => setEnglishLevelChoice(e.target.value)}
-          className={cn(selectFieldClass, "appearance-auto")}
-          aria-describedby="placement-english-level-help"
-        >
-          <option value="" disabled>
-            {a.englishLevelSelectPlaceholder}
-          </option>
-          <option value={ADULT_SKIP_PLACEMENT_TEST}>{a.englishLevelNone}</option>
-          {ADULT_PLACEMENT_CEFR_LEVELS.map((code) => (
-            <option key={code} value={code}>
-              {code}
+      <section className="space-y-3 rounded-xl border border-border/50 bg-muted/15 p-4">
+        <h3 className="font-display text-sm font-semibold tracking-tight text-foreground">
+          {a.sectionEnglish}
+        </h3>
+        <div className="space-y-2">
+          <LabelRegister isRequired={true}>{a.englishLevel}</LabelRegister>
+          <select
+            name="englishLevel"
+            value={englishLevelChoice}
+            onChange={(e) => setEnglishLevelChoice(e.target.value)}
+            className={cn(selectFieldClass, "appearance-auto")}
+            aria-describedby="placement-english-level-help"
+          >
+            <option value="" disabled>
+              {a.englishLevelSelectPlaceholder}
             </option>
-          ))}
-        </select>
-        <p
-          id="placement-english-level-help"
-          className="text-muted-foreground text-sm"
-        >
-          {a.englishLevelHelp}
-        </p>
-      </div>
+            <option value={ADULT_SKIP_PLACEMENT_TEST}>{a.englishLevelNone}</option>
+            {ADULT_PLACEMENT_CEFR_LEVELS.map((code) => (
+              <option key={code} value={code}>
+                {code}
+              </option>
+            ))}
+          </select>
+          <p
+            id="placement-english-level-help"
+            className="text-muted-foreground text-sm"
+          >
+            {a.englishLevelHelp}
+          </p>
+        </div>
+      </section>
 
       {fieldError ? (
         <p className="text-destructive text-sm" role="alert">
