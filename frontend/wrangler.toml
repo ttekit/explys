@@ -12,3 +12,5 @@ pages_build_output_dir = "dist"
 
 [assets]
 directory = "./dist"
+# Hard refresh / direct URL (e.g. /catalog) must return index.html so React Router can run.
+not_found_handling = "single-page-application"

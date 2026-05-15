@@ -136,31 +136,73 @@ export function scorePlacementBySkill(
   };
 }
 
-/** Best-effort parse of already-persisted `englishLevel` (self-report or prior completion). */
+function placementBandFromCode(code: PlacementCefrCode): PlacementLevelBand {
+  return { code, label: PLACEMENT_BAND_LABELS[code] };
+}
+
+/**
+ * Best-effort parse of already-persisted `englishLevel` (self-report or prior completion).
+ * Matches embedded A1–C2 codes anywhere in the string, then coarse wording (aligned with the catalog gate).
+ */
 export function inferPlacementBandFromProfile(
   raw: string | null | undefined,
 ): PlacementLevelBand {
-  const head = String(raw ?? "")
-    .trim()
-    .toUpperCase()
-    .slice(0, 8);
-
+  const full = String(raw ?? "").trim();
+  if (!full) {
+    return placementBandFromCode("B1");
+  }
+  const lowered = full.toLowerCase();
+  if (lowered === "choose") {
+    return placementBandFromCode("B1");
+  }
+  const embedded = full.match(/\b(A1|A2|B1|B2|C1|C2)\b/i)?.[1]?.toUpperCase();
+  if (
+    embedded &&
+    (PLACEMENT_CEFR_ORDER as readonly string[]).includes(embedded)
+  ) {
+    return placementBandFromCode(embedded as PlacementCefrCode);
+  }
+  const upperFull = full.toUpperCase();
+  if ((PLACEMENT_CEFR_ORDER as readonly string[]).includes(upperFull)) {
+    return placementBandFromCode(upperFull as PlacementCefrCode);
+  }
+  if (/\bpre[-\s]?a1\b/i.test(full)) {
+    return placementBandFromCode("A1");
+  }
+  if (/\bbeginner|elementary|starter\b/i.test(lowered)) {
+    return placementBandFromCode("A1");
+  }
+  if (/\ba2\b/i.test(lowered)) {
+    return placementBandFromCode("A2");
+  }
+  if (/\bupper\s+intermediate\b/i.test(lowered)) {
+    return placementBandFromCode("B2");
+  }
+  if (/\bb1\b/i.test(lowered)) {
+    return placementBandFromCode("B1");
+  }
+  if (/\bintermediate\b/i.test(lowered)) {
+    return placementBandFromCode("B1");
+  }
+  if (/\bb2\b/i.test(lowered)) {
+    return placementBandFromCode("B2");
+  }
+  if (/\badvanced\b/i.test(lowered)) {
+    return placementBandFromCode("C1");
+  }
+  if (/\bc1\b/i.test(lowered)) {
+    return placementBandFromCode("C1");
+  }
+  if (/\bproficient|mastery\b/i.test(lowered)) {
+    return placementBandFromCode("C2");
+  }
+  if (/\bc2\b/i.test(lowered)) {
+    return placementBandFromCode("C2");
+  }
+  const head = upperFull.slice(0, 8);
   const m = head.match(/^(A1|A2|B1|B2|C1|C2)\b/)?.[1];
-  if (!m || m === "CHOOSE" || m === "UNKNOWN") {
-    return { code: "B1", label: "Intermediate" };
+  if (m && m !== "CHOOSE" && m !== "UNKNOWN") {
+    return placementBandFromCode(m as PlacementCefrCode);
   }
-  switch (m) {
-    case "A1":
-      return { code: "A1", label: "Beginner" };
-    case "A2":
-      return { code: "A2", label: "Elementary" };
-    case "B1":
-      return { code: "B1", label: "Intermediate" };
-    case "B2":
-      return { code: "B2", label: "Upper intermediate" };
-    case "C1":
-      return { code: "C1", label: "Advanced" };
-    default:
-      return { code: "C2", label: "Proficient" };
-  }
+  return placementBandFromCode("B1");
 }

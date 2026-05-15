@@ -70,6 +70,9 @@ function parseAdultProfileCefrTarget(
   if (/\ba2\b/i.test(lowered)) {
     return "A2";
   }
+  if (/\bupper\s+intermediate\b/i.test(lowered)) {
+    return "B2";
+  }
   if (/\bb1\b/i.test(lowered)) {
     return "B1";
   }
