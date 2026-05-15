@@ -29,13 +29,13 @@ import { TeacherPatchContentVisibilityDto } from "src/contents/dto/teacher-patch
 import { TeacherUploadContentDto } from "src/contents/dto/teacher-upload-content.dto";
 import { UpdateContentDto } from "src/contents/dto/update-content.dto";
 
-/** MP4 uploads; override with CONTENT_VIDEO_MAX_FILE_BYTES (bytes). Default 100 MiB. */
+/** MP4 uploads; override with CONTENT_VIDEO_MAX_FILE_BYTES (bytes). Default 512 MiB (match nginx). */
 function contentVideoMaxFileBytes(): number {
   const n = Number(process.env.CONTENT_VIDEO_MAX_FILE_BYTES);
   if (Number.isFinite(n) && n > 0) {
     return Math.floor(n);
   }
-  return 100 * 1024 * 1024;
+  return 512 * 1024 * 1024;
 }
 
 const CONTENT_VIDEO_MAX_FILE_BYTES = contentVideoMaxFileBytes();

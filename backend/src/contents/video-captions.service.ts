@@ -36,7 +36,7 @@ type FfmpegAttemptTrace = {
 function deepgramCaptionMaxVideoBytes(): number {
   const n = Number(process.env.CONTENT_VIDEO_MAX_FILE_BYTES);
   if (Number.isFinite(n) && n > 0) return Math.floor(n);
-  return 100 * 1024 * 1024;
+  return 512 * 1024 * 1024;
 }
 
 /** After FFmpeg PCM extract; default `nova-3` suits pre-recorded WAV. */
