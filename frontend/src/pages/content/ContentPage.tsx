@@ -19,6 +19,7 @@ import { useUser } from "../../context/UserContext";
 import { VideoQuiz } from "../../components/content-watch/VideoQuiz";
 import type { VideoQuizCompleteSummary } from "../../components/content-watch/VideoQuiz";
 import type { LessonSummaryState } from "./LessonSummaryPage";
+import { Play } from "lucide-react";
 import {
   defaultQuizQuestions,
   defaultVocabulary,
@@ -400,12 +401,12 @@ function ContentWatchHeader({
                   <ChevronLeft className="h-4 w-4" />
                   {L.previous}
                 </Link>
-              : (
-                <span className="inline-flex items-center gap-1 px-2 py-1.5 text-sm text-muted-foreground/50">
-                  <ChevronLeft className="h-4 w-4" />
-                  {L.previous}
-                </span>
-              )}
+                : (
+                  <span className="inline-flex items-center gap-1 px-2 py-1.5 text-sm text-muted-foreground/50">
+                    <ChevronLeft className="h-4 w-4" />
+                    {L.previous}
+                  </span>
+                )}
             </div>
             <Link
               to={`/catalog/series/${encodeURIComponent(playlistRibbon.friendlyLink)}`}
@@ -425,15 +426,15 @@ function ContentWatchHeader({
                   {L.next}
                   <ChevronRight className="h-4 w-4" />
                 </Link>
-              : (
-                <span className="inline-flex items-center gap-1 px-2 py-1.5 text-sm text-muted-foreground/50">
-                  {L.next}
-                  <ChevronRight className="h-4 w-4" />
-                </span>
-              )}
+                : (
+                  <span className="inline-flex items-center gap-1 px-2 py-1.5 text-sm text-muted-foreground/50">
+                    {L.next}
+                    <ChevronRight className="h-4 w-4" />
+                  </span>
+                )}
             </div>
           </div>
-        : null}
+          : null}
       </div>
     </header>
   );
@@ -610,6 +611,7 @@ export default function ContentPage() {
   const [activeTab, setActiveTab] = useState<TabId>("vocabulary");
   const [isVideoComplete, setIsVideoComplete] = useState(false);
   const [videoData, setVideoData] = useState<{
+    id: number;
     videoName: string;
     videoLink: string;
     videoDescription: string | null;
@@ -617,14 +619,24 @@ export default function ContentPage() {
       category: {
         name: string;
         description: string;
-        friendlyLink?: string;
+        friendlyLink: string;
       };
       stats?: {
-        userTags?: string[];
-        systemTags?: string[];
-        topics?: { id: number; name: string }[];
+        systemTags: string[];
+        userTags: string[];
+        topics: { id: number; name: string }[];
       } | null;
     };
+    series?: {
+      name: string;
+      videos: {
+        id: number;
+        videoName: string;
+        videoDescription: string | null;
+        thumbnailUrl: string | null;
+        episodeNumber: number;
+      }[];
+    } | null;
   } | null>(null);
   const [playlistRibbon, setPlaylistRibbon] = useState<{
     friendlyLink: string;
@@ -1370,6 +1382,78 @@ export default function ContentPage() {
                   {descriptionBlurb}
                 </p>
               </div>
+
+              {/* Playlist */}
+              {videoData?.series?.videos && videoData.series.videos.length > 1 && (
+                <div className="mt-12 border-t border-border pt-10">
+                  <div className="mb-8 flex items-center justify-between">
+                    <h2 className="font-display text-2xl font-bold tracking-tight">Episodes</h2>
+                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                      {videoData.series.videos.length} Parts
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {videoData.series.videos.map((ep) => {
+                      const isActive = ep.id === videoData.id;
+
+                      return (
+                        <div
+                          key={ep.id}
+                          onClick={() => !isActive && navigate(`/content/${ep.id}`)}
+                          className={cn(
+                            "group cursor-pointer flex flex-col gap-3 rounded-2xl p-2 transition-all duration-300",
+                            isActive
+                              ? "bg-primary/5 ring-1 ring-primary/20"
+                              : "hover:bg-muted/50"
+                          )}
+                        >
+                          <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-zinc-800 shadow-sm">
+                            {ep.thumbnailUrl ? (
+                              <img
+                                src={ep.thumbnailUrl}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                alt=""
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-zinc-900">
+                                <Play className="h-8 w-8 text-zinc-700" />
+                              </div>
+                            )}
+
+                            <div className={cn(
+                              "absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity duration-300",
+                              isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                            )}>
+                              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-md">
+                                <Play className={cn("h-6 w-6 fill-white text-white", isActive && "fill-primary text-primary")} />
+                              </div>
+                            </div>
+
+                            <div className="absolute bottom-2 right-2 rounded bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+                              EPISODE {ep.episodeNumber}
+                            </div>
+                          </div>
+
+                          <div className="px-1 pb-2">
+                            <h4 className={cn(
+                              "font-bold leading-snug line-clamp-1 transition-colors",
+                              isActive ? "text-primary" : "text-foreground group-hover:text-primary"
+                            )}>
+                              {ep.videoName}
+                            </h4>
+                            {ep.videoDescription && (
+                              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                                {ep.videoDescription}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="lg:hidden">
                 {!isLgUp ? (
