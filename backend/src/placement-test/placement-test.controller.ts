@@ -28,6 +28,7 @@ import { PlacementCompleteResponseDto } from "./dto/placement-complete-response.
 import { PlacementStatusResponseDto } from "./dto/placement-status-response.dto";
 import { PlacementJwtGuard } from "./placement-jwt.guard";
 import { PlacementTestService } from "./placement-test.service";
+import { extractAccessTokenFromRequest } from "../auth/extract-request-access-token.util";
 
 type AuthedRequest = Request & { user: { sub: number; email: string } };
 
@@ -42,9 +43,9 @@ function inferApiPublicOrigin(req: Request): string {
 }
 
 function getBearerOrQueryToken(req: Request): string {
-  const authHeader = req.headers.authorization;
-  if (authHeader?.startsWith("Bearer ")) {
-    return authHeader.slice("Bearer ".length).trim();
+  const fromHeader = extractAccessTokenFromRequest(req);
+  if (fromHeader) {
+    return fromHeader;
   }
   const q = req.query as Record<string, string | undefined>;
   if (typeof q?.access_token === "string" && q.access_token.length > 0) {

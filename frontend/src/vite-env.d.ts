@@ -11,6 +11,10 @@ interface ImportMetaEnv {
   readonly VITE_USE_API_PROXY?: string;
   /** Dev: proxy target when `VITE_USE_API_PROXY` is enabled. */
   readonly VITE_DEV_PROXY_TARGET?: string;
+  /** Optional nginx (or similar) HTTP Basic Auth user — bundled into the client; use only for staging. */
+  readonly VITE_API_BASIC_AUTH_USER?: string;
+  /** Optional companion password for `VITE_API_BASIC_AUTH_USER`. */
+  readonly VITE_API_BASIC_AUTH_PASSWORD?: string;
   /** When `1` or `true`, logs failed API requests to the console (in addition to dev server default logging). */
   readonly VITE_LOG_API_ERRORS?: string;
   /** Skip subscription gates when `true`, `1`, or `yes` (pairs with backend `SKIP_SUBSCRIPTION_ENFORCEMENT`). */

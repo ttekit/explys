@@ -12,7 +12,7 @@ import { ArrowLeft } from "lucide-react";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import { cn } from "../../lib/utils";
 import { buildRegisterBody } from "../../lib/registerUser";
-import { setStoredAccessToken } from "../../lib/api";
+import { apiFetch, setStoredAccessToken } from "../../lib/api";
 import { setPendingRegistrationLoginWelcome } from "../../lib/registrationStorage";
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 
@@ -48,9 +48,7 @@ export default function RegistrationPreferences() {
 
     const fetchGenres = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/genres`,
-        );
+        const response = await apiFetch("/genres");
         if (response.ok) {
           const data = (await response.json()) as {
             id: number;
@@ -94,22 +92,16 @@ export default function RegistrationPreferences() {
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(
-            buildRegisterBody({
-              ...formData,
-              favoriteGenres: formData.favoriteGenres ?? [],
-              hatedGenres: formData.hatedGenres ?? [],
-            }),
-          ),
-        },
-      );
+      const response = await apiFetch("/auth/register", {
+        method: "POST",
+        body: JSON.stringify(
+          buildRegisterBody({
+            ...formData,
+            favoriteGenres: formData.favoriteGenres ?? [],
+            hatedGenres: formData.hatedGenres ?? [],
+          }),
+        ),
+      });
 
       if (response.ok) {
         setStoredAccessToken(null);

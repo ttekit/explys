@@ -92,14 +92,10 @@ export function ProfileSettings({
     setError("");
     if (!newEmail) return setError("Please enter a new email.");
 
-    setIsLoading(true);``
+    setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:4200/auth/update-email", {
+      const response = await apiFetch("/auth/update-email", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
         body: JSON.stringify({ newEmail }),
       });
 
@@ -134,20 +130,13 @@ export function ProfileSettings({
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:4200/auth/update-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-          body: JSON.stringify({
-            currentPassword: currentPassword,
-            newPassword: newPassword,
-          }),
-        },
-      );
+      const response = await apiFetch("/auth/update-password", {
+        method: "POST",
+        body: JSON.stringify({
+          currentPassword: currentPassword,
+          newPassword: newPassword,
+        }),
+      });
 
       const data = await response.json();
 

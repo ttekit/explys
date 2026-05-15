@@ -60,6 +60,12 @@ async function bootstrap() {
     origin: resolveCorsOrigin(),
     exposedHeaders: ["set-cookie"],
     credentials: true,
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-api-token",
+      "X-Access-Token",
+    ],
   });
 
   app.useGlobalPipes(

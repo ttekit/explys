@@ -30,7 +30,6 @@ import { AuthProviderGuard } from "./guards/provider.guard";
 import { ProviderService } from "./provider/provider.service";
 import { ConfigService } from "@nestjs/config";
 import type { Request, Response } from "express";
-import { Recaptcha } from "@nestlab/google-recaptcha";
 import { UpdatePasswordDto } from "./dto/update-password.dto";
 import { UpdateEmailDto } from "./dto/update-email.dto";
 
@@ -43,7 +42,6 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
-  @Recaptcha()
   @Post("register")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: "Register a new user" })
@@ -58,7 +56,6 @@ export class AuthController {
     return await this.authService.register(req, registerDto);
   }
 
-  @Recaptcha()
   @Post("login")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Log in a user" })

@@ -7,11 +7,13 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
+import { extractAccessTokenFromRequest } from "../auth/extract-request-access-token.util";
 
 type Authed = Request & { user?: { sub: number; email: string } };
 
 /**
- * User JWT from `Authorization: Bearer` or `?access_token=` (iframe-friendly).
+ * User JWT from `Authorization: Bearer`, header `X-Access-Token` (when Basic Auth uses `Authorization`),
+ * or `?access_token=` / body `access_token` (iframe-friendly).
  * Rejects x-api-token-only access so placement is always per-user.
  */
 @Injectable()
@@ -23,17 +25,14 @@ export class PlacementJwtGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Authed>();
-    const authHeader = request.headers.authorization;
     const query = request.query as Record<string, string | undefined>;
     const body = request.body as { access_token?: string } | undefined;
     const fromBody =
       typeof body?.access_token === "string" ? body.access_token : undefined;
     const fromQuery =
       typeof query?.access_token === "string" ? query.access_token : undefined;
-    const fromBearer = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice("Bearer ".length).trim()
-      : undefined;
-    const token = fromBearer || fromQuery || fromBody;
+    const fromHeader = extractAccessTokenFromRequest(request);
+    const token = fromHeader || fromQuery || fromBody;
     if (!token) {
       throw new UnauthorizedException("Authentication required");
     }

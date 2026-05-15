@@ -1,5 +1,5 @@
 /**
- * API client (aligned with `test-nextjs/lib/api.ts`): base URL, `x-api-token`, JSON error parsing, optional JWT.
+ * API client: base URL, optional nginx Basic Auth, `x-api-token`, JWT via Bearer or `X-Access-Token`.
  */
 const ACCESS_TOKEN_KEY = "exply_access_token";
 
@@ -48,6 +48,72 @@ function apiPath(path: string): string {
 
 export function apiUrl(path: string): string {
   return apiPath(path);
+}
+
+/** UTF-8 safe Basic credentials for browser `fetch`. */
+export function encodeBasicAuthCredentials(
+  username: string,
+  password: string,
+): string {
+  const combined = `${username}:${password}`;
+  const bytes = new TextEncoder().encode(combined);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]!);
+  }
+  return btoa(binary);
+}
+
+function usesDevApiProxy(): boolean {
+  if (!import.meta.env.DEV) {
+    return false;
+  }
+  const useProxy = import.meta.env.VITE_USE_API_PROXY;
+  return useProxy === "true" || useProxy === "1";
+}
+
+function getBasicAuthorizationValue(): string | null {
+  const user = import.meta.env.VITE_API_BASIC_AUTH_USER?.trim();
+  if (!user) {
+    return null;
+  }
+  const password = import.meta.env.VITE_API_BASIC_AUTH_PASSWORD ?? "";
+  return `Basic ${encodeBasicAuthCredentials(user, password)}`;
+}
+
+/**
+ * Merge auth-related headers for manual `fetch` calls (same rules as `apiFetch`).
+ */
+export function mergeApiAuthHeaders(
+  base: HeadersInit | undefined,
+  token?: string | null,
+): Headers {
+  const headers = new Headers(base ?? {});
+  let bearer: string | null | undefined;
+  if (token === undefined) {
+    bearer = getStoredAccessToken();
+  } else {
+    bearer = token ?? null;
+  }
+  const basicAuth = getBasicAuthorizationValue();
+  const behindProxy = usesDevApiProxy();
+  if (basicAuth && !behindProxy) {
+    headers.set("Authorization", basicAuth);
+    if (bearer) {
+      headers.set("X-Access-Token", bearer);
+    }
+  } else if (basicAuth && behindProxy) {
+    if (bearer) {
+      headers.set("X-Access-Token", bearer);
+    }
+  } else if (bearer) {
+    headers.set("Authorization", `Bearer ${bearer}`);
+  }
+  const key = import.meta.env.VITE_API_TOKEN;
+  if (key) {
+    headers.set("x-api-token", key);
+  }
+  return headers;
 }
 
 /** Parses Nest/JSON error bodies (same idea as `test-nextjs/lib/api.ts`). */
@@ -110,26 +176,13 @@ export async function apiFetch(
   init: FetchOpts = {},
 ): Promise<Response> {
   const { token, ...rest } = init;
-  const headers = new Headers(rest.headers);
+  const headers = mergeApiAuthHeaders(rest.headers, token);
   if (
     rest.body != null &&
     typeof rest.body === "string" &&
     !headers.has("Content-Type")
   ) {
     headers.set("Content-Type", "application/json");
-  }
-  let bearer: string | null | undefined;
-  if (token === undefined) {
-    bearer = getStoredAccessToken();
-  } else {
-    bearer = token ?? null;
-  }
-  if (bearer) {
-    headers.set("Authorization", `Bearer ${bearer}`);
-  }
-  const key = import.meta.env.VITE_API_TOKEN;
-  if (key) {
-    headers.set("x-api-token", key);
   }
   const url = apiPath(path);
   const method = (rest.method ?? "GET").toUpperCase();

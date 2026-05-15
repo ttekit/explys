@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import Navigation from "../mainpage/Navigation";
+import { apiFetch } from "../../lib/api";
 
 export default function CatalogPage() {
     const [videos, setVideos] = useState<any[]>([]);
@@ -11,7 +12,7 @@ export default function CatalogPage() {
     useEffect(() => {
         const fetchVideos = async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/content-video`);
+                const response = await apiFetch("/content-video");
                 if (response.ok) {
                     const data = await response.json();
                     setVideos(data);

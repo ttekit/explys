@@ -7,6 +7,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
+import { extractAccessTokenFromRequest } from "../extract-request-access-token.util";
 
 type AuthedRequest = Request & {
   user?: unknown;
@@ -31,15 +32,11 @@ export class ApiTokenOrJwtAuthGuard implements CanActivate {
     const expectedApiToken = this.configService.get<string>("API_TOKEN");
     const receivedApi = request.header("x-api-token");
  
-    const authHeader = request.headers.authorization;
-    if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.slice("Bearer ".length).trim();
-      if (!token) {
-        throw new UnauthorizedException("Invalid or expired token");
-      }
+    const jwtToken = extractAccessTokenFromRequest(request);
+    if (jwtToken) {
       try {
         const secret = this.configService.getOrThrow<string>("JWT_SECRET");
-        const payload = await this.jwtService.verifyAsync(token, { secret });
+        const payload = await this.jwtService.verifyAsync(jwtToken, { secret });
         request.user = payload;
         request.authViaApiToken = false;
         return true;

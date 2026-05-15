@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { AuthSplitLayout } from "../../components/AuthSplitLayout";
 import Button from "../../components/Button";
 import ValidateError from "../../components/ValidateError";
+import { apiFetch } from "../../lib/api";
 
 export default function EmailConfirmationPage() {
   const navigate = useNavigate();
@@ -70,14 +71,10 @@ export default function EmailConfirmationPage() {
     setIsResending(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:4200/auth/resend-confirmation",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        },
-      );
+      const response = await apiFetch("/auth/resend-confirmation", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
 
       const result = await response.json();
 

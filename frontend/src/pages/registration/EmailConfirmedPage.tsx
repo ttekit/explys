@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router";
+import { apiFetch } from "../../lib/api";
 
 export default function EmailConfirmedPage() {
   const [searchParams] = useSearchParams();
@@ -18,9 +19,9 @@ export default function EmailConfirmedPage() {
 
     const confirmEmail = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:4200/auth/confirm-email?token=${token}`,
-          { method: "GET" }
+        const response = await apiFetch(
+          `/auth/confirm-email?token=${encodeURIComponent(token)}`,
+          { method: "GET" },
         );
 
         if (response.ok) {

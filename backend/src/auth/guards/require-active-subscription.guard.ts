@@ -16,6 +16,7 @@ import {
 } from "../../billing/subscription-access.util";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 import { UserRole } from "@generated/prisma/enums";
+import { extractAccessTokenFromRequest } from "../extract-request-access-token.util";
 
 /**
  * Requires an active Stripe-backed subscription for learner JWT calls.
@@ -75,12 +76,7 @@ export class RequireActiveSubscriptionGuard implements CanActivate {
       return true;
     }
 
-    const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith("Bearer ")) {
-      return true;
-    }
-
-    const token = auth.slice(7).trim();
+    const token = extractAccessTokenFromRequest(req);
     if (!token) {
       return true;
     }
