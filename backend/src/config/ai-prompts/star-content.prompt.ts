@@ -11,6 +11,7 @@ Recycled lemmas: {{RECYCLED_LEMMAS}}
 Prior lemmas from completed stars: {{PRIOR_LEMMAS}}
 Learner CEFR: {{LEARNER_CEFR}}
 Domain: {{DOMAIN}}
+Video Transcript: {{VIDEO_TRANSCRIPT}}
 
 VOCABULARY BALANCE RULE:
 - You MUST maintain a strict 60/40 ratio of old to new vocabulary in the generated lesson content.
@@ -28,6 +29,11 @@ QUESTION TYPES (metadata.questions[]):
 - text_pick: { id, type:"text_pick", prompt: "Fill-in-the-blank (e.g. 'He ___ to work') or Ukrainian grammar question", options: [3 English strings], correctAnswer }
 - swipe_card: { id, type:"swipe_card", cards[{ id, word, hint, isMatch }] x3+ }
 - sentence_builder: { id, type:"sentence_builder", prompt: "REQUIRED: Ukrainian translation of the target phrase", targetPhrase: "English phrase", wordChips: [scrambled words + 2 extra fake words] }
-Never use video_riddle, blind_audio, or video segments. Never use metadata.quiz. Vary question types.
+- video_riddle: { id, type:"video_riddle", subtitleWithBlank: "English sentence with exactly ONE ___ blank", options: [4 English strings], correctAnswer: "The blanked word" }
+
+CRITICAL RULES FOR QUESTIONS:
+- If Video Transcript is provided (not 'none'), you MUST generate exactly ONE 'video_riddle' question based on the transcript text.
+- Never use metadata.quiz.
+- Vary question types (use text_pick, swipe_card, sentence_builder).
 
 LANGUAGE: rules, prompts, context in UKRAINIAN. English in examples/options/phrases/text.`;

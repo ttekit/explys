@@ -150,12 +150,29 @@ export class StarContentGeneratorService {
       learnerCefr: cefrLevel,
       domain,
     };
+    
+    const segment = await this.find_video_segment_for_star(topic, input.introducedLemmas);
+    if (segment) {
+      input.videoTranscript = segment.fullPhrase;
+    }
+
     let lastReason = "Unknown failure";
     for (let attempt = 1; attempt <= CONTENT_MAX_ATTEMPTS; attempt += 1) {
       const generated = await this.gemini.generateStarContent(input);
       const metadata = generated?.metadata;
       const validation = validate_star_content_metadata(star.type, metadata);
       if (validation.valid && metadata) {
+        if (segment && Array.isArray(metadata.questions)) {
+          for (const q of metadata.questions) {
+            if (typeof q === "object" && q !== null && (q as any).type === "video_riddle") {
+              (q as any).segment = {
+                contentVideoId: segment.contentVideoId,
+                startTimeSec: segment.startTimeSec,
+                endTimeSec: segment.endTimeSec,
+              };
+            }
+          }
+        }
         return metadata;
       }
       lastReason = validation.valid ? "Missing metadata" : validation.reason;
@@ -199,6 +216,31 @@ export class StarContentGeneratorService {
       }
     }
     return [...lemmas];
+  }
+
+  private async find_video_segment_for_star(
+    topic: string,
+    introducedLemmas: string[],
+  ) {
+    const keyword = topic.trim().split(/\s+/)[0];
+    if (!keyword && introducedLemmas.length === 0) return null;
+
+    const orFilters: any[] = [];
+    if (keyword && keyword.length > 3) {
+      orFilters.push({ fullPhrase: { contains: keyword, mode: "insensitive" } });
+    }
+    for (const lemma of introducedLemmas.slice(0, 3)) {
+      if (lemma.length > 2) {
+        orFilters.push({ fullPhrase: { contains: lemma, mode: "insensitive" } });
+      }
+    }
+    
+    if (orFilters.length === 0) return null;
+
+    const segment = await this.prisma.videoSegment.findFirst({
+      where: { OR: orFilters },
+    });
+    return segment;
   }
 }
 

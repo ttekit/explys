@@ -35,6 +35,7 @@ export type GenerateStarContentInput = {
   readonly priorLemmas: readonly string[];
   readonly learnerCefr: string;
   readonly domain: string;
+  readonly videoTranscript?: string;
 };
 
 /**
@@ -72,7 +73,8 @@ export class ConstellationGeminiClient {
       .replace(/\{\{RECYCLED_LEMMAS\}\}/g, input.recycledLemmas.join(", "))
       .replace(/\{\{PRIOR_LEMMAS\}\}/g, input.priorLemmas.join(", ") || "(none)")
       .replace(/\{\{LEARNER_CEFR\}\}/g, input.learnerCefr)
-      .replace(/\{\{DOMAIN\}\}/g, input.domain);
+      .replace(/\{\{DOMAIN\}\}/g, input.domain)
+      .replace(/\{\{VIDEO_TRANSCRIPT\}\}/g, input.videoTranscript || "none");
     this.logger.log(`Generating content for star "${input.starName}" (${input.starType})`);
     return fetch_gemini_json<{ metadata: Record<string, unknown> }>(
       prompt,

@@ -1,5 +1,4 @@
 import { adapt_legacy_quiz_items, is_legacy_quiz_item } from "./legacy-quiz.adapter";
-import { to_text_only_questions } from "./text-only-questions.util";
 import {
   QuestionType,
   type LegacyQuizItem,
@@ -16,13 +15,13 @@ export function normalize_star_questions(
 ): TestQuestion[] {
   const direct = parse_questions_array(metadata?.questions, starContentVideoId);
   if (direct.length > 0) {
-    return to_text_only_questions(direct);
+    return direct;
   }
   const legacyQuiz = parse_legacy_quiz_array(metadata?.quiz);
   const legacyQuestions = parse_legacy_quiz_array(metadata?.questions);
   const legacyItems = legacyQuiz.length > 0 ? legacyQuiz : legacyQuestions;
   if (legacyItems.length > 0) {
-    return to_text_only_questions(adapt_legacy_quiz_items(legacyItems));
+    return adapt_legacy_quiz_items(legacyItems);
   }
   return [];
 }
