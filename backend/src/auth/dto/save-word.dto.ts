@@ -16,4 +16,8 @@ export class SaveWordDto {
   @IsOptional()
   @IsString()
   meaning?: string;
+
+  @IsOptional()
+  @IsString()
+  pronunciation?: string;
 }
