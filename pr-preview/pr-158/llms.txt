@@ -1,0 +1,24 @@
+# Explys
+> Explys is an adaptive English-learning platform: video lessons from movies and series, interactive quizzes, placement → personalized learning plan, and tiered subscriptions (Light / Smart / Family / Teacher LMS).
+
+Explys helps learners practice real spoken English with subtitles, comprehension tests, and AI-assisted feedback. Teachers and schools use the Teacher (LMS Office) tier for classes (up to 40 students).
+
+Primary market: consumer EdTech (B2C) with optional B2B Teacher / Enterprise.
+
+## Indexable pages
+- [Home](https://explys.com/): Product promise, demo, pricing overview, social proof
+- [Pricing](https://explys.com/pricing): Light $7, Smart $12, Family $19, Teacher custom — Stripe billing
+- [About](https://explys.com/about): Company / product background
+- [Terms of Service](https://explys.com/terms): Legal terms
+- [Privacy Policy](https://explys.com/privacy): Privacy and data use
+
+## Product facts for agents
+- Free start: no credit card required to create an account
+- Onboarding: sign up → placement questionnaire → learning plan → video + quiz loop
+- Public crawl map: https://explys.com/sitemap.xml
+- Crawl rules: https://explys.com/robots.txt
+- Auth URLs (/login, /register) exist for humans but are noindex and blocked from crawlers
+
+## Optional
+- [Feedback](https://explys.com/feedback): Contact / feedback form (not in sitemap)
+- Catalog and lesson players require sign-in today; do not treat /catalog as a public browse index
