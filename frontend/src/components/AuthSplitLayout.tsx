@@ -38,7 +38,7 @@ export function AuthSplitLayout({
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.65_0.25_295/0.2)_0%,transparent_70%)]" />
           <div className="relative px-12 text-center">
             <img
-              src={rightImage || "/Greeting.svg"}
+              src={rightImage || `${import.meta.env.BASE_URL}Greeting.svg`}
               className={
                 rightImageClassName || "w-45 h-54 animate-float ml-25 my-5"
               }

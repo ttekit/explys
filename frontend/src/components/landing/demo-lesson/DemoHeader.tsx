@@ -32,7 +32,7 @@ export default function DemoHeader({ mode, onModeChange }: DemoProps) {
         <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
           <Link to="/">
             <img
-              src="/Icon.svg"
+              src={`${import.meta.env.BASE_URL}Icon.svg`}
               alt="Explys Logo"
               className="h-15 w-16 shrink-0 object-contain hover:cursor-pointer"
             />

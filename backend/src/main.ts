@@ -31,6 +31,7 @@ function echoAllowedRequestOrigin(req: Request): string | undefined {
   const normalizedBrowserOrigin = normalizeCorsOriginEntry(originHeader);
   const isProd = process.env.NODE_ENV === "production";
   const rawList = process.env.CORS_ORIGINS?.trim() ?? "";
+
   if (isProd) {
     if (!rawList) {
       return undefined;

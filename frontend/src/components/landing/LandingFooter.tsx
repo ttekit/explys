@@ -55,7 +55,7 @@ export function LandingFooter() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           <div className="col-span-2">
             <Link to="/" className="mb-4 flex items-center gap-2">
-              <img src="/Icon.svg" className="w-12 h-14 pr-1" alt="" />
+              <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-12 h-14 pr-1" alt="" />
               <span className="font-display text-xl font-bold text-foreground">
                 Explys
               </span>

@@ -12,6 +12,7 @@ RULES:
 - metadata MUST contain ONLY: canDo (Ukrainian), introducedLemmas[], recycledLemmas[].
 - Do NOT include rule, examples, quiz, questions, phrases, or text — content is generated later per star.
 - ALL descriptions and canDo in UKRAINIAN. English only in lemma names.
+- If the domain is about videos, ensure the video TEST star (e.g., "Short Videos") comes AFTER the PHRASE star (e.g., "Вивчити фрази відео") by setting the PHRASE star as its prerequisite.
 
 Domain: {{DOMAIN}}
 Learner Level: {{LEARNER_CEFR}}
