@@ -1,0 +1,35 @@
+# Explys crawl policy
+# Sitemap = indexable marketing only (/, /pricing, /about, /terms, /privacy)
+# Auth = meta noindex + Disallow here; never list in sitemap
+# Catalog/lessons = login-gated; Disallow until public Path B indexing ships
+# AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended) inherit *
+# Curated agent map: https://explys.com/llms.txt
+# Docs: frontend/docs/SEO.md
+
+User-agent: *
+Allow: /
+
+# Auth / registration (thin forms)
+Disallow: /login
+Disallow: /register
+Disallow: /register-
+Disallow: /verify-email
+Disallow: /restore-account
+
+# Logged-in app shells
+Disallow: /subscribe
+Disallow: /learning-plan
+Disallow: /profile
+Disallow: /profileMain
+Disallow: /admin/
+Disallow: /level-test
+Disallow: /watched-lessons
+Disallow: /customise
+Disallow: /leaderboard
+Disallow: /classroom
+
+# Gated catalog / lesson player
+Disallow: /catalog
+Disallow: /content/
+
+Sitemap: https://explys.com/sitemap.xml
