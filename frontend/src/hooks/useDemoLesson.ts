@@ -19,6 +19,7 @@ export function useDemoLesson(mode: DemoMode) {
     null,
   );
   const [transcriptLines, setTranscriptLines] = useState<TranscriptLine[]>([]);
+  const [transcriptLinesUk, setTranscriptLinesUk] = useState<TranscriptLine[]>([]);
   const [transcriptLoading, setTranscriptLoading] = useState(false);
 
   const videoElRef = useRef<HTMLVideoElement | null>(null);
@@ -28,23 +29,44 @@ export function useDemoLesson(mode: DemoMode) {
     let cancelled = false;
     setTranscriptLoading(true);
     setTranscriptLines([]);
-    fetch(data.subtitlesFileLink)
-      .then((r) => r.text())
-      .then((text) => {
+    setTranscriptLinesUk([]);
+    
+    Promise.all([
+      fetch(data.subtitlesFileLink).then(r => r.text()),
+      data.subtitlesFileLinkUk ? fetch(data.subtitlesFileLinkUk).then(r => r.text()) : Promise.resolve(null)
+    ])
+      .then(([enText, ukText]) => {
         if (cancelled) return;
-        const allLines = splitLongTranscriptLines(
-          parseWebVttTranscriptLines(text),
+        
+        const enLines = splitLongTranscriptLines(
+          parseWebVttTranscriptLines(enText),
           80,
         );
-        const visibleLines = data.maxPlaybackSec
-          ? allLines.filter(
+        const visibleEnLines = data.maxPlaybackSec
+          ? enLines.filter(
               (line) => (line.startSec ?? 0) < data.maxPlaybackSec!,
             )
-          : allLines;
-        setTranscriptLines(visibleLines);
+          : enLines;
+        setTranscriptLines(visibleEnLines);
+
+        if (ukText) {
+          const ukLines = splitLongTranscriptLines(
+            parseWebVttTranscriptLines(ukText),
+            80,
+          );
+          const visibleUkLines = data.maxPlaybackSec
+            ? ukLines.filter(
+                (line) => (line.startSec ?? 0) < data.maxPlaybackSec!,
+              )
+            : ukLines;
+          setTranscriptLinesUk(visibleUkLines);
+        }
       })
       .catch(() => {
-        if (!cancelled) setTranscriptLines([]);
+        if (!cancelled) {
+          setTranscriptLines([]);
+          setTranscriptLinesUk([]);
+        }
       })
       .finally(() => {
         if (!cancelled) setTranscriptLoading(false);
@@ -52,7 +74,7 @@ export function useDemoLesson(mode: DemoMode) {
     return () => {
       cancelled = true;
     };
-  }, [data.subtitlesFileLink, data.maxPlaybackSec]);
+  }, [data.subtitlesFileLink, data.subtitlesFileLinkUk, data.maxPlaybackSec]);
 
   const onVideoMount = useCallback((el: HTMLVideoElement | null) => {
     videoElRef.current = el;
@@ -121,6 +143,7 @@ export function useDemoLesson(mode: DemoMode) {
     isVideoComplete,
     quizResult,
     transcriptLines,
+    transcriptLinesUk,
     transcriptLoading,
     handlePlaybackTime,
     handlePlaybackFraction,

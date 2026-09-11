@@ -15,6 +15,8 @@ import { DemoQuizResult } from "./DemoQuizResult";
 import { useLandingLocale } from "../../../context/LandingLocaleContext";
 import { cn } from "../../../lib/utils";
 import type { TabId } from "../../../lib/lesson-utils";
+import { useMemo } from "react";
+import type { SubtitleTrack } from "../../VideoPlayer";
 
 interface DemoLessonBodyProps {
   mode: DemoMode;
@@ -126,6 +128,7 @@ export default function DemoLessonBody({
     isVideoComplete,
     quizResult,
     transcriptLines,
+    transcriptLinesUk,
     transcriptLoading,
     handlePlaybackTime,
     handlePlaybackFraction,
@@ -138,6 +141,38 @@ export default function DemoLessonBody({
 
   const content =
     mode === "quickTry" ? demo.quickTryContent : demo.wholeLessonContent;
+
+  const playerTranscripts = useMemo(() => {
+    if (!transcriptLines || transcriptLines.length === 0) return undefined;
+    
+    const tracks: SubtitleTrack[] = [];
+    
+    // We add the English transcript.
+    tracks.push({
+      id: "en",
+      label: "English",
+      cues: transcriptLines.map((cue: any) => ({
+        startSec: cue.startSec,
+        endSec: cue.endSec,
+        text: cue.text,
+      })),
+    });
+
+    // For the demo lesson, we use transcriptLinesUk if available.
+    if (transcriptLinesUk && transcriptLinesUk.length > 0) {
+      tracks.push({
+        id: "uk",
+        label: "Українська",
+        cues: transcriptLinesUk.map((cue: any) => ({
+          startSec: cue.startSec,
+          endSec: cue.endSec,
+          text: cue.text,
+        })),
+      });
+    }
+
+    return tracks;
+  }, [transcriptLines, transcriptLinesUk]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 max-h-fit">
@@ -162,6 +197,7 @@ export default function DemoLessonBody({
               key={mode}
               src={data.videoLink}
               transcript={transcriptLines}
+              transcripts={playerTranscripts}
               onEnded={handleVideoEnded}
               onPlaybackTime={handlePlaybackTime}
               onPlaybackFraction={handlePlaybackFraction}

@@ -11,7 +11,7 @@ export default function HeroStats() {
   const [stats, setStats] = useState<PublicStatsDto | null>(null);
 
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || "https://api.explys.com";
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://api.explys.com";
     fetch(`${apiUrl}/users/public/stats`)
       .then((res) => res.json())
       .then((data: { videos?: number }) =>

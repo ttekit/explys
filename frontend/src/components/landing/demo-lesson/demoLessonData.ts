@@ -8,6 +8,7 @@ export interface DemoLessonData {
   videoName: string;
   videoDescription: string;
   subtitlesFileLink: string;
+  subtitlesFileLinkUk?: string;
   vocabulary: VocabularyItem[];
   quizQuestions: QuizQuestion[];
   maxPlaybackSec?: number;
@@ -154,6 +155,7 @@ export const demoLessons: Record<"quickTry" | "wholeLesson", DemoLessonData> = {
     videoDescription:
       "A short taste of the lesson. Watch the first couple of minutes and try a mini quiz.",
     subtitlesFileLink: HARRY_POTTER_VTT,
+    subtitlesFileLinkUk: "/harry-potter-uk.vtt",
     vocabulary: sharedVocabularyQuick,
     quizQuestions: sharedQuizQuestions,
     maxPlaybackSec: 207,
@@ -164,6 +166,7 @@ export const demoLessons: Record<"quickTry" | "wholeLesson", DemoLessonData> = {
     videoDescription:
       "Start your language journey with a magical classic. Through clear dialogues and a heartwarming story, you will learn how to describe people and places, express basic emotions, and easily catch natural British accents without feeling overwhelmed.",
     subtitlesFileLink: HARRY_POTTER_VTT,
+    subtitlesFileLinkUk: "/harry-potter-uk.vtt",
     vocabulary: sharedVocabularyWhole,
     quizQuestions: sharedQuizQuestions,
     maxPlaybackSec: undefined,

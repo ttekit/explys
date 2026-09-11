@@ -3,7 +3,6 @@ import {
   type TextPickQuestion,
   type TestQuestion,
 } from "./test-session.types";
-import { to_text_only_questions } from "./text-only-questions.util";
 
 type LegacyQuizItemInput = {
   readonly question: string;
@@ -19,18 +18,16 @@ export function normalize_star_questions(
   normalizedFromApi?: TestQuestion[],
 ): TestQuestion[] {
   if (normalizedFromApi && normalizedFromApi.length > 0) {
-    return to_text_only_questions(normalizedFromApi);
+    return normalizedFromApi;
   }
-  const direct = to_text_only_questions(parse_questions(metadata?.questions));
+  const direct = parse_questions(metadata?.questions);
   if (direct.length > 0) {
     return direct;
   }
   const legacyQuiz = parse_legacy(metadata?.quiz);
   const legacyQuestions = parse_legacy(metadata?.questions);
   const legacy = legacyQuiz.length > 0 ? legacyQuiz : legacyQuestions;
-  return to_text_only_questions(
-    legacy.map((item, index) => adapt_legacy(item, `legacy-${index + 1}`)),
-  );
+  return legacy.map((item, index) => adapt_legacy(item, `legacy-${index + 1}`));
 }
 
 function parse_legacy(value: unknown): LegacyQuizItemInput[] {
