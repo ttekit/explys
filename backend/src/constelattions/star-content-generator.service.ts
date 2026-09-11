@@ -135,13 +135,17 @@ export class StarContentGeneratorService {
     const topicMatch = star.description?.match(/^\[(.*?)\]/);
     const topic = topicMatch?.[1] ?? star.name;
     const plainDescription = star.description?.replace(/^\[.*?\]\s*/, "") ?? "";
+
+    const introducedLemmas = as_string_array(planMetadata.introducedLemmas);
+    const segment = await this.find_video_segment_for_star(topic, introducedLemmas);
+
     const input: GenerateStarContentInput = {
       starType: star.type,
       starName: star.name,
       starTopic: topic,
       starDescription: plainDescription,
       canDo: typeof planMetadata.canDo === "string" ? planMetadata.canDo : "",
-      introducedLemmas: as_string_array(planMetadata.introducedLemmas),
+      introducedLemmas,
       recycledLemmas: as_string_array(planMetadata.recycledLemmas),
       priorLemmas: await this.collect_prior_lemmas({
         id: star.id,
@@ -149,12 +153,8 @@ export class StarContentGeneratorService {
       }),
       learnerCefr: cefrLevel,
       domain,
+      ...(segment ? { videoTranscript: segment.fullPhrase } : {}),
     };
-    
-    const segment = await this.find_video_segment_for_star(topic, input.introducedLemmas);
-    if (segment) {
-      input.videoTranscript = segment.fullPhrase;
-    }
 
     let lastReason = "Unknown failure";
     for (let attempt = 1; attempt <= CONTENT_MAX_ATTEMPTS; attempt += 1) {
@@ -220,7 +220,7 @@ export class StarContentGeneratorService {
 
   private async find_video_segment_for_star(
     topic: string,
-    introducedLemmas: string[],
+    introducedLemmas: readonly string[],
   ) {
     const keyword = topic.trim().split(/\s+/)[0];
     if (!keyword && introducedLemmas.length === 0) return null;
@@ -234,7 +234,7 @@ export class StarContentGeneratorService {
         orFilters.push({ fullPhrase: { contains: lemma, mode: "insensitive" } });
       }
     }
-    
+
     if (orFilters.length === 0) return null;
 
     const segment = await this.prisma.videoSegment.findFirst({
