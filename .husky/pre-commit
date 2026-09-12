@@ -12,6 +12,6 @@ echo "-> Running frontend build & test..."
 (cd frontend && npm run build && npm run test)
 
 echo "-> Running backend build & test..."
-(cd backend && npm run build && npm run test)
+(cd backend && npm run build && npm run test:ci)
 
 echo "Pre-commit hook passed!"
