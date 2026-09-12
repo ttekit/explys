@@ -31,13 +31,30 @@ jobs:
         with:
           fetch-depth: 0 # Required to fetch the PR diff
           
-      - name: Run Gemini Code Review
-        uses: Wandalen/wretry.action@v3
+      - name: Run Gemini Code Review (Attempt 1)
+        id: review1
+        uses: sshnaidm/gemini-code-review-action@v2
+        continue-on-error: true
         with:
-          action: sshnaidm/gemini-code-review-action@v2
-          with: |
-            github-token: ${{ secrets.GITHUB_TOKEN }}
-            gemini-key: ${{ secrets.GEMINI_API_KEY }}
-            model: "gemini-3.8-flash"
-          attempt_limit: 5
-          attempt_delay: 5000
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: "gemini-3.8-flash"
+
+      - name: Run Gemini Code Review (Attempt 2)
+        id: review2
+        if: steps.review1.outcome == 'failure'
+        uses: sshnaidm/gemini-code-review-action@v2
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: "gemini-3.8-flash"
+
+      - name: Run Gemini Code Review (Attempt 3)
+        id: review3
+        if: steps.review2.outcome == 'failure'
+        uses: sshnaidm/gemini-code-review-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: "gemini-3.8-flash"
