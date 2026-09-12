@@ -37,4 +37,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
           # You can customize the model and instructions if needed
-          model: "gemini-3.6-flash"
+          model: "gemini-3.8-flash"
