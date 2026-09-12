@@ -32,9 +32,12 @@ jobs:
           fetch-depth: 0 # Required to fetch the PR diff
           
       - name: Run Gemini Code Review
-        uses: sshnaidm/gemini-code-review-action@v2
+        uses: Wandalen/wretry.action@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          gemini-key: ${{ secrets.GEMINI_API_KEY }}
-          # You can customize the model and instructions if needed
-          model: "gemini-3.8-flash"
+          action: sshnaidm/gemini-code-review-action@v2
+          with: |
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            gemini-key: ${{ secrets.GEMINI_API_KEY }}
+            model: "gemini-3.8-flash"
+          attempt_limit: 5
+          attempt_delay: 5000
