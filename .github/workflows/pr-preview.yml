@@ -2,7 +2,7 @@ name: PR Preview
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -27,6 +27,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install and Build
+        if: github.event.action != 'closed'
         working-directory: frontend
         env:
           VITE_APP_SUBSCRIPTION_DEV_MODE: "0"

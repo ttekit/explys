@@ -50,8 +50,7 @@ export default defineConfig(({ mode }) => {
   let base = "/";
   if (process.env.GITHUB_ACTIONS === "true" && process.env.GITHUB_REF?.startsWith("refs/pull/")) {
     const prNumber = process.env.GITHUB_REF.split("/")[2];
-    const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1] || "explys";
-    base = `/${repoName}/pr-preview/pr-${prNumber}/`;
+    base = `/pr-preview/pr-${prNumber}/`;
   }
 
   return {
