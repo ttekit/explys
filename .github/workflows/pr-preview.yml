@@ -15,6 +15,7 @@ permissions:
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,6 +35,10 @@ jobs:
         run: |
           npm ci
           npm run build
+
+      - name: Ensure dist directory exists
+        # Create dummy directory if it doesn't exist to prevent action failure on PR close
+        run: mkdir -p frontend/dist
 
       - name: Deploy PR Preview
         uses: rossjrw/pr-preview-action@v1.8.1

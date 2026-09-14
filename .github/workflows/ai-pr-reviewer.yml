@@ -18,6 +18,10 @@ on:
       - main
       - product
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: write
@@ -25,12 +29,13 @@ permissions:
 jobs:
   gemini-code-review:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Required to fetch the PR diff
-          
+
       - name: Run Gemini Code Review (Attempt 1)
         id: review1
         uses: sshnaidm/gemini-code-review-action@v2
@@ -38,7 +43,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
-          model: "gemini-3.5-flash"
+          model: "gemini-3.7-flash"
 
       - name: Run Gemini Code Review (Attempt 2)
         id: review2
@@ -48,7 +53,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
-          model: "gemini-3.5-flash"
+          model: "gemini-3.7-flash"
 
       - name: Run Gemini Code Review (Attempt 3)
         id: review3
@@ -57,4 +62,4 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
-          model: "gemini-3.5-flash"
+          model: "gemini-3.7-flash"
