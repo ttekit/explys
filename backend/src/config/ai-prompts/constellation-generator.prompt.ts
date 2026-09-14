@@ -15,6 +15,7 @@ CRITICAL RULES:
 - READING only after star 4+. Prefer PHRASE and GRAMMAR early; VIDEO mid/late path.
 - If WEAK_SKILLS is provided, add one remediation-oriented star targeting the weakest skill.
 - If LEARNER_CEFR is A1: survival English (greetings, ordering, numbers in context, basic be/simple present). No textbook alphabet unit.
+- If the domain is about videos, ensure the video TEST star (e.g., "Short Videos") comes AFTER the PHRASE star (e.g., "Вивчити фрази відео") by setting the PHRASE star as its prerequisite.
 
 DEPTH REQUIREMENTS (5–10 minutes per star):
 - PHRASE: at least 5 phrases. Each phrase MUST include targetPhrase, translation (UK), dialogue (2–4 short English lines without A:/B: speaker labels), and a detailed context (2–4 sentences explaining WHEN/HOW to use it, in Ukrainian).

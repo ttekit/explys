@@ -291,7 +291,7 @@ export default function RegistrationMain() {
         rightSubtitle={layoutRightSubtitle}
       >
         <div className="mb-1 flex items-center gap-3">
-          <img src="/Icon.svg" className="w-15 h-18 mr-4" alt="Icon" />
+          <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-15 h-18 mr-4" alt="Icon" />
           <h1 className="font-display text-2xl font-bold">{step1.title}</h1>
         </div>
         <p className="mb-8 text-muted-foreground">{step1.lead}</p>

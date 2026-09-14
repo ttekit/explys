@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Fail fast
+set -e
+
+echo "Running pre-commit hook (via husky)..."
+
+#echo "-> Running npx reslop..."
+#npx reslop
+
+echo "-> Running frontend build & test..."
+(cd frontend && npm run build && npm run test)
+
+echo "-> Running backend build & test..."
+(cd backend && npm run build && npm run test:ci)
+
+echo "Pre-commit hook passed!"

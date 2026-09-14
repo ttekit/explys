@@ -1,0 +1,50 @@
+name: PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install and Build
+        if: github.event.action != 'closed'
+        working-directory: frontend
+        env:
+          VITE_APP_SUBSCRIPTION_DEV_MODE: "0"
+        run: |
+          npm ci
+          npm run build
+
+      - name: Ensure dist directory exists
+        # Create dummy directory if it doesn't exist to prevent action failure on PR close
+        run: mkdir -p frontend/dist
+
+      - name: Deploy PR Preview
+        uses: rossjrw/pr-preview-action@v1.8.1
+        with:
+          source-dir: frontend/dist
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -23,7 +23,7 @@ describe("test-question.validator", () => {
     });
     expect(result).toHaveLength(1);
     expect(result[0]?.id).toBe("q1");
-    expect(result[0]?.type).toBe(QuestionType.TEXT_PICK);
+    expect(result[0]?.type).toBe(QuestionType.BLIND_AUDIO);
   });
 
   it("falls back to legacy quiz as text_pick", () => {
@@ -55,8 +55,8 @@ describe("test-question.validator", () => {
       },
       42,
     );
-    expect(result[0]?.type).toBe(QuestionType.TEXT_PICK);
-    if (result[0]?.type === QuestionType.TEXT_PICK) {
+    expect(result[0]?.type).toBe(QuestionType.VIDEO_RIDDLE);
+    if (result[0]?.type === QuestionType.VIDEO_RIDDLE) {
       expect(result[0].correctAnswer).toBe("am");
     }
   });

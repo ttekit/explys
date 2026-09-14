@@ -1,0 +1,65 @@
+# ==============================================================================
+# TODO: DEVOPS INSTRUCTIONS: GEMINI AI PR REVIEWER
+# ==============================================================================
+# To enable this workflow:
+# 1. Create a Gemini API key in Google AI Studio (https://aistudio.google.com/)
+# 2. Go to Repository Settings -> Secrets and variables -> Actions
+# 3. Add a new Repository Secret named `GEMINI_API_KEY` with the token value
+# 4. Make sure Actions have Read/Write permissions for pull requests
+# ==============================================================================
+
+name: AI PR Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    # Adjust the branches if you want to restrict it to specific targets
+    branches:
+      - main
+      - product
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gemini-code-review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to fetch the PR diff
+
+      - name: Run Gemini Code Review (Attempt 1)
+        id: review1
+        uses: sshnaidm/gemini-code-review-action@v2
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: "gemini-3.7-flash"
+
+      - name: Run Gemini Code Review (Attempt 2)
+        id: review2
+        if: steps.review1.outcome == 'failure'
+        uses: sshnaidm/gemini-code-review-action@v2
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: "gemini-3.7-flash"
+
+      - name: Run Gemini Code Review (Attempt 3)
+        id: review3
+        if: steps.review2.outcome == 'failure'
+        uses: sshnaidm/gemini-code-review-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: "gemini-3.7-flash"
