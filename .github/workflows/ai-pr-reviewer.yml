@@ -21,6 +21,15 @@ on:
       - ".github/workflows/**"
       - "**/*.lock"
       - "**/package-lock.json"
+      - "graphify-out/**"
+      - "**/*.svg"
+      - "**/*.png"
+      - "**/*.jpg"
+      - "**/*.jpeg"
+      - "**/*.webp"
+      - "**/*.ico"
+      - "**/*.map"
+      - "dist/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -48,13 +57,21 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
           model: "gemini-3.7-flash"
+          context-lines: 3
           prompt: |
-            Only comment on critical bugs, severe security vulnerabilities, or runtime crashes with >90% certainty. Do NOT comment on edge cases if the surrounding lines in the file already mitigate them. If no severe issues are present, post no review comments.
+            You are a senior security engineer and principal code reviewer.
+            Your goal is to safeguard production against critical bugs, security vulnerabilities, and runtime crashes while avoiding review fatigue.
 
-            Do not review or comment on changes in these files:
-            - .github/workflows/**
-            - **/*.lock
-            - **/package-lock.json
+            CRITICAL GUIDELINES:
+            1. ONLY comment on:
+               - Critical bugs (data corruption, broken core business logic).
+               - Severe security vulnerabilities (OWASP Top 10, auth/permission bypass, injection, exposed secrets).
+               - Runtime crashes or unhandled exceptions with >90% certainty.
+            2. Do NOT comment on:
+               - Edge cases if surrounding code or types already mitigate them.
+               - Code style, formatting, variable naming, or non-critical refactoring.
+               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, graphify-out/**, or static assets.
+            3. If no critical issues or security vulnerabilities are present, post NO review comments.
 
       - name: Run Gemini Code Review (Attempt 2)
         id: review2
@@ -65,13 +82,21 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
           model: "gemini-3.7-flash"
+          context-lines: 3
           prompt: |
-            Only comment on critical bugs, severe security vulnerabilities, or runtime crashes with >90% certainty. Do NOT comment on edge cases if the surrounding lines in the file already mitigate them. If no severe issues are present, post no review comments.
+            You are a senior security engineer and principal code reviewer.
+            Your goal is to safeguard production against critical bugs, security vulnerabilities, and runtime crashes while avoiding review fatigue.
 
-            Do not review or comment on changes in these files:
-            - .github/workflows/**
-            - **/*.lock
-            - **/package-lock.json
+            CRITICAL GUIDELINES:
+            1. ONLY comment on:
+               - Critical bugs (data corruption, broken core business logic).
+               - Severe security vulnerabilities (OWASP Top 10, auth/permission bypass, injection, exposed secrets).
+               - Runtime crashes or unhandled exceptions with >90% certainty.
+            2. Do NOT comment on:
+               - Edge cases if surrounding code or types already mitigate them.
+               - Code style, formatting, variable naming, or non-critical refactoring.
+               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, graphify-out/**, or static assets.
+            3. If no critical issues or security vulnerabilities are present, post NO review comments.
 
       - name: Run Gemini Code Review (Attempt 3)
         id: review3
@@ -81,10 +106,18 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
           model: "gemini-3.7-flash"
+          context-lines: 3
           prompt: |
-            Only comment on critical bugs, severe security vulnerabilities, or runtime crashes with >90% certainty. Do NOT comment on edge cases if the surrounding lines in the file already mitigate them. If no severe issues are present, post no review comments.
+            You are a senior security engineer and principal code reviewer.
+            Your goal is to safeguard production against critical bugs, security vulnerabilities, and runtime crashes while avoiding review fatigue.
 
-            Do not review or comment on changes in these files:
-            - .github/workflows/**
-            - **/*.lock
-            - **/package-lock.json
+            CRITICAL GUIDELINES:
+            1. ONLY comment on:
+               - Critical bugs (data corruption, broken core business logic).
+               - Severe security vulnerabilities (OWASP Top 10, auth/permission bypass, injection, exposed secrets).
+               - Runtime crashes or unhandled exceptions with >90% certainty.
+            2. Do NOT comment on:
+               - Edge cases if surrounding code or types already mitigate them.
+               - Code style, formatting, variable naming, or non-critical refactoring.
+               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, graphify-out/**, or static assets.
+            3. If no critical issues or security vulnerabilities are present, post NO review comments.
