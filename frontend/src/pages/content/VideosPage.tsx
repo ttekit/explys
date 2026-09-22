@@ -787,7 +787,7 @@ export default function VideoPage() {
                     <div className="flex flex-col gap-1.5 min-w-0 w-full md:w-auto">
                       <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
                         <img
-                          src="/Icon.svg"
+                          src={`${import.meta.env.BASE_URL}Icon.svg`}
                           className="size-3.5 grayscale opacity-70"
                           alt=""
                         />{" "}
@@ -860,7 +860,7 @@ export default function VideoPage() {
                   </div>
                 ) : filteredVideos.length === 0 ? (
                   <div className=" flex flex-col rounded-[30px] bg-card/30 py-15 text-center justify-center items-center">
-                    <img src="/SadIcon.svg" className="w-25 h-30 mb-3" alt="" />
+                    <img src={`${import.meta.env.BASE_URL}SadIcon.svg`} className="w-25 h-30 mb-3" alt="" />
                     <h2 className="font-display text-2xl font-bold">
                       {cb.emptyTitle}
                     </h2>
@@ -981,7 +981,7 @@ export default function VideoPage() {
             rightSubtitle={cb.placementPrepRightSubtitle}
           >
             <div className="mb-6 flex items-center gap-3">
-              <img src="/Icon.svg" className="w-12 h-15" alt="Explys" />
+              <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-12 h-15" alt="Explys" />
               <div>
                 <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
                   {cb.placementTakeTestTitle || "Let's find your level"}

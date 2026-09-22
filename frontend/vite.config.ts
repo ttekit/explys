@@ -46,7 +46,16 @@ export default defineConfig(({ mode }) => {
     (env.DEV_MODE ?? env.VITE_DEV_MODE ?? "").trim() ||
     (mode === "development" ? "1" : "0");
 
+  // Automatically configure base path for GitHub Actions PR Previews
+  let base = "/";
+  if (process.env.GITHUB_ACTIONS === "true" && process.env.GITHUB_REF?.startsWith("refs/pull/")) {
+    const prNumber = process.env.GITHUB_REF.split("/")[2];
+    const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1] || "explys";
+    base = `/${repoName}/pr-preview/pr-${prNumber}/`;
+  }
+
   return {
+    base,
     define: {
       "import.meta.env.VITE_APP_SUBSCRIPTION_DEV_MODE": JSON.stringify(
         subscriptionDevModeResolved,

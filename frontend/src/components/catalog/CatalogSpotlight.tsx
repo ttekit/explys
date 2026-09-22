@@ -246,7 +246,7 @@ export function CatalogSpotlight({
           >
             {results.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-2 px-6 py-14 text-center">
-                <img src="/SadIcon.svg" className="w-20 h-25" alt="sad" />
+                <img src={`${import.meta.env.BASE_URL}SadIcon.svg`} className="w-20 h-25" alt="sad" />
                 <p className="text-muted-foreground text-sm">
                   {videos.length === 0
                     ? s.noLessonsCatalog

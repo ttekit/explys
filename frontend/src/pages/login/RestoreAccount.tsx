@@ -64,7 +64,7 @@ export default function RestoreAccount() {
         rightSubtitle={restore.rightSubtitle}
       >
         <div className="mb-8 flex items-center gap-3">
-          <img src="/Icon.svg" className="w-12 h-15" alt="Logo" />
+          <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-12 h-15" alt="Logo" />
           <h1 className="font-display text-2xl font-bold">{restore.title}</h1>
         </div>
 

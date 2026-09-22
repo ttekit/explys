@@ -1,37 +1,26 @@
-name: Pull Request Preview
+name: PR Preview
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - product
-      - main
-      - chore/*
-      - feature/*
+    types: [opened, synchronize, reopened, closed]
 
 concurrency:
-  group: preview-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
-  build-preview:
-    name: Build & Deploy Frontend Preview
+  deploy-preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-
-    defaults:
-      run:
-        working-directory: frontend
-
+    if: github.event.pull_request.head.repo.fork == false
     steps:
-      - name: Checkout PR code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -39,60 +28,37 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        if: github.event.action != 'closed'
+        working-directory: frontend
         run: npm ci
 
-      - name: Build preview bundle
+      - name: Run Unit Tests
+        if: github.event.action != 'closed'
+        working-directory: frontend
+        run: npm run test
+
+      - name: Build Preview Bundle
+        if: github.event.action != 'closed'
+        working-directory: frontend
         env:
-          VITE_SITE_URL: https://preview-pr-${{ github.event.pull_request.number }}.preview.explys.dev
-          VITE_APP_SUBSCRIPTION_DEV_MODE: "1"
+          VITE_APP_SUBSCRIPTION_DEV_MODE: "0"
         run: npm run build
 
-      - name: Upload preview artifact
-        uses: actions/upload-artifact@v4
+      - name: Deploy PR Preview
+        if: github.event.action != 'closed'
+        uses: rossjrw/pr-preview-action@v1
         with:
-          name: preview-pr-${{ github.event.pull_request.number }}
-          path: frontend/dist
-          retention-days: 7
+          source-dir: frontend/dist
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Comment Preview Details on PR
-        uses: actions/github-script@v7
+      - name: Remove PR Preview
+        if: github.event.action == 'closed'
+        uses: rossjrw/pr-preview-action@v1
         with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const previewDomain = process.env.PREVIEW_BASE_DOMAIN || "preview.explys.dev";
-            const previewUrl = `https://preview-pr-${prNumber}.${previewDomain}`;
-            const headerTag = `<!-- explys-preview-deploy-comment -->`;
-            
-            const commentBody = `${headerTag}
-### 🌐 Frontend Preview Ready
-
-- **PR:** #${prNumber}
-- **Preview URL:** [${previewUrl}](${previewUrl})
-- **Build Artifact:** Available in GitHub Actions Artifacts
-
-QA and developers can test all changes directly on this preview.`;
-
-            // Look for existing comment to update or create new
-            const comments = await github.rest.issues.listComments({
-              issue_number: prNumber,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-
-            const existingComment = comments.data.find(c => c.body && c.body.includes(headerTag));
-
-            if (existingComment) {
-              await github.rest.issues.updateComment({
-                comment_id: existingComment.id,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: commentBody
-              });
-            } else {
-              await github.rest.issues.createComment({
-                issue_number: prNumber,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: commentBody
-              });
-            }
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: remove
+          token: ${{ secrets.GITHUB_TOKEN }}

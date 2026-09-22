@@ -319,7 +319,7 @@ export default function WatchedLessonsPage() {
               <div className="flex items-start gap-3 min-w-0">
                 <Link to="/catalog">
                   <img
-                    src="/Icon.svg"
+                    src={`${import.meta.env.BASE_URL}Icon.svg`}
                     className="h-18 w-15 hover:cursor-pointer shrink-0"
                     alt=""
                   />

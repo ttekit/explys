@@ -97,7 +97,7 @@ export default function SubscribePage() {
       <main className="mx-auto box-border flex min-h-screen w-full max-w-[1536px] flex-col px-4 pb-24 pt-12 sm:w-[92%] sm:px-6 sm:pt-16 md:w-[88%] lg:w-[80%]">
         <div className="mb-10 flex flex-col gap-6 text-center">
           <div className="flex justify-center gap-3">
-            <img src="/Icon.svg" alt="" className="h-14 w-12" />
+            <img src={`${import.meta.env.BASE_URL}Icon.svg`} alt="" className="h-14 w-12" />
             <span className="font-display flex items-center text-xl font-bold tracking-tight">
               Explys
             </span>
