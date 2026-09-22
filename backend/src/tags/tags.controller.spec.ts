@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma.service';
 import { prismaMock } from 'src/test/prisma.mock';
 import { TagsController } from './tags.controller';
 import { TagsService } from './tags.service';
+import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 
 describe('TagsController', () => {
   let controller: TagsController;
@@ -14,7 +15,10 @@ describe('TagsController', () => {
         TagsService,
         { provide: PrismaService, useValue: prismaMock },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAdminGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<TagsController>(TagsController);
   });

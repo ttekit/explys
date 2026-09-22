@@ -1,0 +1,136 @@
+# ==============================================================================
+# DEVOPS INSTRUCTIONS: GEMINI AI PR REVIEWER
+# ==============================================================================
+# 1. Secret GEMINI_API_KEY must be set in Repository Settings -> Secrets -> Actions
+# 2. Workflow uses reliable models (gemini-2.5-pro -> gemini-2.5-flash -> gemini-2.0-flash)
+# 3. post-if-error: 'false' prevents spamming PRs with 503 / network error comments
+# ==============================================================================
+
+name: AI PR Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - product
+    paths-ignore:
+      - ".github/workflows/**"
+      - "**/*.lock"
+      - "**/package-lock.json"
+      - "**/*.svg"
+      - "**/*.png"
+      - "**/*.jpg"
+      - "**/*.jpeg"
+      - "**/*.webp"
+      - "**/*.ico"
+      - "**/*.map"
+      - "dist/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gemini-code-review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Attempt 1: Default to high-precision reasoning model (gemini-2.5-pro)
+      - name: Run Gemini Code Review (Attempt 1 - gemini-2.5-pro)
+        id: review1
+        uses: sshnaidm/gemini-code-review-action@v2
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: "gemini-2.5-pro"
+          context-lines: 3
+          post-if-error: "false"
+          prompt: |
+            You are a senior security engineer and principal code reviewer.
+            Your goal is to safeguard production against critical bugs, security vulnerabilities, and runtime crashes while avoiding review fatigue.
+
+            CRITICAL GUIDELINES:
+            1. ONLY comment on:
+               - Critical bugs (data corruption, broken core business logic).
+               - Severe security vulnerabilities (OWASP Top 10, auth/permission bypass, injection, exposed secrets).
+               - Runtime crashes or unhandled exceptions with >90% certainty.
+            2. Do NOT comment on:
+               - Edge cases if surrounding code or types already mitigate them.
+               - Code style, formatting, variable naming, or non-critical refactoring.
+               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, or static assets.
+            3. If no critical issues or security vulnerabilities are present, post NO review comments.
+
+      # Backoff delay if Attempt 1 hit high demand / rate limit
+      - name: Backoff Delay
+        if: steps.review1.outcome == 'failure'
+        run: sleep 10
+
+      # Attempt 2: Fallback to fast throughput model (gemini-2.5-flash)
+      - name: Run Gemini Code Review (Attempt 2 - gemini-2.5-flash)
+        id: review2
+        if: steps.review1.outcome == 'failure'
+        uses: sshnaidm/gemini-code-review-action@v2
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: "gemini-2.5-flash"
+          context-lines: 3
+          post-if-error: "false"
+          prompt: |
+            You are a senior security engineer and principal code reviewer.
+            Your goal is to safeguard production against critical bugs, security vulnerabilities, and runtime crashes while avoiding review fatigue.
+
+            CRITICAL GUIDELINES:
+            1. ONLY comment on:
+               - Critical bugs (data corruption, broken core business logic).
+               - Severe security vulnerabilities (OWASP Top 10, auth/permission bypass, injection, exposed secrets).
+               - Runtime crashes or unhandled exceptions with >90% certainty.
+            2. Do NOT comment on:
+               - Edge cases if surrounding code or types already mitigate them.
+               - Code style, formatting, variable naming, or non-critical refactoring.
+               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, or static assets.
+            3. If no critical issues or security vulnerabilities are present, post NO review comments.
+
+      # Backoff delay if Attempt 2 hit high demand
+      - name: Extended Backoff Delay
+        if: steps.review2.outcome == 'failure'
+        run: sleep 15
+
+      # Attempt 3: Final fallback to stable gemini-2.0-flash
+      - name: Run Gemini Code Review (Attempt 3 - gemini-2.0-flash)
+        id: review3
+        if: steps.review2.outcome == 'failure'
+        uses: sshnaidm/gemini-code-review-action@v2
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-key: ${{ secrets.GEMINI_API_KEY }}
+          model: "gemini-2.0-flash"
+          context-lines: 3
+          post-if-error: "false"
+          prompt: |
+            You are a senior security engineer and principal code reviewer.
+            Your goal is to safeguard production against critical bugs, security vulnerabilities, and runtime crashes while avoiding review fatigue.
+
+            CRITICAL GUIDELINES:
+            1. ONLY comment on:
+               - Critical bugs (data corruption, broken core business logic).
+               - Severe security vulnerabilities (OWASP Top 10, auth/permission bypass, injection, exposed secrets).
+               - Runtime crashes or unhandled exceptions with >90% certainty.
+            2. Do NOT comment on:
+               - Edge cases if surrounding code or types already mitigate them.
+               - Code style, formatting, variable naming, or non-critical refactoring.
+               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, or static assets.
+            3. If no critical issues or security vulnerabilities are present, post NO review comments.
