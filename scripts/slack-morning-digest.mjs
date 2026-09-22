@@ -32,11 +32,18 @@ function getKyivDateString() {
 }
 
 /**
+ * Formats PR preview environment URL hosted on GitHub Pages
+ */
+export function getPrPreviewUrl(repo, prNumber) {
+  const [owner, repoName] = (repo || "ttekit/explys").split("/");
+  return `https://${owner}.github.io/${repoName}/pr-preview/pr-${prNumber}/`;
+}
+
+/**
  * Calculates days elapsed since PR creation
  */
-function getDaysOpen(createdAt) {
+export function getDaysOpen(createdAt, now = new Date()) {
   const created = new Date(createdAt);
-  const now = new Date();
   const diffMs = now.getTime() - created.getTime();
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   return Math.max(0, days);
@@ -45,7 +52,7 @@ function getDaysOpen(createdAt) {
 /**
  * Fetches open pull requests using `gh` CLI or fallback to GitHub REST API
  */
-async function fetchOpenPrs() {
+export async function fetchOpenPrs() {
   // 1. Try gh CLI if available
   try {
     const stdout = execSync(
@@ -94,7 +101,9 @@ async function fetchOpenPrs() {
 /**
  * Categorizes PRs into Needs Review, Approved, and Stale
  */
-function analyzePrs(prs) {
+export function analyzePrs(prs, options = {}) {
+  const repo = options.repo || GITHUB_REPO;
+  const now = options.now || new Date();
   const activePrs = prs.filter((p) => !p.isDraft);
 
   const needsReview = [];
@@ -102,9 +111,9 @@ function analyzePrs(prs) {
   const changesRequested = [];
 
   for (const pr of activePrs) {
-    const days = getDaysOpen(pr.createdAt);
+    const days = getDaysOpen(pr.createdAt, now);
     const reviewers = (pr.reviewRequests || []).map((r) => r.login).filter(Boolean);
-    const previewUrl = `https://preview-pr-${pr.number}.preview.explys.dev`;
+    const previewUrl = getPrPreviewUrl(repo, pr.number);
 
     // Check review states
     const reviewStates = (pr.reviews || []).map((r) => r.state);
@@ -134,7 +143,7 @@ function analyzePrs(prs) {
 /**
  * Builds Slack Block Kit message
  */
-function buildSlackBlocks({ activePrs, needsReview, approved, changesRequested }) {
+export function buildSlackBlocks({ activePrs, needsReview, approved, changesRequested }) {
   const kyivTime = getKyivDateString();
 
   const blocks = [
@@ -310,7 +319,14 @@ async function main() {
   console.log("✅ Morning PR digest successfully posted to Slack.");
 }
 
-main().catch((err) => {
-  console.error("❌ Error running morning PR digest:", err);
-  process.exit(1);
-});
+const isDirectExecution =
+  process.argv[1] &&
+  (import.meta.url === `file://${process.argv[1]}` ||
+    import.meta.url.endsWith(process.argv[1].replace(/.*[/\\]/, "")));
+
+if (isDirectExecution) {
+  main().catch((err) => {
+    console.error("❌ Error running morning PR digest:", err);
+    process.exit(1);
+  });
+}

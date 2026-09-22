@@ -412,7 +412,7 @@ export default function LessonSummaryPage() {
             <span className="text-sm hidden md:block">{lesson.backToCatalog}</span>
           </Link>
           <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
-            <img src="/Icon.svg" className="w-10 h-13 sm:w-15 sm:h-18" />
+            <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-10 h-13 sm:w-15 sm:h-18" />
             <span className="font-display truncate font-bold">
               {page.pageTitle}
             </span>

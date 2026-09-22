@@ -77,7 +77,7 @@ export default function ContentHeader({ variant = "app" }: ContentHeaderProps) {
         <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-3">
           <Link to="/">
             <img
-              src="/Icon.svg"
+              src={`${import.meta.env.BASE_URL}Icon.svg`}
               alt="Explys Logo"
               className="h-12 w-14 shrink-0 object-contain hover:cursor-pointer sm:h-15 sm:w-16"
             />

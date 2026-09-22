@@ -1,10 +1,10 @@
 import { useLandingLocale } from "../../context/LandingLocaleContext";
 
 const stepIcons = [
-  <img src="/LandingProfile.svg" key="0" className="h-20 w-20" />,
-  <img src="/LandingTest.svg" key="1" className="h-20 w-20" />,
-  <img src="/LandingPlan.svg" key="2" className="h-20 w-20" />,
-  <img src="/LandingResult.svg" key="3" className="h-20 w-20" />,
+  <img src={`${import.meta.env.BASE_URL}LandingProfile.svg`} key="0" className="h-20 w-20" />,
+  <img src={`${import.meta.env.BASE_URL}LandingTest.svg`} key="1" className="h-20 w-20" />,
+  <img src={`${import.meta.env.BASE_URL}LandingPlan.svg`} key="2" className="h-20 w-20" />,
+  <img src={`${import.meta.env.BASE_URL}LandingResult.svg`} key="3" className="h-20 w-20" />,
 ];
 
 export function HowItWorksSection() {

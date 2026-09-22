@@ -119,7 +119,7 @@ export function HeroSection() {
 
           <div className="relative hidden justify-center lg:flex lg:justify-end">
             <img
-              src="/LandingPicture.png"
+              src={`${import.meta.env.BASE_URL}LandingPicture.png`}
               className="w-full max-w-md animate-float xl:max-w-lg"
               alt=""
             />
@@ -128,7 +128,7 @@ export function HeroSection() {
 
         <div className="relative mx-auto mt-6 flex max-w-[280px] justify-center sm:max-w-xs lg:hidden">
           <img
-            src="/LandingPicture.png"
+            src={`${import.meta.env.BASE_URL}LandingPicture.png`}
             className="w-full animate-float"
             alt=""
           />
