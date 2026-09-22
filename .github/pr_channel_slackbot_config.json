@@ -1,0 +1,80 @@
+{
+  "reactions": {
+    "merged": [
+      "merged"
+    ],
+    "closed": [
+      "pr-closed",
+      "closed"
+    ],
+    "changesRequested": [
+      "changes-requested"
+    ],
+    "approved": [
+      "approved"
+    ],
+    "commented": [
+      "speech_balloon",
+      "comment"
+    ],
+    "comments": [
+      "speech_balloon"
+    ],
+    "open": [
+      "eyes",
+      "pr-open"
+    ],
+    "draft": [
+      "construction"
+    ],
+    "githubReactions": {
+      "+1": "thumbsup",
+      "-1": "thumbsdown",
+      "laugh": "laughing",
+      "hooray": "tada",
+      "confused": "confused",
+      "heart": "heart",
+      "rocket": "rocket",
+      "eyes": "eyes"
+    }
+  },
+  "comments": {
+    "enabled": true,
+    "trackUnresolved": true,
+    "includeReviewComments": true,
+    "includeIssueComments": true,
+    "syncFromPR": true
+  },
+  "channels": {
+    "explys-prs": {
+      "channelId": "C0C3EDXDWJ1",
+      "limit": 100,
+      "maxPages": 2,
+      "trackUnresolved": true,
+      "enableReactionCopying": true,
+      "enableCommentCopying": true,
+      "trackComments": true
+    },
+    "project-foo-prs": {
+      "channelId": "C123456",
+      "limit": 100,
+      "maxPages": 2,
+      "trackUnresolved": true,
+      "enableReactionCopying": true,
+      "enableCommentCopying": true,
+      "trackComments": true
+    },
+    "project-bar-prs": {
+      "channelId": "C654321",
+      "limit": 100,
+      "enableReactionCopying": true,
+      "enableCommentCopying": true,
+      "trackComments": true
+    },
+    "project-baz-prs": {
+      "channelId": "C987654",
+      "limit": 50,
+      "disabled": true
+    }
+  }
+}
