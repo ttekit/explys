@@ -214,7 +214,7 @@ export default function LearnerRecapQuizPage() {
           </CenterBlock>
         ) : result ? (
           <CenterBlock>
-            <img src="/Icon.svg" className="w-20 h-25 mb-3"></img>
+            <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-20 h-25 mb-3"></img>
             <p className="font-display text-xl font-semibold">{R.doneTitle}</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {formatMessage(R.resultLine, {

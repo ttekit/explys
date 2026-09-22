@@ -88,16 +88,50 @@ This workspace is organized into three main subsystems. Always consult the respe
 
 ---
 
-## 5. Verification Before Pull Requests
+## 5. Post-Fix / Post-Feature Verification Loop (MANDATORY)
 
-Before pushing a branch or requesting review:
-```bash
-# Frontend validation
-cd frontend && npm run type-check && npm test && npm run seo:lint
+> [!IMPORTANT]
+> **Run Verification Loop After Every Fix or Feature Implementation.**
+> Immediately after fixing a bug or implementing a feature, you MUST run the verification loop for the affected subsystems to guarantee no regressions, type errors, or broken tests exist before committing or opening a PR.
 
-# Backend validation
-cd ../backend && npm run test:ci
+### Verification Loop Workflow:
+1. **Execute Checks**: Run the corresponding validation commands for all touched subsystems:
+   ```bash
+   # Frontend validation (if frontend/ touched)
+   cd frontend && npm run type-check && npm test && npm run seo:lint
 
-# Mobile validation (if touched)
-cd ../mobile && npm run type-check
-```
+   # Backend validation (if backend/ touched)
+   cd ../backend && npm run test:ci
+
+   # Mobile validation (if mobile/ touched)
+   cd ../mobile && npm run type-check
+
+   # Scripts / Automation validation (if scripts/ touched)
+   ./backend/node_modules/.bin/tsc --project scripts/tsconfig.json --noEmit
+   ```
+2. **Self-Healing Loop**: If any check fails, immediately inspect compiler/test diagnostics, correct the source code, and re-run the verification loop until all tests and type checks pass with 0 errors.
+3. **Knowledge Graph Sync**: Run `graphify update .` to ensure the local knowledge graph AST stays in sync with changes.
+
+---
+
+## 6. Mandatory Unit Tests for New Features & PR Gating (CRITICAL)
+
+> [!IMPORTANT]
+> **Always create and run automated unit tests for new features before creating or updating a PR.**
+> No new feature, endpoint, component, utility, or workflow automation may be committed or submitted in a PR without corresponding unit test coverage.
+
+### Pre-PR Testing & Verification Rules:
+1. **Write Unit Tests First / Alongside Code**:
+   - **Frontend Features**: Write unit tests using Vitest under `frontend/src/` (run `npm --prefix frontend run test`).
+   - **Backend Endpoints / Logic**: Write Jest specs under `backend/src/` (run `npm --prefix backend run test`).
+   - **Scripts & Automation**: Write Node.js test runner suites under `scripts/` (run `node --test scripts/<name>.test.mjs`).
+2. **Verify Working PR Preview Environment**:
+   - Pull Request preview environments are automatically deployed to GitHub Pages via `.github/workflows/pr-preview.yml`.
+   - The preview workflow executes unit tests (`npm run test`) *before* building the bundle. Broken tests will cancel the preview deployment.
+   - Test preview builds locally prior to PR creation:
+     ```bash
+     GITHUB_ACTIONS=true GITHUB_REF=refs/pull/<PR_NUMBER>/merge GITHUB_REPOSITORY=ttekit/explys npm --prefix frontend run build
+     ```
+   - Verify that routes and asset URLs compile with the proper preview base path (`/${repoName}/pr-preview/pr-${prNumber}/`).
+3. **Gate PR Creation / Update**:
+   - Only create or update a Pull Request once all builds, unit tests, and preview verification pass with 0 errors.

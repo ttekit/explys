@@ -181,7 +181,7 @@ export const EmailVerification: React.FC = () => {
         rightSubtitle={verify.rightSubtitle}
       >
         <div className="mb-2 flex items-center gap-3">
-          <img src="/Icon.svg" className="w-12 h-15" alt="Logo" />
+          <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-12 h-15" alt="Logo" />
           <h1 className="font-display text-2xl font-bold">{verify.title}</h1>
         </div>
 

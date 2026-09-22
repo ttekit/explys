@@ -59,7 +59,7 @@ describe("generated-constellation.validator", () => {
     const result = validate_star_content_metadata("GRAMMAR", {
       rule: "x".repeat(200),
       examples: Array.from({ length: 5 }, () => ({ en: "a", uk: "b" })),
-      questions: Array.from({ length: 5 }, (_, index) => ({
+      questions: Array.from({ length: 10 }, (_, index) => ({
         ...question,
         id: `q${index + 1}`,
       })),

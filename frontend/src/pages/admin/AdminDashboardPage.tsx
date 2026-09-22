@@ -433,7 +433,7 @@ export default function AdminDashboardPage() {
 
       <AdminCard className="border-primary/20 bg-gradient-to-r from-primary/10 to-accent/10">
         <AdminCardContent className="flex items-start gap-4 p-6 sm:items-center">
-          <img src="/Icon.svg" className="w-20 h-25 animate-float" />
+          <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-20 h-25 animate-float" />
           <div>
             <h3 className="font-semibold text-foreground">Pro tip</h3>
             <p className="text-sm text-muted-foreground">

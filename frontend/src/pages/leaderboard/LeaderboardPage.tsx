@@ -51,7 +51,7 @@ function LeaderboardRow({
     >
       <div className="flex w-8 shrink-0 justify-center">{rank_icon(entry.rank)}</div>
       <img
-        src={entry.avatarUrl || "/LandingProfile.svg"}
+        src={entry.avatarUrl || `${import.meta.env.BASE_URL}LandingProfile.svg`}
         alt=""
         className="size-10 shrink-0 rounded-full border border-border/60 object-cover"
       />
