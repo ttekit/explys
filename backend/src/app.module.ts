@@ -35,6 +35,7 @@ import { ConstellationModule } from "./constelattions/constellation.module";
 import { ChangelogModule } from './changelog/changelog.module';
 import { SrsModule } from "./srs/srs.module";
 import { RecommendationEngineModule } from "./recommendation-engine/recommendation-engine.module";
+import { SlackQaModule } from "./slack-qa/slack-qa.module";
 
 @Module({
   imports: [
@@ -110,6 +111,7 @@ import { RecommendationEngineModule } from "./recommendation-engine/recommendati
     ChangelogModule,
     SrsModule,
     RecommendationEngineModule,
+    SlackQaModule,
   ],
   controllers: [AppController],
   providers: [

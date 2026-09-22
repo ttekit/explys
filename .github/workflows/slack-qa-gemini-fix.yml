@@ -1,0 +1,94 @@
+name: Slack QA Bug Fix with Gemini & Graphify
+
+on:
+  repository_dispatch:
+    types: [slack_qa_bug]
+  workflow_dispatch:
+    inputs:
+      bug_text:
+        description: "Slack QA Bug Description"
+        required: true
+        type: string
+        default: "Fix hero stats component magic offset +3259 and use public stats"
+      reporter:
+        description: "QA Reporter Slack Username (without @)"
+        required: false
+        type: string
+        default: "qa-engineer"
+      channel:
+        description: "Slack Channel ID or Name"
+        required: false
+        type: string
+        default: "qa-bugs"
+      thread_ts:
+        description: "Slack Thread Timestamp"
+        required: false
+        type: string
+        default: ""
+      dry_run:
+        description: "Simulate without pushing or opening PR"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: slack-qa-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  fix-and-create-pr:
+    name: Gemini Agent — Analyze, Fix & Create PR with Preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Python for Graphify
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Graphify CLI
+        run: |
+          pip install graphify || true
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Configure Git User
+        run: |
+          git config user.name "Explys QA Bot (Gemini)"
+          git config user.email "qa-bot@explys.com"
+
+      - name: Execute Slack QA Gemini Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: "gemini-3.6-flash"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_BUG_TEXT: ${{ github.event.client_payload.text || inputs.bug_text }}
+          SLACK_REPORTER: ${{ github.event.client_payload.reporter || inputs.reporter }}
+          SLACK_CHANNEL: ${{ github.event.client_payload.channel || inputs.channel }}
+          SLACK_THREAD_TS: ${{ github.event.client_payload.thread_ts || inputs.thread_ts }}
+          DRY_RUN: ${{ github.event.client_payload.dry_run || inputs.dry_run || 'false' }}
+        run: |
+          npx tsx scripts/slack-qa-agent/run.ts
