@@ -88,16 +88,27 @@ This workspace is organized into three main subsystems. Always consult the respe
 
 ---
 
-## 5. Verification Before Pull Requests
+## 5. Post-Fix / Post-Feature Verification Loop (MANDATORY)
 
-Before pushing a branch or requesting review:
-```bash
-# Frontend validation
-cd frontend && npm run type-check && npm test && npm run seo:lint
+> [!IMPORTANT]
+> **Run Verification Loop After Every Fix or Feature Implementation.**
+> Immediately after fixing a bug or implementing a feature, you MUST run the verification loop for the affected subsystems to guarantee no regressions, type errors, or broken tests exist before committing or opening a PR.
 
-# Backend validation
-cd ../backend && npm run test:ci
+### Verification Loop Workflow:
+1. **Execute Checks**: Run the corresponding validation commands for all touched subsystems:
+   ```bash
+   # Frontend validation (if frontend/ touched)
+   cd frontend && npm run type-check && npm test && npm run seo:lint
 
-# Mobile validation (if touched)
-cd ../mobile && npm run type-check
-```
+   # Backend validation (if backend/ touched)
+   cd ../backend && npm run test:ci
+
+   # Mobile validation (if mobile/ touched)
+   cd ../mobile && npm run type-check
+
+   # Scripts / Automation validation (if scripts/ touched)
+   ./backend/node_modules/.bin/tsc --project scripts/tsconfig.json --noEmit
+   ```
+2. **Self-Healing Loop**: If any check fails, immediately inspect compiler/test diagnostics, correct the source code, and re-run the verification loop until all tests and type checks pass with 0 errors.
+3. **Knowledge Graph Sync**: Run `graphify update .` to ensure the local knowledge graph AST stays in sync with changes.
+
