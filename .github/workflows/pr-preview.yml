@@ -27,14 +27,22 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install and Build
+      - name: Install dependencies
+        if: github.event.action != 'closed'
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Unit Tests
+        if: github.event.action != 'closed'
+        working-directory: frontend
+        run: npm run test
+
+      - name: Build Preview Bundle
         if: github.event.action != 'closed'
         working-directory: frontend
         env:
           VITE_APP_SUBSCRIPTION_DEV_MODE: "0"
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
 
       - name: Deploy PR Preview
         if: github.event.action != 'closed'
