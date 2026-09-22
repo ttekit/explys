@@ -21,7 +21,6 @@ on:
       - ".github/workflows/**"
       - "**/*.lock"
       - "**/package-lock.json"
-      - "graphify-out/**"
       - "**/*.svg"
       - "**/*.png"
       - "**/*.jpg"
@@ -70,7 +69,7 @@ jobs:
             2. Do NOT comment on:
                - Edge cases if surrounding code or types already mitigate them.
                - Code style, formatting, variable naming, or non-critical refactoring.
-               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, graphify-out/**, or static assets.
+               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, or static assets.
             3. If no critical issues or security vulnerabilities are present, post NO review comments.
 
       - name: Run Gemini Code Review (Attempt 2)
@@ -95,7 +94,7 @@ jobs:
             2. Do NOT comment on:
                - Edge cases if surrounding code or types already mitigate them.
                - Code style, formatting, variable naming, or non-critical refactoring.
-               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, graphify-out/**, or static assets.
+               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, or static assets.
             3. If no critical issues or security vulnerabilities are present, post NO review comments.
 
       - name: Run Gemini Code Review (Attempt 3)
@@ -119,5 +118,5 @@ jobs:
             2. Do NOT comment on:
                - Edge cases if surrounding code or types already mitigate them.
                - Code style, formatting, variable naming, or non-critical refactoring.
-               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, graphify-out/**, or static assets.
+               - Changes in .github/workflows/**, **/*.lock, **/package-lock.json, or static assets.
             3. If no critical issues or security vulnerabilities are present, post NO review comments.
