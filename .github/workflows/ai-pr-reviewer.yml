@@ -17,6 +17,10 @@ on:
     branches:
       - main
       - product
+    paths-ignore:
+      - ".github/workflows/**"
+      - "**/*.lock"
+      - "**/package-lock.json"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -44,6 +48,13 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
           model: "gemini-3.7-flash"
+          prompt: |
+            Only comment on critical bugs, severe security vulnerabilities, or runtime crashes with >90% certainty. Do NOT comment on edge cases if the surrounding lines in the file already mitigate them. If no severe issues are present, post no review comments.
+
+            Do not review or comment on changes in these files:
+            - .github/workflows/**
+            - **/*.lock
+            - **/package-lock.json
 
       - name: Run Gemini Code Review (Attempt 2)
         id: review2
@@ -54,6 +65,13 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
           model: "gemini-3.7-flash"
+          prompt: |
+            Only comment on critical bugs, severe security vulnerabilities, or runtime crashes with >90% certainty. Do NOT comment on edge cases if the surrounding lines in the file already mitigate them. If no severe issues are present, post no review comments.
+
+            Do not review or comment on changes in these files:
+            - .github/workflows/**
+            - **/*.lock
+            - **/package-lock.json
 
       - name: Run Gemini Code Review (Attempt 3)
         id: review3
@@ -63,3 +81,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
           model: "gemini-3.7-flash"
+          prompt: |
+            Only comment on critical bugs, severe security vulnerabilities, or runtime crashes with >90% certainty. Do NOT comment on edge cases if the surrounding lines in the file already mitigate them. If no severe issues are present, post no review comments.
+
+            Do not review or comment on changes in these files:
+            - .github/workflows/**
+            - **/*.lock
+            - **/package-lock.json

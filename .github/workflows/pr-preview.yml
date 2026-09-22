@@ -36,15 +36,21 @@ jobs:
           npm ci
           npm run build
 
-      - name: Ensure dist directory exists
-        # Create dummy directory if it doesn't exist to prevent action failure on PR close
-        run: mkdir -p frontend/dist
-
       - name: Deploy PR Preview
-        uses: rossjrw/pr-preview-action@v1.8.1
+        if: github.event.action != 'closed'
+        uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: frontend/dist
           preview-branch: gh-pages
           umbrella-dir: pr-preview
-          action: auto
+          action: deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove PR Preview
+        if: github.event.action == 'closed'
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: remove
           token: ${{ secrets.GITHUB_TOKEN }}
