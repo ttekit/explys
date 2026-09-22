@@ -102,9 +102,9 @@ export default function RegistrationPreferences() {
 
           <div className="mb-6 flex items-center gap-3">
             {isAdult ? (
-              <img src="/AdultIcon.svg" className="w-12 h-15" alt="" />
+              <img src={`${import.meta.env.BASE_URL}AdultIcon.svg`} className="w-12 h-15" alt="" />
             ) : (
-              <img src="/StudentIcon.svg" className="w-12 h-15" alt="" />
+              <img src={`${import.meta.env.BASE_URL}StudentIcon.svg`} className="w-12 h-15" alt="" />
             )}
             <div>
               <h1 className="font-display text-2xl font-bold">

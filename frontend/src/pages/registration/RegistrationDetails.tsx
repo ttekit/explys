@@ -326,7 +326,7 @@ export default function RegistrationDetails() {
             <section className="space-y-4 border-border border-t pt-8">
               <div className="flex items-start gap-3">
                 <img
-                  src="TeacherIcon.svg"
+                  src={`${import.meta.env.BASE_URL}TeacherIcon.svg`}
                   className="w-12 h-15"
                   alt="Teacher"
                 />

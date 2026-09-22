@@ -59,7 +59,7 @@ function ContentWatchHeader({
           </Link>
           <div className="flex min-w-0 items-center justify-center gap-2 justify-self-center">
             <Link to="/catalog">
-              <img src="/Icon.svg" className="w-15 h-18 hover:cursor-pointer" />
+              <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-15 h-18 hover:cursor-pointer" />
             </Link>
             <span className="hidden sm:block font-display truncate font-bold text-foreground">
               Explys
