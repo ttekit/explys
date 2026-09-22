@@ -42,3 +42,7 @@ Explys Code Review.md
 frontend/.env
 /.cursorrules
 /.cursor/
+
+# Graphify (developer-local knowledge graph)
+/graphify-out/
+.graphify_cache/
