@@ -142,7 +142,7 @@ export function ProfileHeader({ user }: { user: ProfileHeaderModel }) {
 
           <div className="hidden shrink-0 lg:block">
             <div className="relative">
-              <img src="/Icon.svg" className="w-21 h-25 mr-6 animate-float" />
+              <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-21 h-25 mr-6 animate-float" />
             </div>
           </div>
         </div>

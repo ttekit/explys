@@ -85,7 +85,7 @@ export default function AdminLayout() {
             collapsed && "justify-center",
           )}
         >
-          <img src="/Icon.svg" className="w-10 h-13" />
+          <img src={`${import.meta.env.BASE_URL}Icon.svg`} className="w-10 h-13" />
           {!collapsed && (
             <div className="min-w-0">
               <span className="font-display text-xl font-bold">Explys</span>

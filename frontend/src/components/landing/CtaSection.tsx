@@ -35,7 +35,7 @@ export function CtaSection() {
       <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
         <div className="mb-6 flex justify-center sm:mb-8">
           <img
-            src="/Greeting.svg"
+            src={`${import.meta.env.BASE_URL}Greeting.svg`}
             className="h-32 w-28 animate-float sm:h-46 sm:w-38"
             alt=""
           />

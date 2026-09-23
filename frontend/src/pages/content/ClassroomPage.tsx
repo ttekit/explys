@@ -146,7 +146,7 @@ export default function ClassroomPage() {
             </div>
           ) : videos.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-3xl bg-card/30 py-20 text-center border border-border">
-              <img src="/SadIcon.svg" className="w-24 mb-4 opacity-80" alt="" />
+              <img src={`${import.meta.env.BASE_URL}SadIcon.svg`} className="w-24 mb-4 opacity-80" alt="" />
               <h2 className="text-xl font-bold">{classroom.emptyTitle}</h2>
               <p className="text-muted-foreground mt-2 max-w-md">
                 {isTeacher ? classroom.emptyTeacher : classroom.emptyStudent}

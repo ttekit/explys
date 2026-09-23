@@ -9,7 +9,7 @@ export function Error404Page() {
     <>
       <div className="pl-3.75 h-18 fixed w-full font-display backdrop-blur-md flex min-w-0 shrink items-center gap-2 sm:gap-3 border-b border-border">
         <img
-          src="/Icon.svg"
+          src={`${import.meta.env.BASE_URL}Icon.svg`}
           alt=""
           className="m-1 h-17 w-15 shrink-0 rounded-full p-1"
         />

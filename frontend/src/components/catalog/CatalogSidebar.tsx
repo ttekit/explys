@@ -228,7 +228,7 @@ export function CatalogSidebar({
               className="flex h-10 w-10 shrink-0 items-center justify-center"
             >
               <img
-                src={avatarUrl || "/LandingProfile.svg"}
+                src={avatarUrl || `${import.meta.env.BASE_URL}LandingProfile.svg`}
                 className="h-9 w-9 rounded-full object-cover"
                 alt=""
               />
