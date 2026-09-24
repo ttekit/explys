@@ -179,7 +179,33 @@ export class PrReviewFixer {
 
     console.log(`-> Matched ${graphContext.matchedNodes.length} symbols across ${graphContext.relevantFiles.length} files.`);
 
-    // 2. Gemini Fix Generation
+    // 2. Check GEMINI_API_KEY
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.warn("⚠️ GEMINI_API_KEY is not set in environment/secrets.");
+      if (this.githubToken) {
+        try {
+          await fetch(
+            `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/issues/${options.prNumber}/comments`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `token ${this.githubToken}`,
+                Accept: "application/vnd.github.v3+json",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                body: `⚠️ **Explys Gemini Agent**: Picked up your \`@gemini\` comment, but \`GEMINI_API_KEY\` is not configured in GitHub Secrets.\n\nPlease add **\`GEMINI_API_KEY\`** at: https://github.com/${this.repoOwner}/${this.repoName}/settings/secrets/actions so I can generate and apply fixes automatically!`,
+              }),
+            }
+          );
+        } catch (e: any) {
+          console.error("Failed to post secret warning comment:", e.message);
+        }
+      }
+      return;
+    }
+
     console.log("🧠 Generating fix with Gemini...");
     const fixer = new GeminiFixer();
     const bugReport: SlackBugReport = {
