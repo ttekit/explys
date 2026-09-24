@@ -82,10 +82,19 @@ export default function LoginForm() {
     }
   }, [location.search, navigate, loginSeo]);
 
+  const isDevOrLocal =
+    import.meta.env.DEV ||
+    (typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"));
+
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!captchaToken) {
+    const effectiveToken =
+      captchaToken || (isDevOrLocal ? "dev-bypass-token" : null);
+
+    if (!effectiveToken) {
       toast.error(loginSeo.captchaWait);
       return;
     }
@@ -97,7 +106,7 @@ export default function LoginForm() {
 
         const bodyPayload = {
           ...loginData,
-          captchaToken: captchaToken,
+          captchaToken: effectiveToken,
           ...(show2FA ? { code: twoFactorCode } : {}),
         };
 
@@ -284,16 +293,28 @@ export default function LoginForm() {
           <div className="flex justify-center py-2">
             <Turnstile
               key={captchaKey}
-              sitekey="0x4AAAAAADSk3etSiWLwGH5-"
+              sitekey={
+                isDevOrLocal
+                  ? "1x00000000000000000000AA"
+                  : "0x4AAAAAADSk3etSiWLwGH5-"
+              }
               onVerify={(token) => setCaptchaToken(token)}
-              onLoad={() => console.log("Turnstile loaded")}
+              onLoad={() => {
+                if (isDevOrLocal) {
+                  setCaptchaToken("dev-bypass-token");
+                }
+              }}
               onExpire={() => {
-                setCaptchaToken(null);
+                setCaptchaToken(isDevOrLocal ? "dev-bypass-token" : null);
                 setCaptchaKey((prev) => prev + 1);
               }}
               onError={() => {
-                setCaptchaToken(null);
-                setCaptchaKey((prev) => prev + 1);
+                if (isDevOrLocal) {
+                  setCaptchaToken("dev-bypass-token");
+                } else {
+                  setCaptchaToken(null);
+                  setCaptchaKey((prev) => prev + 1);
+                }
               }}
               theme="light"
             />

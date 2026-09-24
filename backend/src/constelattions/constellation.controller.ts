@@ -43,6 +43,15 @@ export class ConstellationController {
     return this.generatorService.regeneratePersonalConstellationForUser(userId);
   }
 
+  @Post("ensure")
+  @UseGuards(AuthGuard)
+  async ensurePersonalConstellation(
+    @Req() req: Request & { user: AuthedUser },
+  ) {
+    const userId = jwtSubToUserId(req.user);
+    return this.generatorService.ensurePersonalConstellationForUser(userId, "A1");
+  }
+
   @Post("generate")
   @UseGuards(JwtAdminGuard)
   async generateConstellation(
