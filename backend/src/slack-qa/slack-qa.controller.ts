@@ -7,23 +7,57 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
+  RawBodyRequest,
 } from "@nestjs/common";
-import { SlackQaService, SlackWebhookPayload } from "./slack-qa.service";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiConsumes,
+  ApiBody,
+} from "@nestjs/swagger";
+import { SkipThrottle } from "@nestjs/throttler";
+import { Public } from "../auth/decorators/public.decorator";
+import { SlackQaService } from "./slack-qa.service";
+import { SlackWebhookDto } from "./dto/slack-webhook.dto";
 import type { Request } from "express";
 
+@ApiTags("slack-qa")
 @Controller("slack")
+@SkipThrottle()
+@Public()
 export class SlackQaController {
   constructor(private readonly slackQaService: SlackQaService) {}
 
-  @Post("qa-bug")
+  @Post(["qa-bug", "slash-command"])
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Slack slash command webhook endpoint for reporting QA bugs",
+    description:
+      "Receives /qa-bug slash command from Slack, validates Slack HMAC signature, and triggers the automated Gemini & Graphify bug fixing agent.",
+  })
+  @ApiConsumes("application/x-www-form-urlencoded", "application/json")
+  @ApiBody({ type: SlackWebhookDto })
+  @ApiResponse({
+    status: 200,
+    description: "Instant in-channel acknowledgment for Slack",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Invalid Slack request signature",
+  })
   async handleQaBug(
-    @Body() body: SlackWebhookPayload,
+    @Body() body: SlackWebhookDto,
     @Headers("x-slack-signature") signature: string | undefined,
     @Headers("x-slack-request-timestamp") timestamp: string | undefined,
-    @Req() req: Request
+    @Req() req: RawBodyRequest<Request>
   ) {
-    const rawBody = (req as any).rawBody || JSON.stringify(body);
+    const rawBody = req.rawBody
+      ? req.rawBody.toString("utf8")
+      : typeof (req as any).body === "string"
+        ? (req as any).body
+        : JSON.stringify(body || {});
+
     const isValid = this.slackQaService.verifySlackSignature(
       signature,
       timestamp,

@@ -1,19 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import * as crypto from "crypto";
+import { SlackWebhookDto } from "./dto/slack-webhook.dto";
 
-export interface SlackWebhookPayload {
-  token?: string;
-  team_id?: string;
-  channel_id?: string;
-  channel_name?: string;
-  user_id?: string;
-  user_name?: string;
-  command?: string;
-  text?: string;
-  response_url?: string;
-  trigger_id?: string;
-}
+export type SlackWebhookPayload = SlackWebhookDto;
 
 @Injectable()
 export class SlackQaService {
@@ -31,7 +21,7 @@ export class SlackQaService {
   ): boolean {
     const signingSecret = this.configService.get<string>("SLACK_SIGNING_SECRET");
     if (!signingSecret) {
-      // If secret not configured in development, allow requests through
+      // If secret not configured in development or test, allow requests through
       return true;
     }
 
@@ -41,7 +31,8 @@ export class SlackQaService {
 
     // Reject requests older than 5 minutes to prevent replay attacks
     const fiveMinutesAgo = Math.floor(Date.now() / 1000) - 60 * 5;
-    if (parseInt(timestamp, 10) < fiveMinutesAgo) {
+    const reqTimestamp = parseInt(timestamp, 10);
+    if (isNaN(reqTimestamp) || reqTimestamp < fiveMinutesAgo) {
       return false;
     }
 
@@ -54,10 +45,12 @@ export class SlackQaService {
         .digest("hex");
 
     try {
-      return crypto.timingSafeEqual(
-        Buffer.from(mySignature, "utf8"),
-        Buffer.from(signature, "utf8")
-      );
+      const myBuf = Buffer.from(mySignature, "utf8");
+      const sigBuf = Buffer.from(signature, "utf8");
+      if (myBuf.length !== sigBuf.length) {
+        return false;
+      }
+      return crypto.timingSafeEqual(myBuf, sigBuf);
     } catch {
       return false;
     }
