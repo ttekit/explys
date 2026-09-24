@@ -54,6 +54,68 @@ jobs:
           action: deploy
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Add Preview Video Link to PR Comment
+        if: github.event.action != 'closed'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = context.payload.pull_request?.number || context.issue.number;
+            if (!prNumber) return;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const videoUrl = `https://${owner}.github.io/${repo}/pr-preview/pr-${prNumber}/videos/`;
+            const rawVideoUrl = `https://${owner}.github.io/${repo}/pr-preview/pr-${prNumber}/videos/constellation-feature-demo.webm`;
+
+            // Wait 2s to allow previous comment update from pr-preview-action to settle
+            await new Promise(r => setTimeout(r, 2000));
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: prNumber,
+            });
+
+            const previewComment = comments.find(c =>
+              c.user?.type === 'Bot' && (c.body?.includes('PR Preview Action') || c.body?.includes('View preview at'))
+            );
+
+            const videoSection = `\n\n🎬 **View preview video at**\n${videoUrl} ([raw .webm](${rawVideoUrl}))`;
+
+            if (previewComment) {
+              if (!previewComment.body.includes(videoUrl)) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: previewComment.id,
+                  body: previewComment.body + videoSection,
+                });
+                console.log('Appended preview video URL to PR Preview comment.');
+              } else {
+                console.log('Video preview URL already present in comment.');
+              }
+            } else {
+              const videoMarker = '<!-- pr-preview-video -->';
+              const existingVideoComment = comments.find(c => c.body?.includes(videoMarker));
+              const body = `${videoMarker}\n### 🎬 Preview Video\n\n🚀 **View preview video at:**\n${videoUrl} ([raw .webm](${rawVideoUrl}))`;
+              if (existingVideoComment) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existingVideoComment.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body,
+                });
+              }
+              console.log('Posted dedicated video preview comment.');
+            }
+
       - name: Remove PR Preview
         if: github.event.action == 'closed'
         uses: rossjrw/pr-preview-action@v1
