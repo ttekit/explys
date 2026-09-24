@@ -115,7 +115,6 @@ jobs:
               }
               console.log('Posted dedicated video preview comment.');
             }
-
       - name: Remove PR Preview
         if: github.event.action == 'closed'
         uses: rossjrw/pr-preview-action@v1

@@ -55,7 +55,8 @@ export class GraphifyContextRetriever {
    * Extract search terms from bug report text.
    */
   public extractSearchTerms(bugText: string): string[] {
-    const rawTokens = bugText
+    const cleanedText = bugText.replace(/@gemini|\/gemini-fix|\/fix/gi, " ");
+    const rawTokens = cleanedText
       .replace(/[^\w\s/.-]/g, " ")
       .split(/\s+/)
       .map((t) => t.trim())
@@ -65,7 +66,8 @@ export class GraphifyContextRetriever {
       "the", "and", "for", "with", "this", "that", "from", "when", "what",
       "where", "have", "here", "there", "then", "into", "onto", "button",
       "page", "click", "user", "error", "issue", "bug", "broken", "fails",
-      "does", "cant", "cannot", "doesnt", "should", "could", "would", "please"
+      "does", "cant", "cannot", "doesnt", "should", "could", "would", "please",
+      "gemini", "make", "need", "needs", "want", "help", "fix", "fixes"
     ]);
 
     const terms: string[] = [];
@@ -190,8 +192,9 @@ export class GraphifyContextRetriever {
     }
 
     const snippets: string[] = [];
+    const topFiles = Array.from(fileLineMap.entries()).slice(0, 4);
 
-    for (const [relPath, lines] of fileLineMap.entries()) {
+    for (const [relPath, lines] of topFiles) {
       const fullPath = path.join(this.workspaceRoot, relPath);
       if (!fs.existsSync(fullPath)) continue;
 
@@ -199,9 +202,9 @@ export class GraphifyContextRetriever {
         const content = fs.readFileSync(fullPath, "utf-8");
         const allLines = content.split("\n");
 
-        for (const lineNum of lines.slice(0, 3)) {
-          const start = Math.max(0, lineNum - 25);
-          const end = Math.min(allLines.length, lineNum + 40);
+        for (const lineNum of lines.slice(0, 2)) {
+          const start = Math.max(0, lineNum - 15);
+          const end = Math.min(allLines.length, lineNum + 20);
           const slice = allLines
             .slice(start, end)
             .map((l, idx) => `${start + idx + 1}: ${l}`)

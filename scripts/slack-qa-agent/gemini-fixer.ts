@@ -1,16 +1,32 @@
+import * as fs from "fs";
+import * as path from "path";
 import {
   SlackBugReport,
   GraphifyAnalysisContext,
   GeminiFixProposal,
 } from "./types";
 
+function resolveGeminiApiKey(explicitKey?: string): string {
+  if (explicitKey) return explicitKey;
+  if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+  try {
+    const envPath = path.resolve(process.cwd(), "backend/.env");
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, "utf8");
+      const match = content.match(/^GEMINI_API_KEY=["']?([^"'\r\n]+)["']?/m);
+      if (match) return match[1].trim();
+    }
+  } catch {}
+  return "";
+}
+
 export class GeminiFixer {
   private apiKey: string;
   private model: string;
 
   constructor(apiKey?: string, model?: string) {
-    this.apiKey = apiKey || process.env.GEMINI_API_KEY || "";
-    this.model = model || process.env.GEMINI_MODEL || "gemini-flash-latest";
+    this.apiKey = resolveGeminiApiKey(apiKey);
+    this.model = model || process.env.GEMINI_MODEL || "gemini-3.5-flash";
   }
 
   public async generateFix(
@@ -91,6 +107,8 @@ ${previousErrors.join("\n")}`
     const fallbackModels = Array.from(
       new Set([
         this.model,
+        "gemini-3-flash-preview",
+        "gemini-3.5-flash",
         "gemini-3.6-flash",
         "gemini-3.7-flash",
         "gemini-flash-latest",
@@ -127,6 +145,11 @@ ${previousErrors.join("\n")}`
           const candidateText =
             data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
           return this.parseProposalJson(candidateText);
+        }
+
+        if (response.status === 503) {
+          // Allow transient capacity spikes to settle before trying next model
+          await new Promise((r) => setTimeout(r, 1500));
         }
 
         const errText = await response.text();
