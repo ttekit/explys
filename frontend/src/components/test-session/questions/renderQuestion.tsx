@@ -3,6 +3,7 @@ import { RewardCheckpoint } from "./RewardCheckpoint";
 import { SentenceBuilderQuestion } from "./SentenceBuilderQuestion";
 import { SwipeCardQuestion } from "./SwipeCardQuestion";
 import { TextPickQuestion } from "./TextPickQuestion";
+import { VideoRiddleQuestion } from "./VideoRiddleQuestion";
 import type { AnswerResult } from "../test-session.types";
 
 type RenderQuestionOptions = {
@@ -13,7 +14,7 @@ type RenderQuestionOptions = {
 };
 
 /**
- * Dispatches to the correct text-only question sub-component by type.
+ * Dispatches to the correct question sub-component by type.
  */
 export function render_question({
   question,
@@ -25,6 +26,14 @@ export function render_question({
     case QuestionType.TEXT_PICK:
       return (
         <TextPickQuestion
+          question={question}
+          disabled={disabled}
+          onAnswer={onAnswer}
+        />
+      );
+    case QuestionType.VIDEO_RIDDLE:
+      return (
+        <VideoRiddleQuestion
           question={question}
           disabled={disabled}
           onAnswer={onAnswer}

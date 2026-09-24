@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service"; // Укажи свой путь
 import {
   CreateConstellationDto,
@@ -8,6 +8,7 @@ import {
 } from "./dto/constellation.dto";
 import { normalize_star_questions } from "./test-question.validator";
 import { StarContentGeneratorService } from "./star-content-generator.service";
+import { ConstellationGeneratorService } from "./constellation-generator.service";
 import {
   get_content_status,
   is_star_content_ready,
@@ -17,9 +18,13 @@ import {
 
 @Injectable()
 export class ConstellationService {
+  private readonly logger = new Logger(ConstellationService.name);
+  private readonly activeUserGenerations = new Map<number, Promise<void>>();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly starContentGenerator: StarContentGeneratorService,
+    private readonly generatorService: ConstellationGeneratorService,
   ) { }
 
   async createConstellation(data: CreateConstellationDto) {
@@ -36,14 +41,50 @@ export class ConstellationService {
 
   /**
    * Learner-facing list: only constellations owned by this user.
+   * If user has no constellations, auto-generates personal constellation.
    */
   async getConstellationsForUser(userId: number) {
-    return this.prisma.constellation.findMany({
+    let constellations = await this.prisma.constellation.findMany({
       where: { userId },
       include: {
         stars: { orderBy: { id: "asc" } },
       },
     });
+
+    if (constellations.length === 0) {
+      const existingPromise = this.activeUserGenerations.get(userId);
+      if (existingPromise) {
+        await existingPromise;
+      } else {
+        const generationPromise = (async () => {
+          try {
+            const profile = await this.prisma.additionalUserData.findUnique({
+              where: { userId },
+              select: { englishLevel: true },
+            });
+            const cefrLevel = profile?.englishLevel?.trim() || "A1";
+            await this.generatorService.ensurePersonalConstellationForUser(userId, cefrLevel);
+          } catch (error) {
+            this.logger.error(
+              `Auto-generating constellation for user ${userId} failed: ${error instanceof Error ? error.message : String(error)}`,
+            );
+          } finally {
+            this.activeUserGenerations.delete(userId);
+          }
+        })();
+        this.activeUserGenerations.set(userId, generationPromise);
+        await generationPromise;
+      }
+
+      constellations = await this.prisma.constellation.findMany({
+        where: { userId },
+        include: {
+          stars: { orderBy: { id: "asc" } },
+        },
+      });
+    }
+
+    return constellations;
   }
 
   async getConstellationById(id: number) {
