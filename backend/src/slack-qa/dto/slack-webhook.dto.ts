@@ -61,4 +61,19 @@ export class SlackWebhookDto {
   @IsOptional()
   @IsString()
   api_app_id?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  is_enterprise_install?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  enterprise_id?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  enterprise_name?: string;
 }

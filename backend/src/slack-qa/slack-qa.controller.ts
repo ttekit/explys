@@ -8,6 +8,8 @@ import {
   HttpStatus,
   UnauthorizedException,
   RawBodyRequest,
+  UsePipes,
+  ValidationPipe,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -26,6 +28,13 @@ import type { Request } from "express";
 @Controller("slack")
 @SkipThrottle()
 @Public()
+@UsePipes(
+  new ValidationPipe({
+    transform: true,
+    whitelist: false,
+    forbidNonWhitelisted: false,
+  })
+)
 export class SlackQaController {
   constructor(private readonly slackQaService: SlackQaService) {}
 
