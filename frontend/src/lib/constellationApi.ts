@@ -57,3 +57,23 @@ export async function completeStar(starId: number): Promise<unknown> {
     }
     return res.json();
 }
+
+export async function ensurePersonalConstellation(): Promise<Constellation> {
+    const res = await apiFetch("/constellations/ensure", {
+        method: "POST",
+    });
+    if (!res.ok) {
+        throw new Error(await readApiErrorBody(res));
+    }
+    return res.json();
+}
+
+export async function regeneratePersonalConstellation(): Promise<Constellation> {
+    const res = await apiFetch("/constellations/regenerate", {
+        method: "POST",
+    });
+    if (!res.ok) {
+        throw new Error(await readApiErrorBody(res));
+    }
+    return res.json();
+}

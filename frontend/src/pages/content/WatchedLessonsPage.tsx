@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { CalendarDays, CalendarRange, Loader2, Target } from "lucide-react";
 import { apiFetch } from "../../lib/api";
@@ -23,6 +23,8 @@ import {
 import {
   fetchAllConstellations,
   fetchConstellationGraph,
+  ensurePersonalConstellation,
+  regeneratePersonalConstellation,
   type Constellation,
   type StarProgress,
 } from "../../lib/constellationApi";
@@ -226,40 +228,47 @@ export default function WatchedLessonsPage() {
     };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      setLoadingPlan(true);
-      try {
-        const list = await fetchAllConstellations();
-        if (cancelled) return;
-        setConstellations(list);
-
-        const progressResults = await Promise.all(
-          list.map((c) => fetchConstellationGraph(c.id).catch(() => null)),
-        );
-        if (cancelled) return;
-
-        const progressMap: Record<number, StarProgress[]> = {};
-        progressResults.forEach((res, index) => {
-          if (res) {
-            const constellationId = list[index].id;
-            progressMap[constellationId] = Array.isArray(res)
-              ? res
-              : res.stars || [];
-          }
-        });
-        setStarProgressMap(progressMap);
-      } catch {
-        if (!cancelled) setConstellations([]);
-      } finally {
-        if (!cancelled) setLoadingPlan(false);
+  const loadConstellations = useCallback(async (forceGenerate = false) => {
+    setLoadingPlan(true);
+    try {
+      if (forceGenerate) {
+        await regeneratePersonalConstellation();
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      let list = await fetchAllConstellations();
+      if (list.length === 0) {
+        try {
+          await ensurePersonalConstellation();
+          list = await fetchAllConstellations();
+        } catch (e) {
+          console.error("Auto ensure constellation failed:", e);
+        }
+      }
+      setConstellations(list);
+
+      const progressResults = await Promise.all(
+        list.map((c) => fetchConstellationGraph(c.id).catch(() => null)),
+      );
+
+      const progressMap: Record<number, StarProgress[]> = {};
+      progressResults.forEach((res, index) => {
+        if (res) {
+          const constellationId = list[index].id;
+          progressMap[constellationId] = Array.isArray(res)
+            ? res
+            : res.stars || [];
+        }
+      });
+      setStarProgressMap(progressMap);
+    } catch {
+      setConstellations([]);
+    } finally {
+      setLoadingPlan(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void loadConstellations();
+  }, [loadConstellations]);
 
   useEffect(() => {
     if (!loadingPlan && constellations.length === 0) {
@@ -267,13 +276,15 @@ export default function WatchedLessonsPage() {
         try {
           const list = await fetchAllConstellations();
           if (list.length > 0) {
-            window.location.reload();
+            void loadConstellations();
           }
-        } catch (e) { console.log(e) }
+        } catch (e) {
+          console.log(e);
+        }
       }, 5000);
       return () => clearInterval(interval);
     }
-  }, [loadingPlan, constellations.length]);
+  }, [loadingPlan, constellations.length, loadConstellations]);
 
   const cards = useMemo(() => {
     const rawCards = videos.map(toCardVideo);
@@ -367,12 +378,22 @@ export default function WatchedLessonsPage() {
                   <p className="text-muted-foreground text-sm mt-2 mb-6 max-w-md text-center leading-relaxed">
                     Штучний інтелект саме зараз підбирає теми та створює унікальні сузір'я для вашого рівня. Зазвичай це займає 15-20 секунд.
                   </p>
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/10 text-purple-400 font-semibold text-sm hover:bg-purple-600/20 border border-purple-500/20 transition-all cursor-pointer"
-                  >
-                    Перевірити готовність
-                  </button>
+                  <div className="flex flex-wrap items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void loadConstellations(true)}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 text-white font-semibold text-sm hover:bg-purple-500 transition-all cursor-pointer shadow-[0_0_15px_rgba(147,51,234,0.4)]"
+                    >
+                      Згенерувати персональний план
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void loadConstellations(false)}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/10 text-purple-400 font-semibold text-sm hover:bg-purple-600/20 border border-purple-500/20 transition-all cursor-pointer"
+                    >
+                      Перевірити готовність
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 w-full min-w-0">

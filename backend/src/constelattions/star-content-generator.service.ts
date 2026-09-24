@@ -223,8 +223,6 @@ export class StarContentGeneratorService {
     introducedLemmas: readonly string[],
   ) {
     const keyword = topic.trim().split(/\s+/)[0];
-    if (!keyword && introducedLemmas.length === 0) return null;
-
     const orFilters: any[] = [];
     if (keyword && keyword.length > 3) {
       orFilters.push({ fullPhrase: { contains: keyword, mode: "insensitive" } });
@@ -235,12 +233,21 @@ export class StarContentGeneratorService {
       }
     }
 
-    if (orFilters.length === 0) return null;
+    if (orFilters.length > 0) {
+      const segment = await this.prisma.videoSegment.findFirst({
+        where: { OR: orFilters },
+      });
+      if (segment) {
+        return segment;
+      }
+    }
 
-    const segment = await this.prisma.videoSegment.findFirst({
-      where: { OR: orFilters },
+    // Fallback: If no exact topic/lemma segment match, use any available catalog segment
+    // so that the star lesson can still feature short video riddles.
+    const fallback = await this.prisma.videoSegment.findFirst({
+      orderBy: { id: "asc" },
     });
-    return segment;
+    return fallback;
   }
 }
 
