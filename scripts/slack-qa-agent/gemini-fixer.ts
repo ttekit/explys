@@ -49,6 +49,7 @@ export class GeminiFixer {
   private geminiModelIndex: number = 0;
   private openAiModels: string[];
   private openAiModelIndex: number = 0;
+  private lastDiagnosticProposal: GeminiFixProposal | null = null;
 
   constructor(
     apiKeyOrOptions?: string | GeminiFixerOptions,
@@ -143,7 +144,9 @@ CRITICAL INSTRUCTIONS:
   - 'explanation': why this change fixes the bug
   - 'originalSnippet': exact lines of code currently in the file to be replaced (must match existing file content exactly)
   - 'replacementContent': the new code that replaces 'originalSnippet'
-- Be minimal and precise. Avoid unnecessary rewrites.`;
+- Be minimal and precise. Avoid unnecessary rewrites.
+- MANDATORY FOR CODE EDITS: 'filesToModify' must contain at least 1 file modification. If multiple files need changes, list all of them. If the request is a complex feature, implement the primary component or entry point in the relevant files. Never return an empty 'filesToModify' array unless no relevant code files exist.
+- MULTI-LANGUAGE REPORTS: The bug description may be in Ukrainian, English, or any other language. Understand the requirements regardless of language, and write code modifications adhering to the repository conventions.`;
 
     const userPrompt = `
 ### QA Bug Report (Slack)
@@ -225,8 +228,16 @@ ${previousErrors.join("\n")}`
         const data: any = await response.json();
         const candidateText =
           data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-        this.geminiConsecutiveErrors = 0;
-        return this.parseProposalJson(candidateText);
+        const proposal = this.parseProposalJson(candidateText);
+        if (proposal.filesToModify.length > 0) {
+          this.geminiConsecutiveErrors = 0;
+          return proposal;
+        }
+        this.lastDiagnosticProposal = proposal;
+        console.warn(
+          `⚠️ Model ${modelName} returned proposal with 0 filesToModify. Trying next model for code edits...`
+        );
+        return null;
       }
 
       if (response.status === 503 && this.sleepDelayMs > 0) {
@@ -282,8 +293,16 @@ ${previousErrors.join("\n")}`
       if (response.ok) {
         const data: any = await response.json();
         const candidateText = data.choices?.[0]?.message?.content || "{}";
-        this.openAiConsecutiveErrors = 0;
-        return this.parseProposalJson(candidateText);
+        const proposal = this.parseProposalJson(candidateText);
+        if (proposal.filesToModify.length > 0) {
+          this.openAiConsecutiveErrors = 0;
+          return proposal;
+        }
+        this.lastDiagnosticProposal = proposal;
+        console.warn(
+          `⚠️ Model ${modelName} returned proposal with 0 filesToModify. Trying next model for code edits...`
+        );
+        return null;
       }
 
       if ((response.status === 503 || response.status === 429) && this.sleepDelayMs > 0) {
@@ -384,6 +403,10 @@ ${previousErrors.join("\n")}`
           }
         }
       }
+    }
+
+    if (this.lastDiagnosticProposal) {
+      return this.lastDiagnosticProposal;
     }
 
     throw new Error(

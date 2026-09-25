@@ -236,13 +236,25 @@ export class PrReviewFixer {
     // 4. Apply Changes
     console.log("🛠️ Applying fixes...");
     const verifier = new PatchVerifier();
-    const { applied } = verifier.applyChanges(proposal.filesToModify, options.dryRun);
+    const { applied, skipped, validationErrors } = verifier.applyChanges(proposal.filesToModify, options.dryRun);
+
+    if (applied.length === 0) {
+      console.warn("⚠️ None of the proposed changes could be applied cleanly. Skipping commit.");
+      if (validationErrors.length > 0) {
+        validationErrors.forEach((e) => console.warn(`   ❌ ${e}`));
+      }
+      return;
+    }
 
     // 5. Verification
     let verificationSummary = "All checks passed.";
     if (!options.dryRun && applied.length > 0) {
       const verResult = verifier.runVerification(applied);
       verificationSummary = verResult.summary;
+      if (!verResult.success) {
+        console.error("❌ Quality gates failed on PR review fix. Refusing to push broken commit.");
+        return;
+      }
       verifier.updateGraphify();
     }
 
