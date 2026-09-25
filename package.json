@@ -6,6 +6,8 @@
   },
   "scripts": {
     "prepare": "husky",
+    "slack:dev": "bash scripts/keep-slack-alive.sh",
+    "slack:run": "cd explysslack && slack run",
     "test:record-constellation": "node scripts/record-constellation-feature.mjs"
   },
   "devDependencies": {

@@ -11,14 +11,22 @@ export type AiProvider = "gemini" | "openai";
 export function resolveApiKey(envVar: string, explicitKey?: string): string {
   if (explicitKey !== undefined) return explicitKey;
   if (process.env[envVar]) return process.env[envVar]!;
-  try {
-    const envPath = path.resolve(process.cwd(), "backend/.env");
-    if (fs.existsSync(envPath)) {
-      const content = fs.readFileSync(envPath, "utf8");
-      const match = content.match(new RegExp(`^${envVar}=["']?([^"'\\r\\n]+)["']?`, "m"));
-      if (match) return match[1].trim();
-    }
-  } catch {}
+
+  const candidatePaths = [
+    path.resolve(process.cwd(), "backend/.env"),
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(process.cwd(), "explysslack/.env"),
+  ];
+
+  for (const envPath of candidatePaths) {
+    try {
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, "utf8");
+        const match = content.match(new RegExp(`^${envVar}=["']?([^"'\\r\\n]+)["']?`, "m"));
+        if (match) return match[1].trim();
+      }
+    } catch {}
+  }
   return "";
 }
 
@@ -31,6 +39,7 @@ export interface GeminiFixerOptions {
   errorThreshold?: number;
   sleepDelayMs?: number;
   fetchFn?: typeof fetch;
+  requestTimeoutMs?: number;
 }
 
 export class GeminiFixer {
@@ -44,6 +53,7 @@ export class GeminiFixer {
   private readonly errorThreshold: number;
   private readonly sleepDelayMs: number;
   private readonly fetchFn: typeof fetch;
+  private readonly requestTimeoutMs: number;
 
   private geminiModels: string[];
   private geminiModelIndex: number = 0;
@@ -62,6 +72,7 @@ export class GeminiFixer {
       this.openAiModel = apiKeyOrOptions.openAiModel || process.env.OPENAI_MODEL || "gpt-4o-mini";
       this.errorThreshold = apiKeyOrOptions.errorThreshold ?? 3;
       this.sleepDelayMs = apiKeyOrOptions.sleepDelayMs ?? 1000;
+      this.requestTimeoutMs = apiKeyOrOptions.requestTimeoutMs ?? 45000;
       this.fetchFn = apiKeyOrOptions.fetchFn ?? fetch;
 
       if (apiKeyOrOptions.initialProvider) {
@@ -76,6 +87,7 @@ export class GeminiFixer {
       this.openAiModel = process.env.OPENAI_MODEL || "gpt-4o-mini";
       this.errorThreshold = 3;
       this.sleepDelayMs = 1000;
+      this.requestTimeoutMs = 45000;
       this.fetchFn = fetch;
       this.activeProvider = this.geminiApiKey ? "gemini" : (this.openAiApiKey ? "openai" : "gemini");
     }
@@ -222,7 +234,7 @@ ${previousErrors.join("\n")}`
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
       });
 
       if (response.ok) {
@@ -288,7 +300,7 @@ ${previousErrors.join("\n")}`
           Authorization: `Bearer ${this.openAiApiKey}`,
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
       });
 
       if (response.ok) {

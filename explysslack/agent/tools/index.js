@@ -1,2 +1,2 @@
 export { addEmojiReaction } from './emoji-reaction.js';
-export { fixBugAndCreatePr } from './fix-bug.js';
+export { executeFixBug, fixBugAndCreatePr } from './fix-bug.js';
