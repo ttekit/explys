@@ -3,12 +3,54 @@ import { GeminiFixer } from "./gemini-fixer";
 import { PatchVerifier } from "./patch-verifier";
 import { GitPrManager } from "./git-pr-manager";
 import { SlackNotifier } from "./slack-notifier";
+import { JiraClient } from "./jira-client";
 import { SlackBugReport, AgentRunOptions } from "./types";
 
 export async function runSlackQaAgent(options: AgentRunOptions): Promise<void> {
   console.log("==================================================");
   console.log("🤖 Explys Slack QA Bug Agent — Gemini & Graphify");
   console.log("==================================================");
+
+  const jiraClient = new JiraClient();
+  let jiraIssueKey = options.jiraIssueKey;
+  let jiraIssueUrl = options.jiraUrl;
+
+  // Detect Jira issue from explicit option or within bug text
+  const inputToParse = options.jiraUrl || options.jiraIssueKey || options.bugText;
+  const parsedJira = jiraClient.parseIssueInput(inputToParse);
+
+  if (parsedJira) {
+    jiraIssueKey = parsedJira.issueKey;
+    jiraIssueUrl = `${parsedJira.host}/browse/${parsedJira.issueKey}`;
+    console.log(`\n🎫 [Jira] Detected Jira issue reference: ${jiraIssueKey} (${parsedJira.host})`);
+
+    if (jiraClient.isConfigured()) {
+      try {
+        const issue = await jiraClient.getIssue(jiraIssueKey);
+        console.log(`-> Summary: ${issue.summary}`);
+        console.log(`-> Status: ${issue.status}, Reporter: ${issue.reporter}`);
+        if (issue.description) {
+          console.log(`-> Description: ${issue.description.slice(0, 120)}...`);
+        }
+
+        jiraIssueUrl = issue.url;
+        const additionalNotes =
+          options.bugText && !options.bugText.includes(jiraIssueKey)
+            ? `\n\nAdditional notes: ${options.bugText}`
+            : "";
+        options.bugText = `[Jira ${issue.key}: ${issue.summary}]\n${issue.description || issue.summary}${additionalNotes}`.trim();
+      } catch (err: any) {
+        console.warn(`⚠️ Could not fetch Jira issue ${jiraIssueKey}: ${err.message}`);
+        console.warn("-> Continuing with provided bug description.");
+      }
+    } else {
+      console.warn(
+        `⚠️ Jira credentials not configured (JIRA_EMAIL & JIRA_API_TOKEN missing).\n` +
+          `-> Set JIRA_EMAIL and JIRA_API_TOKEN in backend/.env to auto-fetch issue details and comment on tickets.\n` +
+          `-> Proceeding with provided text.`
+      );
+    }
+  }
 
   const bugReport: SlackBugReport = {
     id: `qa-${Date.now()}`,
@@ -17,6 +59,8 @@ export async function runSlackQaAgent(options: AgentRunOptions): Promise<void> {
     threadTs: options.threadTs,
     text: options.bugText,
     reportedAt: new Date().toISOString(),
+    jiraIssueKey,
+    jiraIssueUrl,
   };
 
   console.log(`\n📋 Bug Report Received from @${bugReport.reporter}:`);
@@ -42,33 +86,56 @@ export async function runSlackQaAgent(options: AgentRunOptions): Promise<void> {
 
   console.log(`-> Summary: ${proposal.bugSummary}`);
   console.log(`-> Root Cause: ${proposal.rootCauseAnalysis}`);
-  console.log(`-> Files to touch: ${proposal.filesToModify.map((f) => f.path).join(", ") || "(none)"}`);
+  console.log(
+    `-> Files to touch: ${proposal.filesToModify.map((f) => f.path).join(", ") || "(none)"}`
+  );
 
-  // 3. Branching
-  console.log("\n🌿 [Step 3] Preparing dedicated fix branch...");
-  const gitManager = new GitPrManager();
-  const baseBranch = options.baseBranch || gitManager.getCurrentBranch();
+  const notifier = new SlackNotifier();
 
-  let branchName = "";
-  if (!options.dryRun) {
-    branchName = gitManager.createBranch(proposal.bugSummary, baseBranch);
-  } else {
-    branchName = `fix/qa-slack-simulated-${Date.now()}`;
-    console.log(`[DRY RUN] Simulated branch: ${branchName} (based on ${baseBranch})`);
+  // =========================================================================
+  // VALIDATION GATE 1: AI Proposal must contain at least 1 file modification
+  // =========================================================================
+  if (proposal.filesToModify.length === 0) {
+    console.warn("\n⚠️ [Validation Gate 1: Empty Proposal] AI produced 0 file modifications.");
+    console.warn("-> The bug report is likely a complex feature specification or requires manual design.");
+    console.warn("-> Aborting branch, commit, and Pull Request creation to prevent empty/bogus PRs.\n");
+
+    await notifier.notifyNoChanges(bugReport, proposal, options.dryRun);
+    return;
   }
 
-  // 4. Patch Application & Verification Loop
-  console.log("\n🛠️ [Step 4] Applying patches and verifying...");
+  // =========================================================================
+  // STEP 3: Patch Application & Codebase Validation
+  // =========================================================================
+  console.log("\n🛠️ [Step 3] Validating and applying proposed patches...");
   const verifier = new PatchVerifier();
-  const { applied, skipped } = verifier.applyChanges(
+  const { applied, skipped, validationErrors } = verifier.applyChanges(
     proposal.filesToModify,
     options.dryRun
   );
   console.log(`-> Applied changes to: ${applied.join(", ") || "(none)"}`);
   if (skipped.length > 0) {
     console.warn(`-> Skipped changes for: ${skipped.join(", ")}`);
+    if (validationErrors.length > 0) {
+      validationErrors.forEach((e) => console.warn(`   ❌ ${e}`));
+    }
   }
 
+  // =========================================================================
+  // VALIDATION GATE 2: At least 1 proposed patch must apply cleanly
+  // =========================================================================
+  if (applied.length === 0) {
+    console.error("\n❌ [Validation Gate 2: Patch Application Failed] None of the proposed changes matched the codebase.");
+    console.error("-> Aborting Pull Request creation to avoid committing broken or hallucinated files.\n");
+
+    await notifier.notifyPatchFailed(bugReport, proposal, validationErrors, options.dryRun);
+    return;
+  }
+
+  // =========================================================================
+  // STEP 4: Quality Gates (Verification Loop — Types & Tests)
+  // =========================================================================
+  console.log("\n🔍 [Step 4] Running Quality Gates (Type-check & Tests)...");
   let verificationResult = {
     success: true,
     typeCheckPassed: true,
@@ -81,21 +148,23 @@ export async function runSlackQaAgent(options: AgentRunOptions): Promise<void> {
   if (!options.dryRun && !options.skipVerification && applied.length > 0) {
     verificationResult = verifier.runVerification(applied);
 
-    // Self-healing loop: if verification failed, give Gemini one chance to rectify
+    // Self-healing loop: if verification failed, give AI one chance to rectify
     if (!verificationResult.success) {
-      console.warn("⚠️ Quality gates failed. Retrying with Gemini error feedback...");
+      console.warn("⚠️ Quality gates failed. Retrying with AI error feedback...");
       try {
         const retryProposal = await fixer.generateFix(
           bugReport,
           graphContext,
           verificationResult.errors
         );
-        verifier.applyChanges(retryProposal.filesToModify, false);
-        const retryVerification = verifier.runVerification(applied);
-        if (retryVerification.success) {
-          console.log("✅ Fix successfully self-healed!");
-          proposal = retryProposal;
-          verificationResult = retryVerification;
+        if (retryProposal.filesToModify.length > 0) {
+          verifier.applyChanges(retryProposal.filesToModify, false);
+          const retryVerification = verifier.runVerification(applied);
+          if (retryVerification.success) {
+            console.log("✅ Fix successfully self-healed!");
+            proposal = retryProposal;
+            verificationResult = retryVerification;
+          }
         }
       } catch (err) {
         console.warn("Self-healing attempt threw an error:", err);
@@ -103,17 +172,47 @@ export async function runSlackQaAgent(options: AgentRunOptions): Promise<void> {
     }
   }
 
-  // 5. Update Graphify Knowledge Graph
+  // =========================================================================
+  // VALIDATION GATE 3: Quality gates MUST pass before creating / pushing PR
+  // =========================================================================
+  if (!options.dryRun && !options.skipVerification && !verificationResult.success) {
+    console.error("\n❌ [Validation Gate 3: Quality Gates Failed] Types or unit tests did not pass.");
+    console.error(`-> Summary: ${verificationResult.summary}`);
+    console.error("-> Refusing to create a broken Pull Request into the repository.\n");
+
+    await notifier.notifyVerificationFailed(bugReport, proposal, verificationResult, options.dryRun);
+    return;
+  }
+
+  // =========================================================================
+  // STEP 5: Synchronize Graphify Knowledge Graph
+  // =========================================================================
   if (!options.dryRun && applied.length > 0) {
     console.log("\n📊 [Step 5] Synchronizing Graphify AST graph...");
     verifier.updateGraphify();
   }
 
-  // 6. Commit & Push
-  console.log("\n🚀 [Step 6] Committing & pushing fix branch...");
+  // =========================================================================
+  // STEP 6: Branching, Commit & Push (Only reached if all gates passed!)
+  // =========================================================================
+  console.log("\n🌿 [Step 6] Preparing dedicated fix branch...");
+  const gitManager = new GitPrManager();
+  const baseBranch = options.baseBranch || gitManager.getCurrentBranch();
+
+  let branchName = "";
+  if (!options.dryRun) {
+    branchName = gitManager.createBranch(proposal.bugSummary, baseBranch);
+  } else {
+    branchName = `fix/qa-slack-simulated-${Date.now()}`;
+    console.log(`[DRY RUN] Simulated branch: ${branchName} (based on ${baseBranch})`);
+  }
+
+  console.log("\n🚀 [Step 6b] Committing & pushing fix branch...");
   gitManager.commitAndPush(branchName, proposal, bugReport.reporter, options.dryRun);
 
-  // 7. Create Pull Request with Preview
+  // =========================================================================
+  // STEP 7: Create Pull Request with Preview
+  // =========================================================================
   console.log("\n🌐 [Step 7] Creating Pull Request with preview...");
   const pr = await gitManager.createPullRequest(
     branchName,
@@ -126,9 +225,36 @@ export async function runSlackQaAgent(options: AgentRunOptions): Promise<void> {
   console.log(`-> PR Created: ${pr.prUrl}`);
   console.log(`-> Live Preview: ${pr.previewUrl}`);
 
-  // 8. Slack Notification
+  // =========================================================================
+  // STEP 7b: Attach PR to Jira Comment
+  // =========================================================================
+  if (jiraIssueKey && jiraClient.isConfigured()) {
+    console.log(`\n📝 [Step 7b] Attaching PR comment to Jira issue ${jiraIssueKey}...`);
+    const jiraComment = `🚀 *Automated PR & Live Preview Ready for Issue ${jiraIssueKey}*
+
+*Bug Summary:* ${proposal.bugSummary}
+*Pull Request:* ${pr.prUrl}
+*Live Deploy Preview:* ${pr.previewUrl}
+*Branch:* \`${pr.branchName}\`
+
+*QA Verification Steps:*
+${proposal.qaVerificationSteps.map((s, idx) => `${idx + 1}. ${s}`).join("\n")}
+
+*Next Steps:*
+• Verify the fix on the preview environment.
+• Review code diff and merge into ${pr.baseBranch}.`;
+
+    if (!options.dryRun) {
+      await jiraClient.addComment(jiraIssueKey, jiraComment);
+    } else {
+      console.log(`[DRY RUN] Would post comment to Jira ${jiraIssueKey}:\n${jiraComment}`);
+    }
+  }
+
+  // =========================================================================
+  // STEP 8: Slack Notification
+  // =========================================================================
   console.log("\n💬 [Step 8] Sending notification to Slack QA channel...");
-  const notifier = new SlackNotifier();
   await notifier.notifyPrReady(bugReport, proposal, pr, options.dryRun);
 
   console.log("\n✅ All done! QA and Developer have been notified.");
@@ -150,6 +276,9 @@ if (require.main === module || process.argv[1]?.endsWith("run.ts")) {
     process.env.SLACK_BUG_TEXT ||
     "Hero stats component shows unexpected magic number offset +3259";
 
+  const jiraInput =
+    getArg("--jira") || process.env.JIRA_URL || process.env.JIRA_ISSUE_KEY;
+
   const reporter =
     getArg("--reporter") || process.env.SLACK_REPORTER || "qa-engineer";
 
@@ -162,6 +291,7 @@ if (require.main === module || process.argv[1]?.endsWith("run.ts")) {
 
   runSlackQaAgent({
     bugText,
+    jiraUrl: jiraInput,
     reporter,
     channel,
     threadTs,

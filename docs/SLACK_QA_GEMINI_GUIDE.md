@@ -7,6 +7,7 @@ This guide outlines how Explys automates bug fixing directly from Slack QA repor
 ## 🚀 Overview
 
 When a QA engineer reports a bug in Slack, the system:
+
 1. **Parses the bug report**: Extracts symptom descriptions, component names, and failure scenarios.
 2. **Consults Graphify Knowledge Graph**: Queries `graphify` and `graphify-out/graph.json` to pinpoint relevant AST symbols, components, controllers, and dependency chains.
 3. **Engages Google Gemini**: Analyzes the root cause and generates minimal, targeted code changes according to `AGENTS.md` rules.
@@ -63,15 +64,25 @@ When a QA engineer reports a bug in Slack, the system:
 ## ⚙️ Configuration & Secrets
 
 ### 1. GitHub Repository Secrets
+
 Navigate to **GitHub Repository Settings → Secrets and variables → Actions** and add:
 
 - `GEMINI_API_KEY`: Google AI Studio API Key.
+- `OPENAI_API_KEY`: OpenAI API Key (used for automatic failover when Gemini encounters 3 consecutive errors like 503/UNAVAILABLE).
 - `GITHUB_TOKEN`: Built-in GitHub token (ensure **Read and Write permissions** are enabled under *Settings → Actions → General → Workflow permissions*).
 - `SLACK_BOT_TOKEN`: `xoxb-...` token with `chat:write` scope.
 - `SLACK_WEBHOOK_URL`: (Optional) Incoming webhook URL for fallback notifications.
 
+### 🔄 Multi-Provider Resilience & Automatic Failover (Gemini ↔ OpenAI)
+The agent automatically handles API demand spikes, outages, and quota limits:
+- **Gemini to OpenAI:** If Gemini encounters **3 consecutive errors in a row** (e.g., HTTP 503 `UNAVAILABLE` capacity spikes), it immediately and automatically switches active provider to `OPENAI_API_KEY` (`gpt-4o-mini` / `gpt-4o`).
+- **OpenAI to Gemini:** If OpenAI encounters **3 consecutive errors in a row** (e.g., HTTP 429 quota exhaustion or 5xx downtime), it automatically switches back to `GEMINI_API_KEY`.
+- **Self-Resetting:** When any provider successfully returns a fix proposal, its consecutive error count resets to 0.
+
 ### 2. Backend Environment Variables (VPS / `.env`)
+
 Add to `backend/.env`:
+
 ```bash
 SLACK_SIGNING_SECRET=your_slack_signing_secret_here
 GITHUB_TOKEN=ghp_...
@@ -84,15 +95,19 @@ GITHUB_REPO=explys
 ## 📱 How to Trigger
 
 ### Option A: From Slack (Slash Command)
+
 Configure your Slack App slash command:
+
 - **Command:** `/qa-bug`
 - **Request URL:** `https://api.explys.com/slack/qa-bug`
 - **Usage:**
+
   ```slack
   /qa-bug Hero stats section shows magic offset +3259 instead of public stats endpoint
   ```
 
 ### Option B: Trigger via GitHub Actions UI
+
 1. Go to **Actions → Slack QA Bug Fix with Gemini & Graphify**.
 2. Click **Run workflow**.
 3. Fill in:
@@ -102,6 +117,7 @@ Configure your Slack App slash command:
 4. Click **Run workflow**.
 
 ### Option C: Run Locally via CLI
+
 ```bash
 # Dry run simulation (no git push or PR creation)
 npx tsx scripts/slack-qa-agent/run.ts \

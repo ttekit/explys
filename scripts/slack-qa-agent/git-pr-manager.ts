@@ -1,4 +1,5 @@
 import { execSync } from "child_process";
+import { resolveApiKey } from "./gemini-fixer";
 import {
   SlackBugReport,
   GeminiFixProposal,
@@ -15,7 +16,7 @@ export class GitPrManager {
   constructor(workspaceRoot: string = process.cwd()) {
     this.workspaceRoot = workspaceRoot;
     this.githubToken =
-      process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
+      resolveApiKey("GITHUB_TOKEN") || resolveApiKey("GH_TOKEN");
 
     // Parse origin remote
     const remoteUrl = this.getRemoteUrl();
@@ -135,7 +136,7 @@ export class GitPrManager {
 ### 📋 Original Bug Report
 - **Reporter:** \`@${bugReport.reporter}\`
 - **Channel:** \`${bugReport.channel || "qa-bugs"}\`
-- **Reported At:** ${bugReport.reportedAt || new Date().toISOString()}
+- **Reported At:** ${bugReport.reportedAt || new Date().toISOString()}${bugReport.jiraIssueUrl ? `\n- **Jira Issue:** [${bugReport.jiraIssueKey || "Ticket"}](${bugReport.jiraIssueUrl})` : ""}
 - **Description:**
 > ${bugReport.text.replace(/\n/g, "\n> ")}
 
@@ -175,6 +176,16 @@ ${verification.output || verification.summary}
   }
 
   /**
+   * Constructs GitHub Pages deploy preview URL according to repository conventions
+   */
+  public getPreviewUrl(prNumber: number | string): string {
+    if (process.env.PREVIEW_BASE_URL) {
+      return process.env.PREVIEW_BASE_URL.replace("{pr}", String(prNumber));
+    }
+    return `https://${this.repoOwner}.github.io/${this.repoName}/pr-preview/pr-${prNumber}/`;
+  }
+
+  /**
    * Creates GitHub Pull Request via REST API
    */
   public async createPullRequest(
@@ -185,24 +196,29 @@ ${verification.output || verification.summary}
     verification: VerificationResult,
     dryRun: boolean = false
   ): Promise<PullRequestResult> {
-    const previewDomain =
-      process.env.PREVIEW_BASE_DOMAIN || "preview.explys.dev";
-    const previewUrl = `https://${branchName.replace(/\//g, "-")}.${previewDomain}`;
     const prTitle = `fix(qa): ${proposal.bugSummary}`;
-    const prBody = this.formatPrBody(
-      bugReport,
-      proposal,
-      verification,
-      previewUrl
-    );
 
     if (dryRun || !this.githubToken) {
+      const simulatedPrNumber = 999;
+      const previewUrl = this.getPreviewUrl(simulatedPrNumber);
+      const prBody = this.formatPrBody(
+        bugReport,
+        proposal,
+        verification,
+        previewUrl
+      );
+
+      if (!this.githubToken && !dryRun) {
+        console.warn(
+          "⚠️ GITHUB_TOKEN / GH_TOKEN not found in environment or .env files. Simulating PR creation."
+        );
+      }
       console.log(`[DRY RUN] Would create PR from ${branchName} into ${baseBranch}`);
       console.log(`Preview URL: ${previewUrl}`);
       console.log(`PR Title: ${prTitle}`);
       return {
-        prNumber: 999,
-        prUrl: `https://github.com/${this.repoOwner}/${this.repoName}/pull/999`,
+        prNumber: simulatedPrNumber,
+        prUrl: `https://github.com/${this.repoOwner}/${this.repoName}/pull/${simulatedPrNumber}`,
         branchName,
         baseBranch,
         previewUrl,
@@ -210,6 +226,14 @@ ${verification.output || verification.summary}
         body: prBody,
       };
     }
+
+    const tempPreviewUrl = `https://${this.repoOwner}.github.io/${this.repoName}/pr-preview/`;
+    let prBody = this.formatPrBody(
+      bugReport,
+      proposal,
+      verification,
+      tempPreviewUrl
+    );
 
     const apiUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/pulls`;
     const res = await fetch(apiUrl, {
@@ -233,12 +257,38 @@ ${verification.output || verification.summary}
     }
 
     const data: any = await res.json();
+    const actualPreviewUrl = this.getPreviewUrl(data.number);
+
+    // Update PR body with accurate preview URL containing the PR number
+    prBody = this.formatPrBody(
+      bugReport,
+      proposal,
+      verification,
+      actualPreviewUrl
+    );
+
+    try {
+      await fetch(`${apiUrl}/${data.number}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `token ${this.githubToken}`,
+          Accept: "application/vnd.github.v3+json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          body: prBody,
+        }),
+      });
+    } catch (patchErr) {
+      console.warn("Could not patch PR body with final preview URL:", patchErr);
+    }
+
     return {
       prNumber: data.number,
       prUrl: data.html_url,
       branchName,
       baseBranch,
-      previewUrl,
+      previewUrl: actualPreviewUrl,
       title: prTitle,
       body: prBody,
     };

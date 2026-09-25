@@ -81,10 +81,15 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: "gemini-3.6-flash"
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          JIRA_HOST: ${{ vars.JIRA_HOST || secrets.JIRA_HOST || 'https://ttekit.atlassian.net' }}
+          JIRA_EMAIL: ${{ vars.JIRA_EMAIL || secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          SLACK_PRS_CHANNEL: ${{ vars.SLACK_PRS_CHANNEL || secrets.SLACK_PRS_CHANNEL || 'prs' }}
           SLACK_BUG_TEXT: ${{ github.event.client_payload.text || inputs.bug_text }}
           SLACK_REPORTER: ${{ github.event.client_payload.reporter || inputs.reporter }}
           SLACK_CHANNEL: ${{ github.event.client_payload.channel || inputs.channel }}

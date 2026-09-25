@@ -173,5 +173,35 @@ Optionally (+1 smaller call/day): **vocabulary personalization** (~20 lemmas) wh
 
 ---
 
+## Slack QA Bug Agent & Jira Integration
+
+The repository includes an autonomous QA Bug Agent (`scripts/slack-qa-agent`) that connects Slack bug reports or Jira issues (e.g. `ET1-3`) directly to the repository:
+1. **Reads Jira issue**: Fetches issue title and ADF description from Jira Cloud REST API.
+2. **Knowledge Graph context**: Queries local Graphify AST graph to find affected files and symbols.
+3. **Resilient code generation**: Multi-provider engine (Gemini with OpenAI failover) suggests fixes.
+4. **Automated quality gates**: Verifies patch cleanly applies, type-checks, and runs test suites.
+5. **Opens Pull Request & Deploy Preview**: Pushes fix branch and generates PR with preview environment.
+6. **Comments on Jira**: Attaches the PR link and live preview URL directly to the Jira ticket.
+7. **Slack announcement**: Posts confirmation and cross-posts to Slack `#prs`.
+
+### GitHub Secrets & Variables Configuration
+
+To run the QA workflow in GitHub Actions, configure the following:
+
+- **Repository Secrets (`Settings` → `Secrets and variables` → `Actions` → `Secrets`):**
+  - **URL:** [https://github.com/ttekit/explys/settings/secrets/actions](https://github.com/ttekit/explys/settings/secrets/actions)
+  - `JIRA_API_TOKEN`: Atlassian API Token ([Generate token](https://id.atlassian.com/manage-profile/security/api-tokens)).
+  - `GEMINI_API_KEY`: Google Gemini API key.
+  - `OPENAI_API_KEY`: OpenAI API key for failover.
+  - `SLACK_BOT_TOKEN`: Slack Bot OAuth token (`xoxb-...`).
+
+- **Repository Variables (`Settings` → `Secrets and variables` → `Actions` → `Variables`):**
+  - **URL:** [https://github.com/ttekit/explys/settings/variables/actions](https://github.com/ttekit/explys/settings/variables/actions)
+  - `JIRA_HOST`: `https://ttekit.atlassian.net`
+  - `JIRA_EMAIL`: Your Atlassian login email (e.g. `your-email@example.com`).
+  - `SLACK_PRS_CHANNEL`: `prs` (channel name for automated PR announcements).
+
+---
+
 ## License / contribution
 No License gfys ╭∩╮( ＾◡＾)╭∩╮

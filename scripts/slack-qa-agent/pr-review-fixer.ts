@@ -179,9 +179,34 @@ export class PrReviewFixer {
 
     console.log(`-> Matched ${graphContext.matchedNodes.length} symbols across ${graphContext.relevantFiles.length} files.`);
 
-    // 2. Gemini Fix Generation
-    console.log("🧠 Generating fix with Gemini...");
+    // 2. Check AI provider availability (Gemini or OpenAI failover)
     const fixer = new GeminiFixer();
+    if (!fixer.hasAvailableProvider()) {
+      console.warn("⚠️ Neither GEMINI_API_KEY nor OPENAI_API_KEY is configured in environment/secrets.");
+      if (this.githubToken) {
+        try {
+          await fetch(
+            `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/issues/${options.prNumber}/comments`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `token ${this.githubToken}`,
+                Accept: "application/vnd.github.v3+json",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                body: `⚠️ **Explys QA Fixer**: Picked up your \`@gemini\` comment, but neither \`GEMINI_API_KEY\` nor \`OPENAI_API_KEY\` is configured in GitHub Secrets.\n\nPlease add **\`GEMINI_API_KEY\`** or **\`OPENAI_API_KEY\`** at: https://github.com/${this.repoOwner}/${this.repoName}/settings/secrets/actions so I can generate and apply fixes automatically!`,
+              }),
+            }
+          );
+        } catch (e: any) {
+          console.error("Failed to post secret warning comment:", e.message);
+        }
+      }
+      return;
+    }
+
+    console.log(`🧠 Generating fix with AI (${fixer.getActiveProvider().toUpperCase()})...`);
     const bugReport: SlackBugReport = {
       id: `pr-${options.prNumber}`,
       reporter: "pr-reviewer",
@@ -211,13 +236,25 @@ export class PrReviewFixer {
     // 4. Apply Changes
     console.log("🛠️ Applying fixes...");
     const verifier = new PatchVerifier();
-    const { applied } = verifier.applyChanges(proposal.filesToModify, options.dryRun);
+    const { applied, skipped, validationErrors } = verifier.applyChanges(proposal.filesToModify, options.dryRun);
+
+    if (applied.length === 0) {
+      console.warn("⚠️ None of the proposed changes could be applied cleanly. Skipping commit.");
+      if (validationErrors.length > 0) {
+        validationErrors.forEach((e) => console.warn(`   ❌ ${e}`));
+      }
+      return;
+    }
 
     // 5. Verification
     let verificationSummary = "All checks passed.";
     if (!options.dryRun && applied.length > 0) {
       const verResult = verifier.runVerification(applied);
       verificationSummary = verResult.summary;
+      if (!verResult.success) {
+        console.error("❌ Quality gates failed on PR review fix. Refusing to push broken commit.");
+        return;
+      }
       verifier.updateGraphify();
     }
 
