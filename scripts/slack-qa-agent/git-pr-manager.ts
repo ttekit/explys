@@ -1,4 +1,5 @@
 import { execSync } from "child_process";
+import { resolveApiKey } from "./gemini-fixer";
 import {
   SlackBugReport,
   GeminiFixProposal,
@@ -15,7 +16,7 @@ export class GitPrManager {
   constructor(workspaceRoot: string = process.cwd()) {
     this.workspaceRoot = workspaceRoot;
     this.githubToken =
-      process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
+      resolveApiKey("GITHUB_TOKEN") || resolveApiKey("GH_TOKEN");
 
     // Parse origin remote
     const remoteUrl = this.getRemoteUrl();
