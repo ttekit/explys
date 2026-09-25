@@ -11,18 +11,29 @@ const projectRoot = path.resolve(__dirname, '../../..');
 export const fixBugAndCreatePr = tool({
   name: 'fix_bug_and_create_pr',
   description:
-    'Analyzes the codebase using Graphify Knowledge Graph, generates targeted code fixes with Gemini (with OpenAI failover), validates types/tests, commits, and opens a Pull Request on GitHub with a live deploy preview.',
+    'Analyzes the codebase using Graphify Knowledge Graph, generates targeted code fixes with Gemini (with OpenAI failover), validates types/tests, commits, and opens a Pull Request on GitHub with a live deploy preview. Also accepts Jira URLs/keys (e.g. https://ttekit.atlassian.net/... or ET1-3) to read issue description, attach PR comments to Jira, and cross-post to Slack PRs channel.',
   parameters: z.object({
     bug_description: z
       .string()
-      .describe('Detailed description of the bug or requested code change to fix.'),
+      .describe('Detailed description of the bug or Jira issue URL/key to fix.'),
+    jira_url: z
+      .string()
+      .optional()
+      .describe('Optional Jira issue URL (e.g. https://ttekit.atlassian.net/... or ET1-3).'),
     dry_run: z
       .boolean()
       .optional()
       .describe('If true, simulates the fix without pushing commits or creating a PR.'),
   }),
-  execute: async ({ bug_description, dry_run = false }, context) => {
+  execute: async ({ bug_description, jira_url, dry_run = false }, context) => {
     const deps = /** @type {import('../deps.js').AgentDeps} */ (context?.context);
+
+    // Detect Jira URL or issue key from input
+    const combinedInput = `${bug_description || ''} ${jira_url || ''}`.trim();
+    const jiraMatch = combinedInput.match(
+      /https?:\/\/[^\s]*atlassian\.net[^\s]*|selectedIssue=[A-Z0-9]+-\d+|\b[A-Z0-9]+-\d+\b/i
+    );
+    const detectedJira = jira_url || (jiraMatch ? jiraMatch[0] : null);
 
     if (deps?.client && deps?.channelId && deps?.threadTs) {
       await deps.client.chat
@@ -31,7 +42,7 @@ export const fixBugAndCreatePr = tool({
           thread_ts: deps.threadTs,
           text: `🤖 *Explys AI Fix Agent started!*
 > _"${bug_description}"_
-
+${detectedJira ? `🎫 *Jira Target:* \`${detectedJira}\`\n` : ''}
 🔍 Consulting **Graphify Knowledge Graph**...
 🧠 Generating fix with **Gemini & OpenAI Multi-Provider Engine**...
 ${dry_run ? '🧪 Mode: Dry-run simulation' : '🌿 Preparing fix branch & PR...'}`,
@@ -47,6 +58,9 @@ ${dry_run ? '🧪 Mode: Dry-run simulation' : '🌿 Preparing fix branch & PR...
         '--reporter',
         deps?.userId || 'slack-qa',
       ];
+      if (detectedJira) {
+        args.push('--jira', detectedJira);
+      }
       if (dry_run) args.push('--dry-run');
 
       const proc = spawn('npx', ['tsx', ...args], {

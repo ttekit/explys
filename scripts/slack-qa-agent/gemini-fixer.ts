@@ -97,7 +97,8 @@ export class GeminiFixer {
         this.openAiModel,
         "gpt-4o-mini",
         "gpt-4o",
-        "chatgpt-4o-latest",
+        "o3-mini",
+        "gpt-4-turbo",
       ])
     );
   }
@@ -221,7 +222,7 @@ ${previousErrors.join("\n")}`
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(15000),
       });
 
       if (response.ok) {
@@ -287,7 +288,7 @@ ${previousErrors.join("\n")}`
           Authorization: `Bearer ${this.openAiApiKey}`,
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(15000),
       });
 
       if (response.ok) {

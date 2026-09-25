@@ -4,14 +4,15 @@ import {
   PullRequestResult,
   VerificationResult,
 } from "./types";
+import { resolveApiKey } from "./gemini-fixer";
 
 export class SlackNotifier {
   private botToken: string;
   private defaultWebhookUrl: string;
 
   constructor() {
-    this.botToken = process.env.SLACK_BOT_TOKEN || "";
-    this.defaultWebhookUrl = process.env.SLACK_WEBHOOK_URL || "";
+    this.botToken = resolveApiKey("SLACK_BOT_TOKEN");
+    this.defaultWebhookUrl = resolveApiKey("SLACK_WEBHOOK_URL");
   }
 
   private async sendMessage(
@@ -91,11 +92,15 @@ export class SlackNotifier {
       .map((s, idx) => `  ${idx + 1}. ${s}`)
       .join("\n");
 
+    const jiraLine = bugReport.jiraIssueUrl
+      ? `🎫 *Jira Ticket:* <${bugReport.jiraIssueUrl}|${bugReport.jiraIssueKey || "View Issue"}>\n`
+      : "";
+
     const messageText = `🚀 *Automated PR & Preview Ready for QA Bug Report*
 
 *Bug:* ${proposal.bugSummary}
 *Reported by:* <@${bugReport.reporter}>
-
+${jiraLine}
 🔗 *Pull Request:* <${pr.prUrl}|#${pr.prNumber} ${pr.title}>
 🌐 *Live Preview URL:* <${pr.previewUrl}|Open Preview Deployment>
 
@@ -107,6 +112,28 @@ ${qaSteps}
 • Engineering team please review the PR diff and merge!`;
 
     await this.sendMessage(bugReport, messageText, dryRun);
+
+    // Cross-post to dedicated Slack PRs channel (e.g. #prs)
+    const rawPrsChannel = resolveApiKey("SLACK_PRS_CHANNEL") || "prs";
+    const prsChannel = rawPrsChannel.replace(/^#/, "");
+    if (!dryRun && this.botToken && prsChannel && prsChannel !== bugReport.channel) {
+      try {
+        await fetch("https://slack.com/api/chat.postMessage", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.botToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            channel: prsChannel,
+            text: messageText,
+          }),
+        });
+        console.log(`-> Cross-posted PR announcement to Slack #${prsChannel}.`);
+      } catch (err: any) {
+        console.warn(`Failed to cross-post to Slack #${prsChannel}:`, err.message);
+      }
+    }
   }
 
   public async notifyNoChanges(

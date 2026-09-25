@@ -3,12 +3,54 @@ import { GeminiFixer } from "./gemini-fixer";
 import { PatchVerifier } from "./patch-verifier";
 import { GitPrManager } from "./git-pr-manager";
 import { SlackNotifier } from "./slack-notifier";
+import { JiraClient } from "./jira-client";
 import { SlackBugReport, AgentRunOptions } from "./types";
 
 export async function runSlackQaAgent(options: AgentRunOptions): Promise<void> {
   console.log("==================================================");
   console.log("🤖 Explys Slack QA Bug Agent — Gemini & Graphify");
   console.log("==================================================");
+
+  const jiraClient = new JiraClient();
+  let jiraIssueKey = options.jiraIssueKey;
+  let jiraIssueUrl = options.jiraUrl;
+
+  // Detect Jira issue from explicit option or within bug text
+  const inputToParse = options.jiraUrl || options.jiraIssueKey || options.bugText;
+  const parsedJira = jiraClient.parseIssueInput(inputToParse);
+
+  if (parsedJira) {
+    jiraIssueKey = parsedJira.issueKey;
+    jiraIssueUrl = `${parsedJira.host}/browse/${parsedJira.issueKey}`;
+    console.log(`\n🎫 [Jira] Detected Jira issue reference: ${jiraIssueKey} (${parsedJira.host})`);
+
+    if (jiraClient.isConfigured()) {
+      try {
+        const issue = await jiraClient.getIssue(jiraIssueKey);
+        console.log(`-> Summary: ${issue.summary}`);
+        console.log(`-> Status: ${issue.status}, Reporter: ${issue.reporter}`);
+        if (issue.description) {
+          console.log(`-> Description: ${issue.description.slice(0, 120)}...`);
+        }
+
+        jiraIssueUrl = issue.url;
+        const additionalNotes =
+          options.bugText && !options.bugText.includes(jiraIssueKey)
+            ? `\n\nAdditional notes: ${options.bugText}`
+            : "";
+        options.bugText = `[Jira ${issue.key}: ${issue.summary}]\n${issue.description || issue.summary}${additionalNotes}`.trim();
+      } catch (err: any) {
+        console.warn(`⚠️ Could not fetch Jira issue ${jiraIssueKey}: ${err.message}`);
+        console.warn("-> Continuing with provided bug description.");
+      }
+    } else {
+      console.warn(
+        `⚠️ Jira credentials not configured (JIRA_EMAIL & JIRA_API_TOKEN missing).\n` +
+          `-> Set JIRA_EMAIL and JIRA_API_TOKEN in backend/.env to auto-fetch issue details and comment on tickets.\n` +
+          `-> Proceeding with provided text.`
+      );
+    }
+  }
 
   const bugReport: SlackBugReport = {
     id: `qa-${Date.now()}`,
@@ -17,6 +59,8 @@ export async function runSlackQaAgent(options: AgentRunOptions): Promise<void> {
     threadTs: options.threadTs,
     text: options.bugText,
     reportedAt: new Date().toISOString(),
+    jiraIssueKey,
+    jiraIssueUrl,
   };
 
   console.log(`\n📋 Bug Report Received from @${bugReport.reporter}:`);
@@ -182,6 +226,32 @@ export async function runSlackQaAgent(options: AgentRunOptions): Promise<void> {
   console.log(`-> Live Preview: ${pr.previewUrl}`);
 
   // =========================================================================
+  // STEP 7b: Attach PR to Jira Comment
+  // =========================================================================
+  if (jiraIssueKey && jiraClient.isConfigured()) {
+    console.log(`\n📝 [Step 7b] Attaching PR comment to Jira issue ${jiraIssueKey}...`);
+    const jiraComment = `🚀 *Automated PR & Live Preview Ready for Issue ${jiraIssueKey}*
+
+*Bug Summary:* ${proposal.bugSummary}
+*Pull Request:* ${pr.prUrl}
+*Live Deploy Preview:* ${pr.previewUrl}
+*Branch:* \`${pr.branchName}\`
+
+*QA Verification Steps:*
+${proposal.qaVerificationSteps.map((s, idx) => `${idx + 1}. ${s}`).join("\n")}
+
+*Next Steps:*
+• Verify the fix on the preview environment.
+• Review code diff and merge into ${pr.baseBranch}.`;
+
+    if (!options.dryRun) {
+      await jiraClient.addComment(jiraIssueKey, jiraComment);
+    } else {
+      console.log(`[DRY RUN] Would post comment to Jira ${jiraIssueKey}:\n${jiraComment}`);
+    }
+  }
+
+  // =========================================================================
   // STEP 8: Slack Notification
   // =========================================================================
   console.log("\n💬 [Step 8] Sending notification to Slack QA channel...");
@@ -206,6 +276,9 @@ if (require.main === module || process.argv[1]?.endsWith("run.ts")) {
     process.env.SLACK_BUG_TEXT ||
     "Hero stats component shows unexpected magic number offset +3259";
 
+  const jiraInput =
+    getArg("--jira") || process.env.JIRA_URL || process.env.JIRA_ISSUE_KEY;
+
   const reporter =
     getArg("--reporter") || process.env.SLACK_REPORTER || "qa-engineer";
 
@@ -218,6 +291,7 @@ if (require.main === module || process.argv[1]?.endsWith("run.ts")) {
 
   runSlackQaAgent({
     bugText,
+    jiraUrl: jiraInput,
     reporter,
     channel,
     threadTs,

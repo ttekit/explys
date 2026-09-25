@@ -136,7 +136,7 @@ export class GitPrManager {
 ### 📋 Original Bug Report
 - **Reporter:** \`@${bugReport.reporter}\`
 - **Channel:** \`${bugReport.channel || "qa-bugs"}\`
-- **Reported At:** ${bugReport.reportedAt || new Date().toISOString()}
+- **Reported At:** ${bugReport.reportedAt || new Date().toISOString()}${bugReport.jiraIssueUrl ? `\n- **Jira Issue:** [${bugReport.jiraIssueKey || "Ticket"}](${bugReport.jiraIssueUrl})` : ""}
 - **Description:**
 > ${bugReport.text.replace(/\n/g, "\n> ")}
 

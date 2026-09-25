@@ -7,6 +7,8 @@ export interface SlackBugReport {
   title?: string;
   reportedAt?: string;
   responseUrl?: string;
+  jiraIssueKey?: string;
+  jiraIssueUrl?: string;
 }
 
 export interface GraphifyNodeContext {
@@ -69,6 +71,8 @@ export interface PullRequestResult {
 
 export interface AgentRunOptions {
   bugText: string;
+  jiraUrl?: string;
+  jiraIssueKey?: string;
   reporter?: string;
   channel?: string;
   threadTs?: string;
