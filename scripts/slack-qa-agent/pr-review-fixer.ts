@@ -179,10 +179,10 @@ export class PrReviewFixer {
 
     console.log(`-> Matched ${graphContext.matchedNodes.length} symbols across ${graphContext.relevantFiles.length} files.`);
 
-    // 2. Check GEMINI_API_KEY
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.warn("⚠️ GEMINI_API_KEY is not set in environment/secrets.");
+    // 2. Check AI provider availability (Gemini or OpenAI failover)
+    const fixer = new GeminiFixer();
+    if (!fixer.hasAvailableProvider()) {
+      console.warn("⚠️ Neither GEMINI_API_KEY nor OPENAI_API_KEY is configured in environment/secrets.");
       if (this.githubToken) {
         try {
           await fetch(
@@ -195,7 +195,7 @@ export class PrReviewFixer {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                body: `⚠️ **Explys Gemini Agent**: Picked up your \`@gemini\` comment, but \`GEMINI_API_KEY\` is not configured in GitHub Secrets.\n\nPlease add **\`GEMINI_API_KEY\`** at: https://github.com/${this.repoOwner}/${this.repoName}/settings/secrets/actions so I can generate and apply fixes automatically!`,
+                body: `⚠️ **Explys QA Fixer**: Picked up your \`@gemini\` comment, but neither \`GEMINI_API_KEY\` nor \`OPENAI_API_KEY\` is configured in GitHub Secrets.\n\nPlease add **\`GEMINI_API_KEY\`** or **\`OPENAI_API_KEY\`** at: https://github.com/${this.repoOwner}/${this.repoName}/settings/secrets/actions so I can generate and apply fixes automatically!`,
               }),
             }
           );
@@ -206,8 +206,7 @@ export class PrReviewFixer {
       return;
     }
 
-    console.log("🧠 Generating fix with Gemini...");
-    const fixer = new GeminiFixer();
+    console.log(`🧠 Generating fix with AI (${fixer.getActiveProvider().toUpperCase()})...`);
     const bugReport: SlackBugReport = {
       id: `pr-${options.prNumber}`,
       reporter: "pr-reviewer",

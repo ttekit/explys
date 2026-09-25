@@ -78,6 +78,10 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          #SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          #SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          #SLACK_SIGNING_SECRET: ${{ secrets.SLACK_SIGNING_SECRET }}
           PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number }}
           PR_COMMENT: ${{ github.event.comment.body || inputs.comment }}
           DRY_RUN: ${{ inputs.dry_run || 'false' }}

@@ -6,38 +6,122 @@ import {
   GeminiFixProposal,
 } from "./types";
 
-function resolveGeminiApiKey(explicitKey?: string): string {
-  if (explicitKey) return explicitKey;
-  if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+export type AiProvider = "gemini" | "openai";
+
+export function resolveApiKey(envVar: string, explicitKey?: string): string {
+  if (explicitKey !== undefined) return explicitKey;
+  if (process.env[envVar]) return process.env[envVar]!;
   try {
     const envPath = path.resolve(process.cwd(), "backend/.env");
     if (fs.existsSync(envPath)) {
       const content = fs.readFileSync(envPath, "utf8");
-      const match = content.match(/^GEMINI_API_KEY=["']?([^"'\r\n]+)["']?/m);
+      const match = content.match(new RegExp(`^${envVar}=["']?([^"'\\r\\n]+)["']?`, "m"));
       if (match) return match[1].trim();
     }
   } catch {}
   return "";
 }
 
-export class GeminiFixer {
-  private apiKey: string;
-  private model: string;
+export interface GeminiFixerOptions {
+  geminiApiKey?: string;
+  openAiApiKey?: string;
+  geminiModel?: string;
+  openAiModel?: string;
+  initialProvider?: AiProvider;
+  errorThreshold?: number;
+  sleepDelayMs?: number;
+  fetchFn?: typeof fetch;
+}
 
-  constructor(apiKey?: string, model?: string) {
-    this.apiKey = resolveGeminiApiKey(apiKey);
-    this.model = model || process.env.GEMINI_MODEL || "gemini-3.5-flash";
+export class GeminiFixer {
+  private geminiApiKey: string;
+  private openAiApiKey: string;
+  private geminiModel: string;
+  private openAiModel: string;
+  private activeProvider: AiProvider;
+  private geminiConsecutiveErrors: number = 0;
+  private openAiConsecutiveErrors: number = 0;
+  private readonly errorThreshold: number;
+  private readonly sleepDelayMs: number;
+  private readonly fetchFn: typeof fetch;
+
+  private geminiModels: string[];
+  private geminiModelIndex: number = 0;
+  private openAiModels: string[];
+  private openAiModelIndex: number = 0;
+
+  constructor(
+    apiKeyOrOptions?: string | GeminiFixerOptions,
+    model?: string
+  ) {
+    if (typeof apiKeyOrOptions === "object" && apiKeyOrOptions !== null) {
+      this.geminiApiKey = resolveApiKey("GEMINI_API_KEY", apiKeyOrOptions.geminiApiKey);
+      this.openAiApiKey = resolveApiKey("OPENAI_API_KEY", apiKeyOrOptions.openAiApiKey);
+      this.geminiModel = apiKeyOrOptions.geminiModel || process.env.GEMINI_MODEL || "gemini-3.5-flash";
+      this.openAiModel = apiKeyOrOptions.openAiModel || process.env.OPENAI_MODEL || "gpt-4o-mini";
+      this.errorThreshold = apiKeyOrOptions.errorThreshold ?? 3;
+      this.sleepDelayMs = apiKeyOrOptions.sleepDelayMs ?? 1000;
+      this.fetchFn = apiKeyOrOptions.fetchFn ?? fetch;
+
+      if (apiKeyOrOptions.initialProvider) {
+        this.activeProvider = apiKeyOrOptions.initialProvider;
+      } else {
+        this.activeProvider = this.geminiApiKey ? "gemini" : (this.openAiApiKey ? "openai" : "gemini");
+      }
+    } else {
+      this.geminiApiKey = resolveApiKey("GEMINI_API_KEY", apiKeyOrOptions);
+      this.openAiApiKey = resolveApiKey("OPENAI_API_KEY");
+      this.geminiModel = model || process.env.GEMINI_MODEL || "gemini-3.5-flash";
+      this.openAiModel = process.env.OPENAI_MODEL || "gpt-4o-mini";
+      this.errorThreshold = 3;
+      this.sleepDelayMs = 1000;
+      this.fetchFn = fetch;
+      this.activeProvider = this.geminiApiKey ? "gemini" : (this.openAiApiKey ? "openai" : "gemini");
+    }
+
+    this.geminiModels = Array.from(
+      new Set([
+        this.geminiModel,
+        "gemini-3.5-flash",
+        "gemini-3.6-flash",
+        "gemini-3.7-flash",
+        "gemini-3-flash-preview",
+        "gemini-flash-latest",
+        "gemini-flash-lite-latest",
+      ])
+    );
+
+    this.openAiModels = Array.from(
+      new Set([
+        this.openAiModel,
+        "gpt-4o-mini",
+        "gpt-4o",
+        "chatgpt-4o-latest",
+      ])
+    );
   }
 
-  public async generateFix(
+  public getActiveProvider(): AiProvider {
+    return this.activeProvider;
+  }
+
+  public getGeminiConsecutiveErrors(): number {
+    return this.geminiConsecutiveErrors;
+  }
+
+  public getOpenAiConsecutiveErrors(): number {
+    return this.openAiConsecutiveErrors;
+  }
+
+  public hasAvailableProvider(): boolean {
+    return Boolean(this.geminiApiKey || this.openAiApiKey);
+  }
+
+  private buildPrompts(
     bugReport: SlackBugReport,
     graphContext: GraphifyAnalysisContext,
     previousErrors: string[] = []
-  ): Promise<GeminiFixProposal> {
-    if (!this.apiKey) {
-      return this.generateMockProposal(bugReport, graphContext, previousErrors);
-    }
-
+  ): { systemPrompt: string; userPrompt: string } {
     const systemPrompt = `You are a senior fullstack engineer working on the Explys learning platform (NestJS backend, React 19 + Vite frontend, Expo mobile).
 A QA engineer has reported a bug in Slack. You have been provided with:
 1. The bug description from Slack
@@ -103,19 +187,18 @@ ${previousErrors.join("\n")}`
   "devReviewNotes": "Technical summary for the developer reviewing the PR"
 }
 `;
+    return { systemPrompt, userPrompt };
+  }
 
-    const fallbackModels = Array.from(
-      new Set([
-        this.model,
-        "gemini-3-flash-preview",
-        "gemini-3.5-flash",
-        "gemini-3.6-flash",
-        "gemini-3.7-flash",
-        "gemini-flash-latest",
-        "gemini-flash-lite-latest",
-      ])
-    );
+  private async tryGeminiOnce(
+    systemPrompt: string,
+    userPrompt: string,
+    errorLogs: string[]
+  ): Promise<GeminiFixProposal | null> {
+    const modelName = this.geminiModels[this.geminiModelIndex % this.geminiModels.length];
+    this.geminiModelIndex++;
 
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.geminiApiKey}`;
     const body = {
       contents: [
         {
@@ -129,39 +212,183 @@ ${previousErrors.join("\n")}`
       },
     };
 
-    let lastError = "";
-    for (const modelName of fallbackModels) {
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.apiKey}`;
-      try {
-        console.log(`Connecting to Gemini API using model: ${modelName}...`);
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
+    try {
+      console.log(`Connecting to Gemini API using model: ${modelName}...`);
+      const response = await this.fetchFn(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30000),
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          const candidateText =
-            data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-          return this.parseProposalJson(candidateText);
+      if (response.ok) {
+        const data: any = await response.json();
+        const candidateText =
+          data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        this.geminiConsecutiveErrors = 0;
+        return this.parseProposalJson(candidateText);
+      }
+
+      if (response.status === 503 && this.sleepDelayMs > 0) {
+        await new Promise((r) => setTimeout(r, this.sleepDelayMs));
+      }
+
+      const errText = await response.text();
+      this.geminiConsecutiveErrors++;
+      const msg = `Gemini API error (${modelName} - ${response.status}): ${errText}`;
+      console.warn(`${msg} (Consecutive Gemini errors: ${this.geminiConsecutiveErrors})`);
+      errorLogs.push(msg);
+      return null;
+    } catch (err: any) {
+      this.geminiConsecutiveErrors++;
+      const msg = `Gemini network error (${modelName}): ${err.message}`;
+      console.warn(`${msg} (Consecutive Gemini errors: ${this.geminiConsecutiveErrors})`);
+      errorLogs.push(msg);
+      return null;
+    }
+  }
+
+  private async tryOpenAiOnce(
+    systemPrompt: string,
+    userPrompt: string,
+    errorLogs: string[]
+  ): Promise<GeminiFixProposal | null> {
+    const modelName = this.openAiModels[this.openAiModelIndex % this.openAiModels.length];
+    this.openAiModelIndex++;
+
+    const apiUrl = "https://api.openai.com/v1/chat/completions";
+    const body = {
+      model: modelName,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.1,
+    };
+
+    try {
+      console.log(`Connecting to OpenAI API using model: ${modelName}...`);
+      const response = await this.fetchFn(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.openAiApiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30000),
+      });
+
+      if (response.ok) {
+        const data: any = await response.json();
+        const candidateText = data.choices?.[0]?.message?.content || "{}";
+        this.openAiConsecutiveErrors = 0;
+        return this.parseProposalJson(candidateText);
+      }
+
+      if ((response.status === 503 || response.status === 429) && this.sleepDelayMs > 0) {
+        await new Promise((r) => setTimeout(r, this.sleepDelayMs));
+      }
+
+      const errText = await response.text();
+      this.openAiConsecutiveErrors++;
+      const msg = `OpenAI API error (${modelName} - ${response.status}): ${errText}`;
+      console.warn(`${msg} (Consecutive OpenAI errors: ${this.openAiConsecutiveErrors})`);
+      errorLogs.push(msg);
+      return null;
+    } catch (err: any) {
+      this.openAiConsecutiveErrors++;
+      const msg = `OpenAI network error (${modelName}): ${err.message}`;
+      console.warn(`${msg} (Consecutive OpenAI errors: ${this.openAiConsecutiveErrors})`);
+      errorLogs.push(msg);
+      return null;
+    }
+  }
+
+  public async generateFix(
+    bugReport: SlackBugReport,
+    graphContext: GraphifyAnalysisContext,
+    previousErrors: string[] = []
+  ): Promise<GeminiFixProposal> {
+    if (!this.hasAvailableProvider()) {
+      return this.generateMockProposal(bugReport, graphContext, previousErrors);
+    }
+
+    const { systemPrompt, userPrompt } = this.buildPrompts(
+      bugReport,
+      graphContext,
+      previousErrors
+    );
+
+    const errorLogs: string[] = [];
+    const maxTotalAttempts = 15;
+    let attempts = 0;
+
+    while (attempts < maxTotalAttempts) {
+      attempts++;
+
+      if (this.activeProvider === "gemini") {
+        if (!this.geminiApiKey) {
+          if (this.openAiApiKey) {
+            console.log("GEMINI_API_KEY unavailable. Switching to OPENAI_API_KEY...");
+            this.activeProvider = "openai";
+            continue;
+          }
+          break;
         }
 
-        if (response.status === 503) {
-          // Allow transient capacity spikes to settle before trying next model
-          await new Promise((r) => setTimeout(r, 1500));
+        const proposal = await this.tryGeminiOnce(systemPrompt, userPrompt, errorLogs);
+        if (proposal) {
+          return proposal;
         }
 
-        const errText = await response.text();
-        lastError = `Gemini API error (${modelName} - ${response.status}): ${errText}`;
-        console.warn(`${lastError}. Trying next model...`);
-      } catch (err: any) {
-        lastError = `Network error on ${modelName}: ${err.message}`;
-        console.warn(`${lastError}. Trying next model...`);
+        if (this.geminiConsecutiveErrors >= this.errorThreshold) {
+          if (this.openAiApiKey) {
+            console.warn(
+              `⚠️ Gemini encountered ${this.geminiConsecutiveErrors} consecutive errors (threshold: ${this.errorThreshold}). Switching active provider to OPENAI_API_KEY!`
+            );
+            this.activeProvider = "openai";
+            this.geminiConsecutiveErrors = 0;
+          } else {
+            console.warn(
+              `⚠️ Gemini encountered ${this.geminiConsecutiveErrors} errors, but OPENAI_API_KEY is not configured.`
+            );
+          }
+        }
+      } else {
+        if (!this.openAiApiKey) {
+          if (this.geminiApiKey) {
+            console.log("OPENAI_API_KEY unavailable. Switching to GEMINI_API_KEY...");
+            this.activeProvider = "gemini";
+            continue;
+          }
+          break;
+        }
+
+        const proposal = await this.tryOpenAiOnce(systemPrompt, userPrompt, errorLogs);
+        if (proposal) {
+          return proposal;
+        }
+
+        if (this.openAiConsecutiveErrors >= this.errorThreshold) {
+          if (this.geminiApiKey) {
+            console.warn(
+              `⚠️ OpenAI encountered ${this.openAiConsecutiveErrors} consecutive errors (threshold: ${this.errorThreshold}). Switching active provider to GEMINI_API_KEY!`
+            );
+            this.activeProvider = "gemini";
+            this.openAiConsecutiveErrors = 0;
+          } else {
+            console.warn(
+              `⚠️ OpenAI encountered ${this.openAiConsecutiveErrors} errors, but GEMINI_API_KEY is not configured.`
+            );
+          }
+        }
       }
     }
 
-    throw new Error(`All Gemini models failed. Last error: ${lastError}`);
+    throw new Error(
+      `All AI providers failed. Consecutive failures exceeded tolerance.\nErrors:\n${errorLogs.join("\n")}`
+    );
   }
 
   private parseProposalJson(text: string): GeminiFixProposal {
@@ -187,7 +414,7 @@ ${previousErrors.join("\n")}`
   }
 
   /**
-   * Mock proposal for testing / offline dry-run when GEMINI_API_KEY is unset
+   * Mock proposal for testing / offline dry-run when no API keys are set
    */
   private generateMockProposal(
     bugReport: SlackBugReport,
